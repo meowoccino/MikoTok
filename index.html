@@ -413,3 +413,12 @@ loadClips();
 
 </body>
 </html>
+<button onclick="callWorker()">Call</button>
+
+<script>
+async function callWorker() {
+  const res = await fetch("https://mikotok-api.m-cihra.workers.dev.");
+  const text = await res.text();
+  console.log(text);
+}
+</script>
