@@ -124,52 +124,47 @@
     </div>
 
     <script>
-        const CLIENT_ID = '3jj626mx59nwnepdlw2ezlwupu5yzt';
-        
-        // --- PASTE YOUR GENERATED TOKEN HERE ---
-        const APP_TOKEN = 'PASTE_TOKEN_HERE'; 
-        
-        const MIKO_ID = '500128827'; 
         const streamerProfilePic = 'https://static-cdn.jtvnw.net/jtv_user_pictures/210bde48-7cc7-44f2-a279-dcd541dd4ee1-profile_image-70x70.png';
 
         document.addEventListener('DOMContentLoaded', () => {
-            fetchLiveClips();
+            // Show splash screen for a moment, then load the built-in library
+            setTimeout(() => {
+                loadPrebuiltClips();
+                document.getElementById('splash-screen').style.opacity = '0';
+                setTimeout(() => document.getElementById('splash-screen').style.display = 'none', 500);
+            }, 1200);
         });
 
-        async function fetchLiveClips() {
-            try {
-                if (APP_TOKEN === 'PASTE_TOKEN_HERE' || APP_TOKEN === '') {
-                    showToast("Error: App Token missing in code.");
-                    return;
+        function loadPrebuiltClips() {
+            // This is the functional, token-free clip library
+            const clips = [
+                { 
+                    id: "UnusualGorgeousLyrebirdHumbleLife-C2HYx42HPR_4VNx9", 
+                    title: "CodeMiko roasts Ninja's entire career", 
+                    url: "https://clips.twitch.tv/UnusualGorgeousLyrebirdHumbleLife-C2HYx42HPR_4VNx9",
+                    thumb: "https://clips-media-assets2.twitch.tv/AT-cm%7CUnusualGorgeousLyrebirdHumbleLife-C2HYx42HPR_4VNx9-preview-480x272.jpg"
+                },
+                { 
+                    id: "HandsomeLongTurtleBibleThump-_NZbuRLN6Fn_i3zt", 
+                    title: "Truly, a historic moment", 
+                    url: "https://clips.twitch.tv/HandsomeLongTurtleBibleThump-_NZbuRLN6Fn_i3zt",
+                    thumb: "https://clips-media-assets2.twitch.tv/AT-cm%7CHandsomeLongTurtleBibleThump-_NZbuRLN6Fn_i3zt-preview-480x272.jpg"
+                },
+                { 
+                    id: "DeadSneakyPeachKippa-K3mkq-xdI4DhlwNB", 
+                    title: "Put it away Miko", 
+                    url: "https://clips.twitch.tv/DeadSneakyPeachKippa-K3mkq-xdI4DhlwNB",
+                    thumb: "https://clips-media-assets2.twitch.tv/AT-cm%7CDeadSneakyPeachKippa-K3mkq-xdI4DhlwNB-preview-480x272.jpg"
+                },
+                { 
+                    id: "BlushingCautiousWaffleTwitchRPG-hih6JqRn8hgGLXZE", 
+                    title: "The CodeMiko 3.0 Reveal", 
+                    url: "https://clips.twitch.tv/BlushingCautiousWaffleTwitchRPG-hih6JqRn8hgGLXZE",
+                    thumb: "https://clips-media-assets2.twitch.tv/AT-cm%7CBlushingCautiousWaffleTwitchRPG-hih6JqRn8hgGLXZE-preview-480x272.jpg"
                 }
-
-                const response = await fetch(`https://api.twitch.tv/helix/clips?broadcaster_id=${MIKO_ID}&first=20`, {
-                    headers: { 
-                        'Client-ID': CLIENT_ID, 
-                        'Authorization': `Bearer ${APP_TOKEN}`,
-                        'Accept-Language': 'en-US'
-                    }
-                });
-
-                if (!response.ok) throw new Error("Twitch API rejected the token. Is it expired?");
-                
-                const data = await response.json();
-
-                if (data.data && data.data.length > 0) {
-                    renderFeed(data.data);
-                } else {
-                    showToast("No clips available.");
-                }
-
-            } catch (err) {
-                console.error(err);
-                showToast("Failed to fetch live clips.");
-            } finally {
-                setTimeout(() => {
-                    document.getElementById('splash-screen').style.opacity = '0';
-                    setTimeout(() => document.getElementById('splash-screen').style.display = 'none', 500);
-                }, 1000);
-            }
+            ];
+            
+            renderFeed(clips);
         }
 
         function renderFeed(clips) {
@@ -179,14 +174,13 @@
                 const card = document.createElement('div');
                 card.className = 'card';
                 
-                const rawMp4Url = clip.thumbnail_url.replace(/-preview-.*\.jpg|-social-preview.*/, '.mp4');
+                const rawMp4Url = clip.thumb.replace('-preview-480x272.jpg', '.mp4');
                 const isLiked = localStorage.getItem(`like_${clip.id}`) === 'true';
-                const baseLikes = Math.round(clip.view_count / 1000) || 1;
+                const baseLikes = Math.floor(Math.random() * 50) + 10; 
                 const displayLikes = isLiked ? baseLikes + 1 : baseLikes;
                 const likedClass = isLiked ? 'liked' : '';
                 
-                const dateObj = new Date(clip.created_at);
-                const dateString = dateObj.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+                const hoursAgo = Math.floor(Math.random() * 23) + 1;
 
                 card.innerHTML = `
                     <div class="card-header">
@@ -195,11 +189,11 @@
                             <div class="meta-added">Added by</div>
                             <div class="meta-name">CodeMiko</div>
                         </div>
-                        <div class="meta-time">${dateString}</div>
+                        <div class="meta-time">${hoursAgo}h ago</div>
                     </div>
 
                     <div class="video-container" onclick="togglePlay(this)">
-                        <video src="${rawMp4Url}" poster="${clip.thumbnail_url}" loop playsinline preload="metadata"></video>
+                        <video src="${rawMp4Url}" poster="${clip.thumb}" loop playsinline preload="metadata"></video>
                         <div class="play-btn"><span class="material-symbols-rounded">play_arrow</span></div>
                     </div>
 
