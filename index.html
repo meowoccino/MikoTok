@@ -61,7 +61,7 @@
         /* CARD STYLING */
         .card { background: var(--card-bg); border-radius: 16px; padding: 15px; margin-bottom: 20px; box-shadow: 0 4px 15px rgba(0,0,0,0.2); border: 1px solid rgba(255,255,255,0.03); }
         .card-header { display: flex; align-items: center; margin-bottom: 12px; }
-        .card-avatar { width: 36px; height: 36px; border-radius: 50%; margin-right: 12px; object-fit: cover; }
+        .card-avatar { width: 36px; height: 36px; border-radius: 50%; margin-right: 12px; object-fit: cover; background: #222; }
         .card-meta { flex: 1; }
         .meta-added { font-size: 12px; color: var(--text-muted); margin-bottom: 2px; }
         .meta-name { font-size: 14px; font-weight: 600; color: var(--primary-light); }
@@ -94,9 +94,32 @@
         .nav-fab {
             width: 48px; height: 48px; border-radius: 50%; background: var(--primary-light);
             display: flex; align-items: center; justify-content: center; color: white; cursor: pointer;
-            box-shadow: 0 4px 15px rgba(169, 112, 255, 0.4); transform: translateY(-10px);
+            box-shadow: 0 4px 15px rgba(169, 112, 255, 0.4); transform: translateY(-10px); transition: transform 0.2s;
         }
+        .nav-fab:active { transform: translateY(-8px) scale(0.95); }
         .nav-fab .material-symbols-rounded { font-size: 28px; }
+
+        /* ADD CLIP MODAL */
+        #add-modal {
+            position: absolute; inset: 0; background: rgba(0,0,0,0.8); z-index: 1500;
+            display: none; flex-direction: column; justify-content: flex-end; backdrop-filter: blur(5px);
+        }
+        .modal-content {
+            background: var(--card-bg); border-top-left-radius: 20px; border-top-right-radius: 20px;
+            padding: 25px 20px 40px; box-shadow: 0 -5px 20px rgba(0,0,0,0.5); transform: translateY(100%);
+            transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+        .modal-title { font-size: 18px; font-weight: 700; margin-bottom: 20px; text-align: center; color: white; }
+        .input-group { margin-bottom: 15px; }
+        .input-group label { display: block; font-size: 12px; color: var(--text-muted); margin-bottom: 6px; }
+        .input-group input { 
+            width: 100%; background: #1c1c22; border: 1px solid var(--border-color); 
+            color: white; padding: 12px 15px; border-radius: 8px; font-size: 14px; outline: none; 
+        }
+        .input-group input:focus { border-color: var(--primary); }
+        .modal-actions { display: flex; gap: 10px; margin-top: 25px; }
+        .btn-cancel { flex: 1; background: #222; color: white; border: none; padding: 14px; border-radius: 8px; font-weight: 600; font-size: 14px; cursor: pointer; }
+        .btn-submit { flex: 1; background: var(--primary); color: white; border: none; padding: 14px; border-radius: 8px; font-weight: 600; font-size: 14px; cursor: pointer; }
 
         #toast { position: absolute; top: 100px; left: 50%; transform: translateX(-50%); background: var(--primary); color: white; padding: 10px 20px; border-radius: 8px; font-weight: bold; font-size: 14px; z-index: 9999; display: none; white-space: nowrap; }
     </style>
@@ -116,80 +139,103 @@
         <div id="toast"></div>
         <div id="feed"></div>
 
+        <div id="add-modal">
+            <div class="modal-content" id="modal-panel">
+                <div class="modal-title">Add a New Clip</div>
+                
+                <div class="input-group">
+                    <label>Added by (Your Name)</label>
+                    <input type="text" id="input-name" placeholder="e.g. Viewer123" autocomplete="off">
+                </div>
+                
+                <div class="input-group">
+                    <label>Twitch Clip URL</label>
+                    <input type="url" id="input-url" placeholder="https://clips.twitch.tv/..." autocomplete="off">
+                </div>
+                
+                <div class="modal-actions">
+                    <button class="btn-cancel" onclick="closeModal()">Cancel</button>
+                    <button class="btn-submit" onclick="submitClip()">Add Clip</button>
+                </div>
+            </div>
+        </div>
+
         <div class="bottom-nav">
             <div class="nav-item active" onclick="scrollToTop()"><span class="material-symbols-rounded">home</span>Home</div>
-            <div class="nav-fab" onclick="showToast('Upload feature coming soon!')"><span class="material-symbols-rounded">add</span></div>
+            <div class="nav-fab" onclick="openModal()"><span class="material-symbols-rounded">add</span></div>
             <div class="nav-item" onclick="scrollToTop()"><span class="material-symbols-rounded">smart_display</span>Clips</div>
         </div>
     </div>
 
     <script>
-        const streamerProfilePic = 'https://static-cdn.jtvnw.net/jtv_user_pictures/210bde48-7cc7-44f2-a279-dcd541dd4ee1-profile_image-70x70.png';
+        const defaultProfilePic = 'https://static-cdn.jtvnw.net/jtv_user_pictures/210bde48-7cc7-44f2-a279-dcd541dd4ee1-profile_image-70x70.png';
+
+        // Default clips to show if the user hasn't added anything yet
+        const defaultLibrary = [
+            { 
+                id: "UnusualGorgeousLyrebirdHumbleLife-C2HYx42HPR_4VNx9", 
+                title: "CodeMiko roasts Ninja's entire career", 
+                url: "https://clips.twitch.tv/UnusualGorgeousLyrebirdHumbleLife-C2HYx42HPR_4VNx9",
+                thumb: "https://clips-media-assets2.twitch.tv/AT-cm%7CUnusualGorgeousLyrebirdHumbleLife-C2HYx42HPR_4VNx9-preview-480x272.jpg",
+                addedBy: "CodeMiko"
+            },
+            { 
+                id: "HandsomeLongTurtleBibleThump-_NZbuRLN6Fn_i3zt", 
+                title: "Truly, a historic moment", 
+                url: "https://clips.twitch.tv/HandsomeLongTurtleBibleThump-_NZbuRLN6Fn_i3zt",
+                thumb: "https://clips-media-assets2.twitch.tv/AT-cm%7CHandsomeLongTurtleBibleThump-_NZbuRLN6Fn_i3zt-preview-480x272.jpg",
+                addedBy: "CodeMiko"
+            }
+        ];
 
         document.addEventListener('DOMContentLoaded', () => {
-            // Show splash screen for a moment, then load the built-in library
+            // Show splash screen, then load clips (both user-added and defaults)
             setTimeout(() => {
-                loadPrebuiltClips();
+                loadClips();
                 document.getElementById('splash-screen').style.opacity = '0';
                 setTimeout(() => document.getElementById('splash-screen').style.display = 'none', 500);
             }, 1200);
         });
 
-        function loadPrebuiltClips() {
-            // This is the functional, token-free clip library
-            const clips = [
-                { 
-                    id: "UnusualGorgeousLyrebirdHumbleLife-C2HYx42HPR_4VNx9", 
-                    title: "CodeMiko roasts Ninja's entire career", 
-                    url: "https://clips.twitch.tv/UnusualGorgeousLyrebirdHumbleLife-C2HYx42HPR_4VNx9",
-                    thumb: "https://clips-media-assets2.twitch.tv/AT-cm%7CUnusualGorgeousLyrebirdHumbleLife-C2HYx42HPR_4VNx9-preview-480x272.jpg"
-                },
-                { 
-                    id: "HandsomeLongTurtleBibleThump-_NZbuRLN6Fn_i3zt", 
-                    title: "Truly, a historic moment", 
-                    url: "https://clips.twitch.tv/HandsomeLongTurtleBibleThump-_NZbuRLN6Fn_i3zt",
-                    thumb: "https://clips-media-assets2.twitch.tv/AT-cm%7CHandsomeLongTurtleBibleThump-_NZbuRLN6Fn_i3zt-preview-480x272.jpg"
-                },
-                { 
-                    id: "DeadSneakyPeachKippa-K3mkq-xdI4DhlwNB", 
-                    title: "Put it away Miko", 
-                    url: "https://clips.twitch.tv/DeadSneakyPeachKippa-K3mkq-xdI4DhlwNB",
-                    thumb: "https://clips-media-assets2.twitch.tv/AT-cm%7CDeadSneakyPeachKippa-K3mkq-xdI4DhlwNB-preview-480x272.jpg"
-                },
-                { 
-                    id: "BlushingCautiousWaffleTwitchRPG-hih6JqRn8hgGLXZE", 
-                    title: "The CodeMiko 3.0 Reveal", 
-                    url: "https://clips.twitch.tv/BlushingCautiousWaffleTwitchRPG-hih6JqRn8hgGLXZE",
-                    thumb: "https://clips-media-assets2.twitch.tv/AT-cm%7CBlushingCautiousWaffleTwitchRPG-hih6JqRn8hgGLXZE-preview-480x272.jpg"
-                }
-            ];
+        function loadClips() {
+            // Fetch any clips the user manually added from LocalStorage
+            let savedClips = JSON.parse(localStorage.getItem('userClips')) || [];
             
-            renderFeed(clips);
+            // Combine them: User added clips show up first, followed by the default ones
+            let allClips = [...savedClips, ...defaultLibrary];
+            
+            renderFeed(allClips);
         }
 
         function renderFeed(clips) {
             const feedContainer = document.getElementById('feed');
+            feedContainer.innerHTML = ''; // Clear feed before rebuilding
             
             clips.forEach((clip) => {
                 const card = document.createElement('div');
                 card.className = 'card';
                 
+                // Construct the raw MP4 video URL from the thumbnail URL trick
                 const rawMp4Url = clip.thumb.replace('-preview-480x272.jpg', '.mp4');
+                
                 const isLiked = localStorage.getItem(`like_${clip.id}`) === 'true';
                 const baseLikes = Math.floor(Math.random() * 50) + 10; 
                 const displayLikes = isLiked ? baseLikes + 1 : baseLikes;
                 const likedClass = isLiked ? 'liked' : '';
                 
-                const hoursAgo = Math.floor(Math.random() * 23) + 1;
+                const hoursAgo = clip.isCustom ? 'Just now' : `${Math.floor(Math.random() * 23) + 1}h ago`;
+                
+                // If it's the default "CodeMiko", show her avatar. Otherwise show a generic icon for user-added clips.
+                const avatarSrc = clip.addedBy === "CodeMiko" ? defaultProfilePic : `https://api.dicebear.com/7.x/avataaars/svg?seed=${clip.addedBy}`;
 
                 card.innerHTML = `
                     <div class="card-header">
-                        <img src="${streamerProfilePic}" class="card-avatar" alt="Miko">
+                        <img src="${avatarSrc}" class="card-avatar" alt="Avatar">
                         <div class="card-meta">
                             <div class="meta-added">Added by</div>
-                            <div class="meta-name">CodeMiko</div>
+                            <div class="meta-name">${clip.addedBy}</div>
                         </div>
-                        <div class="meta-time">${hoursAgo}h ago</div>
+                        <div class="meta-time">${hoursAgo}</div>
                     </div>
 
                     <div class="video-container" onclick="togglePlay(this)">
@@ -219,6 +265,62 @@
 
             attachLikeListeners();
         }
+
+        // --- ADD CLIP MODAL LOGIC ---
+
+        function openModal() {
+            const modal = document.getElementById('add-modal');
+            const panel = document.getElementById('modal-panel');
+            modal.style.display = 'flex';
+            // Slight delay to allow display:flex to apply before animating transform
+            setTimeout(() => { panel.style.transform = 'translateY(0)'; }, 10);
+        }
+
+        function closeModal() {
+            const panel = document.getElementById('modal-panel');
+            panel.style.transform = 'translateY(100%)';
+            setTimeout(() => { document.getElementById('add-modal').style.display = 'none'; }, 300);
+            
+            // Clear inputs
+            document.getElementById('input-name').value = '';
+            document.getElementById('input-url').value = '';
+        }
+
+        function submitClip() {
+            const nameInput = document.getElementById('input-name').value.trim() || 'Anonymous';
+            const urlInput = document.getElementById('input-url').value.trim();
+
+            if (!urlInput.includes('twitch.tv')) {
+                showToast("Please enter a valid Twitch clip URL!");
+                return;
+            }
+
+            // Extract the Clip ID from the URL. Example: https://clips.twitch.tv/BumblingScaryPanda-12345
+            let clipId = urlInput.split('/').pop().split('?')[0];
+
+            // Build the new custom clip object
+            const newClip = {
+                id: clipId,
+                title: "Custom User Clip", // In a real app we'd fetch the title from API, but we fake it here
+                url: urlInput,
+                thumb: `https://clips-media-assets2.twitch.tv/AT-cm%7C${clipId}-preview-480x272.jpg`,
+                addedBy: nameInput,
+                isCustom: true
+            };
+
+            // Save to LocalStorage
+            let savedClips = JSON.parse(localStorage.getItem('userClips')) || [];
+            savedClips.unshift(newClip); // Add to the very beginning of the array
+            localStorage.setItem('userClips', JSON.stringify(savedClips));
+
+            // Close modal, reload feed, and scroll to the top to see it
+            closeModal();
+            loadClips();
+            scrollToTop();
+            showToast("Clip added successfully!");
+        }
+
+        // --- VIDEO PLAYER & UI LOGIC ---
 
         window.togglePlay = function(container) {
             const video = container.querySelector('video');
@@ -256,7 +358,7 @@
 
         function shareClip(url) {
             if (navigator.share) {
-                navigator.share({ title: 'CodeMiko Clip', url: url });
+                navigator.share({ title: 'Twitch Clip', url: url });
             } else {
                 navigator.clipboard.writeText(url);
                 showToast("Link copied!");
