@@ -67,10 +67,9 @@
         .meta-name { font-size: 14px; font-weight: 600; color: var(--primary-light); }
         .meta-time { font-size: 12px; color: var(--text-muted); }
 
+        /* IFRAME VIDEO CONTAINER */
         .video-container { position: relative; width: 100%; border-radius: 10px; overflow: hidden; background: #000; aspect-ratio: 16/9; display: flex; align-items: center; justify-content: center; }
-        video { width: 100%; height: 100%; object-fit: cover; }
-        .play-btn { position: absolute; width: 50px; height: 50px; background: rgba(0,0,0,0.5); border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white; cursor: pointer; backdrop-filter: blur(4px); pointer-events: none; }
-        .play-btn .material-symbols-rounded { font-size: 32px; font-variation-settings: 'FILL' 1; }
+        iframe { width: 100%; height: 100%; border: none; }
 
         .card-info { margin-top: 12px; }
         .clip-title { font-size: 15px; font-weight: 600; line-height: 1.4; margin-bottom: 4px; }
@@ -169,27 +168,25 @@
 
     <script>
         const defaultProfilePic = 'https://static-cdn.jtvnw.net/jtv_user_pictures/210bde48-7cc7-44f2-a279-dcd541dd4ee1-profile_image-70x70.png';
+        // Twitch requires the exact domain in the iframe parameter. If you are testing locally, this falls back to localhost.
+        const parentDomain = window.location.hostname || 'localhost';
 
-        // Default clips to show if the user hasn't added anything yet
         const defaultLibrary = [
             { 
                 id: "UnusualGorgeousLyrebirdHumbleLife-C2HYx42HPR_4VNx9", 
                 title: "CodeMiko roasts Ninja's entire career", 
                 url: "https://clips.twitch.tv/UnusualGorgeousLyrebirdHumbleLife-C2HYx42HPR_4VNx9",
-                thumb: "https://clips-media-assets2.twitch.tv/AT-cm%7CUnusualGorgeousLyrebirdHumbleLife-C2HYx42HPR_4VNx9-preview-480x272.jpg",
                 addedBy: "CodeMiko"
             },
             { 
                 id: "HandsomeLongTurtleBibleThump-_NZbuRLN6Fn_i3zt", 
                 title: "Truly, a historic moment", 
                 url: "https://clips.twitch.tv/HandsomeLongTurtleBibleThump-_NZbuRLN6Fn_i3zt",
-                thumb: "https://clips-media-assets2.twitch.tv/AT-cm%7CHandsomeLongTurtleBibleThump-_NZbuRLN6Fn_i3zt-preview-480x272.jpg",
                 addedBy: "CodeMiko"
             }
         ];
 
         document.addEventListener('DOMContentLoaded', () => {
-            // Show splash screen, then load clips (both user-added and defaults)
             setTimeout(() => {
                 loadClips();
                 document.getElementById('splash-screen').style.opacity = '0';
@@ -198,25 +195,18 @@
         });
 
         function loadClips() {
-            // Fetch any clips the user manually added from LocalStorage
             let savedClips = JSON.parse(localStorage.getItem('userClips')) || [];
-            
-            // Combine them: User added clips show up first, followed by the default ones
             let allClips = [...savedClips, ...defaultLibrary];
-            
             renderFeed(allClips);
         }
 
         function renderFeed(clips) {
             const feedContainer = document.getElementById('feed');
-            feedContainer.innerHTML = ''; // Clear feed before rebuilding
+            feedContainer.innerHTML = ''; 
             
             clips.forEach((clip) => {
                 const card = document.createElement('div');
                 card.className = 'card';
-                
-                // Construct the raw MP4 video URL from the thumbnail URL trick
-                const rawMp4Url = clip.thumb.replace('-preview-480x272.jpg', '.mp4');
                 
                 const isLiked = localStorage.getItem(`like_${clip.id}`) === 'true';
                 const baseLikes = Math.floor(Math.random() * 50) + 10; 
@@ -224,9 +214,10 @@
                 const likedClass = isLiked ? 'liked' : '';
                 
                 const hoursAgo = clip.isCustom ? 'Just now' : `${Math.floor(Math.random() * 23) + 1}h ago`;
-                
-                // If it's the default "CodeMiko", show her avatar. Otherwise show a generic icon for user-added clips.
                 const avatarSrc = clip.addedBy === "CodeMiko" ? defaultProfilePic : `https://api.dicebear.com/7.x/avataaars/svg?seed=${clip.addedBy}`;
+
+                // Using the official Twitch iframe to guarantee video playback
+                const embedUrl = `https://clips.twitch.tv/embed?clip=${clip.id}&parent=${parentDomain}&autoplay=false&muted=false`;
 
                 card.innerHTML = `
                     <div class="card-header">
@@ -238,9 +229,8 @@
                         <div class="meta-time">${hoursAgo}</div>
                     </div>
 
-                    <div class="video-container" onclick="togglePlay(this)">
-                        <video src="${rawMp4Url}" poster="${clip.thumb}" loop playsinline preload="metadata"></video>
-                        <div class="play-btn"><span class="material-symbols-rounded">play_arrow</span></div>
+                    <div class="video-container">
+                        <iframe src="${embedUrl}" allowfullscreen="true" scrolling="no"></iframe>
                     </div>
 
                     <div class="card-info">
@@ -266,13 +256,10 @@
             attachLikeListeners();
         }
 
-        // --- ADD CLIP MODAL LOGIC ---
-
         function openModal() {
             const modal = document.getElementById('add-modal');
             const panel = document.getElementById('modal-panel');
             modal.style.display = 'flex';
-            // Slight delay to allow display:flex to apply before animating transform
             setTimeout(() => { panel.style.transform = 'translateY(0)'; }, 10);
         }
 
@@ -281,7 +268,6 @@
             panel.style.transform = 'translateY(100%)';
             setTimeout(() => { document.getElementById('add-modal').style.display = 'none'; }, 300);
             
-            // Clear inputs
             document.getElementById('input-name').value = '';
             document.getElementById('input-url').value = '';
         }
@@ -295,45 +281,26 @@
                 return;
             }
 
-            // Extract the Clip ID from the URL. Example: https://clips.twitch.tv/BumblingScaryPanda-12345
+            // Extract the Clip ID safely
             let clipId = urlInput.split('/').pop().split('?')[0];
 
-            // Build the new custom clip object
             const newClip = {
                 id: clipId,
-                title: "Custom User Clip", // In a real app we'd fetch the title from API, but we fake it here
+                title: "Custom User Clip", 
                 url: urlInput,
-                thumb: `https://clips-media-assets2.twitch.tv/AT-cm%7C${clipId}-preview-480x272.jpg`,
                 addedBy: nameInput,
                 isCustom: true
             };
 
-            // Save to LocalStorage
             let savedClips = JSON.parse(localStorage.getItem('userClips')) || [];
-            savedClips.unshift(newClip); // Add to the very beginning of the array
+            savedClips.unshift(newClip); 
             localStorage.setItem('userClips', JSON.stringify(savedClips));
 
-            // Close modal, reload feed, and scroll to the top to see it
             closeModal();
             loadClips();
             scrollToTop();
             showToast("Clip added successfully!");
         }
-
-        // --- VIDEO PLAYER & UI LOGIC ---
-
-        window.togglePlay = function(container) {
-            const video = container.querySelector('video');
-            const playBtn = container.querySelector('.play-btn');
-            
-            if (video.paused) {
-                video.play();
-                playBtn.style.display = 'none';
-            } else {
-                video.pause();
-                playBtn.style.display = 'flex';
-            }
-        };
 
         function attachLikeListeners() {
             const likeButtons = document.querySelectorAll('.like-btn');
