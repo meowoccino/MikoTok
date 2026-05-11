@@ -3,7 +3,7 @@
   "name": "Mikotok: CodeMiko Clips",
   "icons": [
     {
-      "src": "icon.svg",
+      "src": "https://raw.githubusercontent.com/user123/codemiko-feeds/main/icon.svg", 
       "type": "image/svg+xml",
       "sizes": "512x512"
     }
