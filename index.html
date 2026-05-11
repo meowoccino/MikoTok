@@ -95,22 +95,22 @@
         /* BOTTOM NAVIGATION (5 Items) */
         .bottom-nav {
             position: absolute; bottom: 0; left: 0; width: 100%; background: var(--bg-color); border-top: 1px solid var(--border-color);
-            display: flex; justify-content: space-between; align-items: center; padding: 10px 15px 25px; z-index: 100;
+            display: flex; justify-content: space-between; align-items: center; padding: 10px 10px 25px; z-index: 100;
         }
         .nav-item { display: flex; flex-direction: column; align-items: center; justify-content: center; width: 60px; color: var(--text-muted); font-size: 10px; font-weight: 500; gap: 4px; cursor: pointer; transition: color 0.2s; }
         .nav-item.active { color: var(--primary-light); }
         .nav-item .material-symbols-rounded { font-size: 24px; }
         
-        /* CUSTOM MIKOTOK FAB BUTTON */
+        /* RESTORED MIKOTOK FAB BUTTON (Original 54px size) */
         .nav-fab {
-            width: 50px; height: 50px; border-radius: 16px; 
+            width: 54px; height: 54px; border-radius: 16px; 
             background: linear-gradient(135deg, var(--primary), var(--primary-light));
             display: flex; align-items: center; justify-content: center; color: white; cursor: pointer;
             box-shadow: 0 4px 20px rgba(145, 70, 255, 0.5); transform: translateY(-15px); transition: transform 0.2s;
             border: 2px solid rgba(255,255,255,0.1); flex-shrink: 0; margin: 0 5px;
         }
         .nav-fab:active { transform: translateY(-12px) scale(0.95); }
-        .nav-fab svg { width: 26px; height: 26px; fill: white; }
+        .nav-fab svg { width: 28px; height: 28px; fill: white; }
 
         /* INPUTS & MODALS */
         .post-input-box { width: 100%; background: #1c1c22; border: 1px solid var(--border-color); color: white; padding: 12px 15px; border-radius: 8px; font-size: 14px; outline: none; transition: border-color 0.2s; margin-bottom: 10px; }
@@ -200,7 +200,7 @@
                 <span class="material-symbols-rounded">favorite</span>Favorites
             </div>
             
-            <div class="nav-item" id="nav-login" onclick="showToast('Login coming soon!')">
+            <div class="nav-item" id="nav-login" onclick="showToast('DEEZ NUTS')">
                 <span class="material-symbols-rounded">login</span>Login
             </div>
         </div>
