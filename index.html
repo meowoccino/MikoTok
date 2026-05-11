@@ -15,62 +15,26 @@
         * { box-sizing: border-box; }
         body, html { margin: 0; padding: 0; height: 100%; width: 100%; background: #000; color: white; overflow: hidden; font-family: 'Roboto', sans-serif; }
 
-        /* The TikTok Snap Feed */
-        #feed {
-            height: 100vh; width: 100vw;
-            overflow-y: scroll;
-            scroll-snap-type: y mandatory;
-            scroll-behavior: smooth;
-        }
-
-        .video-card {
-            height: 100vh; width: 100vw;
-            scroll-snap-align: start;
-            position: relative;
-            background: #000;
-            display: flex; align-items: center;
-        }
-
+        #feed { height: 100vh; width: 100vw; overflow-y: scroll; scroll-snap-type: y mandatory; scroll-behavior: smooth; }
+        .video-card { height: 100vh; width: 100vw; scroll-snap-align: start; position: relative; display: flex; align-items: center; }
+        
+        /* Fixed iframe container to ensure Twitch sees the correct size */
+        .iframe-wrapper { width: 100%; height: 100%; position: relative; }
         iframe { width: 100%; height: 100%; border: none; }
 
-        /* M3 Auth Screen */
-        #auth-screen {
-            position: fixed; inset: 0; background: #000;
-            display: flex; flex-direction: column; align-items: center; justify-content: center;
-            z-index: 1000; text-align: center;
-        }
+        #auth-screen { position: fixed; inset: 0; background: #000; display: flex; flex-direction: column; align-items: center; justify-content: center; z-index: 1000; }
+        .login-btn { background: var(--miko-purple); color: white; padding: 16px 32px; border-radius: 100px; font-weight: bold; text-decoration: none; margin-top: 20px; }
 
-        .login-btn {
-            background: var(--miko-purple); color: white;
-            padding: 16px 32px; border-radius: 100px;
-            font-weight: bold; text-decoration: none; font-size: 18px;
-            margin-top: 20px; box-shadow: 0 4px 20px rgba(145,70,255,0.5);
-        }
-
-        /* Overlay Elements */
-        .overlay {
-            position: absolute; inset: 0; pointer-events: none;
-            display: flex; flex-direction: column; justify-content: flex-end;
-            padding: 30px 20px; background: linear-gradient(0deg, rgba(0,0,0,0.8) 0%, transparent 40%);
-        }
-
-        .sidebar {
-            position: absolute; right: 15px; bottom: 120px;
-            display: flex; flex-direction: column; gap: 24px; pointer-events: auto;
-        }
-
+        .overlay { position: absolute; inset: 0; pointer-events: none; display: flex; flex-direction: column; justify-content: flex-end; padding: 30px 20px; background: linear-gradient(0deg, rgba(0,0,0,0.8) 0%, transparent 40%); z-index: 5; }
+        .sidebar { position: absolute; right: 15px; bottom: 120px; display: flex; flex-direction: column; gap: 24px; pointer-events: auto; }
         .btn { color: white; text-align: center; }
-        .btn span { font-size: 38px; display: block; margin-bottom: 4px; }
-
-        .info { margin-bottom: 10px; }
-        .channel { font-weight: bold; font-size: 18px; }
+        .btn span { font-size: 38px; display: block; }
     </style>
 </head>
 <body>
 
     <div id="auth-screen" style="display: none;">
-        <h1 style="color:var(--miko-purple); font-size: 40px;">Mikotok</h1>
-        <p style="opacity:0.6;">Auto-updates clips from CodeMiko</p>
+        <h1 style="color:var(--miko-purple);">Mikotok</h1>
         <a id="login-url" href="#" class="login-btn">Login with Twitch</a>
     </div>
 
@@ -79,36 +43,32 @@
     <script>
         const CLIENT_ID = '3jj626mx59nwnepdlw2ezlwupu5yzt';
         const MIKO_ID = '117181054';
+
+        // 1. IMPROVED DOMAIN DETECTION
+        // We need the raw domain (e.g., user.github.io)
         const domain = window.location.hostname;
         const redirectUri = window.location.origin + window.location.pathname;
 
-        // 1. Check for token in the URL after Login
         const params = new URLSearchParams(window.location.hash.substring(1));
         const token = params.get('access_token');
 
         if (!token) {
-            // SHOW LOGIN SCREEN
             document.getElementById('auth-screen').style.display = 'flex';
             document.getElementById('login-url').href = `https://id.twitch.tv/oauth2/authorize?client_id=${CLIENT_ID}&redirect_uri=${encodeURIComponent(redirectUri)}&response_type=token&scope=`;
         } else {
-            // LOGGED IN: Clear the hash from the URL for a clean look
             window.history.replaceState({}, document.title, window.location.pathname);
             loadLiveClips(token);
         }
 
         async function loadLiveClips(accessToken) {
             try {
-                // Fetch the 20 most recent clips automatically
                 const response = await fetch(`https://api.twitch.tv/helix/clips?broadcaster_id=${MIKO_ID}&first=20`, {
-                    headers: {
-                        'Client-ID': CLIENT_ID,
-                        'Authorization': `Bearer ${accessToken}`
-                    }
+                    headers: { 'Client-ID': CLIENT_ID, 'Authorization': `Bearer ${accessToken}` }
                 });
                 const result = await response.json();
                 renderFeed(result.data);
             } catch (err) {
-                document.body.innerHTML = "<h2 style='color:white; text-align:center; padding-top:50px;'>Error loading clips. Please refresh.</h2>";
+                console.error(err);
             }
         }
 
@@ -119,18 +79,22 @@
                 const card = document.createElement('div');
                 card.className = 'video-card';
                 
-                // Construct Twitch Player URL
-                const playerUrl = `https://clips.twitch.tv/embed?clip=${clip.id}&parent=${domain}&autoplay=${index === 0}&muted=false`;
+                // 2. THE EMBED FIX
+                // - parent MUST be the domain
+                // - muted MUST be true for autoplay to work on mobile
+                const playerUrl = `https://clips.twitch.tv/embed?clip=${clip.id}&parent=${domain}&autoplay=true&muted=true`;
 
                 card.innerHTML = `
-                    <iframe src="${playerUrl}" allowfullscreen="true"></iframe>
+                    <div class="iframe-wrapper">
+                        <iframe src="${playerUrl}" allowfullscreen="true" scrolling="no"></iframe>
+                    </div>
                     <div class="overlay">
                         <div class="sidebar">
                             <div class="btn"><span class="material-symbols-rounded" style="color:var(--tiktok-red)">favorite</span>${Math.round(clip.view_count/1000)}K</div>
                             <div class="btn"><span class="material-symbols-rounded">share</span></div>
                         </div>
                         <div class="info">
-                            <div class="channel">@CodeMiko</div>
+                            <div style="font-weight:bold;">@CodeMiko</div>
                             <div style="font-size:14px; opacity:0.8;">${clip.title}</div>
                         </div>
                     </div>
