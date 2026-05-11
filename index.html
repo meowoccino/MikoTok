@@ -58,6 +58,15 @@
         #feed { height: 100%; width: 100%; overflow-y: auto; padding: 110px 15px 90px; }
         #feed::-webkit-scrollbar { display: none; }
 
+        /* EMPTY STATE */
+        .empty-state {
+            display: flex; flex-direction: column; align-items: center; justify-content: center;
+            height: 60vh; text-align: center; color: var(--text-muted); padding: 0 30px;
+        }
+        .empty-state .material-symbols-rounded { font-size: 64px; color: #222; margin-bottom: 15px; }
+        .empty-state h2 { font-size: 18px; color: white; margin: 0 0 8px 0; }
+        .empty-state p { font-size: 14px; margin: 0; line-height: 1.5; }
+
         /* CARD STYLING */
         .card { background: var(--card-bg); border-radius: 16px; padding: 15px; margin-bottom: 20px; box-shadow: 0 4px 15px rgba(0,0,0,0.2); border: 1px solid rgba(255,255,255,0.03); }
         .card-header { display: flex; align-items: center; margin-bottom: 12px; }
@@ -136,6 +145,7 @@
         </div>
 
         <div id="toast"></div>
+        
         <div id="feed"></div>
 
         <div id="add-modal">
@@ -144,7 +154,12 @@
                 
                 <div class="input-group">
                     <label>Added by (Your Name)</label>
-                    <input type="text" id="input-name" placeholder="e.g. Viewer123" autocomplete="off">
+                    <input type="text" id="input-name" placeholder="e.g. Kitsu" autocomplete="off">
+                </div>
+
+                <div class="input-group">
+                    <label>Clip Title</label>
+                    <input type="text" id="input-title" placeholder="e.g. Insane 1v3 Clutch!" autocomplete="off">
                 </div>
                 
                 <div class="input-group">
@@ -167,24 +182,12 @@
     </div>
 
     <script>
-        const defaultProfilePic = 'https://static-cdn.jtvnw.net/jtv_user_pictures/210bde48-7cc7-44f2-a279-dcd541dd4ee1-profile_image-70x70.png';
-        // Twitch requires the exact domain in the iframe parameter. If you are testing locally, this falls back to localhost.
+        // Use the domain the user is currently on for the iframe embed logic
         const parentDomain = window.location.hostname || 'localhost';
 
-        const defaultLibrary = [
-            { 
-                id: "UnusualGorgeousLyrebirdHumbleLife-C2HYx42HPR_4VNx9", 
-                title: "CodeMiko roasts Ninja's entire career", 
-                url: "https://clips.twitch.tv/UnusualGorgeousLyrebirdHumbleLife-C2HYx42HPR_4VNx9",
-                addedBy: "CodeMiko"
-            },
-            { 
-                id: "HandsomeLongTurtleBibleThump-_NZbuRLN6Fn_i3zt", 
-                title: "Truly, a historic moment", 
-                url: "https://clips.twitch.tv/HandsomeLongTurtleBibleThump-_NZbuRLN6Fn_i3zt",
-                addedBy: "CodeMiko"
-            }
-        ];
+        // NEW STORAGE KEY: This completely wipes old memory and starts fresh!
+        const STORAGE_KEY = 'mikoTok_clips_v2';
+        const LIKES_KEY_PREFIX = 'like_v2_';
 
         document.addEventListener('DOMContentLoaded', () => {
             setTimeout(() => {
@@ -195,28 +198,40 @@
         });
 
         function loadClips() {
-            let savedClips = JSON.parse(localStorage.getItem('userClips')) || [];
-            let allClips = [...savedClips, ...defaultLibrary];
-            renderFeed(allClips);
+            // Only load what the user adds, no defaults!
+            let savedClips = JSON.parse(localStorage.getItem(STORAGE_KEY)) || [];
+            renderFeed(savedClips);
         }
 
         function renderFeed(clips) {
             const feedContainer = document.getElementById('feed');
             feedContainer.innerHTML = ''; 
             
+            // Show an Empty State message if there are no clips
+            if (clips.length === 0) {
+                feedContainer.innerHTML = `
+                    <div class="empty-state">
+                        <span class="material-symbols-rounded">videocam_off</span>
+                        <h2>No clips yet!</h2>
+                        <p>Your feed is looking a little empty. Tap the purple + button below to add your first Twitch clip.</p>
+                    </div>
+                `;
+                return;
+            }
+            
             clips.forEach((clip) => {
                 const card = document.createElement('div');
                 card.className = 'card';
                 
-                const isLiked = localStorage.getItem(`like_${clip.id}`) === 'true';
-                const baseLikes = Math.floor(Math.random() * 50) + 10; 
-                const displayLikes = isLiked ? baseLikes + 1 : baseLikes;
+                // Likes start exactly at 0 now
+                const isLiked = localStorage.getItem(`${LIKES_KEY_PREFIX}${clip.id}`) === 'true';
+                const displayLikes = isLiked ? 1 : 0;
                 const likedClass = isLiked ? 'liked' : '';
                 
-                const hoursAgo = clip.isCustom ? 'Just now' : `${Math.floor(Math.random() * 23) + 1}h ago`;
-                const avatarSrc = clip.addedBy === "CodeMiko" ? defaultProfilePic : `https://api.dicebear.com/7.x/avataaars/svg?seed=${clip.addedBy}`;
+                // Use a generated avatar based on the name they typed
+                const avatarSrc = `https://api.dicebear.com/7.x/avataaars/svg?seed=${clip.addedBy}`;
 
-                // Using the official Twitch iframe to guarantee video playback
+                // The official Twitch player iframe
                 const embedUrl = `https://clips.twitch.tv/embed?clip=${clip.id}&parent=${parentDomain}&autoplay=false&muted=false`;
 
                 card.innerHTML = `
@@ -226,7 +241,7 @@
                             <div class="meta-added">Added by</div>
                             <div class="meta-name">${clip.addedBy}</div>
                         </div>
-                        <div class="meta-time">${hoursAgo}</div>
+                        <div class="meta-time">Just now</div>
                     </div>
 
                     <div class="video-container">
@@ -241,9 +256,9 @@
                     </div>
 
                     <div class="card-actions">
-                        <div class="action-item like-btn ${likedClass}" data-id="${clip.id}" data-base="${baseLikes}">
+                        <div class="action-item like-btn ${likedClass}" data-id="${clip.id}">
                             <span class="material-symbols-rounded">favorite</span>
-                            <span class="like-count">${displayLikes}k</span>
+                            <span class="like-count">${displayLikes}</span>
                         </div>
                         <div class="action-item" onclick="shareClip('${clip.url}')">
                             <span class="material-symbols-rounded">share</span> Share
@@ -255,6 +270,8 @@
 
             attachLikeListeners();
         }
+
+        // --- ADD CLIP MODAL ---
 
         function openModal() {
             const modal = document.getElementById('add-modal');
@@ -268,12 +285,15 @@
             panel.style.transform = 'translateY(100%)';
             setTimeout(() => { document.getElementById('add-modal').style.display = 'none'; }, 300);
             
+            // Clear all inputs
             document.getElementById('input-name').value = '';
+            document.getElementById('input-title').value = '';
             document.getElementById('input-url').value = '';
         }
 
         function submitClip() {
             const nameInput = document.getElementById('input-name').value.trim() || 'Anonymous';
+            const titleInput = document.getElementById('input-title').value.trim() || `${nameInput}'s Clip`;
             const urlInput = document.getElementById('input-url').value.trim();
 
             if (!urlInput.includes('twitch.tv')) {
@@ -286,38 +306,39 @@
 
             const newClip = {
                 id: clipId,
-                title: "Custom User Clip", 
+                title: titleInput, 
                 url: urlInput,
-                addedBy: nameInput,
-                isCustom: true
+                addedBy: nameInput
             };
 
-            let savedClips = JSON.parse(localStorage.getItem('userClips')) || [];
-            savedClips.unshift(newClip); 
-            localStorage.setItem('userClips', JSON.stringify(savedClips));
+            let savedClips = JSON.parse(localStorage.getItem(STORAGE_KEY)) || [];
+            savedClips.unshift(newClip); // Add to the top of the feed
+            localStorage.setItem(STORAGE_KEY, JSON.stringify(savedClips));
 
             closeModal();
-            loadClips();
+            loadClips(); // Refresh the feed immediately
             scrollToTop();
             showToast("Clip added successfully!");
         }
+
+        // --- BUTTON LOGIC ---
 
         function attachLikeListeners() {
             const likeButtons = document.querySelectorAll('.like-btn');
             likeButtons.forEach(btn => {
                 btn.addEventListener('click', function() {
                     const clipId = this.getAttribute('data-id');
-                    const baseLikes = parseInt(this.getAttribute('data-base'));
                     const countText = this.querySelector('.like-count');
 
+                    // It's a binary 0 or 1 now
                     if (this.classList.contains('liked')) {
                         this.classList.remove('liked');
-                        localStorage.setItem(`like_${clipId}`, 'false');
-                        countText.innerText = baseLikes + 'k';
+                        localStorage.setItem(`${LIKES_KEY_PREFIX}${clipId}`, 'false');
+                        countText.innerText = '0';
                     } else {
                         this.classList.add('liked');
-                        localStorage.setItem(`like_${clipId}`, 'true');
-                        countText.innerText = (baseLikes + 1) + 'k';
+                        localStorage.setItem(`${LIKES_KEY_PREFIX}${clipId}`, 'true');
+                        countText.innerText = '1';
                     }
                 });
             });
