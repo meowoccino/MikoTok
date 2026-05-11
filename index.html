@@ -1,213 +1,415 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <meta name="mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <title>CodeMiko Clips</title>
-    
-    <link rel="manifest" href="manifest.json">
-    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@24,400,1,0" rel="stylesheet">
-    
-    <style>
-        :root { --twitch-purple: #9146FF; }
-        * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
-        body, html { margin: 0; padding: 0; height: 100%; width: 100%; background: #000; color: white; overflow: hidden; font-family: 'Roboto', sans-serif; }
+<meta charset="UTF-8" />
+<meta
+  name="viewport"
+  content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"
+/>
 
-        .header {
-            position: absolute; top: 0; left: 0; width: 100%; padding: 50px 20px 15px;
-            background: linear-gradient(180deg, rgba(0,0,0,0.8) 0%, transparent 100%);
-            font-weight: bold; font-size: 20px; z-index: 20; text-align: center;
-            letter-spacing: 1px; color: var(--twitch-purple); pointer-events: none;
-        }
+<title>MikoTok</title>
 
-        #feed { height: 100vh; width: 100vw; overflow-y: scroll; scroll-snap-type: y mandatory; scroll-behavior: smooth; }
-        .video-card { height: 100vh; width: 100vw; scroll-snap-align: start; position: relative; display: flex; align-items: center; background: #000; }
-        
-        /* Native Video Styling */
-        video { width: 100%; height: 100%; object-fit: contain; z-index: 1; }
+<link
+  href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@24,400,1,0"
+  rel="stylesheet"
+/>
 
-        #auth-screen { position: fixed; inset: 0; background: #000; display: flex; flex-direction: column; align-items: center; justify-content: center; z-index: 1000; text-align: center; }
-        .login-btn { background: var(--twitch-purple); color: white; padding: 16px 32px; border-radius: 8px; font-weight: bold; text-decoration: none; margin-top: 20px; text-transform: uppercase; letter-spacing: 1px; }
+<style>
+:root{
+  --purple:#9146FF;
+}
 
-        .overlay { position: absolute; inset: 0; pointer-events: none; display: flex; flex-direction: column; justify-content: flex-end; padding: 30px 20px; background: linear-gradient(0deg, rgba(0,0,0,0.9) 0%, transparent 40%); z-index: 5; }
-        .sidebar { position: absolute; right: 15px; bottom: 120px; display: flex; flex-direction: column; gap: 30px; pointer-events: auto; }
-        
-        .btn { color: white; text-align: center; cursor: pointer; transition: transform 0.2s; }
-        .btn:active { transform: scale(0.8); }
-        .btn span.icon { font-size: 38px; display: block; margin-bottom: 5px; transition: color 0.3s; }
-        .btn span.text { font-size: 13px; font-weight: bold; text-shadow: 1px 1px 2px black; }
-        .liked .icon { color: var(--twitch-purple) !important; font-variation-settings: 'FILL' 1; }
+*{
+  margin:0;
+  padding:0;
+  box-sizing:border-box;
+  -webkit-tap-highlight-color:transparent;
+}
 
-        .muted-indicator { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); font-size: 80px; color: rgba(255,255,255,0.7); z-index: 10; pointer-events: none; text-shadow: 0 4px 10px rgba(0,0,0,0.5); display: none; }
-        #toast { position: fixed; top: 100px; left: 50%; transform: translateX(-50%); background: var(--twitch-purple); color: white; padding: 10px 20px; border-radius: 8px; font-weight: bold; font-size: 14px; z-index: 9999; display: none; box-shadow: 0 4px 10px rgba(0,0,0,0.5); }
-    </style>
+html,body{
+  width:100%;
+  height:100%;
+  overflow:hidden;
+  background:#000;
+  font-family:Roboto,sans-serif;
+  color:white;
+}
+
+#feed{
+  width:100vw;
+  height:100vh;
+  overflow-y:scroll;
+  scroll-snap-type:y mandatory;
+  scroll-behavior:smooth;
+}
+
+.video-card{
+  width:100vw;
+  height:100vh;
+  position:relative;
+  scroll-snap-align:start;
+  background:#000;
+  overflow:hidden;
+}
+
+iframe{
+  width:100%;
+  height:100%;
+  border:none;
+}
+
+.overlay{
+  position:absolute;
+  inset:0;
+  display:flex;
+  flex-direction:column;
+  justify-content:flex-end;
+  padding:20px;
+  pointer-events:none;
+  background:linear-gradient(
+    0deg,
+    rgba(0,0,0,.8) 0%,
+    rgba(0,0,0,.2) 30%,
+    transparent 60%
+  );
+}
+
+.top-title{
+  position:fixed;
+  top:0;
+  left:0;
+  width:100%;
+  z-index:999;
+  padding:50px 20px 20px;
+  text-align:center;
+  font-size:22px;
+  font-weight:700;
+  letter-spacing:1px;
+  color:var(--purple);
+  background:linear-gradient(
+    180deg,
+    rgba(0,0,0,.8),
+    transparent
+  );
+  pointer-events:none;
+}
+
+.sidebar{
+  position:absolute;
+  right:15px;
+  bottom:120px;
+  display:flex;
+  flex-direction:column;
+  gap:24px;
+  pointer-events:auto;
+}
+
+.btn{
+  text-align:center;
+  cursor:pointer;
+}
+
+.icon{
+  font-size:38px;
+  display:block;
+}
+
+.text{
+  font-size:13px;
+  font-weight:bold;
+}
+
+.like-btn.liked .icon{
+  color:var(--purple);
+  font-variation-settings:'FILL' 1;
+}
+
+.username{
+  font-weight:700;
+  font-size:18px;
+}
+
+.clip-title{
+  margin-top:6px;
+  font-size:14px;
+  opacity:.92;
+  max-width:85%;
+}
+
+.loading{
+  position:fixed;
+  inset:0;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  z-index:5000;
+  background:#000;
+  font-size:18px;
+}
+
+.toast{
+  position:fixed;
+  top:100px;
+  left:50%;
+  transform:translateX(-50%);
+  background:var(--purple);
+  padding:12px 18px;
+  border-radius:10px;
+  font-weight:700;
+  z-index:9999;
+  display:none;
+}
+
+.error{
+  position:fixed;
+  inset:0;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  text-align:center;
+  padding:30px;
+  background:#000;
+  z-index:9999;
+  line-height:1.6;
+}
+</style>
 </head>
+
 <body>
 
-    <div class="header">CodeMiko Clips</div>
+<div class="top-title">MikoTok</div>
 
-    <div id="auth-screen" style="display: none;">
-        <h1 style="color:var(--twitch-purple);">Clips Player</h1>
-        <a id="login-url" href="#" class="login-btn">Connect Twitch</a>
-    </div>
+<div class="loading" id="loading">
+Loading clips...
+</div>
 
-    <div id="toast"></div>
-    <div id="feed"></div>
+<div class="toast" id="toast"></div>
 
-    <script>
-        const CLIENT_ID = '3jj626mx59nwnepdlw2ezlwupu5yzt';
-        
-        // Let's use the ID we know fetches her clips via API
-        const MIKO_ID = '117181054'; 
-        
-        let redirectUri = window.location.origin + window.location.pathname;
+<div id="feed"></div>
 
-        const params = new URLSearchParams(window.location.hash.substring(1));
-        const token = params.get('access_token');
+<script>
+/*
+========================================
+IMPORTANT
+========================================
 
-        if (!token) {
-            document.getElementById('auth-screen').style.display = 'flex';
-            document.getElementById('login-url').href = `https://id.twitch.tv/oauth2/authorize?client_id=${CLIENT_ID}&redirect_uri=${encodeURIComponent(redirectUri)}&response_type=token&scope=`;
-        } else {
-            window.history.replaceState({}, document.title, window.location.pathname);
-            loadLiveClips(token);
-        }
+You NEED a backend endpoint.
 
-        async function loadLiveClips(accessToken) {
-            try {
-                const response = await fetch(`https://api.twitch.tv/helix/clips?broadcaster_id=${MIKO_ID}&first=20`, {
-                    headers: { 'Client-ID': CLIENT_ID, 'Authorization': `Bearer ${accessToken}`, 'Accept-Language': 'en-US' }
-                });
-                
-                const result = await response.json();
+Because Twitch API requires a token.
 
-                if (result.data && result.data.length > 0) {
-                    renderFeed(result.data);
-                } else {
-                    showToast("No clips returned from Twitch API.");
-                }
-            } catch (err) {
-                showToast("Network error fetching API.");
-            }
-        }
+Simplest option:
+- Cloudflare Worker
+- Netlify Function
+- Vercel Function
 
-        function renderFeed(clips) {
-            const feedContainer = document.getElementById('feed');
-            
-            clips.forEach((clip, index) => {
-                const card = document.createElement('div');
-                card.className = 'video-card';
-                
-                // THE HACK: Convert thumbnail URL to direct MP4 URL
-                // Example: https://clips-media-assets2.twitch.tv/AT-cm|123-preview-480x272.jpg -> .mp4
-                const rawMp4Url = clip.thumbnail_url.replace(/-preview-.*\.jpg/, '.mp4');
-                
-                const isLiked = localStorage.getItem(`like_${clip.id}`) === 'true';
-                const baseLikes = Math.round(clip.view_count / 1000) || 1;
-                const displayLikes = isLiked ? baseLikes + 1 : baseLikes;
-                const likedClass = isLiked ? 'liked' : '';
+This frontend expects:
+GET /api/clips
 
-                // We use native <video> instead of <iframe>
-                card.innerHTML = `
-                    <div class="muted-indicator material-symbols-rounded" id="mute-${clip.id}">volume_off</div>
-                    
-                    <video id="vid-${clip.id}" src="${rawMp4Url}" loop playsinline ${index === 0 ? 'autoplay muted' : ''} poster="${clip.thumbnail_url}"></video>
-                    
-                    <div class="overlay" onclick="toggleMute('vid-${clip.id}', 'mute-${clip.id}')" style="pointer-events: auto; background: linear-gradient(0deg, rgba(0,0,0,0.8) 0%, transparent 20%);">
-                        <div class="sidebar" onclick="event.stopPropagation()">
-                            <div class="btn like-btn ${likedClass}" data-id="${clip.id}" data-base="${baseLikes}">
-                                <span class="icon material-symbols-rounded">favorite</span>
-                                <span class="text like-count">${displayLikes}K</span>
-                            </div>
-                            <div class="btn" onclick="shareClip('${clip.url}')">
-                                <span class="icon material-symbols-rounded">share</span>
-                                <span class="text">Share</span>
-                            </div>
-                        </div>
-                        <div style="font-weight:bold; font-size:18px; pointer-events:none;">@CodeMiko</div>
-                        <div style="font-size:14px; opacity:0.9; margin-top:4px; pointer-events:none;">${clip.title}</div>
-                    </div>`;
-                feedContainer.appendChild(card);
+Returning:
+[
+  {
+    id,
+    url,
+    embed_url,
+    title,
+    creator_name,
+    view_count,
+    thumbnail_url
+  }
+]
+
+========================================
+*/
+
+const feed = document.getElementById("feed");
+const loading = document.getElementById("loading");
+
+async function loadClips() {
+
+  try {
+
+    // CHANGE THIS
+    const response = await fetch("./clips.json");
+
+    if(!response.ok){
+      throw new Error("Failed to fetch clips");
+    }
+
+    const clips = await response.json();
+
+    renderClips(clips);
+
+    loading.style.display = "none";
+
+  } catch(err){
+
+    console.error(err);
+
+    loading.innerHTML = `
+      Failed loading clips.<br><br>
+      Your backend/api is probably dead.<br>
+      Modern web development. A carnival of misery.
+    `;
+  }
+}
+
+function renderClips(clips){
+
+  const parentDomain = window.location.hostname;
+
+  clips.forEach((clip,index)=>{
+
+    const card = document.createElement("div");
+    card.className = "video-card";
+
+    const liked =
+      localStorage.getItem("liked_" + clip.id) === "true";
+
+    const likes =
+      formatViews(clip.view_count);
+
+    card.innerHTML = `
+
+      <iframe
+        src="https://clips.twitch.tv/embed?clip=${clip.id}&parent=${parentDomain}&autoplay=true"
+        allowfullscreen="true">
+      </iframe>
+
+      <div class="overlay">
+
+        <div class="sidebar">
+
+          <div class="btn like-btn ${liked ? "liked" : ""}"
+            data-id="${clip.id}">
+
+            <span class="icon material-symbols-rounded">
+              favorite
+            </span>
+
+            <span class="text">${likes}</span>
+
+          </div>
+
+          <div class="btn share-btn"
+            data-url="${clip.url}">
+
+            <span class="icon material-symbols-rounded">
+              share
+            </span>
+
+            <span class="text">
+              Share
+            </span>
+
+          </div>
+
+        </div>
+
+        <div class="username">
+          @CodeMiko
+        </div>
+
+        <div class="clip-title">
+          ${escapeHtml(clip.title)}
+        </div>
+
+      </div>
+    `;
+
+    feed.appendChild(card);
+  });
+
+  setupLikes();
+  setupShares();
+}
+
+function setupLikes(){
+
+  document.querySelectorAll(".like-btn")
+    .forEach(btn=>{
+
+      btn.addEventListener("click",()=>{
+
+        const id = btn.dataset.id;
+
+        btn.classList.toggle("liked");
+
+        localStorage.setItem(
+          "liked_" + id,
+          btn.classList.contains("liked")
+        );
+      });
+    });
+}
+
+function setupShares(){
+
+  document.querySelectorAll(".share-btn")
+    .forEach(btn=>{
+
+      btn.addEventListener("click", async ()=>{
+
+        const url = btn.dataset.url;
+
+        try{
+
+          if(navigator.share){
+
+            await navigator.share({
+              title:"MikoTok",
+              url
             });
 
-            attachLikeListeners();
-            setupIntersectionObserver();
-        }
+          } else {
 
-        // Play/Pause logic for swiping
-        function setupIntersectionObserver() {
-            const videos = document.querySelectorAll('video');
-            const observer = new IntersectionObserver((entries) => {
-                entries.forEach(entry => {
-                    if (entry.isIntersecting) {
-                        entry.target.play().catch(e => console.log("Autoplay blocked, waiting for user tap."));
-                    } else {
-                        entry.target.pause();
-                        entry.target.currentTime = 0; // Reset video when swiped away
-                    }
-                });
-            }, { threshold: 0.7 });
+            await navigator.clipboard.writeText(url);
 
-            videos.forEach(video => observer.observe(video));
-        }
+            showToast("Copied link");
+          }
 
-        // Tap video to toggle sound
-        window.toggleMute = function(videoId, iconId) {
-            const video = document.getElementById(videoId);
-            const icon = document.getElementById(iconId);
-            video.muted = !video.muted;
-            
-            if (video.muted) {
-                icon.innerText = 'volume_off';
-                icon.style.display = 'block';
-                setTimeout(() => icon.style.display = 'none', 1000);
-            } else {
-                icon.innerText = 'volume_up';
-                icon.style.display = 'block';
-                setTimeout(() => icon.style.display = 'none', 1000);
-            }
-        };
+        } catch(e){}
+      });
+    });
+}
 
-        function attachLikeListeners() {
-            const likeButtons = document.querySelectorAll('.like-btn');
-            likeButtons.forEach(btn => {
-                btn.addEventListener('click', function() {
-                    const clipId = this.getAttribute('data-id');
-                    const baseLikes = parseInt(this.getAttribute('data-base'));
-                    const countText = this.querySelector('.like-count');
+function formatViews(v){
 
-                    if (this.classList.contains('liked')) {
-                        this.classList.remove('liked');
-                        localStorage.setItem(`like_${clipId}`, 'false');
-                        countText.innerText = `${baseLikes}K`;
-                    } else {
-                        this.classList.add('liked');
-                        localStorage.setItem(`like_${clipId}`, 'true');
-                        countText.innerText = `${baseLikes + 1}K`;
-                        this.style.transform = 'scale(1.2)';
-                        setTimeout(() => this.style.transform = 'scale(1)', 150);
-                    }
-                });
-            });
-        }
+  if(v >= 1000000){
+    return (v/1000000).toFixed(1)+"M";
+  }
 
-        function shareClip(url) {
-            if (navigator.share) {
-                navigator.share({ title: 'CodeMiko Clip', url: url });
-            } else {
-                navigator.clipboard.writeText(url);
-                showToast("Link copied to clipboard!");
-            }
-        }
+  if(v >= 1000){
+    return (v/1000).toFixed(1)+"K";
+  }
 
-        function showToast(msg) {
-            const toast = document.getElementById('toast');
-            toast.innerText = msg;
-            toast.style.display = 'block';
-            setTimeout(() => toast.style.display = 'none', 3000);
-        }
-    </script>
+  return v;
+}
+
+function showToast(msg){
+
+  const toast =
+    document.getElementById("toast");
+
+  toast.innerText = msg;
+
+  toast.style.display = "block";
+
+  setTimeout(()=>{
+    toast.style.display = "none";
+  },2000);
+}
+
+function escapeHtml(text){
+
+  const div = document.createElement("div");
+
+  div.innerText = text;
+
+  return div.innerHTML;
+}
+
+loadClips();
+</script>
+
 </body>
 </html>
