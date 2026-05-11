@@ -36,23 +36,26 @@
             background: var(--bg-color); overflow: hidden; box-shadow: 0 0 20px rgba(0,0,0,0.8);
         }
 
-        /* SPLASH SCREEN - All White Logo */
+        /* SPLASH SCREEN & LOGO COLORS */
         #splash-screen {
             position: absolute; inset: 0; background: #0b0b0e; 
             display: flex; flex-direction: column; align-items: center; justify-content: center; 
             z-index: 2000; transition: opacity 0.5s ease;
         }
-        .logo-text { font-size: 42px; font-weight: 700; letter-spacing: -1px; color: white; }
+        .logo-text { font-size: 42px; font-weight: 700; letter-spacing: -1px; }
+        .header-logo { font-size: 24px; font-weight: 700; letter-spacing: -0.5px; }
+        .logo-miko { color: white; }
+        .logo-tok { color: var(--primary-light); }
+        
         .progress-bar { width: 150px; height: 4px; background: #222; border-radius: 4px; margin-top: 40px; overflow: hidden; position: relative; }
         .progress-fill { position: absolute; left: 0; top: 0; height: 100%; width: 50%; background: var(--primary); border-radius: 4px; animation: load 1.5s infinite ease-in-out; }
         @keyframes load { 0% { left: -50%; } 100% { left: 100%; } }
 
-        /* TOP APP BAR - All White Logo */
+        /* TOP APP BAR */
         .app-header {
             position: absolute; top: 0; left: 0; width: 100%; background: var(--bg-color); z-index: 100;
             padding: 45px 20px 15px; display: flex; justify-content: center; align-items: center; border-bottom: 1px solid var(--border-color);
         }
-        .header-logo { font-size: 24px; font-weight: 700; letter-spacing: -0.5px; color: white; }
 
         /* MAIN FEED */
         #feed { height: 100%; width: 100%; overflow-y: auto; padding: 110px 15px 90px; }
@@ -156,12 +159,12 @@
 
     <div id="app-container">
         <div id="splash-screen">
-            <div class="logo-text">MikoTok</div>
+            <div class="logo-text"><span class="logo-miko">Miko</span><span class="logo-tok">Tok</span></div>
             <div class="progress-bar"><div class="progress-fill"></div></div>
         </div>
 
         <div class="app-header">
-            <div class="header-logo">MikoTok</div>
+            <div class="header-logo"><span class="logo-miko">Miko</span><span class="logo-tok">Tok</span></div>
         </div>
 
         <div id="toast"></div>
