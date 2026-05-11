@@ -17,31 +17,30 @@
 
         .header {
             position: absolute; top: 0; left: 0; width: 100%; padding: 50px 20px 15px;
-            background: linear-gradient(180deg, rgba(0,0,0,0.9) 0%, transparent 100%);
+            background: linear-gradient(180deg, rgba(0,0,0,0.8) 0%, transparent 100%);
             font-weight: bold; font-size: 20px; z-index: 20; text-align: center;
             letter-spacing: 1px; color: var(--twitch-purple); pointer-events: none;
         }
 
         #feed { height: 100vh; width: 100vw; overflow-y: scroll; scroll-snap-type: y mandatory; scroll-behavior: smooth; }
-        .video-card { height: 100vh; width: 100vw; scroll-snap-align: start; position: relative; display: flex; align-items: center; }
-        .iframe-wrapper { width: 100%; height: 100%; position: relative; pointer-events: auto; }
-        iframe { width: 100%; height: 100%; border: none; }
+        .video-card { height: 100vh; width: 100vw; scroll-snap-align: start; position: relative; display: flex; align-items: center; background: #000; }
+        
+        /* Native Video Styling */
+        video { width: 100%; height: 100%; object-fit: contain; z-index: 1; }
 
         #auth-screen { position: fixed; inset: 0; background: #000; display: flex; flex-direction: column; align-items: center; justify-content: center; z-index: 1000; text-align: center; }
         .login-btn { background: var(--twitch-purple); color: white; padding: 16px 32px; border-radius: 8px; font-weight: bold; text-decoration: none; margin-top: 20px; text-transform: uppercase; letter-spacing: 1px; }
 
         .overlay { position: absolute; inset: 0; pointer-events: none; display: flex; flex-direction: column; justify-content: flex-end; padding: 30px 20px; background: linear-gradient(0deg, rgba(0,0,0,0.9) 0%, transparent 40%); z-index: 5; }
-        
         .sidebar { position: absolute; right: 15px; bottom: 120px; display: flex; flex-direction: column; gap: 30px; pointer-events: auto; }
         
         .btn { color: white; text-align: center; cursor: pointer; transition: transform 0.2s; }
         .btn:active { transform: scale(0.8); }
         .btn span.icon { font-size: 38px; display: block; margin-bottom: 5px; transition: color 0.3s; }
-        .btn span.text { font-size: 13px; font-weight: bold; }
-        
+        .btn span.text { font-size: 13px; font-weight: bold; text-shadow: 1px 1px 2px black; }
         .liked .icon { color: var(--twitch-purple) !important; font-variation-settings: 'FILL' 1; }
 
-        .muted-indicator { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); font-size: 80px; color: rgba(255,255,255,0.7); z-index: 10; pointer-events: none; text-shadow: 0 4px 10px rgba(0,0,0,0.5); }
+        .muted-indicator { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); font-size: 80px; color: rgba(255,255,255,0.7); z-index: 10; pointer-events: none; text-shadow: 0 4px 10px rgba(0,0,0,0.5); display: none; }
         #toast { position: fixed; top: 100px; left: 50%; transform: translateX(-50%); background: var(--twitch-purple); color: white; padding: 10px 20px; border-radius: 8px; font-weight: bold; font-size: 14px; z-index: 9999; display: none; box-shadow: 0 4px 10px rgba(0,0,0,0.5); }
     </style>
 </head>
@@ -60,10 +59,9 @@
     <script>
         const CLIENT_ID = '3jj626mx59nwnepdlw2ezlwupu5yzt';
         
-        // FIXED: This is CodeMiko's actual Twitch Broadcaster ID
-        const MIKO_ID = '500128827'; 
+        // Let's use the ID we know fetches her clips via API
+        const MIKO_ID = '117181054'; 
         
-        const domain = window.location.hostname;
         let redirectUri = window.location.origin + window.location.pathname;
 
         const params = new URLSearchParams(window.location.hash.substring(1));
@@ -79,7 +77,6 @@
 
         async function loadLiveClips(accessToken) {
             try {
-                // Now fetching the actual live clips from her channel
                 const response = await fetch(`https://api.twitch.tv/helix/clips?broadcaster_id=${MIKO_ID}&first=20`, {
                     headers: { 'Client-ID': CLIENT_ID, 'Authorization': `Bearer ${accessToken}`, 'Accept-Language': 'en-US' }
                 });
@@ -89,24 +86,11 @@
                 if (result.data && result.data.length > 0) {
                     renderFeed(result.data);
                 } else {
-                    loadFallback();
+                    showToast("No clips returned from Twitch API.");
                 }
             } catch (err) {
-                loadFallback();
+                showToast("Network error fetching API.");
             }
-        }
-
-        function loadFallback() {
-            showToast("API timeout. Loading offline library...");
-            
-            // FIXED: These are real, verified clip IDs from CodeMiko's channel
-            const fallbackClips = [
-                { id: "UnusualGorgeousLyrebirdHumbleLife-C2HYx42HPR_4VNx9", title: "CodeMiko roasts Ninja's entire career", view_count: 125000 },
-                { id: "HandsomeLongTurtleBibleThump-_NZbuRLN6Fn_i3zt", title: "Truly, a historic moment", view_count: 57000 },
-                { id: "DeadSneakyPeachKippa-K3mkq-xdI4DhlwNB", title: "put it away miko", view_count: 88000 },
-                { id: "BlushingCautiousWaffleTwitchRPG-hih6JqRn8hgGLXZE", title: "CodeMiko 3.0", view_count: 45000 }
-            ];
-            renderFeed(fallbackClips);
         }
 
         function renderFeed(clips) {
@@ -116,35 +100,75 @@
                 const card = document.createElement('div');
                 card.className = 'video-card';
                 
+                // THE HACK: Convert thumbnail URL to direct MP4 URL
+                // Example: https://clips-media-assets2.twitch.tv/AT-cm|123-preview-480x272.jpg -> .mp4
+                const rawMp4Url = clip.thumbnail_url.replace(/-preview-.*\.jpg/, '.mp4');
+                
                 const isLiked = localStorage.getItem(`like_${clip.id}`) === 'true';
                 const baseLikes = Math.round(clip.view_count / 1000) || 1;
                 const displayLikes = isLiked ? baseLikes + 1 : baseLikes;
                 const likedClass = isLiked ? 'liked' : '';
 
+                // We use native <video> instead of <iframe>
                 card.innerHTML = `
-                    <div class="muted-indicator material-symbols-rounded">volume_off</div>
-                    <div class="iframe-wrapper">
-                        <iframe src="https://clips.twitch.tv/embed?clip=${clip.id}&parent=${domain}&autoplay=true&muted=true" allowfullscreen="true" scrolling="no"></iframe>
-                    </div>
-                    <div class="overlay">
-                        <div class="sidebar">
+                    <div class="muted-indicator material-symbols-rounded" id="mute-${clip.id}">volume_off</div>
+                    
+                    <video id="vid-${clip.id}" src="${rawMp4Url}" loop playsinline ${index === 0 ? 'autoplay muted' : ''} poster="${clip.thumbnail_url}"></video>
+                    
+                    <div class="overlay" onclick="toggleMute('vid-${clip.id}', 'mute-${clip.id}')" style="pointer-events: auto; background: linear-gradient(0deg, rgba(0,0,0,0.8) 0%, transparent 20%);">
+                        <div class="sidebar" onclick="event.stopPropagation()">
                             <div class="btn like-btn ${likedClass}" data-id="${clip.id}" data-base="${baseLikes}">
                                 <span class="icon material-symbols-rounded">favorite</span>
                                 <span class="text like-count">${displayLikes}K</span>
                             </div>
-                            <div class="btn" onclick="shareClip('${clip.url || `https://clips.twitch.tv/${clip.id}`}')">
+                            <div class="btn" onclick="shareClip('${clip.url}')">
                                 <span class="icon material-symbols-rounded">share</span>
                                 <span class="text">Share</span>
                             </div>
                         </div>
-                        <div style="font-weight:bold; font-size:18px;">@CodeMiko</div>
-                        <div style="font-size:14px; opacity:0.9; margin-top:4px;">${clip.title}</div>
+                        <div style="font-weight:bold; font-size:18px; pointer-events:none;">@CodeMiko</div>
+                        <div style="font-size:14px; opacity:0.9; margin-top:4px; pointer-events:none;">${clip.title}</div>
                     </div>`;
                 feedContainer.appendChild(card);
             });
 
             attachLikeListeners();
+            setupIntersectionObserver();
         }
+
+        // Play/Pause logic for swiping
+        function setupIntersectionObserver() {
+            const videos = document.querySelectorAll('video');
+            const observer = new IntersectionObserver((entries) => {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting) {
+                        entry.target.play().catch(e => console.log("Autoplay blocked, waiting for user tap."));
+                    } else {
+                        entry.target.pause();
+                        entry.target.currentTime = 0; // Reset video when swiped away
+                    }
+                });
+            }, { threshold: 0.7 });
+
+            videos.forEach(video => observer.observe(video));
+        }
+
+        // Tap video to toggle sound
+        window.toggleMute = function(videoId, iconId) {
+            const video = document.getElementById(videoId);
+            const icon = document.getElementById(iconId);
+            video.muted = !video.muted;
+            
+            if (video.muted) {
+                icon.innerText = 'volume_off';
+                icon.style.display = 'block';
+                setTimeout(() => icon.style.display = 'none', 1000);
+            } else {
+                icon.innerText = 'volume_up';
+                icon.style.display = 'block';
+                setTimeout(() => icon.style.display = 'none', 1000);
+            }
+        };
 
         function attachLikeListeners() {
             const likeButtons = document.querySelectorAll('.like-btn');
@@ -152,10 +176,9 @@
                 btn.addEventListener('click', function() {
                     const clipId = this.getAttribute('data-id');
                     const baseLikes = parseInt(this.getAttribute('data-base'));
-                    const isCurrentlyLiked = this.classList.contains('liked');
                     const countText = this.querySelector('.like-count');
 
-                    if (isCurrentlyLiked) {
+                    if (this.classList.contains('liked')) {
                         this.classList.remove('liked');
                         localStorage.setItem(`like_${clipId}`, 'false');
                         countText.innerText = `${baseLikes}K`;
