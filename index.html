@@ -101,16 +101,30 @@
         .nav-item.active { color: var(--primary-light); }
         .nav-item .material-symbols-rounded { font-size: 24px; }
         
-        /* RESTORED MIKOTOK FAB BUTTON (Original 54px size) */
+        /* RESTORED MIKOTOK CAMERA M-BUTTON */
         .nav-fab {
-            width: 54px; height: 54px; border-radius: 16px; 
-            background: linear-gradient(135deg, var(--primary), var(--primary-light));
-            display: flex; align-items: center; justify-content: center; color: white; cursor: pointer;
-            box-shadow: 0 4px 20px rgba(145, 70, 255, 0.5); transform: translateY(-15px); transition: transform 0.2s;
-            border: 2px solid rgba(255,255,255,0.1); flex-shrink: 0; margin: 0 5px;
+            width: 60px; height: 44px; border-radius: 12px; 
+            background: linear-gradient(135deg, #a970ff, #9146FF);
+            display: flex; align-items: center; justify-content: center; cursor: pointer;
+            box-shadow: 0 6px 20px rgba(145, 70, 255, 0.4); transform: translateY(-12px); transition: transform 0.2s;
+            border: 2px solid rgba(255,255,255,0.15); flex-shrink: 0; margin: 0 5px; position: relative;
         }
-        .nav-fab:active { transform: translateY(-12px) scale(0.95); }
-        .nav-fab svg { width: 28px; height: 28px; fill: white; }
+        .nav-fab:active { transform: translateY(-8px) scale(0.95); }
+        .fab-camera-top {
+            position: absolute; top: -8px; left: 50%; transform: translateX(-50%);
+            width: 24px; height: 10px; background: #a970ff; border-radius: 6px 6px 0 0;
+            border-top: 2px solid rgba(255,255,255,0.15); border-left: 2px solid rgba(255,255,255,0.15); border-right: 2px solid rgba(255,255,255,0.15);
+            z-index: 1;
+        }
+        .fab-lens {
+            width: 26px; height: 26px; border: 3px solid white; border-radius: 50%; 
+            display: flex; align-items: center; justify-content: center; z-index: 2;
+            background: radial-gradient(circle, #9146FF, #7020e8);
+        }
+        .fab-lens span { color: white; font-weight: 900; font-size: 13px; font-family: 'Inter', sans-serif; }
+        .fab-flash {
+            position: absolute; top: 8px; right: 10px; width: 5px; height: 5px; background: white; border-radius: 50%; z-index: 2;
+        }
 
         /* INPUTS & MODALS */
         .post-input-box { width: 100%; background: #1c1c22; border: 1px solid var(--border-color); color: white; padding: 12px 15px; border-radius: 8px; font-size: 14px; outline: none; transition: border-color 0.2s; margin-bottom: 10px; }
@@ -190,10 +204,11 @@
             </div>
             
             <div class="nav-fab" onclick="openModal()">
-                <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                    <path d="M4 6H6L8 4H16L18 6H20C21.1 6 22 6.9 22 8V18C22 19.1 21.1 20 20 20H4C2.9 20 2 19.1 2 18V8C2 6.9 2.9 6 4 6ZM12 18C15.31 18 18 15.31 18 12C18 8.69 15.31 6 12 6C8.69 6 6 8.69 6 12C6 15.31 8.69 18 12 18Z"/>
-                    <text x="12" y="15" font-family="Inter, sans-serif" font-weight="900" font-size="9" fill="#141419" text-anchor="middle">M</text>
-                </svg>
+                <div class="fab-camera-top"></div>
+                <div class="fab-lens">
+                    <span>M</span>
+                </div>
+                <div class="fab-flash"></div>
             </div>
             
             <div class="nav-item" id="nav-clips" onclick="switchTab('clips')">
@@ -279,7 +294,7 @@
                         <div class="empty-state">
                             <span class="material-symbols-rounded">videocam_off</span>
                             <h2>No clips yet!</h2>
-                            <p>Your feed is completely fresh. Tap the central M button to add a Twitch clip.</p>
+                            <p>Your feed is completely fresh. Tap the central Camera button to add a Twitch clip.</p>
                         </div>
                     `;
                 } else if (currentTab === 'clips') {
@@ -377,6 +392,12 @@
                 const card = document.createElement('div');
                 card.className = 'card';
                 const avatarSrc = generateNeonAvatar(post.author);
+                
+                // Use a unique ID structure for posts to avoid crossing over with clip likes
+                const postDataId = `post_${post.id}`;
+                const isLiked = localStorage.getItem(`${LIKES_KEY_PREFIX}${postDataId}`) === 'true';
+                const displayLikes = isLiked ? 1 : 0;
+                const likedClass = isLiked ? 'liked' : '';
 
                 card.innerHTML = `
                     <div class="card-header">
@@ -389,9 +410,18 @@
                     <div class="card-info" style="margin-top:0;">
                         <div class="post-text">${post.text}</div>
                     </div>
+                    <div class="card-actions">
+                        <div class="action-item like-btn ${likedClass}" data-id="${postDataId}">
+                            <span class="material-symbols-rounded">favorite</span>
+                            <span class="like-count">${displayLikes}</span>
+                        </div>
+                    </div>
                 `;
                 feedContainer.appendChild(card);
             });
+            
+            // Attach the like button logic to the new community post buttons!
+            attachLikeListeners();
         }
 
         function submitPost() {
@@ -471,12 +501,12 @@
             const likeButtons = document.querySelectorAll('.like-btn');
             likeButtons.forEach(btn => {
                 btn.addEventListener('click', function() {
-                    const clipId = this.getAttribute('data-id');
+                    const id = this.getAttribute('data-id');
                     const countText = this.querySelector('.like-count');
 
                     if (this.classList.contains('liked')) {
                         this.classList.remove('liked');
-                        localStorage.setItem(`${LIKES_KEY_PREFIX}${clipId}`, 'false');
+                        localStorage.setItem(`${LIKES_KEY_PREFIX}${id}`, 'false');
                         countText.innerText = '0';
                         
                         this.querySelector('.material-symbols-rounded').style.transform = 'scale(0.8)';
@@ -487,7 +517,7 @@
                         }
                     } else {
                         this.classList.add('liked');
-                        localStorage.setItem(`${LIKES_KEY_PREFIX}${clipId}`, 'true');
+                        localStorage.setItem(`${LIKES_KEY_PREFIX}${id}`, 'true');
                         countText.innerText = '1';
                         
                         this.querySelector('.material-symbols-rounded').style.transform = 'scale(1.3)';
