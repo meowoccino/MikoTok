@@ -9,6 +9,7 @@
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="theme-color" content="#000000">
 
+    <!-- PWA Manifest Link -->
     <link rel="manifest" href="manifest.json">
 
     <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' fill='%23000000'/><defs><linearGradient id='g' x1='0%25' y1='0%25' x2='100%25' y2='100%25'><stop offset='0%25' stop-color='%23ffffff'/><stop offset='100%25' stop-color='%239146FF'/></linearGradient></defs><circle cx='50' cy='50' r='35' fill='none' stroke='url(%23g)' stroke-width='6'/><path d='M 38 40 L 48 60 L 58 40 L 58 55 Q 58 63 65 62' fill='none' stroke='url(%23g)' stroke-width='6' stroke-linecap='round' stroke-linejoin='round'/></svg>">
@@ -38,7 +39,6 @@
         .gradient-text { display: inline-block; background: linear-gradient(135deg, #ffffff 30%, var(--primary) 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; font-family: 'Outfit', sans-serif; }
 
         .app-header { position: absolute; top: 0; left: 0; width: 100%; z-index: 100; padding: 50px 20px 15px; display: flex; align-items: center; justify-content: space-between; background: rgba(0, 0, 0, 0.95); backdrop-filter: blur(10px); border-bottom: 1px solid var(--border-color); }
-        .header-logo { width: 28px; height: 28px; display: flex; align-items: center; justify-content: center; }
         .header-status-link { text-decoration: none; display: flex; flex-direction: column; align-items: center; cursor: pointer; width: 40px; }
         .status-dot { width: 6px; height: 6px; background: var(--offline-gray); border-radius: 50%; transition: background 0.3s ease; animation: heartbeat 2.5s infinite ease-in-out; }
         .status-dot.active { background: var(--danger); box-shadow: 0 0 10px var(--danger); animation: heartbeatLive 1.8s infinite ease-in-out; }
@@ -61,7 +61,6 @@
         .avatar-ring img { width: 100%; height: 100%; object-fit: cover; }
         
         .source-badge { position: absolute; bottom: -2px; right: -2px; width: 16px; height: 16px; border-radius: 50%; display: flex; align-items: center; justify-content: center; border: 2px solid var(--card-bg); z-index: 2; }
-        .source-badge.x { background: #000; color: white; }
         .source-badge.discord { background: #5865F2; color: white; }
 
         .thumbnail-wrapper { width: 100%; border-radius: 8px; overflow: hidden; aspect-ratio: 16/9; background: #000; position: relative; margin-top: 5px; border: 1px solid rgba(255,255,255,0.05); cursor: pointer; }
@@ -98,13 +97,12 @@
                 <div style="width: 100%; aspect-ratio: 16/9; background: #000; border-radius: 8px; overflow: hidden;">
                     <iframe :src="'https://clips.twitch.tv/embed?clip=' + activeClip.id + '&parent=' + host + '&autoplay=true&muted=false'" style="width: 100%; height: 100%; border: none;" allow="autoplay; fullscreen" allowfullscreen="true"></iframe>
                 </div>
-                <!-- Removed Clip Title from here -->
                 <p style="text-align: center; margin-top: 20px; color: var(--text-muted); font-size: 12px;">Tap background to close</p>
             </div>
         </div>
         
         <div class="app-header">
-            <div class="header-logo" v-html="logoSvg('header')"></div>
+            <div style="width: 40px;"></div> <!-- Placeholder for logo -->
             <div class="simple-logo"><span class="gradient-text">MikoTok</span></div>
             <div class="header-status-link">
                 <div class="status-dot" :class="{ active: isLive }"></div>
@@ -132,7 +130,6 @@
                         </div>
                         <div>
                             <div style="font-weight:700;font-size:14px;">{{ clip.added_by }}</div>
-                            <div style="font-size:11px; color:var(--text-muted);" v-if="clip.title">{{ clip.title }}</div>
                         </div>
                     </div>
                     <div class="thumbnail-wrapper" @click="activeClip = clip">
