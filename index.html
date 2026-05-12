@@ -7,7 +7,10 @@
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <title>MikoTok</title>
     
-    <link rel="manifest" href="manifest.json">
+    <!-- Dynamically generated manifest and icon will be injected here -->
+    <link id="manifest-link" rel="manifest" href="">
+    <link id="favicon-link" rel="icon" href="">
+    
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Outfit:wght@800&family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@24,400,1,0" rel="stylesheet">
     
     <style>
@@ -48,9 +51,12 @@
             display: flex; flex-direction: column; align-items: center; justify-content: center; 
             z-index: 2000; transition: opacity 0.5s ease;
         }
-        .splash-logo { font-size: 50px; }
+        .splash-logo { font-size: 50px; margin-bottom: 20px; }
+        
+        /* Splash screen icon container */
+        #splash-icon { width: 100px; height: 100px; margin-bottom: 15px; }
 
-        .progress-bar { width: 120px; height: 3px; background: #2f2f35; border-radius: 4px; margin-top: 30px; overflow: hidden; position: relative; }
+        .progress-bar { width: 120px; height: 3px; background: #2f2f35; border-radius: 4px; margin-top: 20px; overflow: hidden; position: relative; }
         .progress-fill { position: absolute; left: 0; top: 0; height: 100%; width: 50%; background: var(--primary); border-radius: 4px; animation: load 1.5s infinite ease-in-out; }
         @keyframes load { 0% { left: -50%; } 100% { left: 100%; } }
 
@@ -86,8 +92,9 @@
         .nav-item:hover { color: white; }
         .nav-item.active { color: var(--primary); }
         
+        /* UPDATED NAV FAB USING THE NEW LOGO */
         .nav-fab {
-            width: 60px; height: 60px; 
+            width: 65px; height: 65px; 
             background: transparent;
             display: flex; align-items: center; justify-content: center; 
             transform: translateY(-15px);
@@ -99,7 +106,7 @@
         
         .fab-icon-svg { 
             width: 100%; height: 100%; 
-            filter: drop-shadow(0 4px 10px rgba(145, 70, 255, 0.4)); 
+            filter: drop-shadow(0 4px 10px rgba(145, 70, 255, 0.5)); 
         }
 
         #login-modal, #add-modal { position: absolute; inset: 0; background: rgba(0,0,0,0.8); z-index: 1500; display: none; flex-direction: column; justify-content: flex-end; backdrop-filter: blur(5px); }
@@ -118,6 +125,7 @@
 
     <div id="app-container">
         <div id="splash-screen">
+            <div id="splash-icon"></div>
             <div class="simple-logo splash-logo"><span class="text-part1">Miko</span><span class="text-part2">Tok</span></div>
             <div class="progress-bar"><div class="progress-fill"></div></div>
         </div>
@@ -147,7 +155,6 @@
                     <div id="profile-avatar-container"></div>
                     <h2 id="profile-name" style="margin: 10px 0 20px;"></h2>
                     
-                    <!-- PWA INSTALL BUTTON (HIDDEN BY DEFAULT) -->
                     <button id="btn-pwa-install" class="btn-post" style="display:none; margin-bottom: 15px; background: white; color: var(--primary);" onclick="triggerPWAInstall()">Install MikoTok App</button>
 
                     <div style="display:flex; gap:10px;">
@@ -174,25 +181,8 @@
             <div class="nav-item active" id="nav-home" onclick="switchTab('home')"><span class="material-symbols-rounded">home</span>Home</div>
             <div class="nav-item" id="nav-community" onclick="switchTab('community')"><span class="material-symbols-rounded">forum</span>Community</div>
             
-            <div class="nav-fab" onclick="openModal()">
-                <svg viewBox="0 0 100 100" class="fab-icon-svg">
-                    <defs>
-                        <linearGradient id="mCamGrad" x1="0%" y1="0%" x2="100%" y2="100%">
-                            <stop offset="0%" stop-color="#ffffff"/>
-                            <stop offset="100%" stop-color="#9146FF"/>
-                        </linearGradient>
-                        <mask id="cameraMask">
-                            <rect width="100" height="100" fill="white" />
-                            <rect x="25" y="46" width="50" height="39" fill="black" />
-                            <polygon points="25,46 38,35 62,35 75,46" fill="black" />
-                            <rect x="28" y="31" width="8" height="3.5" fill="black" />
-                            <circle cx="68" cy="52" r="3.5" fill="white" />
-                            <circle cx="50" cy="65" r="14" fill="white" />
-                            <path d="M 43 61 A 9 9 0 0 1 52 53" stroke="black" stroke-width="2.5" fill="none" stroke-linecap="round"/>
-                        </mask>
-                    </defs>
-                    <path d="M 10 20 L 25 20 L 38 35 L 62 35 L 75 20 L 90 20 L 90 85 L 10 85 Z" fill="url(#mCamGrad)" mask="url(#cameraMask)" />
-                </svg>
+            <div class="nav-fab" onclick="openModal()" id="upload-btn-container">
+                <!-- SVG Icon injected via JS so it matches the dynamically generated App Icon -->
             </div>
 
             <div class="nav-item" id="nav-clips" onclick="switchTab('clips')"><span class="material-symbols-rounded">favorite</span>Favorites</div>
@@ -201,6 +191,49 @@
     </div>
 
     <script>
+        // --- LOGO & APP ICON GENERATOR ---
+        // Creating the SVG dynamically allows us to use it as an installable PWA icon seamlessly
+        const appIconSvg = `
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" class="fab-icon-svg">
+                <defs>
+                    <linearGradient id="mGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+                        <stop offset="0%" stop-color="#ffffff"/>
+                        <stop offset="100%" stop-color="#9146FF"/>
+                    </linearGradient>
+                </defs>
+                <circle cx="50" cy="50" r="40" fill="none" stroke="url(#mGradient)" stroke-width="7"/>
+                <path d="M 33 38 L 48 62 L 62 38 L 62 55 Q 62 65 69 64" fill="none" stroke="url(#mGradient)" stroke-width="7" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+        `;
+
+        // Inject the logo into the UI
+        document.getElementById('upload-btn-container').innerHTML = appIconSvg;
+        document.getElementById('splash-icon').innerHTML = appIconSvg;
+
+        // Generate the Base64 icon for the browser to use as a Favicon and App Icon
+        const base64Icon = `data:image/svg+xml;base64,${btoa(appIconSvg.replace('class="fab-icon-svg"', ''))}`;
+        document.getElementById('favicon-link').href = base64Icon;
+
+        // Dynamically create manifest.json for PWA installation
+        const manifestData = {
+            name: "MikoTok",
+            short_name: "MikoTok",
+            start_url: "index.html",
+            display: "standalone",
+            background_color: "#0b0b0e",
+            theme_color: "#9146FF",
+            icons: [
+                {
+                    src: base64Icon,
+                    sizes: "any",
+                    type: "image/svg+xml",
+                    purpose: "any maskable"
+                }
+            ]
+        };
+        const manifestBlob = new Blob([JSON.stringify(manifestData)], { type: 'application/manifest+json' });
+        document.getElementById('manifest-link').href = URL.createObjectURL(manifestBlob);
+
         // --- PWA LOGIC ---
         let deferredPrompt;
         window.addEventListener('beforeinstallprompt', (e) => {
@@ -249,7 +282,7 @@
             const session = JSON.parse(localStorage.getItem('miko_session'));
             if (session) {
                 const now = new Date().getTime();
-                // FIX: 30 Day Expiration (30 * 24 * 60 * 60 * 1000)
+                // 30 Day Expiration (30 * 24 * 60 * 60 * 1000)
                 if (now - session.timestamp < 2592000000) { 
                     currentUser = session.user;
                     isAdmin = (currentUser === "Admin");
@@ -278,7 +311,6 @@
                 document.getElementById('profile-view').style.display = 'block';
                 document.getElementById('profile-name').innerText = currentUser;
                 document.getElementById('profile-avatar-container').innerHTML = `<img src="${generateAvatar(currentUser)}" style="width:80px; height:80px; border-radius:50%; border:3px solid var(--primary);">`;
-                // Countdown logic deleted as requested
             } else {
                 document.getElementById('login-view').style.display = 'block';
                 document.getElementById('profile-view').style.display = 'none';
@@ -317,7 +349,6 @@
                 localStorage.setItem('miko_session', JSON.stringify({ user: currentUser, timestamp: new Date().getTime() }));
                 document.getElementById('login-text').innerText = currentUser;
                 
-                // FIX: Clear login assets immediately
                 nickInput.value = "";
                 passInput.value = "";
 
@@ -357,7 +388,6 @@
 
         function renderCommunity(f) {
             const box = document.createElement('div'); box.className = 'card';
-            // FIX: maxlength="360"
             box.innerHTML = `<textarea id="p-text" class="input-box" style="height:60px; margin-bottom: 12px; resize: none;" placeholder="Discuss..." maxlength="360"></textarea><button class="btn-post" onclick="submitPost()">Post</button>`;
             f.appendChild(box);
             globalData.posts.forEach(p => {
