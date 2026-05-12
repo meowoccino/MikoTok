@@ -30,7 +30,7 @@
         @keyframes slideUp { from { opacity: 0; transform: translateY(15px); } to { opacity: 1; transform: translateY(0); } }
         .avatar-ring { width: 42px; height: 42px; border-radius: 50%; margin-right: 12px; display: flex; align-items: center; justify-content: center; font-weight: 800; font-size: 16px; color: white; background: linear-gradient(135deg, #2f2f35 0%, #18181b 100%); border: 2px solid var(--primary); box-shadow: 0 0 15px rgba(145, 70, 255, 0.4); }
         .meta-name { font-size: 14px; font-weight: 600; }
-        .admin-del { position: absolute; top: 15px; right: 15px; color: var(--danger); cursor: pointer; font-size: 22px; transition: 0.2s; opacity: 0.7; }
+        .admin-del { position: absolute; top: 15px; right: 15px; color: var(--danger); cursor: pointer; font-size: 22px; transition: 0.2s; opacity: 0.7; z-index: 10; }
         .video-container { width: 100%; border-radius: 12px; overflow: hidden; background: #000; aspect-ratio: 16/9; border: 1px solid var(--border-color); }
         iframe { width: 100%; height: 100%; border: none; }
         .card-actions { display: flex; align-items: center; gap: 15px; margin-top: 12px; }
@@ -45,7 +45,6 @@
         .modal-content { background: var(--card-bg); border-radius: 24px 24px 0 0; padding: 25px 20px 45px; transform: translateY(100%); transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1); border-top: 1px solid var(--border-color); }
         .input-box { width: 100%; background: #0e0e10; border: 1px solid var(--border-color); color: white; padding: 14px; border-radius: 10px; outline: none; margin-bottom: 12px; }
         #toast { position: absolute; top: 100px; left: 50%; transform: translateX(-50%); background: var(--primary); color: white; padding: 12px 24px; border-radius: 12px; z-index: 9999; display: none; font-weight: 600; }
-        .admin-section { margin-top: 20px; text-align: left; background: rgba(0,0,0,0.2); padding: 15px; border-radius: 12px; border: 1px solid var(--border-color); }
         .user-row { display: flex; justify-content: space-between; align-items: center; padding: 8px 0; border-bottom: 1px solid rgba(255,255,255,0.05); }
     </style>
 </head>
@@ -58,7 +57,9 @@
         </div>
         <div class="app-header"><div class="simple-logo"><span class="text-part1">Miko</span><span class="text-part2">Tok</span></div></div>
         <div id="toast"></div>
-        <div id="feed"><div id="feed-content"></div></div>
+        <div id="feed" onscroll="handleScroll()"><div id="feed-content"></div></div>
+
+        <!-- AUTH MODAL -->
         <div id="login-modal"><div class="modal-content" id="login-panel">
             <div id="login-form">
                 <input type="text" id="login-nick" class="input-box" placeholder="Username">
@@ -68,7 +69,7 @@
             <div id="profile-form" style="display:none; text-align:center;">
                 <div style="color:var(--primary-light); font-size:10px; font-weight:800;" id="admin-tag">SYSTEM ADMIN</div>
                 <h3 id="display-name" style="margin-bottom:20px;"></h3>
-                <div id="admin-manager" style="display:none;" class="admin-section">
+                <div id="admin-manager" style="display:none; text-align: left; background: rgba(0,0,0,0.2); padding: 15px; border-radius: 12px; border: 1px solid var(--border-color);">
                     <div style="font-size:11px; font-weight:700; color:var(--text-muted); margin-bottom:10px;">USER MANAGEMENT</div>
                     <div id="user-list-container"></div>
                 </div>
@@ -76,11 +77,15 @@
             </div>
             <button class="input-box" style="background:transparent; border:none; color:var(--text-muted);" onclick="closeModal('login')">Dismiss</button>
         </div></div>
+
+        <!-- UPLOAD MODAL -->
         <div id="add-modal"><div class="modal-content" id="add-panel">
             <input type="text" id="clip-url" class="input-box" placeholder="Twitch Clip URL">
             <button class="input-box" style="background:var(--primary); font-weight:700;" onclick="submitClip()">Upload Clip</button>
             <button class="input-box" style="background:transparent; border:none; color:var(--text-muted);" onclick="closeModal('add')">Cancel</button>
         </div></div>
+
+        <!-- NAVIGATION -->
         <div class="bottom-nav">
             <div class="nav-item active" id="nav-home" onclick="switchTab('home')"><span class="material-symbols-rounded">home</span>Home</div>
             <div class="nav-item" id="nav-community" onclick="switchTab('community')"><span class="material-symbols-rounded">forum</span>Feed</div>
@@ -89,12 +94,13 @@
             <div class="nav-item" id="nav-login" onclick="openModal('login')"><span class="material-symbols-rounded">account_circle</span><span id="login-text">Profile</span></div>
         </div>
     </div>
+
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script>
         const SUPABASE_URL = 'https://yhxcuayiwqpjvalyrcqv.supabase.co', SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InloeGN1YXlpd3FwanZhbHlyY3F2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzg1Nzk1ODEsImV4cCI6MjA5NDE1NTU4MX0.z7EDgqRz1OT25UdxtmeJxFvwx4UCwaPRwWWJuzd46kc';
         let sbClient = null, currentTab = 'home', currentUser = null, isAdmin = false, globalData = { clips: [], posts: [] };
         let likedIds = JSON.parse(localStorage.getItem('miko_likes') || '[]');
-        let currentPlayingFrame = null;
+        let currentPlayingIframe = null;
 
         const getLogoSvg = (id) => `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" style="width:100%;height:100%"><defs><linearGradient id="grad-${id}" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stop-color="#ffffff"/><stop offset="100%" stop-color="#9146FF"/></linearGradient></defs><circle cx="50" cy="50" r="40" fill="none" stroke="url(#grad-${id})" stroke-width="7"/><path d="M 33 38 L 48 62 L 62 38 L 62 55 Q 62 65 69 64" fill="none" stroke="url(#grad-${id})" stroke-width="7" stroke-linecap="round" stroke-linejoin="round"/></svg>`;
         document.getElementById('upload-btn-container').innerHTML = getLogoSvg('nav');
@@ -105,7 +111,7 @@
                 sbClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
                 const saved = localStorage.getItem('miko_user');
                 if (saved) { currentUser = saved; isAdmin = (saved === 'tomato_24'); document.getElementById('login-text').innerText = saved; }
-                loadData(); setupAutoplay();
+                loadData();
             } else { setTimeout(init, 100); }
         }
 
@@ -120,8 +126,8 @@
             const n = document.getElementById('login-nick').value.trim(), p = document.getElementById('login-pass').value.trim();
             if (n === 'tomato_24' && p === '9ruwuF') { isAdmin = true; currentUser = n; }
             else if (n && p.length >= 8) { isAdmin = false; currentUser = n; }
-            else { showToast("Invalid login"); return; }
-            localStorage.setItem('miko_user', currentUser); document.getElementById('login-text').innerText = currentUser; closeModal('login');
+            else { showToast("Check credentials"); return; }
+            localStorage.setItem('miko_user', currentUser); document.getElementById('login-text').innerText = currentUser; closeModal('login'); render();
         }
 
         function logout() { localStorage.removeItem('miko_user'); currentUser = null; isAdmin = false; document.getElementById('login-text').innerText = "Profile"; closeModal('login'); render(); }
@@ -132,6 +138,12 @@
             await sbClient.from('clips').insert([{ id, title: 'Clip', added_by: currentUser }]);
             closeModal('add'); loadData();
         }
+        
+        async function submitPost() {
+            const t = document.getElementById('p-text').value.trim(); if (!t) return;
+            await sbClient.from('posts').insert([{ author: currentUser, text: t }]);
+            document.getElementById('p-text').value = ''; loadData();
+        }
 
         function toggleLike(id) {
             if (likedIds.includes(id)) likedIds = likedIds.filter(i => i !== id);
@@ -141,40 +153,43 @@
 
         async function deleteItem(table, id) { if(!isAdmin) return; await sbClient.from(table).delete().eq('id', id); loadData(); }
 
-        function setupAutoplay() {
-            const observer = new IntersectionObserver((entries) => {
-                entries.forEach(entry => {
-                    const iframe = entry.target;
-                    const src = iframe.getAttribute('data-src');
-                    if (entry.isIntersecting) {
-                        if (currentPlayingFrame && currentPlayingFrame !== iframe) {
-                            currentPlayingFrame.src = currentPlayingFrame.getAttribute('data-src') + "&autoplay=false";
+        // --- AUTOPLAY LOGIC ---
+        function handleScroll() {
+            const iframes = document.querySelectorAll('iframe');
+            let foundInView = false;
+            iframes.forEach(iframe => {
+                const rect = iframe.getBoundingClientRect();
+                const inView = (rect.top >= 0 && rect.bottom <= (window.innerHeight || document.documentElement.clientHeight));
+                const baseSrc = iframe.getAttribute('data-src');
+
+                if (inView && !foundInView) {
+                    if (currentPlayingIframe !== iframe) {
+                        if (currentPlayingIframe) {
+                            currentPlayingIframe.src = currentPlayingIframe.getAttribute('data-src') + "&autoplay=false";
                         }
-                        iframe.src = src + "&autoplay=true&muted=false";
-                        currentPlayingFrame = iframe;
+                        iframe.src = baseSrc + "&autoplay=true&muted=false";
+                        currentPlayingIframe = iframe;
                     }
-                });
-            }, { threshold: 0.8 });
-            window.autoplayObserver = observer;
+                    foundInView = true;
+                }
+            });
         }
 
         function render() {
             const f = document.getElementById('feed-content'); f.innerHTML = '';
             if (currentTab === 'community') {
-                if (!currentUser) { f.innerHTML = `<p style="text-align:center; padding:40px; color:var(--text-muted);">Login to view</p>`; return; }
-                f.innerHTML = `<div class="card"><textarea id="p-text" class="input-box" style="height:80px;resize:none;" placeholder="Post..."></textarea><button class="input-box" style="background:var(--primary);font-weight:700;" onclick="submitPost()">Post</button></div>`;
+                if (!currentUser) { f.innerHTML = `<div style="text-align:center; padding:40px; color:var(--text-muted); opacity:0.5;"><span class="material-symbols-rounded" style="font-size:48px;">lock</span><p>Login to view Feed</p></div>`; return; }
+                f.innerHTML = `<div class="card"><textarea id="p-text" class="input-box" style="height:80px;resize:none;" placeholder="Write a post..."></textarea><button class="input-box" style="background:var(--primary);font-weight:700;" onclick="submitPost()">Post</button></div>`;
                 globalData.posts.forEach(p => {
-                    f.innerHTML += `<div class="card">${isAdmin ? `<span class="material-symbols-rounded admin-del" onclick="deleteItem('posts', '${p.id}')">delete</span>` : ''}<div class="card-header"><div class="avatar-ring">${p.author[0].toUpperCase()}</div><div class="meta-name">${p.author}</div></div><div class="post-text-content">${p.text}</div></div>`;
+                    const avatarChar = p.author === 'tomato_24' ? 'T' : p.author[0].toUpperCase();
+                    f.innerHTML += `<div class="card">${isAdmin ? `<span class="material-symbols-rounded admin-del" onclick="deleteItem('posts', '${p.id}')">delete</span>` : ''}<div class="card-header"><div class="avatar-ring">${avatarChar}</div><div class="meta-name">${p.author}</div></div><div class="post-text-content">${p.text}</div></div>`;
                 });
             } else {
                 const items = currentTab === 'clips' ? globalData.clips.filter(c => likedIds.includes(c.id)) : globalData.clips;
                 items.forEach(c => {
                     const isLiked = likedIds.includes(c.id);
-                    const avatarChar = (c.added_by === 'CodeMiko' || !c.added_by) ? 'M' : c.added_by[0].toUpperCase();
-                    const card = document.createElement('div'); card.className = 'card';
-                    card.innerHTML = `${isAdmin ? `<span class="material-symbols-rounded admin-del" onclick="deleteItem('clips', '${c.id}')">delete</span>` : ''}<div class="card-header"><div class="avatar-ring">${avatarChar}</div><div class="meta-name">${c.added_by || 'CodeMiko'}</div></div><div class="video-container"><iframe data-src="https://clips.twitch.tv/embed?clip=${c.id}&parent=${window.location.hostname}" allow="autoplay; fullscreen"></iframe></div><div class="card-actions"><div class="action-btn ${isLiked?'liked':''}" onclick="toggleLike('${c.id}')"><span class="material-symbols-rounded">favorite</span> ${isLiked ? 1 : 0}</div></div>`;
-                    f.appendChild(card);
-                    autoplayObserver.observe(card.querySelector('iframe'));
+                    const avatarChar = (c.added_by === 'tomato_24') ? 'T' : (c.added_by === 'CodeMiko' || !c.added_by ? 'M' : c.added_by[0].toUpperCase());
+                    f.innerHTML += `<div class="card">${isAdmin ? `<span class="material-symbols-rounded admin-del" onclick="deleteItem('clips', '${c.id}')">delete</span>` : ''}<div class="card-header"><div class="avatar-ring">${avatarChar}</div><div class="meta-name">${c.added_by || 'CodeMiko'}</div></div><div class="video-container"><iframe data-src="https://clips.twitch.tv/embed?clip=${c.id}&parent=${window.location.hostname}" allow="autoplay; fullscreen"></iframe></div><div class="card-actions"><div class="action-btn ${isLiked?'liked':''}" onclick="toggleLike('${c.id}')"><span class="material-symbols-rounded">favorite</span> ${isLiked ? 1 : 0}</div></div></div>`;
                 });
             }
         }
