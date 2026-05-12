@@ -59,9 +59,15 @@
 
         .card { background: var(--card-bg); border-radius: 16px; padding: 15px; margin-bottom: 20px; box-shadow: 0 4px 15px rgba(0,0,0,0.2); border: 1px solid rgba(255,255,255,0.03); position: relative; }
         .card-header { display: flex; align-items: center; margin-bottom: 12px; }
-        .card-avatar { width: 36px; height: 36px; border-radius: 50%; margin-right: 12px; object-fit: cover; background: #111; border: 1px solid rgba(145, 70, 255, 0.3); }
-        .meta-name { font-size: 14px; font-weight: 600; color: white; }
         
+        /* BETTER AVATAR STYLE */
+        .card-avatar { 
+            width: 40px; height: 40px; border-radius: 10px; margin-right: 12px; 
+            background: #1a1a20; border: 1px solid var(--primary);
+            box-shadow: 0 0 10px rgba(145, 70, 255, 0.3);
+        }
+        
+        .meta-name { font-size: 14px; font-weight: 600; color: white; }
         .admin-del { position: absolute; top: 12px; right: 12px; color: var(--danger); cursor: pointer; z-index: 10; display: none; }
 
         .video-container { position: relative; width: 100%; border-radius: 10px; overflow: hidden; background: #000; aspect-ratio: 16/9; display: flex; align-items: center; justify-content: center; border: 1px solid #222; }
@@ -147,10 +153,9 @@
         let isAdmin = false;
         let globalData = { clips: [], posts: [] };
 
+        // BETTER BOT AVATARS
         function generateAvatar(name) {
-            const initial = name ? name.charAt(0).toUpperCase() : 'M';
-            const svg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><defs><linearGradient id="g" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stop-color="#00f3ff"/><stop offset="100%" stop-color="#9146FF"/></linearGradient></defs><rect width="100" height="100" fill="#111" rx="50"/><text x="50" y="65" font-family="Arial" font-size="40" font-weight="bold" fill="url(#g)" text-anchor="middle">${initial}</text></svg>`;
-            return `data:image/svg+xml;base64,${btoa(svg)}`;
+            return `https://api.dicebear.com/7.x/bottts/svg?seed=${encodeURIComponent(name)}&backgroundColor=1a1a20`;
         }
 
         async function loadData() {
@@ -176,7 +181,7 @@
         }
 
         function adminLogin() {
-            if (isAdmin) { isAdmin = false; render(); return; }
+            if (isAdmin) { isAdmin = false; showToast("Logged out"); render(); return; }
             const p = prompt("Admin Password:");
             if (p === ADMIN_PASS) { isAdmin = true; render(); }
         }
