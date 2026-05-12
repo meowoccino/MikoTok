@@ -109,8 +109,42 @@
             <div id="feed-content"></div>
         </div>
 
-        <div id="login-modal"><div class="modal-content" id="login-panel"><div class="swipe-handle"></div><div id="login-form"><input type="text" id="login-nick" class="input-box" placeholder="Username"><input type="password" id="login-pass" class="input-box" placeholder="Password"><button class="input-box" style="background:var(--primary); font-weight:700; border:none;" onclick="handleLogin()">Sign In</button></div><div id="profile-form" style="display:none; text-align:center;"><h3 id="display-name" style="margin-bottom:20px;"></h3><button class="input-box" style="background:var(--danger); font-weight:700; border:none;" onclick="logout()">Logout</button></div><button class="input-box" style="background:transparent; border:none; color:var(--text-muted);" onclick="closeModal('login')">Cancel</button></div></div>
-        <div id="add-modal"><div class="modal-content" id="add-panel"><div class="swipe-handle"></div><input type="text" id="clip-url" class="input-box" placeholder="Twitch Clip URL"><button class="input-box" style="background:var(--primary); font-weight:700; border:none;" onclick="submitClip()">Add Clip</button></div></div>
+        <div id="login-modal">
+            <div class="modal-content" id="login-panel">
+                <div class="swipe-handle"></div>
+                
+                <div id="login-form">
+                    <input type="text" id="login-nick" class="input-box" placeholder="Username">
+                    <input type="password" id="login-pass" class="input-box" placeholder="Password">
+                    <button class="input-box" style="background:var(--primary); font-weight:700; border:none;" onclick="handleLogin()">Sign In</button>
+                </div>
+                
+                <div id="profile-form" style="display:none; text-align:center;">
+                    <h3 id="display-name" style="margin-bottom:20px;"></h3>
+                    
+                    <!-- ADMIN TOOLS SECTION -->
+                    <div id="admin-tools" style="display:none; margin-bottom: 20px; padding: 15px; border-radius: 8px; border: 1px solid var(--primary); background: rgba(145, 70, 255, 0.1);">
+                        <h4 style="margin: 0 0 10px; color: var(--primary-light); font-size: 12px; text-transform: uppercase;">Admin Tools</h4>
+                        <button class="input-box" style="background:var(--primary); font-weight:700; border:none; margin-bottom:0;" onclick="syncCodeMikoClips()">
+                            <span class="material-symbols-rounded" style="vertical-align: middle; font-size: 18px; margin-right: 5px;">sync</span> Fetch 90 Days of Clips
+                        </button>
+                    </div>
+
+                    <button class="input-box" style="background:var(--danger); font-weight:700; border:none;" onclick="logout()">Logout</button>
+                </div>
+                
+                <button class="input-box" style="background:transparent; border:none; color:var(--text-muted);" onclick="closeModal('login')">Cancel</button>
+            </div>
+        </div>
+
+        <div id="add-modal">
+            <div class="modal-content" id="add-panel">
+                <div class="swipe-handle"></div>
+                <input type="text" id="clip-url" class="input-box" placeholder="Twitch Clip URL">
+                <button class="input-box" style="background:var(--primary); font-weight:700; border:none;" onclick="submitClip()">Add Clip</button>
+                <button class="input-box" style="background:transparent; border:none; color:var(--text-muted);" onclick="closeModal('add')">Cancel</button>
+            </div>
+        </div>
         
         <div class="bottom-nav">
             <div class="nav-item active" id="nav-home" onclick="switchTab('home')"><span class="material-symbols-rounded">home</span>Home</div>
@@ -160,32 +194,19 @@
                 const { data: posts, error: postsError } = await sbClient.from('posts').select('*').order('created_at', { ascending: false });
                 const { data: allLikes, error: likesError } = await sbClient.from('likes').select('clip_id, username');
                 
-                if (clipsError || postsError || likesError) {
-                    console.error("Supabase Fetch Error:", clipsError || postsError || likesError);
-                    return;
-                }
+                if (clipsError || postsError || likesError) return console.error("Supabase Fetch Error:", clipsError || postsError || likesError);
 
                 globalData.counts = {}; 
-                if (allLikes) {
-                    allLikes.forEach(l => { 
-                        globalData.counts[l.clip_id] = (globalData.counts[l.clip_id] || 0) + 1; 
-                    });
-                }
+                if (allLikes) allLikes.forEach(l => { globalData.counts[l.clip_id] = (globalData.counts[l.clip_id] || 0) + 1; });
                 
                 if (currentUser) {
-                    globalData.likes = allLikes 
-                        .filter(l => l.username === currentUser)
-                        .map(l => l.clip_id);
+                    globalData.likes = allLikes.filter(l => l.username === currentUser).map(l => l.clip_id);
                 } else {
                     globalData.likes = [];
                 }
                 
-                globalData.clips = clips || []; 
-                globalData.posts = posts || []; 
-                render();
-            } catch (err) {
-                console.error("Critical Load Error:", err);
-            }
+                globalData.clips = clips || []; globalData.posts = posts || []; render();
+            } catch (err) { console.error("Critical Load Error:", err); }
         }
 
         function render() {
@@ -218,10 +239,7 @@
             const isLiked = globalData.likes.includes(c.id), count = globalData.counts[c.id] || 0;
             const host = window.location.hostname || "localhost";
             const src = `https://clips.twitch.tv/embed?clip=${c.id}&parent=${host}&autoplay=false`;
-            
-            const iframeTag = forceLoad 
-                ? `<iframe src="${src}" class="loaded"></iframe>` 
-                : `<iframe data-src="${src}" loading="lazy" onload="this.classList.add('loaded')"></iframe>`;
+            const iframeTag = forceLoad ? `<iframe src="${src}" class="loaded"></iframe>` : `<iframe data-src="${src}" loading="lazy" onload="this.classList.add('loaded')"></iframe>`;
 
             target.innerHTML += `
                 <div class="card">
@@ -230,41 +248,76 @@
                         <div class="avatar-ring">${c.added_by?c.added_by[0].toUpperCase():'M'}</div>
                         <div style="font-weight:600;font-size:14px;">${c.added_by||'CodeMiko'}</div>
                     </div>
-                    <div class="video-container">
-                        ${iframeTag}
-                    </div>
+                    <div class="video-container">${iframeTag}</div>
                     <div class="card-actions">
-                        <div class="action-btn ${isLiked?'liked':''}" onclick="toggleLike('${c.id}')">
-                            <span class="material-symbols-rounded">favorite</span> ${count}
-                        </div>
+                        <div class="action-btn ${isLiked?'liked':''}" onclick="toggleLike('${c.id}')"><span class="material-symbols-rounded">favorite</span> ${count}</div>
                     </div>
                 </div>`;
+        }
+
+        /* ADMIN AUTO-FETCH SCRIPT */
+        async function syncCodeMikoClips() {
+            const clientId = prompt("Enter Twitch Client ID:");
+            if (!clientId) return;
+            const token = prompt("Enter Twitch App Access Token (Bearer):");
+            if (!token) return;
+
+            document.getElementById('live-text').innerText = "SYNCING...";
+            
+            try {
+                // 1. Get CodeMiko's Broadcaster ID
+                const userRes = await fetch(`https://api.twitch.tv/helix/users?login=${TWITCH_CHANNEL}`, { headers: { 'Client-ID': clientId, 'Authorization': `Bearer ${token}` } });
+                const userData = await userRes.json();
+                if (!userData.data || userData.data.length === 0) throw new Error("Could not find user.");
+                const broadcasterId = userData.data[0].id;
+
+                // 2. Fetch clips from last 90 days
+                const startDate = new Date(Date.now() - 90 * 24 * 60 * 60 * 1000).toISOString();
+                const clipsRes = await fetch(`https://api.twitch.tv/helix/clips?broadcaster_id=${broadcasterId}&started_at=${startDate}&first=50`, { headers: { 'Client-ID': clientId, 'Authorization': `Bearer ${token}` } });
+                const clipsData = await clipsRes.json();
+
+                if (!clipsData.data || clipsData.data.length === 0) { alert("No clips found."); return; }
+
+                // 3. Format for Supabase (preserving Twitch's created_at ensures proper newest-first sorting)
+                const insertData = clipsData.data.map(c => ({
+                    id: c.id,
+                    added_by: 'CodeMiko',
+                    created_at: c.created_at
+                }));
+
+                // 4. Upsert avoids duplicates and updates data
+                const { error } = await sbClient.from('clips').upsert(insertData, { onConflict: 'id', ignoreDuplicates: true });
+                if (error) throw error;
+
+                alert(`Success! Auto-fetched ${insertData.length} recent clips.`);
+                closeModal('login');
+                loadData();
+                updateStatus(false);
+            } catch (err) {
+                alert("Twitch API Error. Check Console.");
+                console.error("Sync Error:", err);
+                updateStatus(false);
+            }
         }
 
         async function toggleLike(id) {
             if (!currentUser) { openModal('login'); return; }
             const index = globalData.likes.indexOf(id);
-            
             if (index > -1) {
-                globalData.likes.splice(index, 1); 
-                globalData.counts[id] = Math.max(0, (globalData.counts[id] || 1) - 1);
+                globalData.likes.splice(index, 1); globalData.counts[id] = Math.max(0, (globalData.counts[id] || 1) - 1);
                 render(); 
-                const { error } = await sbClient.from('likes').delete().eq('username', currentUser).eq('clip_id', id);
-                if (error) console.error("Failed to delete like:", error);
+                await sbClient.from('likes').delete().eq('username', currentUser).eq('clip_id', id);
             } else {
-                globalData.likes.push(id); 
-                globalData.counts[id] = (globalData.counts[id] || 0) + 1;
+                globalData.likes.push(id); globalData.counts[id] = (globalData.counts[id] || 0) + 1;
                 render(); 
-                const { error } = await sbClient.from('likes').insert([{ username: currentUser, clip_id: id }]);
-                if (error) console.error("Failed to insert like:", error);
+                await sbClient.from('likes').insert([{ username: currentUser, clip_id: id }]);
             }
         }
 
         async function deleteItem(table, id) {
-            if (isAdmin) {
-                const { error } = await sbClient.from(table).delete().eq('id', id);
-                if (error) console.error(`Error deleting from ${table}:`, error);
-                else loadData();
+            if (isAdmin && confirm('Are you sure you want to delete this?')) {
+                await sbClient.from(table).delete().eq('id', id);
+                loadData();
             }
         }
 
@@ -277,10 +330,18 @@
 
         async function handleLogin() { const n = document.getElementById('login-nick').value.trim(); if (n) { localStorage.setItem('miko_user', n); location.reload(); } }
         function logout() { localStorage.removeItem('miko_user'); location.reload(); }
+        
         function openModal(id) { 
-            if(id==='login' && currentUser) { document.getElementById('login-form').style.display='none'; document.getElementById('profile-form').style.display='block'; document.getElementById('display-name').innerText=currentUser; }
+            if(id==='login' && currentUser) { 
+                document.getElementById('login-form').style.display='none'; 
+                document.getElementById('profile-form').style.display='block'; 
+                document.getElementById('display-name').innerText=currentUser;
+                // Expose Admin Tools if tomato_24
+                document.getElementById('admin-tools').style.display = isAdmin ? 'block' : 'none';
+            }
             document.getElementById(id+'-modal').style.display='flex'; setTimeout(()=>document.getElementById(id+'-panel').style.transform='translateY(0)',10); 
         }
+
         function closeModal(id) { document.getElementById(id+'-panel').style.transform='translateY(100%)'; setTimeout(()=>document.getElementById(id+'-modal').style.display='none',300); }
         function switchTab(t) { currentTab=t; document.querySelectorAll('.nav-item').forEach(e=>e.classList.remove('active')); document.getElementById('nav-'+t).classList.add('active'); render(); }
         function handleUploadClick() { if(!currentUser) openModal('login'); else openModal('add'); }
@@ -293,9 +354,7 @@
             iframes.forEach(iframe => {
                 const rect = iframe.getBoundingClientRect();
                 if (rect.top < window.innerHeight && rect.bottom > 0) {
-                    if (iframe.getAttribute('data-src') && !iframe.src) {
-                        iframe.src = iframe.getAttribute('data-src');
-                    }
+                    if (iframe.getAttribute('data-src') && !iframe.src) iframe.src = iframe.getAttribute('data-src');
                     if (rect.top < window.innerHeight/2 && rect.bottom > window.innerHeight/2) {
                         if (currentPlayingIframe !== iframe) {
                             if(currentPlayingIframe) {
@@ -303,9 +362,7 @@
                                 if (oldSrc.includes('autoplay=true')) currentPlayingIframe.src = oldSrc.replace('autoplay=true', 'autoplay=false');
                             }
                             let newSrc = iframe.src || iframe.getAttribute('data-src');
-                            if (newSrc && !newSrc.includes('autoplay=true')) {
-                                iframe.src = newSrc.replace('autoplay=false', 'autoplay=true') + "&muted=true";
-                            }
+                            if (newSrc && !newSrc.includes('autoplay=true')) iframe.src = newSrc.replace('autoplay=false', 'autoplay=true') + "&muted=true";
                             currentPlayingIframe = iframe;
                         }
                     }
