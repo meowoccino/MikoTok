@@ -130,7 +130,7 @@
                         <div id="twitch-keys-form" style="display:none; margin-bottom: 10px;">
                             <p style="font-size: 11px; color: var(--text-muted); margin: 0 0 8px;">Paste keys from twitchtokengenerator.com</p>
                             <input type="text" id="twitch-client-id" class="input-box" placeholder="Client ID" style="padding: 10px; margin-bottom: 8px;">
-                            <input type="text" id="twitch-access-token" class="input-box" placeholder="Access Token (Bearer)" style="padding: 10px; margin-bottom: 8px;">
+                            <input type="text" id="twitch-access-token" class="input-box" placeholder="Access Token (No 'Bearer')" style="padding: 10px; margin-bottom: 8px;">
                             <button class="input-box" style="background:var(--primary); font-weight:700; border:none; margin-bottom:0;" onclick="saveKeysAndSync()">Save & Sync</button>
                         </div>
 
@@ -269,35 +269,34 @@
                 </div>`;
         }
 
-        /* ----- UPDATED ADMIN AUTO-FETCH LOGIC ----- */
+        /* ----- REFACTORED ADMIN AUTO-FETCH LOGIC ----- */
         function startSyncFlow() {
             let clientId = localStorage.getItem('twitch_client_id');
             let token = localStorage.getItem('twitch_access_token');
 
             if (!clientId || !token) {
-                // Keys not found. Hide sync button, show the form so user can easily copy/paste
                 document.getElementById('sync-btn').style.display = 'none';
                 document.getElementById('twitch-keys-form').style.display = 'block';
             } else {
-                // Keys are already saved, proceed directly to fetching
                 executeTwitchSync(clientId, token);
             }
         }
 
         function saveKeysAndSync() {
-            const clientId = document.getElementById('twitch-client-id').value.trim();
-            const token = document.getElementById('twitch-access-token').value.trim();
+            let clientId = document.getElementById('twitch-client-id').value.trim();
+            let token = document.getElementById('twitch-access-token').value.trim();
             
+            // Auto-clean the token in case the user accidentally copied "Bearer " with it
+            token = token.replace(/^Bearer\s+/i, '');
+
             if (!clientId || !token) {
                 alert("Please enter both the Client ID and Access Token to continue.");
                 return;
             }
 
-            // Save to memory
             localStorage.setItem('twitch_client_id', clientId);
             localStorage.setItem('twitch_access_token', token);
             
-            // Switch UI back
             document.getElementById('twitch-keys-form').style.display = 'none';
             document.getElementById('sync-btn').style.display = 'block';
             
@@ -309,20 +308,28 @@
             localStorage.removeItem('twitch_access_token');
             document.getElementById('twitch-client-id').value = '';
             document.getElementById('twitch-access-token').value = '';
-            alert("Saved Twitch keys have been cleared!");
+            document.getElementById('twitch-keys-form').style.display = 'block';
+            document.getElementById('sync-btn').style.display = 'none';
+            alert("Saved Twitch keys have been cleared! You can enter new ones.");
         }
 
         async function executeTwitchSync(clientId, token) {
             document.getElementById('live-text').innerText = "SYNCING...";
             
+            // Ensure token is completely clean for the API call
+            const cleanToken = token.replace(/^Bearer\s+/i, '').trim();
+            const cleanClientId = clientId.trim();
+
             try {
                 // 1. Get CodeMiko's Broadcaster ID
-                const userRes = await fetch(`https://api.twitch.tv/helix/users?login=${TWITCH_CHANNEL}`, { headers: { 'Client-ID': clientId, 'Authorization': `Bearer ${token}` } });
+                const userRes = await fetch(`https://api.twitch.tv/helix/users?login=${TWITCH_CHANNEL}`, { 
+                    headers: { 'Client-ID': cleanClientId, 'Authorization': `Bearer ${cleanToken}` } 
+                });
                 
-                // Check if token is expired or invalid
-                if (userRes.status === 401) {
+                if (!userRes.ok) {
+                    const errorDetails = await userRes.json();
                     resetTwitchKeys();
-                    alert("Your Twitch Access Token has expired or is invalid. Please get a new one from twitchtokengenerator.com.");
+                    alert(`Twitch Error: ${errorDetails.message || 'Invalid Token'}. Make sure your Client ID and Token are copied exactly from the generator.`);
                     updateStatus(false);
                     return;
                 }
@@ -333,7 +340,9 @@
 
                 // 2. Fetch clips from last 90 days
                 const startDate = new Date(Date.now() - 90 * 24 * 60 * 60 * 1000).toISOString();
-                const clipsRes = await fetch(`https://api.twitch.tv/helix/clips?broadcaster_id=${broadcasterId}&started_at=${startDate}&first=50`, { headers: { 'Client-ID': clientId, 'Authorization': `Bearer ${token}` } });
+                const clipsRes = await fetch(`https://api.twitch.tv/helix/clips?broadcaster_id=${broadcasterId}&started_at=${startDate}&first=50`, { 
+                    headers: { 'Client-ID': cleanClientId, 'Authorization': `Bearer ${cleanToken}` } 
+                });
                 const clipsData = await clipsRes.json();
 
                 if (!clipsData.data || clipsData.data.length === 0) { alert("No clips found in the last 90 days."); updateStatus(false); return; }
@@ -354,7 +363,7 @@
                 loadData();
                 updateStatus(false);
             } catch (err) {
-                alert("Twitch API Error. Check Console for details.");
+                alert("Network Error. Check Console for details.");
                 console.error("Sync Error:", err);
                 updateStatus(false);
             }
