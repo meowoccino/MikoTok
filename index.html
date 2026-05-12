@@ -125,8 +125,22 @@
                     <!-- ADMIN TOOLS SECTION -->
                     <div id="admin-tools" style="display:none; margin-bottom: 20px; padding: 15px; border-radius: 8px; border: 1px solid var(--primary); background: rgba(145, 70, 255, 0.1);">
                         <h4 style="margin: 0 0 10px; color: var(--primary-light); font-size: 12px; text-transform: uppercase;">Admin Tools</h4>
-                        <button class="input-box" style="background:var(--primary); font-weight:700; border:none; margin-bottom:0;" onclick="syncCodeMikoClips()">
+                        
+                        <!-- HIDDEN KEY ENTRY FORM -->
+                        <div id="twitch-keys-form" style="display:none; margin-bottom: 10px;">
+                            <p style="font-size: 11px; color: var(--text-muted); margin: 0 0 8px;">Paste keys from twitchtokengenerator.com</p>
+                            <input type="text" id="twitch-client-id" class="input-box" placeholder="Client ID" style="padding: 10px; margin-bottom: 8px;">
+                            <input type="text" id="twitch-access-token" class="input-box" placeholder="Access Token (Bearer)" style="padding: 10px; margin-bottom: 8px;">
+                            <button class="input-box" style="background:var(--primary); font-weight:700; border:none; margin-bottom:0;" onclick="saveKeysAndSync()">Save & Sync</button>
+                        </div>
+
+                        <!-- MAIN SYNC BUTTON -->
+                        <button id="sync-btn" class="input-box" style="background:var(--primary); font-weight:700; border:none; margin-bottom:10px;" onclick="startSyncFlow()">
                             <span class="material-symbols-rounded" style="vertical-align: middle; font-size: 18px; margin-right: 5px;">sync</span> Fetch 90 Days of Clips
+                        </button>
+                        
+                        <button style="background:transparent; color:var(--text-muted); border:none; font-size:12px; text-decoration:underline; cursor:pointer;" onclick="resetTwitchKeys()">
+                            Reset Saved Twitch Keys
                         </button>
                     </div>
 
@@ -255,18 +269,64 @@
                 </div>`;
         }
 
-        /* ADMIN AUTO-FETCH SCRIPT */
-        async function syncCodeMikoClips() {
-            const clientId = prompt("Enter Twitch Client ID:");
-            if (!clientId) return;
-            const token = prompt("Enter Twitch App Access Token (Bearer):");
-            if (!token) return;
+        /* ----- UPDATED ADMIN AUTO-FETCH LOGIC ----- */
+        function startSyncFlow() {
+            let clientId = localStorage.getItem('twitch_client_id');
+            let token = localStorage.getItem('twitch_access_token');
 
+            if (!clientId || !token) {
+                // Keys not found. Hide sync button, show the form so user can easily copy/paste
+                document.getElementById('sync-btn').style.display = 'none';
+                document.getElementById('twitch-keys-form').style.display = 'block';
+            } else {
+                // Keys are already saved, proceed directly to fetching
+                executeTwitchSync(clientId, token);
+            }
+        }
+
+        function saveKeysAndSync() {
+            const clientId = document.getElementById('twitch-client-id').value.trim();
+            const token = document.getElementById('twitch-access-token').value.trim();
+            
+            if (!clientId || !token) {
+                alert("Please enter both the Client ID and Access Token to continue.");
+                return;
+            }
+
+            // Save to memory
+            localStorage.setItem('twitch_client_id', clientId);
+            localStorage.setItem('twitch_access_token', token);
+            
+            // Switch UI back
+            document.getElementById('twitch-keys-form').style.display = 'none';
+            document.getElementById('sync-btn').style.display = 'block';
+            
+            executeTwitchSync(clientId, token);
+        }
+
+        function resetTwitchKeys() {
+            localStorage.removeItem('twitch_client_id');
+            localStorage.removeItem('twitch_access_token');
+            document.getElementById('twitch-client-id').value = '';
+            document.getElementById('twitch-access-token').value = '';
+            alert("Saved Twitch keys have been cleared!");
+        }
+
+        async function executeTwitchSync(clientId, token) {
             document.getElementById('live-text').innerText = "SYNCING...";
             
             try {
                 // 1. Get CodeMiko's Broadcaster ID
                 const userRes = await fetch(`https://api.twitch.tv/helix/users?login=${TWITCH_CHANNEL}`, { headers: { 'Client-ID': clientId, 'Authorization': `Bearer ${token}` } });
+                
+                // Check if token is expired or invalid
+                if (userRes.status === 401) {
+                    resetTwitchKeys();
+                    alert("Your Twitch Access Token has expired or is invalid. Please get a new one from twitchtokengenerator.com.");
+                    updateStatus(false);
+                    return;
+                }
+
                 const userData = await userRes.json();
                 if (!userData.data || userData.data.length === 0) throw new Error("Could not find user.");
                 const broadcasterId = userData.data[0].id;
@@ -276,9 +336,9 @@
                 const clipsRes = await fetch(`https://api.twitch.tv/helix/clips?broadcaster_id=${broadcasterId}&started_at=${startDate}&first=50`, { headers: { 'Client-ID': clientId, 'Authorization': `Bearer ${token}` } });
                 const clipsData = await clipsRes.json();
 
-                if (!clipsData.data || clipsData.data.length === 0) { alert("No clips found."); return; }
+                if (!clipsData.data || clipsData.data.length === 0) { alert("No clips found in the last 90 days."); updateStatus(false); return; }
 
-                // 3. Format for Supabase (preserving Twitch's created_at ensures proper newest-first sorting)
+                // 3. Format for Supabase
                 const insertData = clipsData.data.map(c => ({
                     id: c.id,
                     added_by: 'CodeMiko',
@@ -294,11 +354,12 @@
                 loadData();
                 updateStatus(false);
             } catch (err) {
-                alert("Twitch API Error. Check Console.");
+                alert("Twitch API Error. Check Console for details.");
                 console.error("Sync Error:", err);
                 updateStatus(false);
             }
         }
+        /* ------------------------------------------ */
 
         async function toggleLike(id) {
             if (!currentUser) { openModal('login'); return; }
@@ -336,7 +397,6 @@
                 document.getElementById('login-form').style.display='none'; 
                 document.getElementById('profile-form').style.display='block'; 
                 document.getElementById('display-name').innerText=currentUser;
-                // Expose Admin Tools if tomato_24
                 document.getElementById('admin-tools').style.display = isAdmin ? 'block' : 'none';
             }
             document.getElementById(id+'-modal').style.display='flex'; setTimeout(()=>document.getElementById(id+'-panel').style.transform='translateY(0)',10); 
