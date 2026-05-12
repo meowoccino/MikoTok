@@ -104,7 +104,9 @@
         #login-modal, #add-modal { position: absolute; inset: 0; background: rgba(0,0,0,0.8); z-index: 1500; display: none; flex-direction: column; justify-content: flex-end; backdrop-filter: blur(5px); }
         .modal-content { background: var(--card-bg); border-radius: 20px 20px 0 0; padding: 25px 20px 40px; transform: translateY(100%); transition: transform 0.3s; border-top: 1px solid var(--border-color); }
         .input-wrapper { position: relative; width: 100%; margin-bottom: 12px; }
-        .input-box { width: 100%; background: #0e0e10; border: 1px solid var(--border-color); color: white; padding: 12px; border-radius: 6px; outline: none; }
+        .input-box { width: 100%; background: #0e0e10; border: 1px solid var(--border-color); color: white; padding: 12px; border-radius: 6px; outline: none; transition: border 0.2s; }
+        .input-box:focus { border-color: var(--primary); }
+        .toggle-pass { position: absolute; right: 12px; top: 50%; transform: translateY(-50%); color: var(--text-muted); cursor: pointer; font-size: 20px; }
         .btn-post { width: 100%; background: var(--primary); color: white; border: none; padding: 14px; border-radius: 6px; font-weight: 600; cursor: pointer; }
 
         #toast { position: absolute; top: 100px; left: 50%; transform: translateX(-50%); background: var(--primary); color: white; padding: 10px 20px; border-radius: 6px; z-index: 9999; display: none; }
@@ -130,8 +132,15 @@
             <div class="modal-content" id="login-panel">
                 <div id="login-view">
                     <div style="font-size:18px; font-weight:700; color:white; margin-bottom:15px; text-align:center;">Login / Registration</div>
-                    <div class="input-wrapper"><input type="text" id="login-nick" class="input-box" placeholder="Nickname"></div>
-                    <div class="input-wrapper"><input type="password" id="login-pass" class="input-box" placeholder="Password"></div>
+                    <div class="input-wrapper">
+                        <!-- Maxlength set to 10 for nickname -->
+                        <input type="text" id="login-nick" class="input-box" placeholder="Nickname (Max 10 chars)" maxlength="10">
+                    </div>
+                    <div class="input-wrapper">
+                        <!-- Minlength set to 8 for password -->
+                        <input type="password" id="login-pass" class="input-box" placeholder="Password (Min 8 chars)" minlength="8">
+                        <span class="material-symbols-rounded toggle-pass" onclick="togglePassword()">visibility</span>
+                    </div>
                     <div style="display:flex; gap:10px; margin-top:10px;">
                         <button style="flex:1; background:#2f2f35; color:white; border:none; border-radius:6px;" onclick="closeLogin()">Cancel</button>
                         <button class="btn-post" style="flex:1;" onclick="handleLogin()">Login</button>
@@ -216,6 +225,7 @@
         // APP CORE
         const BIN_ID = '6a026ec4c0954111d80cc1f9'; 
         const MASTER_KEY = '$2a$10$kP1lbR4aymd6Gv5PkLUHVeum37M4wDDyIc1nCHT5pWK8DeJ5xkSke';
+        // Updated admin user to tomato_24
         const ADMIN_USER = 'tomato_24';
         const ADMIN_PASS = '9ruwuF'; 
         
@@ -237,7 +247,8 @@
                 const now = new Date().getTime();
                 if (now - session.timestamp < 2592000000) { 
                     currentUser = session.user;
-                    isAdmin = (currentUser === "Admin");
+                    // Updated to check against the new ADMIN_USER constant
+                    isAdmin = (currentUser === ADMIN_USER);
                     document.getElementById('login-text').innerText = currentUser;
                     return true;
                 }
@@ -287,9 +298,17 @@
             const passInput = document.getElementById('login-pass');
             const nick = nickInput.value.trim();
             const pass = passInput.value.trim();
+            
             if(!nick || !pass) { showToast("Enter credentials!"); return; }
+            
+            // New character limits validations
+            if(nick.length > 10) { showToast("Nickname max 10 chars!"); return; }
+            if(pass.length < 8) { showToast("Password min 8 chars!"); return; }
+
             let loggedUser = null;
-            if(nick === ADMIN_USER && pass === ADMIN_PASS) { isAdmin = true; loggedUser = "Admin"; } 
+            
+            // Replaced logic to assign admin rights using the new ADMIN_USER variable
+            if(nick === ADMIN_USER && pass === ADMIN_PASS) { isAdmin = true; loggedUser = ADMIN_USER; } 
             else {
                 const existing = globalData.users.find(u => u.nick.toLowerCase() === nick.toLowerCase());
                 if (existing) {
@@ -306,6 +325,12 @@
                 nickInput.value = ""; passInput.value = "";
                 closeLogin(); render();
             }
+        }
+
+        function togglePassword() {
+            const p = document.getElementById('login-pass'); const i = document.querySelector('.toggle-pass');
+            p.type = p.type === 'password' ? 'text' : 'password';
+            i.innerText = p.type === 'password' ? 'visibility' : 'visibility_off';
         }
 
         async function sync() { await fetch(`https://api.jsonbin.io/v3/b/${BIN_ID}`, { method: 'PUT', headers: { 'Content-Type': 'application/json', 'X-Master-Key': MASTER_KEY }, body: JSON.stringify(globalData) }); }
