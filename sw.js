@@ -1,4 +1,20 @@
+const CACHE_NAME = 'mikotok-v1';
+const ASSETS = [
+  '/',
+  '/index.html',
+  // Add other local assets here if you have them
+];
+
+self.addEventListener('install', (event) => {
+  event.waitUntil(
+    caches.open(CACHE_NAME).then((cache) => cache.addAll(ASSETS))
+  );
+});
+
 self.addEventListener('fetch', (event) => {
-  // This is required for the "Install" prompt to appear
-  event.respondWith(fetch(event.request));
+  event.respondWith(
+    caches.match(event.request).then((response) => {
+      return response || fetch(event.request);
+    })
+  );
 });
