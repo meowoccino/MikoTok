@@ -13,7 +13,6 @@
     
     <title>MikoTok</title>
     
-    <!-- Must reference a physical manifest.json file -->
     <link rel="manifest" href="manifest.json">
     <link id="favicon-link" rel="icon" href="">
     
@@ -76,7 +75,10 @@
         .card-header { display: flex; align-items: center; margin-bottom: 12px; }
         .card-avatar { width: 38px; height: 38px; border-radius: 50%; margin-right: 12px; border: 2px solid var(--primary); background: #000; }
         .meta-name { font-size: 14px; font-weight: 600; color: white; }
-        .post-date { font-size: 11px; color: var(--text-muted); margin-left: auto; font-weight: 500; }
+        
+        /* ADDED MARGIN RIGHT TO PREVENT OVERLAP WITH DELETE BUTTON */
+        .post-date { font-size: 11px; color: var(--text-muted); margin-left: auto; font-weight: 500; margin-right: 28px; }
+        
         .admin-del { position: absolute; top: 12px; right: 12px; color: var(--danger); cursor: pointer; z-index: 10; display: none; }
 
         .video-container { position: relative; width: 100%; border-radius: 8px; overflow: hidden; background: #000; aspect-ratio: 16/9; display: flex; align-items: center; justify-content: center; border: 1px solid var(--border-color); }
@@ -164,8 +166,7 @@
                     <div id="profile-avatar-container"></div>
                     <h2 id="profile-name" style="margin: 10px 0 20px;"></h2>
                     
-                    <!-- PWA INSTALL BUTTON: Now always visible as a fallback -->
-                    <button id="btn-pwa-install" class="btn-post" style="margin-bottom: 15px; background: #fff; color: var(--primary);" onclick="triggerPWAInstall()">Install App</button>
+                    <button id="btn-pwa-install" class="btn-post" style="display:none; margin-bottom: 15px; background: #fff; color: var(--primary);" onclick="triggerPWAInstall()">Install App</button>
                     
                     <div style="display:flex; gap:10px;">
                         <button style="flex:1; background:#2f2f35; color:white; border:none; border-radius:6px;" onclick="closeLogin()">Close</button>
@@ -214,7 +215,6 @@
         document.getElementById('upload-btn-container').innerHTML = appIconSvg.replace(/mGradient/g, 'mGradientNav');
         document.getElementById('splash-icon').innerHTML = appIconSvg.replace(/mGradient/g, 'mGradientSplash');
         
-        // Use the generated SVG for the favicon
         const base64Icon = `data:image/svg+xml;base64,${btoa(appIconSvg.replace('class="fab-icon-svg"', ''))}`;
         document.getElementById('favicon-link').href = base64Icon;
 
@@ -226,7 +226,6 @@
         });
 
         async function triggerPWAInstall() {
-            // Fallback for browsers that don't support the native popup (e.g., iOS Safari or non-https)
             if (!deferredPrompt) {
                 alert("To install MikoTok: Open your browser menu (or Share button on iOS) and tap 'Add to Home Screen'.");
                 return;
@@ -341,7 +340,6 @@
                     if (existing.pass === pass) {
                         loggedUser = existing.nick;
                     } else { 
-                        // Silently return for wrong password
                         return; 
                     }
                 } else {
@@ -355,7 +353,6 @@
                 localStorage.setItem('miko_session', JSON.stringify({ user: currentUser, timestamp: new Date().getTime() }));
                 document.getElementById('login-text').innerText = currentUser;
                 nickInput.value = ""; passInput.value = "";
-                // Welcome popup removed
                 closeLogin(); 
                 render();
             }
