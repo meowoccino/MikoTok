@@ -127,9 +127,8 @@
         .fab-icon-svg { width: 100%; height: 100%; filter: drop-shadow(0 4px 10px rgba(145, 70, 255, 0.5)); }
 
         #login-modal, #add-modal { position: absolute; inset: 0; background: rgba(0,0,0,0.8); z-index: 1500; display: none; flex-direction: column; justify-content: flex-end; backdrop-filter: blur(5px); }
-        .modal-content { background: var(--card-bg); border-radius: 20px 20px 0 0; padding: 15px 20px 40px; transform: translateY(100%); transition: transform 0.3s; border-top: 1px solid var(--border-color); touch-action: pan-y; }
+        .modal-content { background: var(--card-bg); border-radius: 20px 20px 0 0; padding: 25px 20px 40px; transform: translateY(100%); transition: transform 0.3s; border-top: 1px solid var(--border-color); touch-action: pan-y; }
         
-        /* Modal Handle for swiping */
         .modal-handle { width: 40px; height: 4px; background: #3f3f46; border-radius: 4px; margin: 0 auto 15px; }
 
         .input-wrapper { position: relative; width: 100%; margin-bottom: 12px; }
@@ -243,7 +242,6 @@
 
         // --- UI / UX INTERACTIONS ---
 
-        // 1. Header Hide on Scroll
         const feedContainer = document.getElementById('feed');
         const headerElement = document.querySelector('.app-header');
         let lastScrollY = 0;
@@ -258,7 +256,6 @@
             lastScrollY = currentY;
         });
 
-        // 2. Pull to Refresh
         const pullIndicator = document.getElementById('pull-indicator');
         let touchStartY = 0;
         let isPulling = false;
@@ -293,7 +290,6 @@
             }
         }, { passive: true });
 
-        // 3. Swipe to Dismiss Modals
         function enableSwipeDismiss(panelId, closeFunc) {
             const panel = document.getElementById(panelId);
             let pStartY = 0, currentDiff = 0;
@@ -320,7 +316,6 @@
         enableSwipeDismiss('login-panel', closeLogin);
         enableSwipeDismiss('modal-panel', closeModal);
 
-        // 4. Character Counter
         window.updateCharCount = function() {
             const text = document.getElementById('p-text').value;
             const counter = document.getElementById('char-counter');
@@ -328,7 +323,6 @@
             counter.style.color = text.length >= 340 ? 'var(--danger)' : 'var(--text-muted)';
         };
 
-        // 5. Text Truncation Toggle
         window.toggleReadMore = function(id) {
             const content = document.getElementById(`post-text-${id}`);
             const btn = content.nextElementSibling;
@@ -336,25 +330,30 @@
             btn.innerText = content.classList.contains('expanded') ? 'Show less' : 'Read more...';
         };
 
-        // 6. Scroll Auto-Play (Intersection Observer)
+        // --- REFINED AUTO-PLAY & LOOP LOGIC ---
         const clipObserver = new IntersectionObserver((entries) => {
             entries.forEach(entry => {
                 const iframe = entry.target;
                 const originalSrc = iframe.getAttribute('data-src');
+                
                 if (entry.isIntersecting) {
-                    if (!iframe.src.includes('autoplay=true')) {
-                        iframe.src = originalSrc + '&autoplay=true&muted=true';
+                    // Update SRC to play and ensure parent domain is correctly attached for loop support
+                    const playSrc = originalSrc + '&autoplay=true&muted=false';
+                    if (iframe.src !== playSrc) {
+                        iframe.src = playSrc;
                     }
                 } else {
-                    if (!iframe.src.includes('autoplay=false')) {
-                        iframe.src = originalSrc + '&autoplay=false';
+                    // Stop video when out of view
+                    const stopSrc = originalSrc + '&autoplay=false';
+                    if (iframe.src !== stopSrc) {
+                        iframe.src = stopSrc;
                     }
                 }
             });
         }, { threshold: 0.6 });
 
 
-        // PWA INSTALL LOGIC
+        // PWA LOGIC
         let deferredPrompt;
         window.addEventListener('beforeinstallprompt', (e) => {
             e.preventDefault();
@@ -363,14 +362,12 @@
 
         async function triggerPWAInstall() {
             if (!deferredPrompt) {
-                alert("To install MikoTok: Use browser menu -> Add to Home Screen");
+                alert("To install MikoTok: Open browser menu -> Add to Home Screen");
                 return;
             }
             deferredPrompt.prompt();
             const { outcome } = await deferredPrompt.userChoice;
-            if (outcome === 'accepted') {
-                deferredPrompt = null;
-            }
+            if (outcome === 'accepted') deferredPrompt = null;
         }
 
         if ('serviceWorker' in navigator) {
@@ -456,33 +453,23 @@
         }
 
         async function handleLogin() {
-            if (navigator.vibrate) navigator.vibrate(30);
             const nickInput = document.getElementById('login-nick');
             const passInput = document.getElementById('login-pass');
             const nick = nickInput.value.trim();
             const pass = passInput.value.trim();
-            
             if(!nick || !pass) return;
             if(nick.length > 10 || pass.length < 8) return;
-
             let loggedUser = null;
-            
             if(nick === ADMIN_USER && pass === ADMIN_PASS) { 
-                isAdmin = true; 
-                loggedUser = ADMIN_USER; 
-            } 
-            else {
+                isAdmin = true; loggedUser = ADMIN_USER; 
+            } else {
                 const existing = globalData.users.find(u => u.nick.toLowerCase() === nick.toLowerCase());
                 if (existing) {
-                    if (existing.pass === pass) {
-                        loggedUser = existing.nick;
-                    } else { 
-                        return; 
-                    }
+                    if (existing.pass === pass) loggedUser = existing.nick;
+                    else return;
                 } else {
                     globalData.users.push({ nick, pass }); 
-                    loggedUser = nick; 
-                    await sync();
+                    loggedUser = nick; await sync();
                 }
             }
             if (loggedUser) {
@@ -490,26 +477,17 @@
                 localStorage.setItem('miko_session', JSON.stringify({ user: currentUser, timestamp: new Date().getTime() }));
                 document.getElementById('login-text').innerText = currentUser;
                 nickInput.value = ""; passInput.value = "";
-                closeLogin(); 
-                render();
+                closeLogin(); render();
             }
         }
 
-        function togglePassword() {
-            const p = document.getElementById('login-pass'); const i = document.querySelector('.toggle-pass');
-            p.type = p.type === 'password' ? 'text' : 'password';
-            i.innerText = p.type === 'password' ? 'visibility' : 'visibility_off';
-        }
-
         async function sync() { await fetch(`https://api.jsonbin.io/v3/b/${BIN_ID}`, { method: 'PUT', headers: { 'Content-Type': 'application/json', 'X-Master-Key': MASTER_KEY }, body: JSON.stringify(globalData) }); }
-        
         function closeLogin() { 
             const panel = document.getElementById('login-panel');
             panel.style.transition = 'transform 0.3s cubic-bezier(0.4, 0, 0.2, 1)';
             panel.style.transform='translateY(100%)'; 
             setTimeout(()=>document.getElementById('login-modal').style.display='none', 300); 
         }
-        
         async function deleteItem(type, id) { if (!confirm("Delete?")) return; if (type === 'clip') globalData.clips = globalData.clips.filter(c => c.id !== id); else globalData.posts = globalData.posts.filter(p => p.id !== id); await sync(); render(); }
         
         function switchTab(t) { 
@@ -517,16 +495,13 @@
             currentTab = t; 
             document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active')); 
             document.getElementById(`nav-${t}`).classList.add('active'); 
-            const f = document.getElementById('feed'); 
-            f.scrollTo(0,0); 
-            render(); 
+            feedContainer.scrollTo(0,0); render(); 
         }
         
         function render() {
             const f = document.getElementById('feed-content'); 
             f.innerHTML = '';
             clipObserver.disconnect();
-            
             if (currentTab === 'community') renderCommunity(f);
             else renderClips(f, currentTab === 'clips' ? globalData.clips.filter(i => (i.likedBy || []).includes(currentUser)) : globalData.clips);
         }
@@ -553,19 +528,13 @@
             const box = document.createElement('div'); box.className = 'card';
             box.innerHTML = `<textarea id="p-text" class="input-box" style="height:60px; margin-bottom: 4px; resize: none;" placeholder="Discuss..." maxlength="360" oninput="updateCharCount()"></textarea><div id="char-counter">0 / 360</div><button class="btn-post" onclick="submitPost()">Post</button>`;
             f.appendChild(box);
-            
             if (globalData.posts.length === 0) {
-                const empty = document.createElement('div');
-                empty.className = 'empty-state';
-                empty.innerHTML = `<span class="material-symbols-rounded">chat_bubble</span><div>Be the first to post!</div>`;
-                f.appendChild(empty);
+                f.innerHTML += `<div class="empty-state"><span class="material-symbols-rounded">chat_bubble</span><div>Be the first to post!</div></div>`;
                 return;
             }
-
             globalData.posts.forEach(p => {
                 const div = document.createElement('div'); div.className = 'card';
                 const isLong = p.text.length > 120;
-                
                 div.innerHTML = `
                     ${isAdmin ? `<div class="admin-del" style="display:block" onclick="deleteItem('post', ${p.id})"><span class="material-symbols-rounded">delete</span></div>` : ''}
                     <div class="card-header"><img src="${generateAvatar(p.author)}" class="card-avatar"><div class="meta-name">${p.author}</div><div class="post-date">${formatDate(p.id)}</div></div>
@@ -579,59 +548,41 @@
         }
 
         async function toggleLike(type, id) { 
-            if (navigator.vibrate) navigator.vibrate(30);
             if(!checkSession()) { openLogin(); return; } 
             const list = type === 'clip' ? globalData.clips : globalData.posts; 
             const item = list.find(i => i.id.toString() === id.toString()); 
             if(!item.likedBy) item.likedBy = []; 
             if (item.likedBy.includes(currentUser)) item.likedBy = item.likedBy.filter(u => u !== currentUser); 
             else item.likedBy.push(currentUser); 
-            render(); 
-            await sync(); 
+            render(); await sync(); 
         }
         
         async function submitClip() { 
-            if (navigator.vibrate) navigator.vibrate(30);
             if(!checkSession()) { openLogin(); return; } 
             const url = document.getElementById('clip-url').value; 
             if (!url.includes('twitch')) return; 
             const id = url.split('/').pop().split('?')[0]; 
             globalData.clips.unshift({ id, title: document.getElementById('clip-title').value || 'Clip', addedBy: currentUser, likedBy: [] }); 
-            closeModal(); 
-            await sync(); 
-            render(); 
+            closeModal(); await sync(); render(); 
         }
         
         async function submitPost() { 
-            if (navigator.vibrate) navigator.vibrate(30);
             if(!checkSession()) { openLogin(); return; } 
             const text = document.getElementById('p-text').value; 
             if (!text) return; 
             globalData.posts.unshift({ id: Date.now(), author: currentUser, text, likedBy: [] }); 
-            await sync(); 
-            render(); 
+            await sync(); render(); 
         }
         
-        function openModal() { 
-            if (navigator.vibrate) navigator.vibrate(30);
-            document.getElementById('add-modal').style.display='flex'; 
-            setTimeout(()=>document.getElementById('modal-panel').style.transform='translateY(0)', 10); 
-        }
-        
+        function openModal() { document.getElementById('add-modal').style.display='flex'; setTimeout(()=>document.getElementById('modal-panel').style.transform='translateY(0)', 10); }
         function closeModal() { 
             const panel = document.getElementById('modal-panel');
             panel.style.transition = 'transform 0.3s cubic-bezier(0.4, 0, 0.2, 1)';
             panel.style.transform='translateY(100%)'; 
             setTimeout(()=>document.getElementById('add-modal').style.display='none', 300); 
         }
-        
-        function showToast(m) { 
-            const t=document.getElementById('toast'); 
-            t.innerText=m; 
-            t.style.display='block'; 
-            t.style.animation = 'toastFade 0.3s ease';
-            setTimeout(()=>t.style.display='none', 2500); 
-        }
+        function togglePassword() { const p = document.getElementById('login-pass'); p.type = p.type === 'password' ? 'text' : 'password'; }
+        function showToast(m) { const t=document.getElementById('toast'); t.innerText=m; t.style.display='block'; t.style.animation = 'toastFade 0.3s ease'; setTimeout(()=>t.style.display='none', 2500); }
 
         loadData();
     </script>
