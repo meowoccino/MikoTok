@@ -114,7 +114,7 @@
             <template v-if="currentTab === 'home'">
                 <div id="live-container">
                     <div class="live-label">
-                        <div style="display:flex; align-items:center; gap:8px;"><span class="status-dot" :class="{ active: isLive }"></span> <span class="status-tag">Live</span></div>
+                        <div style="display:flex; align-items:center; gap:8px;"><span class="status-dot" :class="{ active: isLive }"></span> <span class="status-tag">{{ isLive ? 'Live' : 'Offline' }}</span></div>
                         <span class="pinned-tag">Pinned</span>
                     </div>
                     <div style="width: 100%; aspect-ratio: 16/9; border-radius: 8px; overflow: hidden; background: #000;">
@@ -124,7 +124,6 @@
 
                 <div class="card" v-for="clip in clips" :key="clip.id">
                     <div style="display:flex;align-items:center;margin-bottom:10px;">
-                        <!-- Fixed Avatar Logic for Feed -->
                         <div class="avatar-ring">
                             <img v-if="clip.added_by === 'CodeMiko' || clip.added_by === 'tomato_24'" src="1000018850.png">
                             <span v-else>{{ clip.added_by[0] }}</span>
@@ -177,7 +176,6 @@
                     <button class="input-box" style="background:var(--primary); font-weight:700; text-align:center;" @click="handleLogin">Sign In</button>
                 </div>
                 <div v-else>
-                    <!-- Fixed Avatar Logic for Profile -->
                     <div class="avatar-ring" style="width:64px; height:64px; margin: 0 auto 15px;">
                         <img v-if="currentUser === 'tomato_24' || currentUser === 'CodeMiko'" src="1000018850.png">
                         <span v-else>{{ currentUser[0] }}</span>
@@ -185,14 +183,11 @@
                     <h2 style="margin-bottom:20px;">{{ currentUser }}</h2>
                     <div v-if="isAdmin" style="background:rgba(255,255,255,0.05); padding:15px; border-radius:12px; margin-bottom:15px;">
                         <h4 style="margin:0 0 10px; color:var(--primary-light);">Admin Panel</h4>
-                        
-                        <!-- Restored Key Inputs -->
                         <div v-if="showKeyInputs">
                             <input type="text" v-model="tempId" class="input-box" placeholder="Twitch Client ID">
                             <input type="text" v-model="tempTkn" class="input-box" placeholder="Twitch Access Token">
                             <button class="input-box" style="background:var(--primary); font-weight:700; text-align:center;" @click="saveKeysAndSync">Save & Sync</button>
                         </div>
-                        
                         <button v-else class="input-box" style="background:var(--primary); font-weight:700; text-align:center;" @click="handleSyncClick" :disabled="isSyncing">
                             {{ isSyncing ? 'SYNCING...' : 'Backup Fetch' }}
                         </button>
@@ -209,12 +204,10 @@
 
         createApp({
             setup() {
-                const splashVisible = ref(true), splashOpacity = ref(1), currentTab = ref('home'), isLive = ref(false);
+                const splashVisible = ref(true), splashOpacity = ref(1), currentTab = ref('home'), isLive = ref(false); // SET TO FALSE
                 const currentUser = ref(localStorage.getItem('miko_user')), loginNick = ref(''), loginPass = ref('');
                 const isAdmin = computed(() => currentUser.value === 'tomato_24');
                 const posts = ref([]), clips = ref([]), modals = ref({ profile: false }), activeClip = ref(null), isSyncing = ref(false), host = window.location.hostname || "localhost";
-                
-                // Restored Admin logic
                 const showKeyInputs = ref(false), tempId = ref(''), tempTkn = ref('');
 
                 const logoSvg = (id) => `<svg viewBox="0 0 100 100"><defs><linearGradient id="grad-${id}" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stop-color="#ffffff"/><stop offset="100%" stop-color="#9146FF"/></linearGradient></defs><circle cx="50" cy="50" r="40" fill="none" stroke="url(#grad-${id})" stroke-width="8"/><path d="M 33 38 L 48 62 L 62 38 L 62 55 Q 62 65 69 64" fill="none" stroke="url(#grad-${id})" stroke-width="8" stroke-linecap="round" stroke-linejoin="round"/></svg>`;
