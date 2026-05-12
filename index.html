@@ -217,10 +217,11 @@
                 <div v-else style="text-align:center;">
                     <h3 style="margin-bottom:20px;">{{ currentUser }}</h3>
                     
-                    <!-- ADMIN TOOLS -->
+                    <!-- ADMIN TOOLS SECTION -->
                     <div v-if="isAdmin" style="margin-bottom: 20px; padding: 15px; border-radius: 8px; border: 1px solid var(--primary); background: rgba(145, 70, 255, 0.1);">
                         <h4 style="margin: 0 0 10px; color: var(--primary-light); font-size: 12px; text-transform: uppercase;">Admin Tools</h4>
                         
+                        <!-- HIDDEN KEY ENTRY FORM -->
                         <div v-if="showTwitchForm" style="margin-bottom: 10px;">
                             <p style="font-size: 11px; color: var(--text-muted); margin: 0 0 8px;">Paste exactly from twitchtokengenerator.com</p>
                             <input type="text" v-model="twitchClientId" class="input-box" placeholder="CLIENT ID" style="padding: 10px; margin-bottom: 8px;">
@@ -228,6 +229,7 @@
                             <button class="input-box" style="background:var(--primary); font-weight:700; border:none; margin-bottom:0;" @click="saveKeysAndSync">Save & Fetch</button>
                         </div>
 
+                        <!-- MAIN SYNC BUTTON -->
                         <button v-else class="input-box" style="background:var(--primary); font-weight:700; border:none; margin-bottom:10px;" @click="startSyncFlow" :disabled="isSyncing">
                             <span class="material-symbols-rounded" style="vertical-align: middle; font-size: 18px; margin-right: 5px;">sync</span> 
                             {{ isSyncing ? 'SYNCING...' : 'Fetch 90 Days of Clips' }}
@@ -350,7 +352,6 @@
                     
                     const idx = userLikes.value.indexOf(id);
                     if (idx > -1) {
-                        // Optimistic update
                         userLikes.value.splice(idx, 1);
                         counts.value[id] = Math.max(0, (counts.value[id] || 1) - 1);
                         await sbClient.from('likes').delete().eq('username', currentUser.value).eq('clip_id', id);
@@ -393,7 +394,7 @@
                         currentUser.value = n;
                         loginNick.value = '';
                         loginPass.value = '';
-                        loadData(); // refresh likes for user
+                        loadData(); 
                     }
                 };
 
@@ -444,7 +445,6 @@
                     const cleanToken = token.replace(/^(Bearer\s+|oauth:)/i, '').trim();
                     const cleanClientId = clientId.trim();
 
-                    // Formatting headers strictly to Twitch API specs to prevent preflight rejection
                     const headers = { 
                         'Client-Id': cleanClientId, 
                         'Authorization': `Bearer ${cleanToken}`,
@@ -474,7 +474,7 @@
 
                         const insertData = clipsData.data.map(c => ({ id: c.id, added_by: 'CodeMiko', created_at: c.created_at }));
                         const { error } = await sbClient.from('clips').upsert(insertData, { onConflict: 'id', ignoreDuplicates: true });
-                        if (error) throw error;
+                        if (error) throw error; // THIS CATCHES SUPABASE RLS ERRORS
 
                         alert(`Success! Auto-fetched ${insertData.length} recent clips.`);
                         modals.value.login = false;
@@ -517,7 +517,7 @@
                 const handleTouchEnd = (e, modalId) => {
                     e.currentTarget.style.transition = 'transform 0.3s cubic-bezier(0.1, 0.5, 0.1, 1)';
                     if (currentY > 120) modals.value[modalId] = false;
-                    setTimeout(() => e.currentTarget.style.transform = '', 50); // reset style so vue class logic handles it
+                    setTimeout(() => e.currentTarget.style.transform = '', 50); 
                     currentY = 0;
                 };
 
