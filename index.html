@@ -86,16 +86,22 @@
         .nav-item:hover { color: white; }
         .nav-item.active { color: var(--primary); }
         
+        /* NEW M-CAMERA UPLOAD BUTTON */
         .nav-fab {
-            width: 64px; height: 46px; border-radius: 14px;
-            background: var(--primary);
-            display: flex; align-items: center; justify-content: center; transform: translateY(-12px);
-            box-shadow: 0 4px 15px rgba(145, 70, 255, 0.4); cursor: pointer; border: 3px solid var(--bg-color);
-            transition: transform 0.2s ease, filter 0.2s ease, background 0.2s ease;
+            width: 60px; height: 60px; 
+            background: transparent;
+            display: flex; align-items: center; justify-content: center; 
+            transform: translateY(-15px);
+            cursor: pointer; 
+            transition: transform 0.2s ease, filter 0.2s ease;
         }
-        .nav-fab:hover { background: var(--primary-light); }
-        .nav-fab:active { transform: translateY(-10px) scale(0.95); filter: brightness(1.1); }
-        .fab-icon { font-family: 'Outfit', sans-serif; font-size: 28px; font-weight: 800; color: #fff; line-height: 0; padding-bottom: 2px; }
+        .nav-fab:hover { filter: brightness(1.15); }
+        .nav-fab:active { transform: translateY(-12px) scale(0.95); filter: brightness(1.3); }
+        
+        .fab-icon-svg { 
+            width: 100%; height: 100%; 
+            filter: drop-shadow(0 4px 10px rgba(145, 70, 255, 0.4)); 
+        }
 
         #login-modal, #add-modal { position: absolute; inset: 0; background: rgba(0,0,0,0.8); z-index: 1500; display: none; flex-direction: column; justify-content: flex-end; backdrop-filter: blur(5px); }
         .modal-content { background: var(--card-bg); border-radius: 20px 20px 0 0; padding: 25px 20px 40px; transform: translateY(100%); transition: transform 0.3s; border-top: 1px solid var(--border-color); }
@@ -165,7 +171,29 @@
         <div class="bottom-nav">
             <div class="nav-item active" id="nav-home" onclick="switchTab('home')"><span class="material-symbols-rounded">home</span>Home</div>
             <div class="nav-item" id="nav-community" onclick="switchTab('community')"><span class="material-symbols-rounded">forum</span>Community</div>
-            <div class="nav-fab" onclick="openModal()"><div class="fab-icon">M</div></div>
+            
+            <!-- NEW M-CAMERA BUTTON -->
+            <div class="nav-fab" onclick="openModal()">
+                <svg viewBox="0 0 100 100" class="fab-icon-svg">
+                    <defs>
+                        <linearGradient id="mCamGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+                            <stop offset="0%" stop-color="#ffffff"/>
+                            <stop offset="100%" stop-color="#9146FF"/>
+                        </linearGradient>
+                        <mask id="cameraMask">
+                            <rect width="100" height="100" fill="white" />
+                            <rect x="25" y="46" width="50" height="39" fill="black" />
+                            <polygon points="25,46 38,35 62,35 75,46" fill="black" />
+                            <rect x="28" y="31" width="8" height="3.5" fill="black" />
+                            <circle cx="68" cy="52" r="3.5" fill="white" />
+                            <circle cx="50" cy="65" r="14" fill="white" />
+                            <path d="M 43 61 A 9 9 0 0 1 52 53" stroke="black" stroke-width="2.5" fill="none" stroke-linecap="round"/>
+                        </mask>
+                    </defs>
+                    <path d="M 10 20 L 25 20 L 38 35 L 62 35 L 75 20 L 90 20 L 90 85 L 10 85 Z" fill="url(#mCamGrad)" mask="url(#cameraMask)" />
+                </svg>
+            </div>
+
             <div class="nav-item" id="nav-clips" onclick="switchTab('clips')"><span class="material-symbols-rounded">favorite</span>Favorites</div>
             <div class="nav-item" id="nav-login" onclick="openLogin()"><span class="material-symbols-rounded">account_circle</span><span id="login-text">Login</span></div>
         </div>
