@@ -3,9 +3,19 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
+    
+    <!-- PWA AND MOBILE APP SETTINGS -->
     <meta name="mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="MikoTok">
+    <meta name="application-name" content="MikoTok">
     <meta name="theme-color" content="#000000">
+
+    <!-- GENERATED APP ICONS (NO EXTERNAL FILES NEEDED) -->
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' fill='%23000000'/><defs><linearGradient id='g' x1='0%25' y1='0%25' x2='100%25' y2='100%25'><stop offset='0%25' stop-color='%23ffffff'/><stop offset='100%25' stop-color='%239146FF'/></linearGradient></defs><circle cx='50' cy='50' r='35' fill='none' stroke='url(%23g)' stroke-width='6'/><path d='M 38 40 L 48 60 L 58 40 L 58 55 Q 58 63 65 62' fill='none' stroke='url(%23g)' stroke-width='6' stroke-linecap='round' stroke-linejoin='round'/></svg>">
+    <link rel="apple-touch-icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' fill='%23000000'/><defs><linearGradient id='g' x1='0%25' y1='0%25' x2='100%25' y2='100%25'><stop offset='0%25' stop-color='%23ffffff'/><stop offset='100%25' stop-color='%239146FF'/></linearGradient></defs><circle cx='50' cy='50' r='35' fill='none' stroke='url(%23g)' stroke-width='6'/><path d='M 38 40 L 48 60 L 58 40 L 58 55 Q 58 63 65 62' fill='none' stroke='url(%23g)' stroke-width='6' stroke-linecap='round' stroke-linejoin='round'/></svg>">
+
     <title>MikoTok</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&family=Outfit:wght@800&family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@24,400,1,0" rel="stylesheet">
     <style>
@@ -269,7 +279,6 @@
                 </div>`;
         }
 
-        /* ----- REFACTORED ADMIN AUTO-FETCH LOGIC ----- */
         function startSyncFlow() {
             let clientId = localStorage.getItem('twitch_client_id');
             let token = localStorage.getItem('twitch_access_token');
@@ -286,7 +295,7 @@
             let clientId = document.getElementById('twitch-client-id').value.trim();
             let token = document.getElementById('twitch-access-token').value.trim();
             
-            // Auto-clean the token in case the user accidentally copied "Bearer " with it
+            // Auto-clean the token
             token = token.replace(/^Bearer\s+/i, '');
 
             if (!clientId || !token) {
@@ -316,12 +325,12 @@
         async function executeTwitchSync(clientId, token) {
             document.getElementById('live-text').innerText = "SYNCING...";
             
-            // Ensure token is completely clean for the API call
+            // Clean tokens for API
             const cleanToken = token.replace(/^Bearer\s+/i, '').trim();
             const cleanClientId = clientId.trim();
 
             try {
-                // 1. Get CodeMiko's Broadcaster ID
+                // 1. Get Broadcaster ID
                 const userRes = await fetch(`https://api.twitch.tv/helix/users?login=${TWITCH_CHANNEL}`, { 
                     headers: { 'Client-ID': cleanClientId, 'Authorization': `Bearer ${cleanToken}` } 
                 });
@@ -338,7 +347,7 @@
                 if (!userData.data || userData.data.length === 0) throw new Error("Could not find user.");
                 const broadcasterId = userData.data[0].id;
 
-                // 2. Fetch clips from last 90 days
+                // 2. Fetch clips
                 const startDate = new Date(Date.now() - 90 * 24 * 60 * 60 * 1000).toISOString();
                 const clipsRes = await fetch(`https://api.twitch.tv/helix/clips?broadcaster_id=${broadcasterId}&started_at=${startDate}&first=50`, { 
                     headers: { 'Client-ID': cleanClientId, 'Authorization': `Bearer ${cleanToken}` } 
@@ -368,7 +377,6 @@
                 updateStatus(false);
             }
         }
-        /* ------------------------------------------ */
 
         async function toggleLike(id) {
             if (!currentUser) { openModal('login'); return; }
