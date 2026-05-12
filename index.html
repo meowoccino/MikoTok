@@ -15,12 +15,10 @@
         
         #app-container { width: 100%; max-width: 480px; height: 100%; position: relative; background: radial-gradient(circle at top, #1a0b2e 0%, #000 100%); overflow: hidden; }
 
-        /* BIGGER SPLASH SCREEN */
         #splash-screen { position: absolute; inset: 0; background: var(--bg-color); display: flex; flex-direction: column; align-items: center; justify-content: center; z-index: 9999; transition: opacity 0.6s ease; }
         #splash-icon { width: 160px; height: 160px; margin-bottom: 25px; }
         .splash-logo-text { font-family: 'Outfit', sans-serif; font-size: 42px; font-weight: 800; letter-spacing: -1px; margin-bottom: 30px; }
         
-        /* WHITE & PURPLE PROGRESS BAR */
         .progress-bar { width: 200px; height: 4px; background: rgba(255,255,255,0.1); border-radius: 10px; overflow: hidden; position: relative; }
         .progress-fill { 
             position: absolute; left: 0; top: 0; height: 100%; width: 50%; 
@@ -48,7 +46,6 @@
         .action-btn.liked { color: var(--primary-light); }
         .action-btn.liked span { font-variation-settings: 'FILL' 1; }
 
-        /* LOCKED STATE DESIGN */
         .locked-view { text-align: center; padding-top: 80px; color: var(--text-muted); opacity: 0.6; }
         .locked-view span { font-size: 56px; margin-bottom: 15px; display: block; color: var(--primary-light); }
 
@@ -82,7 +79,6 @@
             <div id="login-form">
                 <input type="text" id="login-nick" class="input-box" placeholder="Username">
                 
-                <!-- PASSWORD CONTAINER WITH EYE ICON -->
                 <div style="position: relative; width: 100%; margin-bottom: 12px;">
                     <input type="password" id="login-pass" class="input-box" placeholder="Minimum 6 characters" style="margin-bottom: 0; padding-right: 45px;">
                     <span class="material-symbols-rounded" id="eye-icon" style="position: absolute; right: 15px; top: 50%; transform: translateY(-50%); color: var(--text-muted); cursor: pointer; user-select: none;" onclick="togglePassword()">visibility</span>
@@ -204,7 +200,6 @@
             target.innerHTML += `<div class="card">${isAdmin ? `<span class="material-symbols-rounded admin-del" onclick="deleteItem('clips', '${c.id}')">delete</span>` : ''}<div style="display:flex; align-items:center; margin-bottom:10px;"><div class="avatar-ring">${avatarChar}</div><div style="font-weight:600;">${c.added_by || 'CodeMiko'}</div></div><div class="video-container"><iframe data-src="https://clips.twitch.tv/embed?clip=${c.id}&parent=${window.location.hostname}" title="Twitch Clip"></iframe></div><div class="card-actions"><div class="action-btn ${isLiked?'liked':''}" onclick="toggleLike('${c.id}')"><span class="material-symbols-rounded">favorite</span> ${isLiked ? 1 : 0}</div></div></div>`;
         }
 
-        // TOGGLE PASSWORD VISIBILITY
         function togglePassword() {
             const input = document.getElementById('login-pass');
             const icon = document.getElementById('eye-icon');
@@ -217,7 +212,6 @@
             }
         }
 
-        // CRYPTOGRAPHIC HASHING FUNCTION
         async function hashPassword(password) {
             const msgBuffer = new TextEncoder().encode(password);
             const hashBuffer = await crypto.subtle.digest('SHA-256', msgBuffer);
@@ -230,16 +224,13 @@
             const rawPass = document.getElementById('login-pass').value.trim();
             if (!n || rawPass.length < 6) { showToast("Minimum 6 characters required"); return; }
             
-            // Hash the password before it ever touches the network
             const secureHash = await hashPassword(rawPass);
 
             const { data } = await sbClient.from('profiles').select('*').eq('username', n).single();
             if (data) {
-                // Compare hashes securely
                 if (data.password === secureHash) completeLogin(n);
                 else showToast("Incorrect password for this user");
             } else {
-                // Store the hash in the database, never the real password
                 const { error: regErr } = await sbClient.from('profiles').insert([{ username: n, password: secureHash }]);
                 if (!regErr) completeLogin(n);
                 else showToast("Username unavailable");
