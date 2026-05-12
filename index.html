@@ -125,8 +125,17 @@
                 
                 <div id="login-form">
                     <input type="text" id="login-nick" class="input-box" placeholder="Username">
-                    <input type="password" id="login-pass" class="input-box" placeholder="Password">
-                    <button class="input-box" style="background:var(--primary); font-weight:700; border:none;" onclick="handleLogin()">Sign In</button>
+                    
+                    <!-- WRAPPED PASSWORD INPUT WITH EYE ICON -->
+                    <div style="position: relative; width: 100%;">
+                        <input type="password" id="login-pass" class="input-box" placeholder="Password" style="padding-right: 40px;">
+                        <span class="material-symbols-rounded" id="toggle-pass-icon" onclick="togglePassword()" style="position: absolute; right: 12px; top: 14px; color: var(--text-muted); cursor: pointer; user-select: none;">visibility_off</span>
+                    </div>
+                    
+                    <!-- WARNING TEXT -->
+                    <p style="font-size: 11px; color: var(--danger); text-align: center; margin: -5px 0 15px 0;">Warning: Passwords cannot be reset.</p>
+                    
+                    <button class="input-box" style="background:var(--primary); font-weight:700; border:none;" onclick="handleLogin()">Sign In / Register</button>
                 </div>
                 
                 <div id="profile-form" style="display:none; text-align:center;">
@@ -277,6 +286,19 @@
                         <div class="action-btn ${isLiked?'liked':''}" onclick="toggleLike('${c.id}')"><span class="material-symbols-rounded">favorite</span> ${count}</div>
                     </div>
                 </div>`;
+        }
+
+        /* ----- PASSWORD VISIBILITY TOGGLE ----- */
+        function togglePassword() {
+            const passInput = document.getElementById('login-pass');
+            const toggleIcon = document.getElementById('toggle-pass-icon');
+            if (passInput.type === 'password') {
+                passInput.type = 'text';
+                toggleIcon.innerText = 'visibility';
+            } else {
+                passInput.type = 'password';
+                toggleIcon.innerText = 'visibility_off';
+            }
         }
 
         /* ----- DEV DASHBOARD OAUTH SYNC LOGIC ----- */
