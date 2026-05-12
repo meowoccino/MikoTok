@@ -81,7 +81,7 @@
         <div id="login-modal"><div class="modal-content" id="login-panel">
             <div id="login-form">
                 <input type="text" id="login-nick" class="input-box" placeholder="Username">
-                <input type="password" id="login-pass" class="input-box" placeholder="Minimum 8 characters">
+                <input type="password" id="login-pass" class="input-box" placeholder="Minimum 6 characters">
                 <button class="input-box" id="login-btn" style="background:var(--primary); font-weight:700;" onclick="handleLogin()">Sign In / Register</button>
             </div>
             <div id="profile-form" style="display:none; text-align:center;">
@@ -110,6 +110,11 @@
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script>
         const SUPABASE_URL = 'https://yhxcuayiwqpjvalyrcqv.supabase.co', SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InloeGN1YXlpd3FwanZhbHlyY3F2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzg1Nzk1ODEsImV4cCI6MjA5NDE1NTU4MX0.z7EDgqRz1OT25UdxtmeJxFvwx4UCwaPRwWWJuzd46kc';
+        
+        // --- CHANGE YOUR ADMIN USERNAME HERE ---
+        const ADMIN_USERNAME = 'tomato_24';
+        // ---------------------------------------
+
         let sbClient = null, currentTab = 'home', currentUser = null, isAdmin = false, globalData = { clips: [], posts: [], users: [] };
         let likedIds = JSON.parse(localStorage.getItem('miko_likes') || '[]'), currentPlayingIframe = null;
 
@@ -121,7 +126,7 @@
             try {
                 sbClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
                 const saved = localStorage.getItem('miko_user');
-                if (saved) { currentUser = saved; isAdmin = (saved === 'tomato_24'); document.getElementById('login-text').innerText = saved; document.getElementById('upload-btn-container').classList.add('logged-in'); }
+                if (saved) { currentUser = saved; isAdmin = (saved === ADMIN_USERNAME); document.getElementById('login-text').innerText = saved; document.getElementById('upload-btn-container').classList.add('logged-in'); }
                 await loadData();
                 setupIntersectionObserver();
             } catch (e) { setTimeout(hideSplash, 2000); }
@@ -132,7 +137,6 @@
             const { data: posts } = await sbClient.from('posts').select('*').order('created_at', { ascending: false });
             const { data: users } = await sbClient.from('profiles').select('*');
             globalData.clips = clips || []; globalData.posts = posts || []; globalData.users = users || []; render(); 
-            // FIXED 2 SECOND DELAY
             setTimeout(hideSplash, 2000);
         }
 
@@ -142,7 +146,6 @@
                 s.style.opacity='0'; 
                 setTimeout(() => { 
                     s.style.display='none'; 
-                    // TRIGGER FIRST VIDEO
                     const first = document.querySelector('iframe');
                     if(first) playVideo(first);
                 }, 600); 
@@ -172,7 +175,6 @@
         function render() {
             const f = document.getElementById('feed-content'); f.innerHTML = '';
             
-            // UNIFIED LOCKED VIEW FOR FEED AND LIKED
             if ((currentTab === 'community' || currentTab === 'clips') && !currentUser) {
                 f.innerHTML = `<div class="locked-view"><span class="material-symbols-rounded">lock</span><p>Authentication required</p></div>`;
                 return;
@@ -181,7 +183,7 @@
             if (currentTab === 'community') {
                 f.innerHTML = `<div class="card"><textarea id="p-text" class="input-box" style="height:80px;resize:none;" placeholder="Write a post..."></textarea><button class="input-box" style="background:var(--primary);font-weight:700;" onclick="submitPost()">Post</button></div>`;
                 globalData.posts.forEach(p => {
-                    const avatarChar = p.author === 'tomato_24' ? 'T' : (p.author ? p.author[0].toUpperCase() : '?');
+                    const avatarChar = p.author === ADMIN_USERNAME ? ADMIN_USERNAME[0].toUpperCase() : (p.author ? p.author[0].toUpperCase() : '?');
                     f.innerHTML += `<div class="card">${isAdmin ? `<span class="material-symbols-rounded admin-del" onclick="deleteItem('posts', '${p.id}')">delete</span>` : ''}<div style="display:flex; align-items:center; margin-bottom:10px;"><div class="avatar-ring">${avatarChar}</div><div style="font-weight:600;">${p.author}</div></div><div style="font-size:14px; color:#ccc;">${p.text}</div></div>`;
                 });
             } else if (currentTab === 'clips') {
@@ -194,14 +196,14 @@
         }
 
         function renderCard(target, c) {
-            const avatarChar = (c.added_by === 'tomato_24') ? 'T' : (c.added_by === 'codemiko' || !c.added_by ? 'M' : c.added_by[0].toUpperCase());
+            const avatarChar = (c.added_by === ADMIN_USERNAME) ? ADMIN_USERNAME[0].toUpperCase() : (c.added_by === 'codemiko' || !c.added_by ? 'M' : c.added_by[0].toUpperCase());
             const isLiked = likedIds.includes(c.id);
             target.innerHTML += `<div class="card">${isAdmin ? `<span class="material-symbols-rounded admin-del" onclick="deleteItem('clips', '${c.id}')">delete</span>` : ''}<div style="display:flex; align-items:center; margin-bottom:10px;"><div class="avatar-ring">${avatarChar}</div><div style="font-weight:600;">${c.added_by || 'CodeMiko'}</div></div><div class="video-container"><iframe data-src="https://clips.twitch.tv/embed?clip=${c.id}&parent=${window.location.hostname}" title="Twitch Clip"></iframe></div><div class="card-actions"><div class="action-btn ${isLiked?'liked':''}" onclick="toggleLike('${c.id}')"><span class="material-symbols-rounded">favorite</span> ${isLiked ? 1 : 0}</div></div></div>`;
         }
 
         async function handleLogin() {
             const n = document.getElementById('login-nick').value.trim().toLowerCase(), p = document.getElementById('login-pass').value.trim();
-            if (!n || p.length < 8) { showToast("Minimum 8 characters required"); return; }
+            if (!n || p.length < 6) { showToast("Minimum 6 characters required"); return; }
             const { data } = await sbClient.from('profiles').select('*').eq('username', n).single();
             if (data) {
                 if (data.password === p) completeLogin(n);
@@ -214,7 +216,7 @@
         }
 
         function completeLogin(name) {
-            currentUser = name; isAdmin = (name === 'tomato_24');
+            currentUser = name; isAdmin = (name === ADMIN_USERNAME);
             localStorage.setItem('miko_user', currentUser);
             document.getElementById('login-text').innerText = currentUser;
             document.getElementById('upload-btn-container').classList.add('logged-in');
@@ -229,7 +231,7 @@
         async function deleteItem(table, id) { if(!isAdmin) return; await sbClient.from(table).delete().eq('id', id); loadData(); }
         async function deleteUser(user) { if(!isAdmin) return; await sbClient.from('profiles').delete().eq('username', user); loadData(); }
         function switchTab(t) { currentTab = t; document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active')); document.getElementById('nav-' + t).classList.add('active'); render(); }
-        function openModal(id) { if(id === 'login' && currentUser) { document.getElementById('login-form').style.display='none'; document.getElementById('profile-form').style.display='block'; document.getElementById('display-name').innerText=currentUser; const tag = document.getElementById('admin-tag'), mgr = document.getElementById('admin-manager'); if(isAdmin) { tag.style.display='block'; mgr.style.display='block'; const list = document.getElementById('user-list-container'); list.innerHTML = ''; globalData.users.filter(u => u.username !== 'tomato_24').forEach(u => { list.innerHTML += `<div class="user-row"><span>${u.username}</span><span class="material-symbols-rounded" style="color:var(--danger); cursor:pointer;" onclick="deleteUser('${u.username}')">person_remove</span></div>`; }); } else { tag.style.display='none'; mgr.style.display='none'; } } else { document.getElementById('login-form').style.display='block'; document.getElementById('profile-form').style.display='none'; } document.getElementById(id + '-modal').style.display = 'flex'; setTimeout(() => document.getElementById(id + '-panel').style.transform = 'translateY(0)', 10); }
+        function openModal(id) { if(id === 'login' && currentUser) { document.getElementById('login-form').style.display='none'; document.getElementById('profile-form').style.display='block'; document.getElementById('display-name').innerText=currentUser; const tag = document.getElementById('admin-tag'), mgr = document.getElementById('admin-manager'); if(isAdmin) { tag.style.display='block'; mgr.style.display='block'; const list = document.getElementById('user-list-container'); list.innerHTML = ''; globalData.users.filter(u => u.username !== ADMIN_USERNAME).forEach(u => { list.innerHTML += `<div class="user-row"><span>${u.username}</span><span class="material-symbols-rounded" style="color:var(--danger); cursor:pointer;" onclick="deleteUser('${u.username}')">person_remove</span></div>`; }); } else { tag.style.display='none'; mgr.style.display='none'; } } else { document.getElementById('login-form').style.display='block'; document.getElementById('profile-form').style.display='none'; } document.getElementById(id + '-modal').style.display = 'flex'; setTimeout(() => document.getElementById(id + '-panel').style.transform = 'translateY(0)', 10); }
         function closeModal(id) { document.getElementById(id + '-panel').style.transform = 'translateY(100%)'; setTimeout(() => document.getElementById(id + '-modal').style.display = 'none', 300); }
         function showToast(m) { const t = document.getElementById('toast'); t.innerText = m; t.style.display = 'block'; setTimeout(() => t.style.display = 'none', 2500); }
         window.addEventListener('load', init);
