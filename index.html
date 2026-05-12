@@ -83,6 +83,10 @@
         #login-modal, #add-modal { position: absolute; inset: 0; background: rgba(0,0,0,0.9); z-index: 1500; display: none; flex-direction: column; justify-content: flex-end; }
         .modal-content { background: #111113; border-radius: 20px 20px 0 0; padding: 25px 20px 40px; transform: translateY(100%); transition: transform 0.3s ease-out; border-top: 1px solid var(--border-color); }
         .input-box { width: 100%; background: #000; border: 1px solid var(--border-color); color: white; padding: 14px; border-radius: 8px; outline: none; margin-bottom: 12px; font-size: 14px; }
+        
+        /* RESTORED EYE POSITIONING */
+        .pass-wrapper { position: relative; width: 100%; margin-bottom: 12px; }
+        .eye-btn { position: absolute; right: 12px; top: 50%; transform: translateY(-50%); color: var(--text-muted); cursor: pointer; user-select: none; }
     </style>
 </head>
 <body>
@@ -107,7 +111,10 @@
         <div id="login-modal"><div class="modal-content" id="login-panel">
             <div id="login-form">
                 <input type="text" id="login-nick" class="input-box" placeholder="Username">
-                <input type="password" id="login-pass" class="input-box" placeholder="Password">
+                <div class="pass-wrapper">
+                    <input type="password" id="login-pass" class="input-box" placeholder="Password" style="margin-bottom:0; padding-right: 45px;">
+                    <span class="material-symbols-rounded eye-btn" id="eye-icon" onclick="togglePassword()">visibility</span>
+                </div>
                 <button class="input-box" style="background:var(--primary); font-weight:700; border:none;" onclick="handleLogin()">Sign In</button>
             </div>
             <div id="profile-form" style="display:none; text-align:center;">
@@ -187,10 +194,8 @@
 
         function renderCard(target, c) {
             const isLiked = likedIds.includes(c.id);
-            // Dynamic avatar and name fix
             const authorName = c.added_by || 'CodeMiko';
             const avatarChar = authorName === ADMIN_USERNAME ? 'T' : (authorName === 'CodeMiko' ? 'M' : authorName[0].toUpperCase());
-            
             target.innerHTML += `<div class="card">${isAdmin ? `<span class="material-symbols-rounded admin-del" onclick="deleteItem('clips', '${c.id}')">delete</span>` : ''}<div style="display:flex; align-items:center;"><div class="avatar-ring">${avatarChar}</div><div><div style="font-weight:600; font-size:14px;">${authorName}</div></div></div><div class="video-container"><iframe data-src="https://clips.twitch.tv/embed?clip=${c.id}&parent=${window.location.hostname}" onload="this.classList.add('loaded')"></iframe></div><div class="card-actions"><div class="action-btn ${isLiked?'liked':''}" onclick="toggleLike('${c.id}')"><span class="material-symbols-rounded">favorite</span> ${isLiked ? 1 : 0}</div></div></div>`;
         }
 
@@ -228,6 +233,19 @@
         }
         
         function closeModal(id) { document.getElementById(id + '-panel').style.transform = 'translateY(100%)'; setTimeout(() => document.getElementById(id + '-modal').style.display = 'none', 300); }
+        
+        function togglePassword() {
+            const input = document.getElementById('login-pass');
+            const icon = document.getElementById('eye-icon');
+            if (input.type === 'password') {
+                input.type = 'text';
+                icon.innerText = 'visibility_off';
+            } else {
+                input.type = 'password';
+                icon.innerText = 'visibility';
+            }
+        }
+        
         window.addEventListener('load', init);
     </script>
 </body>
