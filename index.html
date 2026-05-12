@@ -13,6 +13,7 @@
     
     <title>MikoTok</title>
     
+    <!-- Link to the physical manifest file -->
     <link rel="manifest" href="manifest.json">
     <link id="favicon-link" rel="icon" href="">
     
@@ -60,7 +61,12 @@
         #splash-icon { width: 100px; height: 100px; margin-bottom: 15px; }
 
         .progress-bar { width: 120px; height: 3px; background: #2f2f35; border-radius: 4px; margin-top: 20px; overflow: hidden; position: relative; }
-        .progress-fill { position: absolute; left: 0; top: 0; height: 100%; width: 50%; background: linear-gradient(90deg, #ffffff 0%, var(--primary) 100%); border-radius: 4px; animation: load 1.5s infinite ease-in-out; box-shadow: 0 0 8px rgba(145, 70, 255, 0.4); }
+        .progress-fill { 
+            position: absolute; left: 0; top: 0; height: 100%; width: 50%; 
+            background: linear-gradient(90deg, #ffffff 0%, var(--primary) 100%); 
+            border-radius: 4px; animation: load 1.5s infinite ease-in-out; 
+            box-shadow: 0 0 8px rgba(145, 70, 255, 0.4);
+        }
         @keyframes load { 0% { left: -50%; } 100% { left: 100%; } }
 
         .app-header {
@@ -75,10 +81,7 @@
         .card-header { display: flex; align-items: center; margin-bottom: 12px; }
         .card-avatar { width: 38px; height: 38px; border-radius: 50%; margin-right: 12px; border: 2px solid var(--primary); background: #000; }
         .meta-name { font-size: 14px; font-weight: 600; color: white; }
-        
-        /* ADDED MARGIN RIGHT TO PREVENT OVERLAP WITH DELETE BUTTON */
-        .post-date { font-size: 11px; color: var(--text-muted); margin-left: auto; font-weight: 500; margin-right: 28px; }
-        
+        .post-date { font-size: 11px; color: var(--text-muted); margin-left: auto; font-weight: 500; margin-right: 30px; }
         .admin-del { position: absolute; top: 12px; right: 12px; color: var(--danger); cursor: pointer; z-index: 10; display: none; }
 
         .video-container { position: relative; width: 100%; border-radius: 8px; overflow: hidden; background: #000; aspect-ratio: 16/9; display: flex; align-items: center; justify-content: center; border: 1px solid var(--border-color); }
@@ -90,9 +93,6 @@
         .action-item { display: flex; align-items: center; gap: 6px; color: var(--text-muted); font-size: 13px; cursor: pointer; transition: color 0.2s; }
         .action-item.liked { color: var(--primary-light); }
         .action-item.liked span { font-variation-settings: 'FILL' 1; }
-
-        .empty-state { text-align: center; color: var(--text-muted); padding: 40px 20px; font-size: 14px; font-weight: 500; display: flex; flex-direction: column; align-items: center; gap: 10px; }
-        .empty-state span { font-size: 40px; color: #2f2f35; }
 
         .bottom-nav {
             position: absolute; bottom: 0; left: 0; width: 100%; background: var(--bg-color); border-top: 1px solid var(--border-color);
@@ -116,7 +116,6 @@
         .input-box:focus { border-color: var(--primary); }
         .toggle-pass { position: absolute; right: 12px; top: 50%; transform: translateY(-50%); color: var(--text-muted); cursor: pointer; font-size: 20px; }
         .btn-post { width: 100%; background: var(--primary); color: white; border: none; padding: 14px; border-radius: 6px; font-weight: 600; cursor: pointer; transition: background 0.2s; }
-        .btn-post:hover { background: var(--primary-light); }
 
         #toast { 
             position: absolute; top: 100px; left: 50%; transform: translateX(-50%); 
@@ -165,9 +164,7 @@
                 <div id="profile-view" style="display:none; text-align:center;">
                     <div id="profile-avatar-container"></div>
                     <h2 id="profile-name" style="margin: 10px 0 20px;"></h2>
-                    
-                    <button id="btn-pwa-install" class="btn-post" style="display:none; margin-bottom: 15px; background: #fff; color: var(--primary);" onclick="triggerPWAInstall()">Install App</button>
-                    
+                    <button id="btn-pwa-install" class="btn-post" style="margin-bottom: 15px; background: #fff; color: var(--primary);" onclick="triggerPWAInstall()">Install App</button>
                     <div style="display:flex; gap:10px;">
                         <button style="flex:1; background:#2f2f35; color:white; border:none; border-radius:6px;" onclick="closeLogin()">Close</button>
                         <button class="btn-post" style="flex:1; background:var(--danger);" onclick="logout()">Logout</button>
@@ -198,7 +195,7 @@
     </div>
 
     <script>
-        // SVG LOGO DEFINITION
+        // --- UI LOGO GENERATOR ---
         const appIconSvg = `
             <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" class="fab-icon-svg">
                 <defs>
@@ -211,14 +208,12 @@
                 <path d="M 33 38 L 48 62 L 62 38 L 62 55 Q 62 65 69 64" fill="none" stroke="url(#mGradient)" stroke-width="7" stroke-linecap="round" stroke-linejoin="round"/>
             </svg>
         `;
-
         document.getElementById('upload-btn-container').innerHTML = appIconSvg.replace(/mGradient/g, 'mGradientNav');
         document.getElementById('splash-icon').innerHTML = appIconSvg.replace(/mGradient/g, 'mGradientSplash');
-        
         const base64Icon = `data:image/svg+xml;base64,${btoa(appIconSvg.replace('class="fab-icon-svg"', ''))}`;
         document.getElementById('favicon-link').href = base64Icon;
 
-        // PWA INSTALL LOGIC
+        // --- PWA INSTALL LOGIC ---
         let deferredPrompt;
         window.addEventListener('beforeinstallprompt', (e) => {
             e.preventDefault();
@@ -227,14 +222,12 @@
 
         async function triggerPWAInstall() {
             if (!deferredPrompt) {
-                alert("To install MikoTok: Open your browser menu (or Share button on iOS) and tap 'Add to Home Screen'.");
+                alert("To install MikoTok: Use browser menu -> Add to Home Screen");
                 return;
             }
             deferredPrompt.prompt();
             const { outcome } = await deferredPrompt.userChoice;
-            if (outcome === 'accepted') {
-                deferredPrompt = null;
-            }
+            if (outcome === 'accepted') { deferredPrompt = null; }
         }
 
         if ('serviceWorker' in navigator) {
@@ -243,7 +236,7 @@
             });
         }
 
-        // APP CORE
+        // --- APP DATA LOGIC ---
         const BIN_ID = '6a026ec4c0954111d80cc1f9'; 
         const MASTER_KEY = '$2a$10$kP1lbR4aymd6Gv5PkLUHVeum37M4wDDyIc1nCHT5pWK8DeJ5xkSke';
         const ADMIN_USER = 'tomato_24';
@@ -324,24 +317,18 @@
             const nick = nickInput.value.trim();
             const pass = passInput.value.trim();
             
-            if(!nick || !pass) { showToast("Enter credentials!"); return; }
-            if(nick.length > 10) { showToast("Nickname max 10 chars!"); return; }
-            if(pass.length < 8) { showToast("Password min 8 chars!"); return; }
+            if(!nick || !pass) return;
+            if(nick.length > 10 || pass.length < 8) return;
 
             let loggedUser = null;
-            
             if(nick === ADMIN_USER && pass === ADMIN_PASS) { 
                 isAdmin = true; 
                 loggedUser = ADMIN_USER; 
-            } 
-            else {
+            } else {
                 const existing = globalData.users.find(u => u.nick.toLowerCase() === nick.toLowerCase());
                 if (existing) {
-                    if (existing.pass === pass) {
-                        loggedUser = existing.nick;
-                    } else { 
-                        return; 
-                    }
+                    if (existing.pass === pass) loggedUser = existing.nick;
+                    else return;
                 } else {
                     globalData.users.push({ nick, pass }); 
                     loggedUser = nick; 
@@ -353,21 +340,14 @@
                 localStorage.setItem('miko_session', JSON.stringify({ user: currentUser, timestamp: new Date().getTime() }));
                 document.getElementById('login-text').innerText = currentUser;
                 nickInput.value = ""; passInput.value = "";
-                closeLogin(); 
-                render();
+                closeLogin(); render();
             }
-        }
-
-        function togglePassword() {
-            const p = document.getElementById('login-pass'); const i = document.querySelector('.toggle-pass');
-            p.type = p.type === 'password' ? 'text' : 'password';
-            i.innerText = p.type === 'password' ? 'visibility' : 'visibility_off';
         }
 
         async function sync() { await fetch(`https://api.jsonbin.io/v3/b/${BIN_ID}`, { method: 'PUT', headers: { 'Content-Type': 'application/json', 'X-Master-Key': MASTER_KEY }, body: JSON.stringify(globalData) }); }
         function closeLogin() { document.getElementById('login-panel').style.transform='translateY(100%)'; setTimeout(()=>document.getElementById('login-modal').style.display='none', 300); }
         async function deleteItem(type, id) { if (!confirm("Delete?")) return; if (type === 'clip') globalData.clips = globalData.clips.filter(c => c.id !== id); else globalData.posts = globalData.posts.filter(p => p.id !== id); await sync(); render(); }
-        function switchTab(t) { currentTab = t; document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active')); document.getElementById(`nav-${t}`).classList.add('active'); f = document.getElementById('feed'); f.scrollTo(0,0); render(); }
+        function switchTab(t) { currentTab = t; document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active')); document.getElementById(`nav-${t}`).classList.add('active'); render(); }
         
         function render() {
             const f = document.getElementById('feed'); f.innerHTML = '';
@@ -376,10 +356,6 @@
         }
 
         function renderClips(f, items) {
-            if (items.length === 0) {
-                f.innerHTML = `<div class="empty-state"><span class="material-symbols-rounded">videocam_off</span><div>No clips found.</div></div>`;
-                return;
-            }
             items.forEach(c => {
                 const div = document.createElement('div'); div.className = 'card';
                 div.innerHTML = `
@@ -396,15 +372,6 @@
             const box = document.createElement('div'); box.className = 'card';
             box.innerHTML = `<textarea id="p-text" class="input-box" style="height:60px; margin-bottom: 12px; resize: none;" placeholder="Discuss..." maxlength="360"></textarea><button class="btn-post" onclick="submitPost()">Post</button>`;
             f.appendChild(box);
-            
-            if (globalData.posts.length === 0) {
-                const empty = document.createElement('div');
-                empty.className = 'empty-state';
-                empty.innerHTML = `<span class="material-symbols-rounded">chat_bubble</span><div>Be the first to post!</div>`;
-                f.appendChild(empty);
-                return;
-            }
-
             globalData.posts.forEach(p => {
                 const div = document.createElement('div'); div.className = 'card';
                 div.innerHTML = `
@@ -416,9 +383,10 @@
             });
         }
 
-        async function toggleLike(type, id) { if(!checkSession()) { showToast("Login to like!"); openLogin(); return; } const list = type === 'clip' ? globalData.clips : globalData.posts; const item = list.find(i => i.id.toString() === id.toString()); if(!item.likedBy) item.likedBy = []; if (item.likedBy.includes(currentUser)) item.likedBy = item.likedBy.filter(u => u !== currentUser); else item.likedBy.push(currentUser); render(); await sync(); }
-        async function submitClip() { if(!checkSession()) { showToast("Login first!"); openLogin(); return; } const url = document.getElementById('clip-url').value; if (!url.includes('twitch')) return; const id = url.split('/').pop().split('?')[0]; globalData.clips.unshift({ id, title: document.getElementById('clip-title').value || 'Clip', addedBy: currentUser, likedBy: [] }); closeModal(); await sync(); render(); }
-        async function submitPost() { if(!checkSession()) { showToast("Login first!"); openLogin(); return; } const text = document.getElementById('p-text').value; if (!text) return; globalData.posts.unshift({ id: Date.now(), author: currentUser, text, likedBy: [] }); await sync(); render(); }
+        async function toggleLike(type, id) { if(!checkSession()) { openLogin(); return; } const list = type === 'clip' ? globalData.clips : globalData.posts; const item = list.find(i => i.id.toString() === id.toString()); if(!item.likedBy) item.likedBy = []; if (item.likedBy.includes(currentUser)) item.likedBy = item.likedBy.filter(u => u !== currentUser); else item.likedBy.push(currentUser); render(); await sync(); }
+        async function submitClip() { if(!checkSession()) { openLogin(); return; } const url = document.getElementById('clip-url').value; if (!url.includes('twitch')) return; const id = url.split('/').pop().split('?')[0]; globalData.clips.unshift({ id, title: document.getElementById('clip-title').value || 'Clip', addedBy: currentUser, likedBy: [] }); closeModal(); await sync(); render(); }
+        async function submitPost() { if(!checkSession()) { openLogin(); return; } const text = document.getElementById('p-text').value; if (!text) return; globalData.posts.unshift({ id: Date.now(), author: currentUser, text, likedBy: [] }); await sync(); render(); }
+        function togglePassword() { const p = document.getElementById('login-pass'); p.type = p.type === 'password' ? 'text' : 'password'; }
         function openModal() { document.getElementById('add-modal').style.display='flex'; setTimeout(()=>document.getElementById('modal-panel').style.transform='translateY(0)', 10); }
         function closeModal() { document.getElementById('modal-panel').style.transform='translateY(100%)'; setTimeout(()=>document.getElementById('add-modal').style.display='none', 300); }
         function showToast(m) { 
