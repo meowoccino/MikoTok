@@ -65,13 +65,11 @@
         .card-header { display: flex; align-items: center; margin-bottom: 12px; }
         .card-avatar { width: 36px; height: 36px; border-radius: 50%; margin-right: 12px; object-fit: cover; background: #111; box-shadow: 0 0 8px rgba(145, 70, 255, 0.4); }
         .meta-name { font-size: 14px; font-weight: 600; color: white; }
-        .meta-time { font-size: 12px; color: var(--text-muted); }
-
+        
         .video-container { position: relative; width: 100%; border-radius: 10px; overflow: hidden; background: #000; aspect-ratio: 16/9; display: flex; align-items: center; justify-content: center; border: 1px solid #222; }
         iframe { width: 100%; height: 100%; border: none; }
 
         .clip-title { font-size: 15px; font-weight: 600; margin: 12px 0 4px; }
-        .clip-link { font-size: 13px; color: var(--primary-light); text-decoration: none; display: flex; align-items: center; gap: 4px; }
         .post-text { font-size: 15px; line-height: 1.5; color: #e0e0e0; margin-top: 8px; white-space: pre-wrap; }
 
         .card-actions { display: flex; align-items: center; gap: 20px; margin-top: 15px; }
@@ -79,7 +77,7 @@
         .action-item.liked { color: var(--primary-light); }
         .action-item.liked span { font-variation-settings: 'FILL' 1; }
 
-        /* BOTTOM NAVIGATION (5 Items) */
+        /* BOTTOM NAVIGATION */
         .bottom-nav {
             position: absolute; bottom: 0; left: 0; width: 100%; background: var(--bg-color); border-top: 1px solid var(--border-color);
             display: flex; justify-content: space-between; align-items: center; padding: 10px 10px 25px; z-index: 100;
@@ -97,13 +95,15 @@
         .fab-lens { width: 26px; height: 26px; border: 3px solid white; border-radius: 50%; display: flex; align-items: center; justify-content: center; background: radial-gradient(circle, #9146FF, #7020e8); }
         .fab-lens span { color: white; font-weight: 900; font-size: 13px; }
 
-        /* MODAL */
+        /* MODAL & INPUTS */
         #add-modal { position: absolute; inset: 0; background: rgba(0,0,0,0.8); z-index: 1500; display: none; flex-direction: column; justify-content: flex-end; backdrop-filter: blur(5px); }
         .modal-content { background: var(--card-bg); border-radius: 20px 20px 0 0; padding: 25px 20px 40px; transform: translateY(100%); transition: transform 0.3s; border-top: 1px solid var(--border-color); }
-        .input-group input { width: 100%; background: #1c1c22; border: 1px solid var(--border-color); color: white; padding: 12px; border-radius: 8px; margin-bottom: 15px; }
+        .input-box { width: 100%; background: #1c1c22; border: 1px solid var(--border-color); color: white; padding: 12px; border-radius: 8px; margin-bottom: 12px; outline: none; }
         .btn-post { width: 100%; background: var(--primary); color: white; border: none; padding: 14px; border-radius: 8px; font-weight: 600; cursor: pointer; }
 
         #toast { position: absolute; top: 100px; left: 50%; transform: translateX(-50%); background: var(--primary); color: white; padding: 10px 20px; border-radius: 8px; z-index: 9999; display: none; }
+        
+        .empty-state { display: flex; flex-direction: column; align-items: center; justify-content: center; height: 50vh; color: var(--text-muted); text-align: center; }
     </style>
 </head>
 <body>
@@ -124,14 +124,12 @@
         <div id="add-modal">
             <div class="modal-content" id="modal-panel">
                 <div style="font-size:18px; font-weight:700; color:white; margin-bottom:20px; text-align:center;">Add a New Clip</div>
-                <div class="input-group">
-                    <input type="text" id="input-name" placeholder="Your Name">
-                    <input type="text" id="input-title" placeholder="Clip Title">
-                    <input type="url" id="input-url" placeholder="Twitch Clip URL">
-                </div>
+                <input type="text" id="clip-name" class="input-box" placeholder="Your Name">
+                <input type="text" id="clip-title" class="input-box" placeholder="Clip Title">
+                <input type="url" id="clip-url" class="input-box" placeholder="Twitch Clip URL">
                 <div style="display:flex; gap:10px;">
                     <button style="flex:1; background:#222; color:white; border:none; border-radius:8px;" onclick="closeModal()">Cancel</button>
-                    <button class="btn-post" style="flex:1;" onclick="submitClip()">Add Clip</button>
+                    <button class="btn-post" style="flex:1;" onclick="submitClip()">Upload</button>
                 </div>
             </div>
         </div>
@@ -148,38 +146,29 @@
     <script>
         const BIN_ID = '6a026ec4c0954111d80cc1f9'; 
         const MASTER_KEY = '$2a$10$kP1lbR4aymd6Gv5PkLUHVeum37M4wDDyIc1nCHT5pWK8DeJ5xkSke';
-        const parentDomain = window.location.hostname || 'localhost';
+        const parentDomain = window.location.hostname;
 
         let currentTab = 'home';
         let globalData = { clips: [], posts: [] };
 
         async function loadData() {
             try {
-                // Use the latest version of the bin
                 const res = await fetch(`https://api.jsonbin.io/v3/b/${BIN_ID}/latest`, { 
-                    headers: { 'X-Master-Key': MASTER_KEY }
+                    headers: { 'X-Master-Key': MASTER_KEY, 'X-Bin-Meta': 'false' }
                 });
-                const data = await res.json();
-                globalData = data.record;
+                globalData = await res.json();
                 render();
-            } catch (e) { 
-                showToast("Cloud sync failed. Start your bin with {'clips':[],'posts':[]}"); 
-            }
+            } catch (e) { showToast("Cloud Sync Error"); }
             finally { 
-                setTimeout(() => {
-                    document.getElementById('splash-screen').style.opacity = '0';
-                    setTimeout(() => document.getElementById('splash-screen').style.display = 'none', 500);
-                }, 1000);
+                document.getElementById('splash-screen').style.opacity = '0';
+                setTimeout(() => document.getElementById('splash-screen').style.display = 'none', 500);
             }
         }
 
         async function sync() {
             await fetch(`https://api.jsonbin.io/v3/b/${BIN_ID}`, {
                 method: 'PUT',
-                headers: { 
-                    'Content-Type': 'application/json', 
-                    'X-Master-Key': MASTER_KEY 
-                },
+                headers: { 'Content-Type': 'application/json', 'X-Master-Key': MASTER_KEY },
                 body: JSON.stringify(globalData)
             });
         }
@@ -206,19 +195,16 @@
         }
 
         function renderClips(f, items) {
-            if (!items.length) { 
-                f.innerHTML = `<div class="empty-state"><span class="material-symbols-rounded">videocam_off</span><h2>No clips yet!</h2><p>Tap the Purple Camera to add one.</p></div>`; 
-                return; 
-            }
+            if (!items.length) { f.innerHTML = '<div class="empty-state"><h2>No clips found.</h2></div>'; return; }
             items.forEach(c => {
                 const div = document.createElement('div'); div.className = 'card';
                 const isLiked = JSON.parse(localStorage.getItem('favs') || '[]').includes(c.id);
                 div.innerHTML = `
                     <div class="card-header"><div class="meta-name">${c.addedBy}</div></div>
-                    <div class="video-container"><iframe src="https://clips.twitch.tv/embed?clip=${c.id}&parent=${parentDomain}&autoplay=false"></iframe></div>
+                    <div class="video-container"><iframe src="https://clips.twitch.tv/embed?clip=${c.id}&parent=${parentDomain}&autoplay=false" allowfullscreen></iframe></div>
                     <div class="clip-title">${c.title}</div>
                     <div class="card-actions">
-                        <div class="action-item ${isLiked?'liked':''}" onclick="toggleLike('${c.id}')"><span class="material-symbols-rounded">favorite</span> Like</div>
+                        <div class="action-item ${isLiked?'liked':''}" onclick="toggleLike('${c.id}')"><span class="material-symbols-rounded">favorite</span> ${isLiked?'Saved':'Like'}</div>
                     </div>`;
                 f.appendChild(div);
             });
@@ -227,13 +213,11 @@
         function renderCommunity(f) {
             const box = document.createElement('div'); box.className = 'card';
             box.innerHTML = `
-                <input type="text" id="p-name" class="post-input-box" placeholder="Your Name" style="margin-bottom:8px; background:#1c1c22; border:1px solid #26262c; color:white; width:100%; border-radius:8px; padding:10px;">
-                <textarea id="p-text" class="post-input-box" style="width:100%; height:60px; background:#1c1c22; border:1px solid #26262c; color:white; border-radius:8px; padding:10px;" placeholder="Say something..."></textarea>
-                <button class="btn-post" onclick="submitPost()" style="margin-top:10px;">Post</button>`;
+                <input id="p-name" class="input-box" placeholder="Your Name">
+                <textarea id="p-text" class="input-box" style="height:60px" placeholder="Discuss something..."></textarea>
+                <button class="btn-post" onclick="submitPost()">Post</button>`;
             f.appendChild(box);
-            
-            const posts = globalData.posts || [];
-            posts.forEach(p => {
+            (globalData.posts || []).forEach(p => {
                 const div = document.createElement('div'); div.className = 'card';
                 const pId = `post_${p.id}`;
                 const isLiked = JSON.parse(localStorage.getItem('post_likes') || '[]').includes(pId);
@@ -244,33 +228,29 @@
         }
 
         async function submitClip() {
-            const name = document.getElementById('input-name').value || 'Anon';
-            const url = document.getElementById('input-url').value;
-            if (!url.includes('twitch')) return;
+            const url = document.getElementById('clip-url').value;
+            if (!url.includes('twitch')) { showToast("Invalid Link"); return; }
             const id = url.split('/').pop().split('?')[0];
-            globalData.clips.unshift({ id, title: document.getElementById('input-title').value || 'Clip', addedBy: name });
-            closeModal(); showToast("Syncing..."); await sync(); render();
+            globalData.clips.unshift({ id, title: document.getElementById('clip-title').value || 'Clip', addedBy: document.getElementById('clip-name').value || 'Anon' });
+            closeModal(); showToast("Uploading..."); await sync(); render();
         }
 
         async function submitPost() {
-            const name = document.getElementById('p-name').value || 'Anon';
             const text = document.getElementById('p-text').value; if (!text) return;
-            globalData.posts.unshift({ id: Date.now(), author: name, text });
-            showToast("Syncing..."); await sync(); render();
+            globalData.posts.unshift({ id: Date.now(), author: document.getElementById('p-name').value || 'Anon', text });
+            showToast("Posting..."); await sync(); render();
         }
 
         function toggleLike(id) {
             let favs = JSON.parse(localStorage.getItem('favs') || '[]');
-            if (favs.includes(id)) favs = favs.filter(i => i !== id);
-            else favs.push(id);
+            favs = favs.includes(id) ? favs.filter(i => i !== id) : [...favs, id];
             localStorage.setItem('favs', JSON.stringify(favs));
             render();
         }
 
         function togglePostLike(id) {
             let likes = JSON.parse(localStorage.getItem('post_likes') || '[]');
-            if (likes.includes(id)) likes = likes.filter(i => i !== id);
-            else likes.push(id);
+            likes = likes.includes(id) ? likes.filter(i => i !== id) : [...likes, id];
             localStorage.setItem('post_likes', JSON.stringify(likes));
             render();
         }
