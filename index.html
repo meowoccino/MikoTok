@@ -12,7 +12,7 @@
     <meta name="application-name" content="MikoTok">
     <meta name="theme-color" content="#000000">
 
-    <!-- GENERATED APP ICONS (NO EXTERNAL FILES NEEDED) -->
+    <!-- GENERATED APP ICONS -->
     <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' fill='%23000000'/><defs><linearGradient id='g' x1='0%25' y1='0%25' x2='100%25' y2='100%25'><stop offset='0%25' stop-color='%23ffffff'/><stop offset='100%25' stop-color='%239146FF'/></linearGradient></defs><circle cx='50' cy='50' r='35' fill='none' stroke='url(%23g)' stroke-width='6'/><path d='M 38 40 L 48 60 L 58 40 L 58 55 Q 58 63 65 62' fill='none' stroke='url(%23g)' stroke-width='6' stroke-linecap='round' stroke-linejoin='round'/></svg>">
     <link rel="apple-touch-icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' fill='%23000000'/><defs><linearGradient id='g' x1='0%25' y1='0%25' x2='100%25' y2='100%25'><stop offset='0%25' stop-color='%23ffffff'/><stop offset='100%25' stop-color='%239146FF'/></linearGradient></defs><circle cx='50' cy='50' r='35' fill='none' stroke='url(%23g)' stroke-width='6'/><path d='M 38 40 L 48 60 L 58 40 L 58 55 Q 58 63 65 62' fill='none' stroke='url(%23g)' stroke-width='6' stroke-linecap='round' stroke-linejoin='round'/></svg>">
 
@@ -70,12 +70,26 @@
         .pinned-tag { background: #333; color: #aaa; padding: 2px 8px; border-radius: 4px; font-size: 9px; text-transform: uppercase; letter-spacing: 0.5px; }
         .is-live .pinned-tag { background: var(--primary); color: white; box-shadow: 0 0 8px var(--primary); }
 
+        /* THUMBNAIL UI */
+        .thumbnail-wrapper { width: 100%; border-radius: 8px; overflow: hidden; aspect-ratio: 16/9; background: #000; position: relative; margin-top: 5px; border: 1px solid rgba(255,255,255,0.05); cursor: pointer; }
+        .thumbnail-wrapper img { width: 100%; height: 100%; object-fit: cover; opacity: 0.8; transition: opacity 0.2s; }
+        .thumbnail-wrapper:active img { opacity: 0.5; }
+        .play-overlay { position: absolute; inset: 0; background: rgba(0,0,0,0.3); display: flex; align-items: center; justify-content: center; }
+        .play-overlay .material-symbols-rounded { font-size: 56px; color: white; filter: drop-shadow(0 4px 6px rgba(0,0,0,0.5)); transition: transform 0.2s; }
+        .thumbnail-wrapper:active .play-overlay .material-symbols-rounded { transform: scale(0.9); }
+        .stats-badge { position: absolute; bottom: 8px; left: 8px; background: rgba(0,0,0,0.8); padding: 4px 8px; border-radius: 6px; font-size: 11px; font-weight: 700; display: flex; align-items: center; gap: 4px; border: 1px solid rgba(255,255,255,0.1); }
+        .date-badge { position: absolute; bottom: 8px; right: 8px; background: rgba(0,0,0,0.8); padding: 4px 8px; border-radius: 6px; font-size: 11px; font-weight: 700; border: 1px solid rgba(255,255,255,0.1); color: #aaa; }
+
         .video-container { width: 100%; border-radius: 8px; overflow: hidden; aspect-ratio: 16/9; background: #000; position: relative; margin-top: 5px; border: 1px solid rgba(255,255,255,0.05); }
         iframe { width: 100%; height: 100%; border: none; opacity: 0; transition: opacity 0.4s; }
         iframe.loaded { opacity: 1; }
 
         .card { background: var(--card-bg); border-radius: 12px; padding: 14px; margin-bottom: 12px; border: 1px solid var(--border-color); position: relative; }
-        .avatar-ring { width: 38px; height: 38px; border-radius: 50%; margin-right: 12px; display: flex; align-items: center; justify-content: center; font-weight: 700; border: 1px solid var(--primary); background: #000; font-size: 14px; text-transform: uppercase; }
+        
+        /* AVATAR RING UPDATE FOR CUSTOM IMAGE */
+        .avatar-ring { width: 38px; height: 38px; border-radius: 50%; margin-right: 12px; display: flex; align-items: center; justify-content: center; font-weight: 700; border: 1px solid var(--primary); background: #000; font-size: 14px; text-transform: uppercase; overflow: hidden; flex-shrink: 0; }
+        .avatar-ring img { width: 100%; height: 100%; object-fit: cover; }
+        
         .admin-del { color: var(--danger); opacity: 0.8; transition: opacity 0.2s; position: absolute; right: 12px; top: 12px; cursor: pointer; }
         .admin-del:active { opacity: 1; }
         
@@ -97,6 +111,12 @@
         .action-btn { display: flex; align-items: center; gap: 6px; font-size: 13px; color: var(--text-muted); cursor: pointer; font-weight: 700; transition: all 0.2s ease; user-select: none; }
         .action-btn.liked { color: var(--primary); }
         .action-btn.liked span { font-variation-settings: 'FILL' 1; }
+
+        /* FULLSCREEN CLIP PLAYER */
+        .clip-player-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.95); z-index: 3000; display: flex; flex-direction: column; justify-content: center; align-items: center; opacity: 0; pointer-events: none; transition: opacity 0.3s; backdrop-filter: blur(5px); }
+        .clip-player-overlay.open { opacity: 1; pointer-events: auto; }
+        .clip-player-container { width: 100%; background: #000; position: relative; box-shadow: 0 10px 30px rgba(0,0,0,0.8); }
+        .clip-player-header { position: absolute; top: -50px; right: 10px; width: 40px; height: 40px; background: rgba(255,255,255,0.1); border-radius: 50%; display: flex; justify-content: center; align-items: center; cursor: pointer; }
     </style>
 </head>
 <body>
@@ -108,6 +128,21 @@
             <div v-html="logoSvg('splash')" style="width: 120px; height: 120px; margin-bottom: 20px;"></div>
             <div class="gradient-text" style="font-size: 40px;">MikoTok</div>
             <div class="progress-bar"><div class="progress-fill"></div></div>
+        </div>
+
+        <!-- FULLSCREEN TAP-TO-PLAY MODAL -->
+        <div class="clip-player-overlay" :class="{ open: activeClip }" @click.self="closeClip">
+            <div class="clip-player-container" v-if="activeClip">
+                <div class="clip-player-header" @click="closeClip">
+                    <span class="material-symbols-rounded" style="color:white; font-size: 24px;">close</span>
+                </div>
+                <div style="width: 100%; aspect-ratio: 16/9;">
+                    <iframe :src="getClipUrl(activeClip.id, true)" style="width: 100%; height: 100%; border: none;" allowfullscreen="true"></iframe>
+                </div>
+            </div>
+            <div style="position: absolute; bottom: 40px; color: var(--text-muted); font-size: 12px; font-weight: 600;" @click="closeClip">
+                Tap anywhere to close
+            </div>
         </div>
         
         <!-- HEADER -->
@@ -147,7 +182,11 @@
                 <div class="card" v-for="post in posts" :key="post.id">
                     <span v-if="isAdmin" class="material-symbols-rounded admin-del" @click="deleteItem('posts', post.id)">delete</span>
                     <div style="display:flex;align-items:center;">
-                        <div class="avatar-ring">{{ post.author ? post.author[0] : '?' }}</div>
+                        <!-- Custom Avatar Injection for Posts -->
+                        <div class="avatar-ring">
+                            <img v-if="post.author === 'CodeMiko'" src="1000018850.png" alt="CodeMiko">
+                            <template v-else>{{ post.author ? post.author[0] : '?' }}</template>
+                        </div>
                         <div style="font-weight:600;font-size:14px;">{{ post.author }}</div>
                     </div>
                     <div style="margin-top:10px;font-size:14px;">{{ post.text }}</div>
@@ -163,14 +202,38 @@
                 <div class="card" v-for="clip in displayedClips" :key="clip.id">
                     <span v-if="isAdmin" class="material-symbols-rounded admin-del" @click="deleteItem('clips', clip.id)">delete</span>
                     <div style="display:flex;align-items:center;margin-bottom:10px;">
-                        <div class="avatar-ring">{{ clip.added_by ? clip.added_by[0] : 'M' }}</div>
-                        <div style="font-weight:600;font-size:14px;">{{ clip.added_by || 'CodeMiko' }}</div>
+                        
+                        <!-- Custom Avatar Injection for Clips -->
+                        <div class="avatar-ring">
+                            <img v-if="(clip.added_by || 'CodeMiko') === 'CodeMiko'" src="1000018850.png" alt="CodeMiko">
+                            <template v-else>{{ clip.added_by ? clip.added_by[0] : 'M' }}</template>
+                        </div>
+                        
+                        <div>
+                            <div style="font-weight:700;font-size:14px;">{{ clip.added_by || 'CodeMiko' }}</div>
+                            <div style="font-size:11px; color:var(--text-muted); margin-top: 2px;" v-if="clip.title">{{ clip.title }}</div>
+                        </div>
                     </div>
-                    <div class="video-container">
-                        <!-- Lazy loading based on tab -->
+
+                    <!-- THUMBNAIL RENDER -->
+                    <div v-if="clip.thumbnail_url" class="thumbnail-wrapper" @click="playClip(clip)">
+                        <img :src="clip.thumbnail_url" alt="Clip Thumbnail">
+                        <div class="play-overlay">
+                            <span class="material-symbols-rounded">play_circle</span>
+                        </div>
+                        <div class="stats-badge" v-if="clip.view_count">
+                            <span class="material-symbols-rounded" style="font-size: 14px;">visibility</span> {{ formatNumber(clip.view_count) }}
+                        </div>
+                        <div class="date-badge">
+                            {{ formatDate(clip.created_at) }}
+                        </div>
+                    </div>
+                    <!-- OLD IFRAME FALLBACK FOR CLIPS WITHOUT THUMBNAILS -->
+                    <div class="video-container" v-else>
                         <iframe v-if="currentTab === 'clips'" :src="getClipUrl(clip.id, false)" class="loaded"></iframe>
                         <iframe v-else :data-src="getClipUrl(clip.id, false)" loading="lazy" @load="$event.target.classList.add('loaded')"></iframe>
                     </div>
+
                     <div class="card-actions">
                         <div class="action-btn" :class="{ liked: userLikes.includes(clip.id) }" @click="toggleLike(clip.id)">
                             <span class="material-symbols-rounded">favorite</span> {{ counts[clip.id] || 0 }}
@@ -221,7 +284,12 @@
                     <div v-if="isAdmin" style="margin-bottom: 20px; padding: 15px; border-radius: 8px; border: 1px solid var(--primary); background: rgba(145, 70, 255, 0.1);">
                         <h4 style="margin: 0 0 10px; color: var(--primary-light); font-size: 12px; text-transform: uppercase;">Admin Tools</h4>
                         
-                        <!-- HIDDEN KEY ENTRY FORM -->
+                        <div style="background: rgba(239, 68, 68, 0.15); border-left: 3px solid var(--danger); padding: 8px; margin-bottom: 15px; border-radius: 4px; text-align: left;">
+                            <p style="font-size: 10px; color: #ffb3b3; margin: 0; line-height: 1.4;">
+                                <strong>⚠️ CRITICAL:</strong> Ad-Blockers and Privacy Shields (like Brave) block the connection to Twitch. You MUST pause shields for this website before syncing!
+                            </p>
+                        </div>
+
                         <div v-if="showTwitchForm" style="margin-bottom: 10px;">
                             <p style="font-size: 11px; color: var(--text-muted); margin: 0 0 8px;">Paste exactly from twitchtokengenerator.com</p>
                             <input type="text" v-model="twitchClientId" class="input-box" placeholder="CLIENT ID" style="padding: 10px; margin-bottom: 8px;">
@@ -229,7 +297,6 @@
                             <button class="input-box" style="background:var(--primary); font-weight:700; border:none; margin-bottom:0;" @click="saveKeysAndSync">Save & Fetch</button>
                         </div>
 
-                        <!-- MAIN SYNC BUTTON -->
                         <button v-else class="input-box" style="background:var(--primary); font-weight:700; border:none; margin-bottom:10px;" @click="startSyncFlow" :disabled="isSyncing">
                             <span class="material-symbols-rounded" style="vertical-align: middle; font-size: 18px; margin-right: 5px;">sync</span> 
                             {{ isSyncing ? 'SYNCING...' : 'Fetch 90 Days of Clips' }}
@@ -271,20 +338,17 @@
 
         createApp({
             setup() {
-                // Reactive State
                 const splashVisible = ref(true);
                 const splashOpacity = ref(1);
                 const currentTab = ref('home');
                 const isLive = ref(false);
                 
-                // User & Auth
                 const currentUser = ref(localStorage.getItem('miko_user') || null);
                 const isAdmin = computed(() => currentUser.value === 'tomato_24');
                 const loginNick = ref('');
                 const loginPass = ref('');
                 const passwordVisible = ref(false);
                 
-                // Data
                 const clips = ref([]);
                 const posts = ref([]);
                 const userLikes = ref([]);
@@ -292,10 +356,9 @@
                 const postText = ref('');
                 const clipUrl = ref('');
 
-                // UI / Modals
                 const modals = ref({ login: false, add: false });
+                const activeClip = ref(null);
                 
-                // Admin Twitch Sync
                 const showTwitchForm = ref(false);
                 const isSyncing = ref(false);
                 const twitchClientId = ref('');
@@ -303,7 +366,6 @@
 
                 const host = window.location.hostname || "localhost";
 
-                // --- COMPUTED PROPERTIES ---
                 const twitchIframeSrc = computed(() => {
                     return `https://player.twitch.tv/?channel=${TWITCH_CHANNEL}&parent=${host}&video=&autoplay=${isLive.value ? 'true&muted=true' : 'false'}`;
                 });
@@ -313,14 +375,25 @@
                     return clips.value;
                 });
 
-                // --- HELPER METHODS ---
                 const logoSvg = (id) => `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" style="width:100%;height:100%"><defs><linearGradient id="grad-${id}" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stop-color="#ffffff"/><stop offset="100%" stop-color="#9146FF"/></linearGradient></defs><circle cx="50" cy="50" r="40" fill="none" stroke="url(#grad-${id})" stroke-width="8"/><path d="M 33 38 L 48 62 L 62 38 L 62 55 Q 62 65 69 64" fill="none" stroke="url(#grad-${id})" stroke-width="8" stroke-linecap="round" stroke-linejoin="round"/></svg>`;
 
                 const getClipUrl = (id, autoplay = false) => {
                     return `https://clips.twitch.tv/embed?clip=${id}&parent=${host}&autoplay=${autoplay}`;
                 };
 
-                // --- DATA FETCHING ---
+                const formatNumber = (num) => {
+                    if (num >= 1000) return (num / 1000).toFixed(1) + 'k';
+                    return num;
+                };
+
+                const formatDate = (dateStr) => {
+                    const d = new Date(dateStr);
+                    return `${d.toLocaleString('default', { month: 'short' })} ${d.getDate()}`;
+                };
+
+                const playClip = (clip) => { activeClip.value = clip; };
+                const closeClip = () => { activeClip.value = null; };
+
                 const loadData = async () => {
                     try {
                         const { data: fetchClips } = await sbClient.from('clips').select('*').order('created_at', { ascending: false });
@@ -346,7 +419,6 @@
                     }
                 };
 
-                // --- ACTIONS ---
                 const toggleLike = async (id) => {
                     if (!currentUser.value) { modals.value.login = true; return; }
                     
@@ -408,7 +480,6 @@
                 const openModal = (type) => { modals.value[type] = true; };
                 const handleUploadClick = () => { currentUser.value ? openModal('add') : openModal('login'); };
 
-                // --- TWITCH ADMIN SYNC ---
                 const startSyncFlow = () => {
                     const savedId = localStorage.getItem('twitch_client_id');
                     const savedToken = localStorage.getItem('twitch_access_token');
@@ -472,22 +543,29 @@
 
                         if (!clipsData.data || clipsData.data.length === 0) { alert("No clips found."); isSyncing.value = false; return; }
 
-                        const insertData = clipsData.data.map(c => ({ id: c.id, added_by: 'CodeMiko', created_at: c.created_at }));
+                        const insertData = clipsData.data.map(c => ({ 
+                            id: c.id, 
+                            added_by: 'CodeMiko', 
+                            created_at: c.created_at,
+                            thumbnail_url: c.thumbnail_url,
+                            title: c.title,
+                            view_count: c.view_count
+                        }));
+                        
                         const { error } = await sbClient.from('clips').upsert(insertData, { onConflict: 'id', ignoreDuplicates: true });
-                        if (error) throw error; // THIS CATCHES SUPABASE RLS ERRORS
+                        if (error) throw error; 
 
                         alert(`Success! Auto-fetched ${insertData.length} recent clips.`);
                         modals.value.login = false;
                         loadData();
                     } catch (err) {
-                        alert(`System Error: ${err.message}\n\nIf the error says "Failed to fetch", your mobile browser's privacy shield or ad-blocker is blocking the background connection to Twitch. Try pausing ad-blockers for this page.`);
+                        alert(`System Error: ${err.message}\n\nMake sure you added the new columns to the Supabase SQL editor!`);
                         console.error("Sync Error:", err);
                     } finally {
                         isSyncing.value = false;
                     }
                 };
 
-                // --- SCROLL & AUTOPLAY LOGIC ---
                 let currentPlayingIframe = null;
                 const handleScroll = (e) => {
                     const iframes = e.target.querySelectorAll('iframe:not(#live-player)');
@@ -510,7 +588,6 @@
                     });
                 };
 
-                // --- SWIPE TO CLOSE LOGIC ---
                 let startY = 0, currentY = 0;
                 const handleTouchStart = (e) => { startY = e.touches[0].clientY; e.currentTarget.style.transition = 'none'; };
                 const handleTouchMove = (e) => { currentY = e.touches[0].clientY - startY; if (currentY > 0) e.currentTarget.style.transform = `translateY(${currentY}px)`; };
@@ -521,10 +598,8 @@
                     currentY = 0;
                 };
 
-                // Lifecycle Hook
                 onMounted(async () => {
                     await loadData();
-                    // Hide Splash
                     setTimeout(() => {
                         splashOpacity.value = 0;
                         setTimeout(() => splashVisible.value = false, 600);
@@ -533,9 +608,9 @@
 
                 return {
                     splashVisible, splashOpacity, currentTab, isLive, currentUser, isAdmin, loginNick, loginPass, passwordVisible,
-                    clips, posts, displayedClips, counts, userLikes, postText, clipUrl, modals,
-                    showTwitchForm, isSyncing, twitchClientId, twitchAccessToken,
-                    logoSvg, getClipUrl, toggleLike, deleteItem, submitPost, submitClip, handleLogin, logout, openModal, handleUploadClick,
+                    clips, posts, displayedClips, counts, userLikes, postText, clipUrl, modals, activeClip,
+                    showTwitchForm, isSyncing, twitchClientId, twitchAccessToken, formatNumber, formatDate,
+                    logoSvg, getClipUrl, toggleLike, deleteItem, submitPost, submitClip, handleLogin, logout, openModal, handleUploadClick, playClip, closeClip,
                     startSyncFlow, saveKeysAndSync, resetTwitchKeys, handleScroll, handleTouchStart, handleTouchMove, handleTouchEnd, twitchIframeSrc
                 };
             }
