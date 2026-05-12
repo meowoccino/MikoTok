@@ -84,7 +84,6 @@
         .modal-content { background: #111113; border-radius: 20px 20px 0 0; padding: 25px 20px 40px; transform: translateY(100%); transition: transform 0.3s ease-out; border-top: 1px solid var(--border-color); }
         .input-box { width: 100%; background: #000; border: 1px solid var(--border-color); color: white; padding: 14px; border-radius: 8px; outline: none; margin-bottom: 12px; font-size: 14px; }
         
-        /* RESTORED EYE POSITIONING */
         .pass-wrapper { position: relative; width: 100%; margin-bottom: 12px; }
         .eye-btn { position: absolute; right: 12px; top: 50%; transform: translateY(-50%); color: var(--text-muted); cursor: pointer; user-select: none; }
     </style>
@@ -151,10 +150,7 @@
         async function init() {
             sbClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
             const saved = localStorage.getItem('miko_user');
-            if (saved) { 
-                currentUser = saved; 
-                isAdmin = (saved === ADMIN_USERNAME); 
-            }
+            if (saved) { currentUser = saved; isAdmin = (saved === ADMIN_USERNAME); }
             await loadData();
         }
 
@@ -169,13 +165,20 @@
             const iframes = document.querySelectorAll('iframe');
             iframes.forEach(iframe => {
                 const rect = iframe.getBoundingClientRect();
-                if (rect.top >= 50 && rect.bottom <= window.innerHeight - 50 && currentPlayingIframe !== iframe) playVideo(iframe);
+                // Play if middle of iframe is in viewport
+                if (rect.top < window.innerHeight/2 && rect.bottom > window.innerHeight/2) {
+                    if (currentPlayingIframe !== iframe) playVideo(iframe);
+                }
             });
         }
 
         function playVideo(iframe) {
-            if (currentPlayingIframe && currentPlayingIframe !== iframe) { currentPlayingIframe.src = currentPlayingIframe.getAttribute('data-src') + "&autoplay=false"; }
-            iframe.src = iframe.getAttribute('data-src') + "&autoplay=true&muted=false";
+            const hostname = window.location.hostname || "localhost";
+            if (currentPlayingIframe && currentPlayingIframe !== iframe) { 
+                currentPlayingIframe.src = currentPlayingIframe.getAttribute('data-src') + "&parent=" + hostname + "&autoplay=false"; 
+            }
+            // Always include muted=true to satisfy browser autoplay policies
+            iframe.src = iframe.getAttribute('data-src') + "&parent=" + hostname + "&autoplay=true&muted=true";
             currentPlayingIframe = iframe;
         }
 
@@ -196,17 +199,12 @@
             const isLiked = likedIds.includes(c.id);
             const authorName = c.added_by || 'CodeMiko';
             const avatarChar = authorName === ADMIN_USERNAME ? 'T' : (authorName === 'CodeMiko' ? 'M' : authorName[0].toUpperCase());
-            target.innerHTML += `<div class="card">${isAdmin ? `<span class="material-symbols-rounded admin-del" onclick="deleteItem('clips', '${c.id}')">delete</span>` : ''}<div style="display:flex; align-items:center;"><div class="avatar-ring">${avatarChar}</div><div><div style="font-weight:600; font-size:14px;">${authorName}</div></div></div><div class="video-container"><iframe data-src="https://clips.twitch.tv/embed?clip=${c.id}&parent=${window.location.hostname}" onload="this.classList.add('loaded')"></iframe></div><div class="card-actions"><div class="action-btn ${isLiked?'liked':''}" onclick="toggleLike('${c.id}')"><span class="material-symbols-rounded">favorite</span> ${isLiked ? 1 : 0}</div></div></div>`;
+            target.innerHTML += `<div class="card">${isAdmin ? `<span class="material-symbols-rounded admin-del" onclick="deleteItem('clips', '${c.id}')">delete</span>` : ''}<div style="display:flex; align-items:center;"><div class="avatar-ring">${avatarChar}</div><div><div style="font-weight:600; font-size:14px;">${authorName}</div></div></div><div class="video-container"><iframe data-src="https://clips.twitch.tv/embed?clip=${c.id}" loading="lazy" onload="this.classList.add('loaded')"></iframe></div><div class="card-actions"><div class="action-btn ${isLiked?'liked':''}" onclick="toggleLike('${c.id}')"><span class="material-symbols-rounded">favorite</span> ${isLiked ? 1 : 0}</div></div></div>`;
         }
 
         async function handleLogin() {
             const n = document.getElementById('login-nick').value.trim(), p = document.getElementById('login-pass').value.trim();
-            if (n && p.length >= 6) { 
-                localStorage.setItem('miko_user', n); 
-                currentUser = n; 
-                isAdmin = (n === ADMIN_USERNAME);
-                location.reload(); 
-            }
+            if (n && p.length >= 6) { localStorage.setItem('miko_user', n); location.reload(); }
         }
 
         function logout() { localStorage.removeItem('miko_user'); location.reload(); }
@@ -216,7 +214,6 @@
         function toggleLike(id) { if (!currentUser) return; if (likedIds.includes(id)) likedIds = likedIds.filter(i => i !== id); else likedIds.push(id); localStorage.setItem('miko_likes', JSON.stringify(likedIds)); render(); }
         async function deleteItem(table, id) { await sbClient.from(table).delete().eq('id', id); loadData(); }
         function switchTab(t) { currentTab = t; document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active')); document.getElementById('nav-' + t).classList.add('active'); render(); }
-        
         function openModal(id) { 
             if(id === 'login') {
                 if(currentUser) {
@@ -231,9 +228,7 @@
             document.getElementById(id + '-modal').style.display = 'flex'; 
             setTimeout(() => document.getElementById(id + '-panel').style.transform = 'translateY(0)', 10); 
         }
-        
         function closeModal(id) { document.getElementById(id + '-panel').style.transform = 'translateY(100%)'; setTimeout(() => document.getElementById(id + '-modal').style.display = 'none', 300); }
-        
         function togglePassword() {
             const input = document.getElementById('login-pass');
             const icon = document.getElementById('eye-icon');
@@ -245,7 +240,6 @@
                 icon.innerText = 'visibility';
             }
         }
-        
         window.addEventListener('load', init);
     </script>
 </body>
