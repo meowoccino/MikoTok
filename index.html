@@ -35,11 +35,9 @@
             background: var(--bg-color); overflow: hidden; box-shadow: 0 0 20px rgba(0,0,0,0.8);
         }
 
-        /* LOGO COLORS */
         .logo-miko { color: white; }
         .logo-tok { color: var(--primary-light); }
 
-        /* SPLASH SCREEN */
         #splash-screen {
             position: absolute; inset: 0; background: #0b0b0e; 
             display: flex; flex-direction: column; align-items: center; justify-content: center; 
@@ -50,25 +48,21 @@
         .progress-fill { position: absolute; left: 0; top: 0; height: 100%; width: 50%; background: var(--primary); border-radius: 4px; animation: load 1.5s infinite ease-in-out; }
         @keyframes load { 0% { left: -50%; } 100% { left: 100%; } }
 
-        /* TOP APP BAR */
         .app-header {
             position: absolute; top: 0; left: 0; width: 100%; background: var(--bg-color); z-index: 100;
             padding: 45px 20px 15px; display: flex; justify-content: center; align-items: center; border-bottom: 1px solid var(--border-color);
         }
         .header-logo { font-size: 24px; font-weight: 700; letter-spacing: -0.5px; }
 
-        /* FEED */
         #feed { height: 100%; width: 100%; overflow-y: auto; padding: 110px 15px 90px; }
         #feed::-webkit-scrollbar { display: none; }
 
-        /* CARDS */
         .card { background: var(--card-bg); border-radius: 16px; padding: 15px; margin-bottom: 20px; box-shadow: 0 4px 15px rgba(0,0,0,0.2); border: 1px solid rgba(255,255,255,0.03); position: relative; }
         .card-header { display: flex; align-items: center; margin-bottom: 12px; }
+        .card-avatar { width: 36px; height: 36px; border-radius: 50%; margin-right: 12px; object-fit: cover; background: #111; border: 1px solid rgba(145, 70, 255, 0.3); }
         .meta-name { font-size: 14px; font-weight: 600; color: white; }
         
-        /* DELETE BUTTON */
         .admin-del { position: absolute; top: 12px; right: 12px; color: var(--danger); cursor: pointer; z-index: 10; display: none; }
-        .admin-del span { font-size: 20px; }
 
         .video-container { position: relative; width: 100%; border-radius: 10px; overflow: hidden; background: #000; aspect-ratio: 16/9; display: flex; align-items: center; justify-content: center; border: 1px solid #222; }
         iframe { width: 100%; height: 100%; border: none; }
@@ -77,11 +71,10 @@
         .post-text { font-size: 15px; line-height: 1.5; color: #e0e0e0; margin-top: 8px; white-space: pre-wrap; }
 
         .card-actions { display: flex; align-items: center; gap: 20px; margin-top: 15px; }
-        .action-item { display: flex; align-items: center; gap: 6px; color: var(--text-muted); font-size: 13px; cursor: pointer; }
+        .action-item { display: flex; align-items: center; gap: 6px; color: var(--text-muted); font-size: 13px; cursor: pointer; transition: 0.2s; }
         .action-item.liked { color: var(--primary-light); }
         .action-item.liked span { font-variation-settings: 'FILL' 1; }
 
-        /* BOTTOM NAVIGATION */
         .bottom-nav {
             position: absolute; bottom: 0; left: 0; width: 100%; background: var(--bg-color); border-top: 1px solid var(--border-color);
             display: flex; justify-content: space-between; align-items: center; padding: 10px 10px 25px; z-index: 100;
@@ -89,7 +82,6 @@
         .nav-item { display: flex; flex-direction: column; align-items: center; width: 60px; color: var(--text-muted); font-size: 10px; gap: 4px; cursor: pointer; }
         .nav-item.active { color: var(--primary-light); }
         
-        /* PURPLE CAMERA BUTTON */
         .nav-fab {
             width: 60px; height: 44px; border-radius: 12px; background: linear-gradient(135deg, #a970ff, #9146FF);
             display: flex; align-items: center; justify-content: center; cursor: pointer; transform: translateY(-12px);
@@ -99,14 +91,12 @@
         .fab-lens { width: 26px; height: 26px; border: 3px solid white; border-radius: 50%; display: flex; align-items: center; justify-content: center; background: radial-gradient(circle, #9146FF, #7020e8); }
         .fab-lens span { color: white; font-weight: 900; font-size: 13px; }
 
-        /* MODAL & INPUTS */
         #add-modal { position: absolute; inset: 0; background: rgba(0,0,0,0.8); z-index: 1500; display: none; flex-direction: column; justify-content: flex-end; backdrop-filter: blur(5px); }
         .modal-content { background: var(--card-bg); border-radius: 20px 20px 0 0; padding: 25px 20px 40px; transform: translateY(100%); transition: transform 0.3s; border-top: 1px solid var(--border-color); }
         .input-box { width: 100%; background: #1c1c22; border: 1px solid var(--border-color); color: white; padding: 12px; border-radius: 8px; margin-bottom: 12px; outline: none; }
         .btn-post { width: 100%; background: var(--primary); color: white; border: none; padding: 14px; border-radius: 8px; font-weight: 600; cursor: pointer; }
 
         #toast { position: absolute; top: 100px; left: 50%; transform: translateX(-50%); background: var(--primary); color: white; padding: 10px 20px; border-radius: 8px; z-index: 9999; display: none; }
-        
         .empty-state { display: flex; flex-direction: column; align-items: center; justify-content: center; height: 50vh; color: var(--text-muted); text-align: center; }
     </style>
 </head>
@@ -150,12 +140,18 @@
     <script>
         const BIN_ID = '6a026ec4c0954111d80cc1f9'; 
         const MASTER_KEY = '$2a$10$kP1lbR4aymd6Gv5PkLUHVeum37M4wDDyIc1nCHT5pWK8DeJ5xkSke';
-        const ADMIN_PASS = 'mikoadmin'; // <-- CHANGE YOUR PASSWORD HERE
+        const ADMIN_PASS = 'mikoadmin'; 
         
         const parentDomain = window.location.hostname;
         let currentTab = 'home';
         let isAdmin = false;
         let globalData = { clips: [], posts: [] };
+
+        function generateAvatar(name) {
+            const initial = name ? name.charAt(0).toUpperCase() : 'M';
+            const svg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><defs><linearGradient id="g" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stop-color="#00f3ff"/><stop offset="100%" stop-color="#9146FF"/></linearGradient></defs><rect width="100" height="100" fill="#111" rx="50"/><text x="50" y="65" font-family="Arial" font-size="40" font-weight="bold" fill="url(#g)" text-anchor="middle">${initial}</text></svg>`;
+            return `data:image/svg+xml;base64,${btoa(svg)}`;
+        }
 
         async function loadData() {
             try {
@@ -164,7 +160,7 @@
                 });
                 globalData = await res.json();
                 render();
-            } catch (e) { showToast("Cloud Sync Error"); }
+            } catch (e) { showToast("Cloud Error"); }
             finally { 
                 document.getElementById('splash-screen').style.opacity = '0';
                 setTimeout(() => document.getElementById('splash-screen').style.display = 'none', 500);
@@ -180,34 +176,16 @@
         }
 
         function adminLogin() {
-            if (isAdmin) {
-                isAdmin = false;
-                showToast("Logged out");
-                render();
-                return;
-            }
-            const p = prompt("Enter Admin Password:");
-            if (p === ADMIN_PASS) {
-                isAdmin = true;
-                showToast("Admin Mode Active!");
-                render();
-            } else {
-                showToast("DEEZ NUTS");
-            }
+            if (isAdmin) { isAdmin = false; render(); return; }
+            const p = prompt("Admin Password:");
+            if (p === ADMIN_PASS) { isAdmin = true; render(); }
         }
 
         async function deleteItem(type, id) {
-            if (!confirm("Are you sure you want to delete this?")) return;
-            
-            if (type === 'clip') {
-                globalData.clips = globalData.clips.filter(c => c.id !== id);
-            } else {
-                globalData.posts = globalData.posts.filter(p => p.id !== id);
-            }
-            
-            showToast("Deleting...");
-            await sync();
-            render();
+            if (!confirm("Delete this?")) return;
+            if (type === 'clip') globalData.clips = globalData.clips.filter(c => c.id !== id);
+            else globalData.posts = globalData.posts.filter(p => p.id !== id);
+            await sync(); render();
         }
 
         function switchTab(t) {
@@ -219,30 +197,34 @@
 
         function render() {
             const f = document.getElementById('feed'); f.innerHTML = '';
-            if (currentTab === 'community') {
-                renderCommunity(f);
-            } else {
+            if (currentTab === 'community') renderCommunity(f);
+            else {
                 let items = globalData.clips || [];
                 if (currentTab === 'clips') {
-                    const favs = JSON.parse(localStorage.getItem('favs') || '[]');
-                    items = items.filter(i => favs.includes(i.id));
+                    const myLikes = JSON.parse(localStorage.getItem('my_likes') || '[]');
+                    items = items.filter(i => myLikes.includes(i.id));
                 }
                 renderClips(f, items);
             }
         }
 
         function renderClips(f, items) {
-            if (!items.length) { f.innerHTML = '<div class="empty-state"><h2>No clips found.</h2></div>'; return; }
+            if (!items.length) { f.innerHTML = '<div class="empty-state"><h2>Empty Feed</h2></div>'; return; }
             items.forEach(c => {
                 const div = document.createElement('div'); div.className = 'card';
-                const isLiked = JSON.parse(localStorage.getItem('favs') || '[]').includes(c.id);
+                const isLiked = JSON.parse(localStorage.getItem('my_likes') || '[]').includes(c.id);
                 div.innerHTML = `
                     ${isAdmin ? `<div class="admin-del" style="display:block" onclick="deleteItem('clip', '${c.id}')"><span class="material-symbols-rounded">delete</span></div>` : ''}
-                    <div class="card-header"><div class="meta-name">${c.addedBy}</div></div>
-                    <div class="video-container"><iframe src="https://clips.twitch.tv/embed?clip=${c.id}&parent=${parentDomain}&autoplay=false" allowfullscreen></iframe></div>
+                    <div class="card-header">
+                        <img src="${generateAvatar(c.addedBy)}" class="card-avatar">
+                        <div class="meta-name">${c.addedBy}</div>
+                    </div>
+                    <div class="video-container"><iframe src="https://clips.twitch.tv/embed?clip=${c.id}&parent=${parentDomain}&autoplay=false"></iframe></div>
                     <div class="clip-title">${c.title}</div>
                     <div class="card-actions">
-                        <div class="action-item ${isLiked?'liked':''}" onclick="toggleLike('${c.id}')"><span class="material-symbols-rounded">favorite</span> ${isLiked?'Saved':'Like'}</div>
+                        <div class="action-item ${isLiked?'liked':''}" onclick="toggleLike('clip', '${c.id}')">
+                            <span class="material-symbols-rounded">favorite</span> ${c.likes || 0}
+                        </div>
                     </div>`;
                 f.appendChild(div);
             });
@@ -250,50 +232,57 @@
 
         function renderCommunity(f) {
             const box = document.createElement('div'); box.className = 'card';
-            box.innerHTML = `
-                <input id="p-name" class="input-box" placeholder="Your Name">
-                <textarea id="p-text" class="input-box" style="height:60px" placeholder="Discuss something..."></textarea>
-                <button class="btn-post" onclick="submitPost()">Post</button>`;
+            box.innerHTML = `<input id="p-name" class="input-box" placeholder="Your Name"><textarea id="p-text" class="input-box" style="height:60px" placeholder="Discuss..."></textarea><button class="btn-post" onclick="submitPost()">Post</button>`;
             f.appendChild(box);
             (globalData.posts || []).forEach(p => {
                 const div = document.createElement('div'); div.className = 'card';
-                const pId = `post_${p.id}`;
-                const isLiked = JSON.parse(localStorage.getItem('post_likes') || '[]').includes(pId);
+                const isLiked = JSON.parse(localStorage.getItem('my_likes') || '[]').includes(p.id.toString());
                 div.innerHTML = `
                     ${isAdmin ? `<div class="admin-del" style="display:block" onclick="deleteItem('post', ${p.id})"><span class="material-symbols-rounded">delete</span></div>` : ''}
-                    <div class="card-header"><div class="meta-name">${p.author}</div></div>
+                    <div class="card-header">
+                        <img src="${generateAvatar(p.author)}" class="card-avatar">
+                        <div class="meta-name">${p.author}</div>
+                    </div>
                     <div class="post-text">${p.text}</div>
-                    <div class="card-actions"><div class="action-item ${isLiked?'liked':''}" onclick="togglePostLike('${pId}')"><span class="material-symbols-rounded">favorite</span> Like</div></div>`;
+                    <div class="card-actions">
+                        <div class="action-item ${isLiked?'liked':''}" onclick="toggleLike('post', '${p.id}')">
+                            <span class="material-symbols-rounded">favorite</span> ${p.likes || 0}
+                        </div>
+                    </div>`;
                 f.appendChild(div);
             });
         }
 
+        async function toggleLike(type, id) {
+            let myLikes = JSON.parse(localStorage.getItem('my_likes') || '[]');
+            const list = type === 'clip' ? globalData.clips : globalData.posts;
+            const item = list.find(i => i.id.toString() === id.toString());
+            
+            if (myLikes.includes(id.toString())) {
+                myLikes = myLikes.filter(i => i !== id.toString());
+                item.likes = Math.max(0, (item.likes || 0) - 1);
+            } else {
+                myLikes.push(id.toString());
+                item.likes = (item.likes || 0) + 1;
+            }
+            
+            localStorage.setItem('my_likes', JSON.stringify(myLikes));
+            render();
+            await sync();
+        }
+
         async function submitClip() {
             const url = document.getElementById('clip-url').value;
-            if (!url.includes('twitch')) { showToast("Invalid Link"); return; }
+            if (!url.includes('twitch')) return;
             const id = url.split('/').pop().split('?')[0];
-            globalData.clips.unshift({ id, title: document.getElementById('clip-title').value || 'Clip', addedBy: document.getElementById('clip-name').value || 'Anon' });
-            closeModal(); showToast("Uploading..."); await sync(); render();
+            globalData.clips.unshift({ id, title: document.getElementById('clip-title').value || 'Clip', addedBy: document.getElementById('clip-name').value || 'Anon', likes: 0 });
+            closeModal(); await sync(); render();
         }
 
         async function submitPost() {
             const text = document.getElementById('p-text').value; if (!text) return;
-            globalData.posts.unshift({ id: Date.now(), author: document.getElementById('p-name').value || 'Anon', text });
-            showToast("Posting..."); await sync(); render();
-        }
-
-        function toggleLike(id) {
-            let favs = JSON.parse(localStorage.getItem('favs') || '[]');
-            favs = favs.includes(id) ? favs.filter(i => i !== id) : [...favs, id];
-            localStorage.setItem('favs', JSON.stringify(favs));
-            render();
-        }
-
-        function togglePostLike(id) {
-            let likes = JSON.parse(localStorage.getItem('post_likes') || '[]');
-            likes = likes.includes(id) ? likes.filter(i => i !== id) : [...likes, id];
-            localStorage.setItem('post_likes', JSON.stringify(likes));
-            render();
+            globalData.posts.unshift({ id: Date.now(), author: document.getElementById('p-name').value || 'Anon', text, likes: 0 });
+            await sync(); render();
         }
 
         function openModal() { document.getElementById('add-modal').style.display='flex'; setTimeout(()=>document.getElementById('modal-panel').style.transform='translateY(0)', 10); }
