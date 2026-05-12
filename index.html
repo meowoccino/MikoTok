@@ -29,14 +29,15 @@
         #feed::-webkit-scrollbar { display: none; }
         .card { background: var(--card-bg); border-radius: 12px; padding: 15px; margin-bottom: 20px; border: 1px solid rgba(255,255,255,0.05); position: relative; }
         .card-header { display: flex; align-items: center; margin-bottom: 12px; }
+        .card-avatar { width: 32px; height: 32px; border-radius: 50%; margin-right: 10px; border: 1px solid var(--primary); background: #000; }
         .meta-name { font-size: 14px; font-weight: 600; color: white; }
         .post-date { font-size: 11px; color: var(--text-muted); margin-left: auto; }
+        .admin-del { position: absolute; top: 15px; right: 15px; color: var(--danger); cursor: pointer; font-size: 18px; z-index: 10; opacity: 0.7; }
+        .admin-del:hover { opacity: 1; }
         .video-container { position: relative; width: 100%; border-radius: 8px; overflow: hidden; background: #000; aspect-ratio: 16/9; border: 1px solid var(--border-color); }
         iframe { width: 100%; height: 100%; border: none; }
         .clip-title { font-size: 15px; font-weight: 600; margin: 12px 0 4px; }
-        .post-text-content { font-size: 14px; line-height: 1.5; color: #eaeaea; display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; }
-        .post-text-content.expanded { -webkit-line-clamp: unset; }
-        .read-more-btn { color: var(--primary); font-size: 13px; font-weight: 600; cursor: pointer; margin-top: 4px; display: inline-block; }
+        .post-text-content { font-size: 14px; line-height: 1.5; color: #eaeaea; }
         .bottom-nav { position: absolute; bottom: 0; left: 0; width: 100%; background: var(--bg-color); border-top: 1px solid var(--border-color); display: flex; justify-content: space-between; align-items: center; padding: 10px 15px 25px; z-index: 100; }
         .nav-item { display: flex; flex-direction: column; align-items: center; width: 60px; color: var(--text-muted); font-size: 10px; gap: 4px; cursor: pointer; }
         .nav-item.active { color: var(--primary); }
@@ -46,7 +47,7 @@
         .modal-content { background: var(--card-bg); border-radius: 20px 20px 0 0; padding: 25px 20px 40px; transform: translateY(100%); transition: transform 0.3s; border-top: 1px solid var(--border-color); }
         .input-box { width: 100%; background: #0e0e10; border: 1px solid var(--border-color); color: white; padding: 12px; border-radius: 6px; outline: none; margin-bottom: 12px; }
         #char-counter { color: var(--text-muted); font-size: 12px; text-align: right; margin-bottom: 12px; }
-        #toast { position: absolute; top: 100px; left: 50%; transform: translateX(-50%); background: var(--primary); color: white; padding: 10px 20px; border-radius: 6px; z-index: 9999; display: none; font-weight: 600; }
+        #toast { position: absolute; top: 100px; left: 50%; transform: translateX(-50%); background: var(--primary); color: white; padding: 10px 20px; border-radius: 6px; z-index: 9999; display: none; font-weight: 600; text-align: center; min-width: 200px; }
     </style>
 </head>
 <body>
@@ -59,6 +60,7 @@
         <div class="app-header"><div class="simple-logo"><span class="text-part1">Miko</span><span class="text-part2">Tok</span></div></div>
         <div id="toast"></div>
         <div id="feed"><div id="feed-content"></div></div>
+        
         <div id="login-modal">
             <div class="modal-content" id="login-panel">
                 <input type="text" id="login-nick" class="input-box" placeholder="Nickname" maxlength="10">
@@ -67,6 +69,7 @@
                 <button class="input-box" style="background:transparent; color:var(--text-muted); border:none;" onclick="closeModal('login')">Cancel</button>
             </div>
         </div>
+
         <div id="add-modal">
             <div class="modal-content" id="add-panel">
                 <input type="text" id="clip-title" class="input-box" placeholder="Clip Title">
@@ -75,6 +78,7 @@
                 <button class="input-box" style="background:transparent; color:var(--text-muted); border:none;" onclick="closeModal('add')">Cancel</button>
             </div>
         </div>
+
         <div class="bottom-nav">
             <div class="nav-item active" id="nav-home" onclick="switchTab('home')"><span class="material-symbols-rounded">home</span>Home</div>
             <div class="nav-item" id="nav-community" onclick="switchTab('community')"><span class="material-symbols-rounded">forum</span>Community</div>
@@ -83,25 +87,16 @@
             <div class="nav-item" id="nav-login" onclick="openModal('login')"><span class="material-symbols-rounded">account_circle</span><span id="login-text">Login</span></div>
         </div>
     </div>
+
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script>
         const SUPABASE_URL = 'https://yhxcuayiwqpjvalyrcqv.supabase.co';
         const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InloeGN1YXlpd3FwanZhbHlyY3F2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzg1Nzk1ODEsImV4cCI6MjA5NDE1NTU4MX0.z7EDgqRz1OT25UdxtmeJxFvwx4UCwaPRwWWJuzd46kc';
-        let sbClient = null;
-        let currentTab = 'home', currentUser = null, globalData = { clips: [], posts: [] };
+        let sbClient = null, currentTab = 'home', currentUser = null, isAdmin = false, globalData = { clips: [], posts: [] };
 
         const getLogoSvg = (id) => `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" class="fab-icon-svg"><defs><linearGradient id="grad-${id}" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stop-color="#ffffff"/><stop offset="100%" stop-color="#9146FF"/></linearGradient></defs><circle cx="50" cy="50" r="40" fill="none" stroke="url(#grad-${id})" stroke-width="7"/><path d="M 33 38 L 48 62 L 62 38 L 62 55 Q 62 65 69 64" fill="none" stroke="url(#grad-${id})" stroke-width="7" stroke-linecap="round" stroke-linejoin="round"/></svg>`;
         document.getElementById('upload-btn-container').innerHTML = getLogoSvg('nav');
         document.getElementById('splash-icon').innerHTML = getLogoSvg('splash');
-
-        const clipObserver = new IntersectionObserver((entries) => {
-            entries.forEach(entry => {
-                const iframe = entry.target;
-                const originalSrc = iframe.getAttribute('data-src');
-                if (entry.isIntersecting) { iframe.src = originalSrc + '&autoplay=true&muted=false'; }
-                else { iframe.src = originalSrc + '&autoplay=false'; }
-            });
-        }, { threshold: 0.8 });
 
         async function init() {
             if (window.supabase) { sbClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY); loadData(); }
@@ -115,23 +110,21 @@
             globalData.posts = posts || [];
             render();
             setTimeout(() => {
-                document.getElementById('splash-screen').style.opacity = '0';
-                setTimeout(() => document.getElementById('splash-screen').style.display = 'none', 500);
+                const splash = document.getElementById('splash-screen');
+                splash.style.opacity = '0';
+                setTimeout(() => splash.style.display = 'none', 500);
             }, 800);
         }
 
         function handleLogin() {
             const nick = document.getElementById('login-nick').value.trim();
             const pass = document.getElementById('login-pass').value.trim();
-            if (nick && pass.length >= 8) {
-                currentUser = nick;
-                document.getElementById('login-text').innerText = currentUser;
-                document.getElementById('login-nick').value = '';
-                document.getElementById('login-pass').value = '';
-                closeModal('login');
-                render();
-                showToast("Logged in as " + nick);
-            } else { showToast("Need Nick + 8 char Password"); }
+            if (nick === 'tomato_24' && pass === '9ruwuF') { isAdmin = true; currentUser = 'tomato_24'; showToast("Welcome back, Master Tomato!"); }
+            else if (nick && pass.length >= 8) { isAdmin = false; currentUser = nick; showToast("Logged in as " + nick); }
+            else { showToast("Need Nick + 8 char Password"); return; }
+            document.getElementById('login-text').innerText = currentUser;
+            closeModal('login');
+            render();
         }
 
         async function submitPost() {
@@ -149,29 +142,42 @@
             if (!url.includes('twitch.tv')) { showToast("Invalid Twitch URL"); return; }
             const id = url.split('/').pop().split('?')[0];
             const { error } = await sbClient.from('clips').insert([{ id, title: title || 'New Clip', added_by: currentUser }]);
-            if (error) { showToast("Error: " + error.message); }
-            else {
-                document.getElementById('clip-url').value = '';
-                document.getElementById('clip-title').value = '';
-                closeModal('add');
-                showToast("Clip Uploaded!");
-                loadData();
-            }
+            if (error) showToast("Error: " + error.message);
+            else { closeModal('add'); loadData(); }
+        }
+
+        async function deleteItem(table, id) {
+            if (!isAdmin) return;
+            const { error } = await sbClient.from(table).delete().eq('id', id);
+            if (!error) { showToast("Item Deleted"); loadData(); }
         }
 
         function render() {
-            const f = document.getElementById('feed-content'); f.innerHTML = ''; clipObserver.disconnect();
+            const f = document.getElementById('feed-content'); f.innerHTML = '';
             if (currentTab === 'community') {
                 f.innerHTML = `<div class="card"><textarea id="p-text" class="input-box" style="height:60px; resize:none;" placeholder="Discuss..." maxlength="360" oninput="document.getElementById('char-counter').innerText = this.value.length + ' / 360'"></textarea><div id="char-counter">0 / 360</div><button class="input-box" style="background:var(--primary); color:white; font-weight:600;" onclick="submitPost()">Post</button></div>`;
                 globalData.posts.forEach(p => {
-                    const isLong = p.text.length > 140;
-                    f.innerHTML += `<div class="card"><div class="card-header"><div class="meta-name">${p.author}</div><div class="post-date">${new Date(p.created_at).toLocaleDateString()}</div></div><div class="post-text-content">${p.text}</div></div>`;
+                    f.innerHTML += `<div class="card">
+                        ${isAdmin ? `<span class="material-symbols-rounded admin-del" onclick="deleteItem('posts', '${p.id}')">delete</span>` : ''}
+                        <div class="card-header">
+                            <img class="card-avatar" src="https://ui-avatars.com/api/?name=${p.author}&background=random&color=fff">
+                            <div class="meta-name">${p.author}</div>
+                            <div class="post-date">${new Date(p.created_at).toLocaleDateString()}</div>
+                        </div>
+                        <div class="post-text-content">${p.text}</div>
+                    </div>`;
                 });
             } else {
                 globalData.clips.forEach(c => {
-                    const div = document.createElement('div'); div.className = 'card';
-                    div.innerHTML = `<div class="card-header"><div class="meta-name">${c.added_by}</div></div><div class="video-container"><iframe data-src="https://clips.twitch.tv/embed?clip=${c.id}&parent=${window.location.hostname}" allow="autoplay; fullscreen"></iframe></div><div class="clip-title">${c.title}</div>`;
-                    f.appendChild(div); clipObserver.observe(div.querySelector('iframe'));
+                    f.innerHTML += `<div class="card">
+                        ${isAdmin ? `<span class="material-symbols-rounded admin-del" onclick="deleteItem('clips', '${c.id}')">delete</span>` : ''}
+                        <div class="card-header">
+                            <img class="card-avatar" src="https://ui-avatars.com/api/?name=${c.added_by}&background=random&color=fff">
+                            <div class="meta-name">${c.added_by}</div>
+                        </div>
+                        <div class="video-container"><iframe src="https://clips.twitch.tv/embed?clip=${c.id}&parent=${window.location.hostname}&autoplay=false" allow="autoplay; fullscreen"></iframe></div>
+                        <div class="clip-title">${c.title}</div>
+                    </div>`;
                 });
             }
         }
@@ -190,7 +196,11 @@
 
         function closeModal(id) {
             document.getElementById(id + '-panel').style.transform = 'translateY(100%)';
-            setTimeout(() => document.getElementById(id + '-modal').style.display = 'none', 300);
+            setTimeout(() => {
+                document.getElementById(id + '-modal').style.display = 'none';
+                document.getElementById('login-nick').value = '';
+                document.getElementById('login-pass').value = '';
+            }, 300);
         }
 
         function showToast(m) {
