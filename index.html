@@ -144,7 +144,7 @@
             const host = window.location.hostname || "localhost";
             const hDot = document.getElementById('header-dot'), hText = document.getElementById('live-text'), hubContainer = document.getElementById('live-container'), hubDot = document.getElementById('hub-dot'), hubText = document.getElementById('hub-text'), player = document.getElementById('live-player');
             if(isOnline) {
-                hDot.classList.add('active'); hText.innerText = "LIVE"; hText.classList.add('active'); hubContainer.classList.add('is-live'); hubDot.classList.add('active'); hubText.innerText = "STREAMING NOW";
+                hDot.classList.add('active'); hText.innerText = "LIVE"; hText.classList.add('active'); hubContainer.classList.add('is-live'); hubDot.classList.add('active'); hubText.innerText = "ONLINE NOW";
                 player.src = `https://player.twitch.tv/?channel=${TWITCH_CHANNEL}&parent=${host}&autoplay=true&muted=true`;
             } else {
                 hDot.classList.remove('active'); hText.innerText = "OFFLINE"; hText.classList.remove('active'); hubContainer.classList.remove('is-live'); hubDot.classList.remove('active'); hubText.innerText = "OFFLINE NOW";
@@ -154,17 +154,15 @@
 
         async function loadData() {
             try {
-                // Fetch everything in one go
                 const { data: clips, error: clipsError } = await sbClient.from('clips').select('*').order('created_at', { ascending: false });
                 const { data: posts, error: postsError } = await sbClient.from('posts').select('*').order('created_at', { ascending: false });
                 const { data: allLikes, error: likesError } = await sbClient.from('likes').select('clip_id, username');
                 
                 if (clipsError || postsError || likesError) {
-                    console.error("Supabase Error:", clipsError || postsError || likesError);
+                    console.error("Supabase Fetch Error:", clipsError || postsError || likesError);
                     return;
                 }
 
-                // Compile total counts mapping
                 globalData.counts = {}; 
                 if (allLikes) {
                     allLikes.forEach(l => { 
@@ -172,7 +170,6 @@
                     });
                 }
                 
-                // Set likes specific to the current user
                 if (currentUser) {
                     globalData.likes = allLikes 
                         .filter(l => l.username === currentUser)
@@ -234,16 +231,22 @@
         async function toggleLike(id) {
             if (!currentUser) { openModal('login'); return; }
             const index = globalData.likes.indexOf(id);
+            
             if (index > -1) {
+                // Remove like
                 globalData.likes.splice(index, 1); 
                 globalData.counts[id] = Math.max(0, (globalData.counts[id] || 1) - 1);
-                await sbClient.from('likes').delete().eq('username', currentUser).eq('clip_id', id);
+                render(); // Update UI immediately
+                const { error } = await sbClient.from('likes').delete().eq('username', currentUser).eq('clip_id', id);
+                if (error) console.error("Failed to delete like from Supabase:", error);
             } else {
+                // Add like
                 globalData.likes.push(id); 
                 globalData.counts[id] = (globalData.counts[id] || 0) + 1;
-                await sbClient.from('likes').insert([{ username: currentUser, clip_id: id }]);
+                render(); // Update UI immediately
+                const { error } = await sbClient.from('likes').insert([{ username: currentUser, clip_id: id }]);
+                if (error) console.error("Failed to insert like to Supabase:", error);
             }
-            render();
         }
 
         function setupSwipe(pid, mkey) {
