@@ -1,23 +1,19 @@
 {
   "name": "MikoTok",
   "short_name": "MikoTok",
-  "description": "Twitch Clips Community",
-  "id": "/MikoTok/",
-  "start_url": "./index.html",
-  "scope": "./",
+  "start_url": "index.html",
   "display": "standalone",
-  "background_color": "#0b0b0e",
-  "theme_color": "#9146FF",
-  "orientation": "portrait",
+  "background_color": "#000000",
+  "theme_color": "#000000",
   "icons": [
     {
-      "src": "https://pwa-directory.com/img/pwa-logo.png",
+      "src": "1000018850.png",
       "sizes": "192x192",
       "type": "image/png",
-      "purpose": "any"
+      "purpose": "any maskable"
     },
     {
-      "src": "https://pwa-directory.com/img/pwa-logo.png",
+      "src": "1000018850.png",
       "sizes": "512x512",
       "type": "image/png",
       "purpose": "any maskable"
