@@ -18,6 +18,11 @@
 
     <title>MikoTok</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&family=Outfit:wght@800&family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@24,400,1,0" rel="stylesheet">
+    
+    <!-- LOAD SUPABASE AND VUE -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="https://unpkg.com/vue@3/dist/vue.global.prod.js"></script>
+
     <style>
         :root { 
             --bg-color: #000000; --card-bg: #111113; --primary: #9146FF; 
@@ -27,6 +32,7 @@
         * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; font-family: 'Inter', sans-serif; }
         body, html { margin: 0; padding: 0; height: 100%; width: 100%; background: var(--bg-color); color: var(--text-main); overflow: hidden; display: flex; justify-content: center; }
         #app-container { width: 100%; max-width: 480px; height: 100%; position: relative; background: var(--bg-color); overflow: hidden; }
+        [v-cloak] { display: none; }
 
         /* SPLASH */
         #splash-screen { position: absolute; inset: 0; background: var(--bg-color); display: flex; flex-direction: column; align-items: center; justify-content: center; z-index: 9999; transition: opacity 0.6s ease; }
@@ -69,411 +75,471 @@
         iframe.loaded { opacity: 1; }
 
         .card { background: var(--card-bg); border-radius: 12px; padding: 14px; margin-bottom: 12px; border: 1px solid var(--border-color); position: relative; }
-        .avatar-ring { width: 38px; height: 38px; border-radius: 50%; margin-right: 12px; display: flex; align-items: center; justify-content: center; font-weight: 700; border: 1px solid var(--primary); background: #000; font-size: 14px; }
-        .admin-del { color: var(--danger); opacity: 0.8; transition: opacity 0.2s; }
+        .avatar-ring { width: 38px; height: 38px; border-radius: 50%; margin-right: 12px; display: flex; align-items: center; justify-content: center; font-weight: 700; border: 1px solid var(--primary); background: #000; font-size: 14px; text-transform: uppercase; }
+        .admin-del { color: var(--danger); opacity: 0.8; transition: opacity 0.2s; position: absolute; right: 12px; top: 12px; cursor: pointer; }
         .admin-del:active { opacity: 1; }
         
         .bottom-nav { position: absolute; bottom: 0; left: 0; width: 100%; background: #000; border-top: 1px solid var(--border-color); display: flex; justify-content: space-between; align-items: center; padding: 10px 15px 30px; z-index: 100; }
-        .nav-item { display: flex; flex-direction: column; align-items: center; width: 50px; color: var(--text-muted); font-size: 10px; gap: 4px; cursor: pointer; }
+        .nav-item { display: flex; flex-direction: column; align-items: center; width: 50px; color: var(--text-muted); font-size: 10px; gap: 4px; cursor: pointer; transition: color 0.2s; }
         .nav-item.active { color: #fff; }
         .nav-fab { width: 50px; height: 50px; display: flex; align-items: center; justify-content: center; cursor: pointer; }
 
         /* MODALS */
-        #login-modal, #add-modal { position: absolute; inset: 0; background: rgba(0,0,0,0.9); z-index: 1500; display: none; flex-direction: column; justify-content: flex-end; }
+        .modal-overlay { position: absolute; inset: 0; background: rgba(0,0,0,0.9); z-index: 1500; display: flex; flex-direction: column; justify-content: flex-end; opacity: 0; pointer-events: none; transition: opacity 0.3s ease; }
+        .modal-overlay.open { opacity: 1; pointer-events: auto; }
         .modal-content { background: #111113; border-radius: 20px 20px 0 0; padding: 10px 20px 40px; transform: translateY(100%); transition: transform 0.3s cubic-bezier(0.1, 0.5, 0.1, 1); border-top: 1px solid var(--border-color); touch-action: none; position: relative; }
+        .modal-overlay.open .modal-content { transform: translateY(0); }
+        
         .swipe-handle { width: 40px; height: 4px; background: #333; border-radius: 10px; margin: 10px auto 20px; }
         .input-box { width: 100%; background: #000; border: 1px solid var(--border-color); color: white; padding: 14px; border-radius: 8px; outline: none; margin-bottom: 12px; font-size: 14px; }
         
         .card-actions { display: flex; align-items: center; gap: 15px; margin-top: 12px; padding-top: 10px; border-top: 1px solid rgba(255,255,255,0.05); }
-        .action-btn { display: flex; align-items: center; gap: 6px; font-size: 13px; color: var(--text-muted); cursor: pointer; font-weight: 700; transition: all 0.2s ease; }
+        .action-btn { display: flex; align-items: center; gap: 6px; font-size: 13px; color: var(--text-muted); cursor: pointer; font-weight: 700; transition: all 0.2s ease; user-select: none; }
         .action-btn.liked { color: var(--primary); }
         .action-btn.liked span { font-variation-settings: 'FILL' 1; }
     </style>
 </head>
 <body>
-    <div id="app-container">
-        <div id="splash-screen"><div id="splash-icon"></div><div class="gradient-text" style="font-size: 40px;">MikoTok</div><div class="progress-bar"><div class="progress-fill"></div></div></div>
+    <!-- VUE MOUNT POINT -->
+    <div id="app-container" v-cloak>
         
+        <!-- SPLASH SCREEN -->
+        <div id="splash-screen" :style="{ opacity: splashOpacity, pointerEvents: splashVisible ? 'auto' : 'none' }">
+            <div v-html="logoSvg('splash')" style="width: 120px; height: 120px; margin-bottom: 20px;"></div>
+            <div class="gradient-text" style="font-size: 40px;">MikoTok</div>
+            <div class="progress-bar"><div class="progress-fill"></div></div>
+        </div>
+        
+        <!-- HEADER -->
         <div class="app-header">
-            <div class="header-logo" id="header-logo-slot"></div>
+            <div class="header-logo" v-html="logoSvg('header')"></div>
             <div class="simple-logo"><span class="gradient-text">MikoTok</span></div>
             <a href="https://twitch.tv/codemiko" target="_blank" class="header-status-link">
-                <div class="status-dot" id="header-dot"></div>
-                <span id="live-text">OFFLINE</span>
+                <div class="status-dot" :class="{ active: isLive }"></div>
+                <span id="live-text" :class="{ active: isLive }">{{ isLive ? 'ONLINE NOW' : 'OFFLINE' }}</span>
             </a>
         </div>
 
-        <div id="feed" onscroll="handleScroll()">
-            <div id="live-container">
+        <!-- MAIN FEED -->
+        <div id="feed" @scroll="handleScroll" ref="feedContainer">
+            
+            <!-- LIVE HUB -->
+            <div id="live-container" v-show="currentTab === 'home'" :class="{ 'is-live': isLive }">
                 <div class="live-label">
                     <div class="status-wrapper">
-                        <span class="status-dot" id="hub-dot"></span> 
-                        <span id="hub-text" class="status-tag">OFFLINE NOW</span>
+                        <span class="status-dot" :class="{ active: isLive }"></span> 
+                        <span class="status-tag" :class="{ active: isLive }">{{ isLive ? 'ONLINE NOW' : 'OFFLINE NOW' }}</span>
                     </div>
                     <span class="pinned-tag">Pinned</span>
                 </div>
                 <div class="video-container">
-                    <iframe id="live-player" src="" allowfullscreen="true" onload="this.classList.add('loaded')"></iframe>
+                    <iframe :src="twitchIframeSrc" allowfullscreen="true" @load="$event.target.classList.add('loaded')"></iframe>
                 </div>
             </div>
-            <div id="feed-content"></div>
-        </div>
 
-        <div id="login-modal">
-            <div class="modal-content" id="login-panel">
-                <div class="swipe-handle"></div>
-                
-                <div id="login-form">
-                    <input type="text" id="login-nick" class="input-box" placeholder="Username">
-                    
-                    <!-- WRAPPED PASSWORD INPUT WITH EYE ICON -->
-                    <div style="position: relative; width: 100%;">
-                        <input type="password" id="login-pass" class="input-box" placeholder="Password" style="padding-right: 40px;">
-                        <span class="material-symbols-rounded" id="toggle-pass-icon" onclick="togglePassword()" style="position: absolute; right: 12px; top: 14px; color: var(--text-muted); cursor: pointer; user-select: none;">visibility_off</span>
-                    </div>
-                    
-                    <!-- WARNING TEXT -->
-                    <p style="font-size: 11px; color: var(--danger); text-align: center; margin: -5px 0 15px 0;">Warning: Passwords cannot be reset.</p>
-                    
-                    <button class="input-box" style="background:var(--primary); font-weight:700; border:none;" onclick="handleLogin()">Sign In / Register</button>
+            <!-- COMMUNITY TAB: POSTS -->
+            <template v-if="currentTab === 'community'">
+                <div class="card">
+                    <textarea v-model="postText" class="input-box" style="height:60px;resize:none;" placeholder="Say something..."></textarea>
+                    <button class="input-box" style="background:var(--primary);font-weight:700;margin-bottom:0;border:none;" @click="submitPost">Post</button>
                 </div>
                 
-                <div id="profile-form" style="display:none; text-align:center;">
-                    <h3 id="display-name" style="margin-bottom:20px;"></h3>
+                <div class="card" v-for="post in posts" :key="post.id">
+                    <span v-if="isAdmin" class="material-symbols-rounded admin-del" @click="deleteItem('posts', post.id)">delete</span>
+                    <div style="display:flex;align-items:center;">
+                        <div class="avatar-ring">{{ post.author ? post.author[0] : '?' }}</div>
+                        <div style="font-weight:600;font-size:14px;">{{ post.author }}</div>
+                    </div>
+                    <div style="margin-top:10px;font-size:14px;">{{ post.text }}</div>
+                </div>
+            </template>
+
+            <!-- CLIPS & LIKED TABS -->
+            <template v-else>
+                <div v-if="currentTab === 'clips' && displayedClips.length === 0" style="text-align:center;padding:40px;color:var(--text-muted);">
+                    No liked clips yet!
+                </div>
+                
+                <div class="card" v-for="clip in displayedClips" :key="clip.id">
+                    <span v-if="isAdmin" class="material-symbols-rounded admin-del" @click="deleteItem('clips', clip.id)">delete</span>
+                    <div style="display:flex;align-items:center;margin-bottom:10px;">
+                        <div class="avatar-ring">{{ clip.added_by ? clip.added_by[0] : 'M' }}</div>
+                        <div style="font-weight:600;font-size:14px;">{{ clip.added_by || 'CodeMiko' }}</div>
+                    </div>
+                    <div class="video-container">
+                        <!-- Lazy loading based on tab -->
+                        <iframe v-if="currentTab === 'clips'" :src="getClipUrl(clip.id, false)" class="loaded"></iframe>
+                        <iframe v-else :data-src="getClipUrl(clip.id, false)" loading="lazy" @load="$event.target.classList.add('loaded')"></iframe>
+                    </div>
+                    <div class="card-actions">
+                        <div class="action-btn" :class="{ liked: userLikes.includes(clip.id) }" @click="toggleLike(clip.id)">
+                            <span class="material-symbols-rounded">favorite</span> {{ counts[clip.id] || 0 }}
+                        </div>
+                    </div>
+                </div>
+            </template>
+        </div>
+
+        <!-- BOTTOM NAV -->
+        <div class="bottom-nav">
+            <div class="nav-item" :class="{ active: currentTab === 'home' }" @click="currentTab = 'home'">
+                <span class="material-symbols-rounded">home</span>Home
+            </div>
+            <div class="nav-item" :class="{ active: currentTab === 'community' }" @click="currentTab = 'community'">
+                <span class="material-symbols-rounded">forum</span>Feed
+            </div>
+            <div class="nav-fab" @click="handleUploadClick" v-html="logoSvg('nav')"></div>
+            <div class="nav-item" :class="{ active: currentTab === 'clips' }" @click="currentTab = 'clips'">
+                <span class="material-symbols-rounded">favorite</span>Liked
+            </div>
+            <div class="nav-item" @click="openModal('login')">
+                <span class="material-symbols-rounded">account_circle</span>Profile
+            </div>
+        </div>
+
+        <!-- LOGIN / PROFILE MODAL -->
+        <div class="modal-overlay" :class="{ open: modals.login }">
+            <div class="modal-content" ref="loginPanel" @touchstart="handleTouchStart" @touchmove="handleTouchMove" @touchend="handleTouchEnd($event, 'login')">
+                <div class="swipe-handle"></div>
+                
+                <div v-if="!currentUser">
+                    <input type="text" v-model="loginNick" class="input-box" placeholder="Username">
+                    <div style="position: relative; width: 100%;">
+                        <input :type="passwordVisible ? 'text' : 'password'" v-model="loginPass" class="input-box" placeholder="Password" style="padding-right: 40px;">
+                        <span class="material-symbols-rounded" @click="passwordVisible = !passwordVisible" style="position: absolute; right: 12px; top: 14px; color: var(--text-muted); cursor: pointer; user-select: none;">
+                            {{ passwordVisible ? 'visibility' : 'visibility_off' }}
+                        </span>
+                    </div>
+                    <p style="font-size: 11px; color: var(--danger); text-align: center; margin: -5px 0 15px 0;">Warning: Passwords cannot be reset.</p>
+                    <button class="input-box" style="background:var(--primary); font-weight:700; border:none;" @click="handleLogin">Sign In / Register</button>
+                </div>
+                
+                <div v-else style="text-align:center;">
+                    <h3 style="margin-bottom:20px;">{{ currentUser }}</h3>
                     
-                    <!-- ADMIN TOOLS SECTION -->
-                    <div id="admin-tools" style="display:none; margin-bottom: 20px; padding: 15px; border-radius: 8px; border: 1px solid var(--primary); background: rgba(145, 70, 255, 0.1);">
+                    <!-- ADMIN TOOLS -->
+                    <div v-if="isAdmin" style="margin-bottom: 20px; padding: 15px; border-radius: 8px; border: 1px solid var(--primary); background: rgba(145, 70, 255, 0.1);">
                         <h4 style="margin: 0 0 10px; color: var(--primary-light); font-size: 12px; text-transform: uppercase;">Admin Tools</h4>
                         
-                        <!-- HIDDEN KEY ENTRY FORM -->
-                        <div id="twitch-keys-form" style="display:none; margin-bottom: 10px;">
+                        <div v-if="showTwitchForm" style="margin-bottom: 10px;">
                             <p style="font-size: 11px; color: var(--text-muted); margin: 0 0 8px;">Paste exactly from twitchtokengenerator.com</p>
-                            <input type="text" id="twitch-client-id" class="input-box" placeholder="CLIENT ID" style="padding: 10px; margin-bottom: 8px;">
-                            <input type="text" id="twitch-access-token" class="input-box" placeholder="ACCESS TOKEN" style="padding: 10px; margin-bottom: 8px;">
-                            <button class="input-box" style="background:var(--primary); font-weight:700; border:none; margin-bottom:0;" onclick="saveKeysAndSync()">Save & Fetch</button>
+                            <input type="text" v-model="twitchClientId" class="input-box" placeholder="CLIENT ID" style="padding: 10px; margin-bottom: 8px;">
+                            <input type="text" v-model="twitchAccessToken" class="input-box" placeholder="ACCESS TOKEN" style="padding: 10px; margin-bottom: 8px;">
+                            <button class="input-box" style="background:var(--primary); font-weight:700; border:none; margin-bottom:0;" @click="saveKeysAndSync">Save & Fetch</button>
                         </div>
 
-                        <!-- MAIN SYNC BUTTON -->
-                        <button id="sync-btn" class="input-box" style="background:var(--primary); font-weight:700; border:none; margin-bottom:10px;" onclick="startSyncFlow()">
-                            <span class="material-symbols-rounded" style="vertical-align: middle; font-size: 18px; margin-right: 5px;">sync</span> Fetch 90 Days of Clips
+                        <button v-else class="input-box" style="background:var(--primary); font-weight:700; border:none; margin-bottom:10px;" @click="startSyncFlow" :disabled="isSyncing">
+                            <span class="material-symbols-rounded" style="vertical-align: middle; font-size: 18px; margin-right: 5px;">sync</span> 
+                            {{ isSyncing ? 'SYNCING...' : 'Fetch 90 Days of Clips' }}
                         </button>
                         
-                        <button style="background:transparent; color:var(--text-muted); border:none; font-size:12px; text-decoration:underline; cursor:pointer;" onclick="resetTwitchKeys()">
+                        <button style="background:transparent; color:var(--text-muted); border:none; font-size:12px; text-decoration:underline; cursor:pointer;" @click="resetTwitchKeys">
                             Reset Saved Twitch Keys
                         </button>
                     </div>
 
-                    <button class="input-box" style="background:var(--danger); font-weight:700; border:none;" onclick="logout()">Logout</button>
+                    <button class="input-box" style="background:var(--danger); font-weight:700; border:none;" @click="logout">Logout</button>
                 </div>
                 
-                <button class="input-box" style="background:transparent; border:none; color:var(--text-muted);" onclick="closeModal('login')">Cancel</button>
+                <button class="input-box" style="background:transparent; border:none; color:var(--text-muted);" @click="modals.login = false">Cancel</button>
             </div>
         </div>
 
-        <div id="add-modal">
-            <div class="modal-content" id="add-panel">
+        <!-- ADD CLIP MODAL -->
+        <div class="modal-overlay" :class="{ open: modals.add }">
+            <div class="modal-content" ref="addPanel" @touchstart="handleTouchStart" @touchmove="handleTouchMove" @touchend="handleTouchEnd($event, 'add')">
                 <div class="swipe-handle"></div>
-                <input type="text" id="clip-url" class="input-box" placeholder="Twitch Clip URL">
-                <button class="input-box" style="background:var(--primary); font-weight:700; border:none;" onclick="submitClip()">Add Clip</button>
-                <button class="input-box" style="background:transparent; border:none; color:var(--text-muted);" onclick="closeModal('add')">Cancel</button>
+                <input type="text" v-model="clipUrl" class="input-box" placeholder="Twitch Clip URL">
+                <button class="input-box" style="background:var(--primary); font-weight:700; border:none;" @click="submitClip">Add Clip</button>
+                <button class="input-box" style="background:transparent; border:none; color:var(--text-muted);" @click="modals.add = false">Cancel</button>
             </div>
         </div>
-        
-        <div class="bottom-nav">
-            <div class="nav-item active" id="nav-home" onclick="switchTab('home')"><span class="material-symbols-rounded">home</span>Home</div>
-            <div class="nav-item" id="nav-community" onclick="switchTab('community')"><span class="material-symbols-rounded">forum</span>Feed</div>
-            <div class="nav-fab" onclick="handleUploadClick()" id="upload-btn-container"></div>
-            <div class="nav-item" id="nav-clips" onclick="switchTab('clips')"><span class="material-symbols-rounded">favorite</span>Liked</div>
-            <div class="nav-item" id="nav-login" onclick="openModal('login')"><span class="material-symbols-rounded">account_circle</span>Profile</div>
-        </div>
+
     </div>
 
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <!-- VUE APPLICATION LOGIC -->
     <script>
-        const SUPABASE_URL = 'https://yhxcuayiwqpjvalyrcqv.supabase.co', SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InloeGN1YXlpd3FwanZhbHlyY3F2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzg1Nzk1ODEsImV4cCI6MjA5NDE1NTU4MX0.z7EDgqRz1OT25UdxtmeJxFvwx4UCwaPRwWWJuzd46kc';
-        const ADMIN_USERNAME = 'tomato_24', TWITCH_CHANNEL = 'codemiko';
-        let sbClient = null, currentTab = 'home', currentUser = null, isAdmin = false, globalData = { clips: [], posts: [], likes: [], counts: {} }, currentPlayingIframe = null;
-
-        const getLogoSvg = (id) => `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" style="width:100%;height:100%"><defs><linearGradient id="grad-${id}" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stop-color="#ffffff"/><stop offset="100%" stop-color="#9146FF"/></linearGradient></defs><circle cx="50" cy="50" r="40" fill="none" stroke="url(#grad-${id})" stroke-width="8"/><path d="M 33 38 L 48 62 L 62 38 L 62 55 Q 62 65 69 64" fill="none" stroke="url(#grad-${id})" stroke-width="8" stroke-linecap="round" stroke-linejoin="round"/></svg>`;
-        document.getElementById('upload-btn-container').innerHTML = getLogoSvg('nav');
-        document.getElementById('splash-icon').innerHTML = getLogoSvg('splash');
-        document.getElementById('header-logo-slot').innerHTML = getLogoSvg('header');
-
-        async function init() {
-            sbClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
-            currentUser = localStorage.getItem('miko_user'); 
-            isAdmin = (currentUser === ADMIN_USERNAME);
-            updateStatus(false);
-            await loadData();
-            setupSwipe('login-panel', 'login'); setupSwipe('add-panel', 'add');
-            setTimeout(() => { document.getElementById('splash-screen').style.opacity='0'; setTimeout(()=>document.getElementById('splash-screen').style.display='none', 600); }, 1500);
-        }
-
-        function updateStatus(isOnline) {
-            const host = window.location.hostname || "localhost";
-            const hDot = document.getElementById('header-dot'), hText = document.getElementById('live-text'), hubContainer = document.getElementById('live-container'), hubDot = document.getElementById('hub-dot'), hubText = document.getElementById('hub-text'), player = document.getElementById('live-player');
-            if(isOnline) {
-                hDot.classList.add('active'); hText.innerText = "LIVE"; hText.classList.add('active'); hubContainer.classList.add('is-live'); hubDot.classList.add('active'); hubText.innerText = "ONLINE NOW";
-                player.src = `https://player.twitch.tv/?channel=${TWITCH_CHANNEL}&parent=${host}&autoplay=true&muted=true`;
-            } else {
-                hDot.classList.remove('active'); hText.innerText = "OFFLINE"; hText.classList.remove('active'); hubContainer.classList.remove('is-live'); hubDot.classList.remove('active'); hubText.innerText = "OFFLINE NOW";
-                player.src = `https://player.twitch.tv/?channel=${TWITCH_CHANNEL}&parent=${host}&video=&autoplay=false`;
-            }
-        }
-
-        async function loadData() {
-            try {
-                const { data: clips, error: clipsError } = await sbClient.from('clips').select('*').order('created_at', { ascending: false });
-                const { data: posts, error: postsError } = await sbClient.from('posts').select('*').order('created_at', { ascending: false });
-                const { data: allLikes, error: likesError } = await sbClient.from('likes').select('clip_id, username');
-                
-                if (clipsError || postsError || likesError) return console.error("Supabase Fetch Error:", clipsError || postsError || likesError);
-
-                globalData.counts = {}; 
-                if (allLikes) allLikes.forEach(l => { globalData.counts[l.clip_id] = (globalData.counts[l.clip_id] || 0) + 1; });
-                
-                if (currentUser) {
-                    globalData.likes = allLikes.filter(l => l.username === currentUser).map(l => l.clip_id);
-                } else {
-                    globalData.likes = [];
-                }
-                
-                globalData.clips = clips || []; globalData.posts = posts || []; render();
-            } catch (err) { console.error("Critical Load Error:", err); }
-        }
-
-        function render() {
-            const f = document.getElementById('feed-content'); f.innerHTML = '';
-            document.getElementById('live-container').style.display = (currentTab === 'home') ? 'block' : 'none';
-
-            if (currentTab === 'community') {
-                f.innerHTML = `<div class="card"><textarea id="p-text" class="input-box" style="height:60px;resize:none;" placeholder="Say something..."></textarea><button class="input-box" style="background:var(--primary);font-weight:700;margin-bottom:0;border:none;" onclick="submitPost()">Post</button></div>`;
-                globalData.posts.forEach(p => { 
-                    f.innerHTML += `
-                    <div class="card">
-                        ${isAdmin ? `<span class="material-symbols-rounded admin-del" onclick="deleteItem('posts', '${p.id}')" style="position:absolute; right:12px; top:12px; cursor:pointer;">delete</span>` : ''}
-                        <div style="display:flex;align-items:center;">
-                            <div class="avatar-ring">${p.author?p.author[0].toUpperCase():'?'}</div>
-                            <div style="font-weight:600;font-size:14px;">${p.author}</div>
-                        </div>
-                        <div style="margin-top:10px;font-size:14px;">${p.text}</div>
-                    </div>`; 
-                });
-            } else if (currentTab === 'clips') {
-                const likedOnes = globalData.clips.filter(c => globalData.likes.includes(c.id));
-                if(likedOnes.length === 0) f.innerHTML = `<div style="text-align:center;padding:40px;color:var(--text-muted);">No liked clips yet!</div>`;
-                else likedOnes.forEach(c => renderCard(f, c, true));
-            } else { 
-                globalData.clips.forEach(c => renderCard(f, c, false)); 
-            }
-        }
-
-        function renderCard(target, c, forceLoad) {
-            const isLiked = globalData.likes.includes(c.id), count = globalData.counts[c.id] || 0;
-            const host = window.location.hostname || "localhost";
-            const src = `https://clips.twitch.tv/embed?clip=${c.id}&parent=${host}&autoplay=false`;
-            const iframeTag = forceLoad ? `<iframe src="${src}" class="loaded"></iframe>` : `<iframe data-src="${src}" loading="lazy" onload="this.classList.add('loaded')"></iframe>`;
-
-            target.innerHTML += `
-                <div class="card">
-                    ${isAdmin ? `<span class="material-symbols-rounded admin-del" onclick="deleteItem('clips', '${c.id}')" style="position:absolute; right:12px; top:12px; cursor:pointer;">delete</span>` : ''}
-                    <div style="display:flex;align-items:center;margin-bottom:10px;">
-                        <div class="avatar-ring">${c.added_by?c.added_by[0].toUpperCase():'M'}</div>
-                        <div style="font-weight:600;font-size:14px;">${c.added_by||'CodeMiko'}</div>
-                    </div>
-                    <div class="video-container">${iframeTag}</div>
-                    <div class="card-actions">
-                        <div class="action-btn ${isLiked?'liked':''}" onclick="toggleLike('${c.id}')"><span class="material-symbols-rounded">favorite</span> ${count}</div>
-                    </div>
-                </div>`;
-        }
-
-        /* ----- PASSWORD VISIBILITY TOGGLE ----- */
-        function togglePassword() {
-            const passInput = document.getElementById('login-pass');
-            const toggleIcon = document.getElementById('toggle-pass-icon');
-            if (passInput.type === 'password') {
-                passInput.type = 'text';
-                toggleIcon.innerText = 'visibility';
-            } else {
-                passInput.type = 'password';
-                toggleIcon.innerText = 'visibility_off';
-            }
-        }
-
-        /* ----- FRONT-END OAUTH SYNC LOGIC (RESTORED FOR CORS FIX) ----- */
-        function startSyncFlow() {
-            let clientId = localStorage.getItem('twitch_client_id');
-            let token = localStorage.getItem('twitch_access_token');
-
-            if (!clientId || !token) {
-                document.getElementById('sync-btn').style.display = 'none';
-                document.getElementById('twitch-keys-form').style.display = 'block';
-            } else {
-                executeTwitchSync(clientId, token);
-            }
-        }
-
-        function saveKeysAndSync() {
-            let clientId = document.getElementById('twitch-client-id').value.trim();
-            let token = document.getElementById('twitch-access-token').value.trim();
-            
-            // Clean token of 'Bearer ' or 'oauth:' just in case
-            token = token.replace(/^(Bearer\s+|oauth:)/i, '').trim();
-
-            if (!clientId || !token) {
-                alert("Please enter both the Client ID and Access Token to continue.");
-                return;
-            }
-
-            localStorage.setItem('twitch_client_id', clientId);
-            localStorage.setItem('twitch_access_token', token);
-            
-            document.getElementById('twitch-keys-form').style.display = 'none';
-            document.getElementById('sync-btn').style.display = 'block';
-            
-            executeTwitchSync(clientId, token);
-        }
-
-        function resetTwitchKeys() {
-            localStorage.removeItem('twitch_client_id');
-            localStorage.removeItem('twitch_access_token');
-            document.getElementById('twitch-client-id').value = '';
-            document.getElementById('twitch-access-token').value = '';
-            document.getElementById('twitch-keys-form').style.display = 'block';
-            document.getElementById('sync-btn').style.display = 'none';
-            alert("Saved Twitch credentials have been cleared.");
-        }
-
-        async function executeTwitchSync(clientId, token) {
-            document.getElementById('live-text').innerText = "SYNCING...";
-            
-            const cleanToken = token.replace(/^(Bearer\s+|oauth:)/i, '').trim();
-            const cleanClientId = clientId.trim();
-
-            try {
-                // 1. Get Broadcaster ID
-                const userRes = await fetch(`https://api.twitch.tv/helix/users?login=${TWITCH_CHANNEL}`, { 
-                    headers: { 'Client-ID': cleanClientId, 'Authorization': `Bearer ${cleanToken}` } 
-                });
-                
-                if (!userRes.ok) {
-                    const errorDetails = await userRes.json();
-                    resetTwitchKeys();
-                    alert(`Twitch Error: ${errorDetails.message || 'Invalid Token'}. Make sure your Client ID and Token are copied exactly from twitchtokengenerator.com.`);
-                    updateStatus(false);
-                    return;
-                }
-
-                const userData = await userRes.json();
-                if (!userData.data || userData.data.length === 0) throw new Error("Could not find user.");
-                const broadcasterId = userData.data[0].id;
-
-                // 2. Fetch clips
-                const startDate = new Date(Date.now() - 90 * 24 * 60 * 60 * 1000).toISOString();
-                const clipsRes = await fetch(`https://api.twitch.tv/helix/clips?broadcaster_id=${broadcasterId}&started_at=${startDate}&first=50`, { 
-                    headers: { 'Client-ID': cleanClientId, 'Authorization': `Bearer ${cleanToken}` } 
-                });
-                const clipsData = await clipsRes.json();
-
-                if (!clipsData.data || clipsData.data.length === 0) { 
-                    alert("No clips found in the last 90 days."); 
-                    updateStatus(false); 
-                    return; 
-                }
-
-                // 3. Format for Supabase
-                const insertData = clipsData.data.map(c => ({
-                    id: c.id,
-                    added_by: 'CodeMiko',
-                    created_at: c.created_at
-                }));
-
-                // 4. Upsert avoids duplicates and updates data
-                const { error } = await sbClient.from('clips').upsert(insertData, { onConflict: 'id', ignoreDuplicates: true });
-                if (error) throw error;
-
-                alert(`Success! Auto-fetched ${insertData.length} recent clips.`);
-                closeModal('login');
-                loadData();
-                updateStatus(false);
-            } catch (err) {
-                alert("Network Error. This happens if you use a Secret instead of a Token. Please use twitchtokengenerator.com.");
-                console.error("Sync Error:", err);
-                updateStatus(false);
-            }
-        }
-        /* ------------------------------------------ */
-
-        async function toggleLike(id) {
-            if (!currentUser) { openModal('login'); return; }
-            const index = globalData.likes.indexOf(id);
-            if (index > -1) {
-                globalData.likes.splice(index, 1); globalData.counts[id] = Math.max(0, (globalData.counts[id] || 1) - 1);
-                render(); 
-                await sbClient.from('likes').delete().eq('username', currentUser).eq('clip_id', id);
-            } else {
-                globalData.likes.push(id); globalData.counts[id] = (globalData.counts[id] || 0) + 1;
-                render(); 
-                await sbClient.from('likes').insert([{ username: currentUser, clip_id: id }]);
-            }
-        }
-
-        async function deleteItem(table, id) {
-            if (isAdmin && confirm('Are you sure you want to delete this?')) {
-                await sbClient.from(table).delete().eq('id', id);
-                loadData();
-            }
-        }
-
-        function setupSwipe(pid, mkey) {
-            const p = document.getElementById(pid); let startY = 0, currentY = 0;
-            p.addEventListener('touchstart', (e) => { startY = e.touches[0].clientY; p.style.transition = 'none'; }, {passive: true});
-            p.addEventListener('touchmove', (e) => { currentY = e.touches[0].clientY - startY; if (currentY > 0) p.style.transform = `translateY(${currentY}px)`; }, {passive: true});
-            p.addEventListener('touchend', () => { p.style.transition = 'transform 0.3s cubic-bezier(0.1, 0.5, 0.1, 1)'; if (currentY > 120) closeModal(mkey); else p.style.transform = 'translateY(0)'; currentY = 0; });
-        }
-
-        async function handleLogin() { const n = document.getElementById('login-nick').value.trim(); if (n) { localStorage.setItem('miko_user', n); location.reload(); } }
-        function logout() { localStorage.removeItem('miko_user'); location.reload(); }
+        const { createApp, ref, computed, onMounted } = Vue;
         
-        function openModal(id) { 
-            if(id==='login' && currentUser) { 
-                document.getElementById('login-form').style.display='none'; 
-                document.getElementById('profile-form').style.display='block'; 
-                document.getElementById('display-name').innerText=currentUser;
-                document.getElementById('admin-tools').style.display = isAdmin ? 'block' : 'none';
-            }
-            document.getElementById(id+'-modal').style.display='flex'; setTimeout(()=>document.getElementById(id+'-panel').style.transform='translateY(0)',10); 
-        }
+        // Supabase Configuration
+        const SUPABASE_URL = 'https://yhxcuayiwqpjvalyrcqv.supabase.co';
+        const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InloeGN1YXlpd3FwanZhbHlyY3F2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzg1Nzk1ODEsImV4cCI6MjA5NDE1NTU4MX0.z7EDgqRz1OT25UdxtmeJxFvwx4UCwaPRwWWJuzd46kc';
+        const sbClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+        const TWITCH_CHANNEL = 'codemiko';
 
-        function closeModal(id) { document.getElementById(id+'-panel').style.transform='translateY(100%)'; setTimeout(()=>document.getElementById(id+'-modal').style.display='none',300); }
-        function switchTab(t) { currentTab=t; document.querySelectorAll('.nav-item').forEach(e=>e.classList.remove('active')); document.getElementById('nav-'+t).classList.add('active'); render(); }
-        function handleUploadClick() { if(!currentUser) openModal('login'); else openModal('add'); }
-        async function submitPost() { const t = document.getElementById('p-text').value.trim(); if(t && currentUser) { await sbClient.from('posts').insert([{ author: currentUser, text: t }]); loadData(); } }
-        async function submitClip() { const u = document.getElementById('clip-url').value.trim(); if(u.includes('twitch.tv')) { const id = u.split('/').pop().split('?')[0]; await sbClient.from('clips').insert([{ id, added_by: currentUser }]); closeModal('add'); loadData(); } }
-        
-        function handleScroll() {
-            const iframes = document.querySelectorAll('iframe:not(#live-player)');
-            const host = window.location.hostname || "localhost";
-            iframes.forEach(iframe => {
-                const rect = iframe.getBoundingClientRect();
-                if (rect.top < window.innerHeight && rect.bottom > 0) {
-                    if (iframe.getAttribute('data-src') && !iframe.src) iframe.src = iframe.getAttribute('data-src');
-                    if (rect.top < window.innerHeight/2 && rect.bottom > window.innerHeight/2) {
-                        if (currentPlayingIframe !== iframe) {
-                            if(currentPlayingIframe) {
-                                let oldSrc = currentPlayingIframe.src;
-                                if (oldSrc.includes('autoplay=true')) currentPlayingIframe.src = oldSrc.replace('autoplay=true', 'autoplay=false');
-                            }
-                            let newSrc = iframe.src || iframe.getAttribute('data-src');
-                            if (newSrc && !newSrc.includes('autoplay=true')) iframe.src = newSrc.replace('autoplay=false', 'autoplay=true') + "&muted=true";
-                            currentPlayingIframe = iframe;
+        createApp({
+            setup() {
+                // Reactive State
+                const splashVisible = ref(true);
+                const splashOpacity = ref(1);
+                const currentTab = ref('home');
+                const isLive = ref(false);
+                
+                // User & Auth
+                const currentUser = ref(localStorage.getItem('miko_user') || null);
+                const isAdmin = computed(() => currentUser.value === 'tomato_24');
+                const loginNick = ref('');
+                const loginPass = ref('');
+                const passwordVisible = ref(false);
+                
+                // Data
+                const clips = ref([]);
+                const posts = ref([]);
+                const userLikes = ref([]);
+                const counts = ref({});
+                const postText = ref('');
+                const clipUrl = ref('');
+
+                // UI / Modals
+                const modals = ref({ login: false, add: false });
+                
+                // Admin Twitch Sync
+                const showTwitchForm = ref(false);
+                const isSyncing = ref(false);
+                const twitchClientId = ref('');
+                const twitchAccessToken = ref('');
+
+                const host = window.location.hostname || "localhost";
+
+                // --- COMPUTED PROPERTIES ---
+                const twitchIframeSrc = computed(() => {
+                    return `https://player.twitch.tv/?channel=${TWITCH_CHANNEL}&parent=${host}&video=&autoplay=${isLive.value ? 'true&muted=true' : 'false'}`;
+                });
+
+                const displayedClips = computed(() => {
+                    if (currentTab.value === 'clips') return clips.value.filter(c => userLikes.value.includes(c.id));
+                    return clips.value;
+                });
+
+                // --- HELPER METHODS ---
+                const logoSvg = (id) => `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" style="width:100%;height:100%"><defs><linearGradient id="grad-${id}" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stop-color="#ffffff"/><stop offset="100%" stop-color="#9146FF"/></linearGradient></defs><circle cx="50" cy="50" r="40" fill="none" stroke="url(#grad-${id})" stroke-width="8"/><path d="M 33 38 L 48 62 L 62 38 L 62 55 Q 62 65 69 64" fill="none" stroke="url(#grad-${id})" stroke-width="8" stroke-linecap="round" stroke-linejoin="round"/></svg>`;
+
+                const getClipUrl = (id, autoplay = false) => {
+                    return `https://clips.twitch.tv/embed?clip=${id}&parent=${host}&autoplay=${autoplay}`;
+                };
+
+                // --- DATA FETCHING ---
+                const loadData = async () => {
+                    try {
+                        const { data: fetchClips } = await sbClient.from('clips').select('*').order('created_at', { ascending: false });
+                        const { data: fetchPosts } = await sbClient.from('posts').select('*').order('created_at', { ascending: false });
+                        const { data: allLikes } = await sbClient.from('likes').select('clip_id, username');
+                        
+                        clips.value = fetchClips || [];
+                        posts.value = fetchPosts || [];
+                        
+                        const newCounts = {};
+                        if (allLikes) {
+                            allLikes.forEach(l => newCounts[l.clip_id] = (newCounts[l.clip_id] || 0) + 1);
                         }
+                        counts.value = newCounts;
+
+                        if (currentUser.value && allLikes) {
+                            userLikes.value = allLikes.filter(l => l.username === currentUser.value).map(l => l.clip_id);
+                        } else {
+                            userLikes.value = [];
+                        }
+                    } catch (err) {
+                        console.error("Critical Load Error:", err);
                     }
-                }
-            });
-        }
-        window.addEventListener('load', init);
+                };
+
+                // --- ACTIONS ---
+                const toggleLike = async (id) => {
+                    if (!currentUser.value) { modals.value.login = true; return; }
+                    
+                    const idx = userLikes.value.indexOf(id);
+                    if (idx > -1) {
+                        // Optimistic update
+                        userLikes.value.splice(idx, 1);
+                        counts.value[id] = Math.max(0, (counts.value[id] || 1) - 1);
+                        await sbClient.from('likes').delete().eq('username', currentUser.value).eq('clip_id', id);
+                    } else {
+                        userLikes.value.push(id);
+                        counts.value[id] = (counts.value[id] || 0) + 1;
+                        await sbClient.from('likes').insert([{ username: currentUser.value, clip_id: id }]);
+                    }
+                };
+
+                const deleteItem = async (table, id) => {
+                    if (isAdmin.value && confirm('Are you sure you want to delete this?')) {
+                        await sbClient.from(table).delete().eq('id', id);
+                        loadData();
+                    }
+                };
+
+                const submitPost = async () => {
+                    if (postText.value.trim() && currentUser.value) {
+                        await sbClient.from('posts').insert([{ author: currentUser.value, text: postText.value.trim() }]);
+                        postText.value = '';
+                        loadData();
+                    }
+                };
+
+                const submitClip = async () => {
+                    if (clipUrl.value.includes('twitch.tv')) {
+                        const id = clipUrl.value.split('/').pop().split('?')[0];
+                        await sbClient.from('clips').insert([{ id, added_by: currentUser.value }]);
+                        clipUrl.value = '';
+                        modals.value.add = false;
+                        loadData();
+                    }
+                };
+
+                const handleLogin = () => {
+                    const n = loginNick.value.trim();
+                    if (n) {
+                        localStorage.setItem('miko_user', n);
+                        currentUser.value = n;
+                        loginNick.value = '';
+                        loginPass.value = '';
+                        loadData(); // refresh likes for user
+                    }
+                };
+
+                const logout = () => {
+                    localStorage.removeItem('miko_user');
+                    currentUser.value = null;
+                    userLikes.value = [];
+                    modals.value.login = false;
+                };
+
+                const openModal = (type) => { modals.value[type] = true; };
+                const handleUploadClick = () => { currentUser.value ? openModal('add') : openModal('login'); };
+
+                // --- TWITCH ADMIN SYNC ---
+                const startSyncFlow = () => {
+                    const savedId = localStorage.getItem('twitch_client_id');
+                    const savedToken = localStorage.getItem('twitch_access_token');
+                    if (!savedId || !savedToken) {
+                        showTwitchForm.value = true;
+                    } else {
+                        executeTwitchSync(savedId, savedToken);
+                    }
+                };
+
+                const saveKeysAndSync = () => {
+                    let cid = twitchClientId.value.trim();
+                    let tkn = twitchAccessToken.value.trim();
+                    tkn = tkn.replace(/^(Bearer\s+|oauth:)/i, '').trim();
+
+                    if (!cid || !tkn) return alert("Please enter both the Client ID and Access Token to continue.");
+                    
+                    localStorage.setItem('twitch_client_id', cid);
+                    localStorage.setItem('twitch_access_token', tkn);
+                    showTwitchForm.value = false;
+                    executeTwitchSync(cid, tkn);
+                };
+
+                const resetTwitchKeys = () => {
+                    localStorage.removeItem('twitch_client_id');
+                    localStorage.removeItem('twitch_access_token');
+                    twitchClientId.value = '';
+                    twitchAccessToken.value = '';
+                    showTwitchForm.value = true;
+                };
+
+                const executeTwitchSync = async (clientId, token) => {
+                    isSyncing.value = true;
+                    const cleanToken = token.replace(/^(Bearer\s+|oauth:)/i, '').trim();
+                    const cleanClientId = clientId.trim();
+
+                    // Formatting headers strictly to Twitch API specs to prevent preflight rejection
+                    const headers = { 
+                        'Client-Id': cleanClientId, 
+                        'Authorization': `Bearer ${cleanToken}`,
+                        'Accept': 'application/json'
+                    };
+
+                    try {
+                        const userRes = await fetch(`https://api.twitch.tv/helix/users?login=${TWITCH_CHANNEL}`, { headers });
+                        
+                        if (!userRes.ok) {
+                            const errorDetails = await userRes.json();
+                            resetTwitchKeys();
+                            alert(`Twitch Error: ${errorDetails.message || 'Invalid Token'}. Make sure your Client ID and Token are copied exactly from twitchtokengenerator.com.`);
+                            isSyncing.value = false;
+                            return;
+                        }
+
+                        const userData = await userRes.json();
+                        if (!userData.data || userData.data.length === 0) throw new Error("Could not find user.");
+                        const broadcasterId = userData.data[0].id;
+
+                        const startDate = new Date(Date.now() - 90 * 24 * 60 * 60 * 1000).toISOString();
+                        const clipsRes = await fetch(`https://api.twitch.tv/helix/clips?broadcaster_id=${broadcasterId}&started_at=${startDate}&first=50`, { headers });
+                        const clipsData = await clipsRes.json();
+
+                        if (!clipsData.data || clipsData.data.length === 0) { alert("No clips found."); isSyncing.value = false; return; }
+
+                        const insertData = clipsData.data.map(c => ({ id: c.id, added_by: 'CodeMiko', created_at: c.created_at }));
+                        const { error } = await sbClient.from('clips').upsert(insertData, { onConflict: 'id', ignoreDuplicates: true });
+                        if (error) throw error;
+
+                        alert(`Success! Auto-fetched ${insertData.length} recent clips.`);
+                        modals.value.login = false;
+                        loadData();
+                    } catch (err) {
+                        alert(`System Error: ${err.message}\n\nIf the error says "Failed to fetch", your mobile browser's privacy shield or ad-blocker is blocking the background connection to Twitch. Try pausing ad-blockers for this page.`);
+                        console.error("Sync Error:", err);
+                    } finally {
+                        isSyncing.value = false;
+                    }
+                };
+
+                // --- SCROLL & AUTOPLAY LOGIC ---
+                let currentPlayingIframe = null;
+                const handleScroll = (e) => {
+                    const iframes = e.target.querySelectorAll('iframe:not(#live-player)');
+                    iframes.forEach(iframe => {
+                        const rect = iframe.getBoundingClientRect();
+                        if (rect.top < window.innerHeight && rect.bottom > 0) {
+                            if (iframe.getAttribute('data-src') && !iframe.src) iframe.src = iframe.getAttribute('data-src');
+                            if (rect.top < window.innerHeight/2 && rect.bottom > window.innerHeight/2) {
+                                if (currentPlayingIframe !== iframe) {
+                                    if(currentPlayingIframe) {
+                                        let oldSrc = currentPlayingIframe.src;
+                                        if (oldSrc.includes('autoplay=true')) currentPlayingIframe.src = oldSrc.replace('autoplay=true', 'autoplay=false');
+                                    }
+                                    let newSrc = iframe.src || iframe.getAttribute('data-src');
+                                    if (newSrc && !newSrc.includes('autoplay=true')) iframe.src = newSrc.replace('autoplay=false', 'autoplay=true') + "&muted=true";
+                                    currentPlayingIframe = iframe;
+                                }
+                            }
+                        }
+                    });
+                };
+
+                // --- SWIPE TO CLOSE LOGIC ---
+                let startY = 0, currentY = 0;
+                const handleTouchStart = (e) => { startY = e.touches[0].clientY; e.currentTarget.style.transition = 'none'; };
+                const handleTouchMove = (e) => { currentY = e.touches[0].clientY - startY; if (currentY > 0) e.currentTarget.style.transform = `translateY(${currentY}px)`; };
+                const handleTouchEnd = (e, modalId) => {
+                    e.currentTarget.style.transition = 'transform 0.3s cubic-bezier(0.1, 0.5, 0.1, 1)';
+                    if (currentY > 120) modals.value[modalId] = false;
+                    setTimeout(() => e.currentTarget.style.transform = '', 50); // reset style so vue class logic handles it
+                    currentY = 0;
+                };
+
+                // Lifecycle Hook
+                onMounted(async () => {
+                    await loadData();
+                    // Hide Splash
+                    setTimeout(() => {
+                        splashOpacity.value = 0;
+                        setTimeout(() => splashVisible.value = false, 600);
+                    }, 1500);
+                });
+
+                return {
+                    splashVisible, splashOpacity, currentTab, isLive, currentUser, isAdmin, loginNick, loginPass, passwordVisible,
+                    clips, posts, displayedClips, counts, userLikes, postText, clipUrl, modals,
+                    showTwitchForm, isSyncing, twitchClientId, twitchAccessToken,
+                    logoSvg, getClipUrl, toggleLike, deleteItem, submitPost, submitClip, handleLogin, logout, openModal, handleUploadClick,
+                    startSyncFlow, saveKeysAndSync, resetTwitchKeys, handleScroll, handleTouchStart, handleTouchMove, handleTouchEnd, twitchIframeSrc
+                };
+            }
+        }).mount('#app-container');
     </script>
 </body>
 </html>
