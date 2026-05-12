@@ -32,7 +32,7 @@
         .avatar-circle { width: 36px; height: 36px; border-radius: 50%; margin-right: 12px; background: #2f2f35; color: white; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 16px; border: 2px solid var(--primary); }
         .meta-name { font-size: 14px; font-weight: 600; }
         .admin-del { margin-left: auto; color: var(--danger); cursor: pointer; font-size: 20px; }
-        .video-container { position: relative; width: 100%; border-radius: 8px; overflow: hidden; background: #000; aspect-ratio: 16/9; border: 1px solid var(--border-color); }
+        .video-container { width: 100%; border-radius: 8px; overflow: hidden; background: #000; aspect-ratio: 16/9; border: 1px solid var(--border-color); }
         iframe { width: 100%; height: 100%; border: none; }
         .bottom-nav { position: absolute; bottom: 0; left: 0; width: 100%; background: var(--bg-color); border-top: 1px solid var(--border-color); display: flex; justify-content: space-between; align-items: center; padding: 10px 15px 25px; z-index: 100; }
         .nav-item { display: flex; flex-direction: column; align-items: center; width: 60px; color: var(--text-muted); font-size: 10px; gap: 4px; cursor: pointer; }
@@ -54,7 +54,7 @@
         <div id="feed"><div id="feed-content"></div></div>
         <div id="login-modal"><div class="modal-content" id="login-panel"><div class="modal-handle"></div>
             <div id="login-form">
-                <input type="text" id="login-nick" class="input-box" placeholder="Nickname">
+                <input type="text" id="login-nick" class="input-box" placeholder="Username">
                 <input type="password" id="login-pass" class="input-box" placeholder="Password">
                 <button class="input-box" style="background:var(--primary); font-weight:600;" onclick="handleLogin()">Sign In</button>
             </div>
@@ -103,42 +103,38 @@
             setTimeout(() => { document.getElementById('splash-screen').style.opacity = '0'; setTimeout(() => document.getElementById('splash-screen').style.display = 'none', 500); }, 1500);
         }
 
-        // --- FIXED AUTH LOGIC ---
+        // --- NORMALIZED AUTH LOGIC ---
         function handleLogin() {
             const n = document.getElementById('login-nick').value.trim();
             const p = document.getElementById('login-pass').value.trim();
             
-            // 1. Check if user is trying to be Admin
             if (n === 'tomato_24') {
                 if (p === '9ruwuF') {
                     isAdmin = true;
                     currentUser = 'tomato_24';
                 } else {
-                    showToast("Access Denied: Wrong Password");
-                    return; // STOP HERE - No login
+                    showToast("Invalid password");
+                    return; 
                 }
             } 
-            // 2. Check for normal users
             else if (n && p.length >= 8) {
                 isAdmin = false;
                 currentUser = n;
             } 
-            // 3. Reject empty/short entries
             else {
-                showToast("Nick + 8 char Password needed");
+                showToast("Please check your details");
                 return;
             }
             
-            // 4. If we reached here, login is valid
             localStorage.setItem('miko_user', currentUser);
             document.getElementById('login-text').innerText = currentUser;
             closeModal('login');
             render();
-            showToast("Welcome, " + currentUser);
+            showToast("Welcome back!");
         }
 
         function logout() { localStorage.removeItem('miko_user'); currentUser = null; isAdmin = false; document.getElementById('login-text').innerText = "Login"; closeModal('login'); render(); }
-        function handleUploadClick() { if(!currentUser) { showToast("Login first to upload!"); openModal('login'); } else { openModal('add'); } }
+        function handleUploadClick() { if(!currentUser) { showToast("Please login to upload"); openModal('login'); } else { openModal('add'); } }
 
         async function submitPost() {
             const t = document.getElementById('p-text').value.trim(); if (!t) return;
@@ -147,10 +143,10 @@
         }
 
         async function submitClip() {
-            const u = document.getElementById('clip-url').value.trim(); if (!u.includes('twitch.tv')) { showToast("Invalid Twitch link"); return; }
+            const u = document.getElementById('clip-url').value.trim(); if (!u.includes('twitch.tv')) { showToast("Invalid link"); return; }
             const id = u.split('/').pop().split('?')[0];
             await sbClient.from('clips').insert([{ id, title: 'CodeMiko Clip', added_by: currentUser || 'Guest' }]);
-            closeModal('add'); loadData(); showToast("Clip Uploaded!");
+            closeModal('add'); loadData(); showToast("Clip uploaded!");
         }
 
         async function deleteItem(table, id) { if(!isAdmin) return; await sbClient.from(table).delete().eq('id', id); loadData(); }
@@ -158,7 +154,7 @@
         function render() {
             const f = document.getElementById('feed-content'); f.innerHTML = '';
             if (currentTab === 'community') {
-                f.innerHTML = `<div class="card"><textarea id="p-text" class="input-box" style="height:80px;resize:none;" placeholder="Discuss..."></textarea><button class="input-box" style="background:var(--primary);font-weight:600;" onclick="submitPost()">Post</button></div>`;
+                f.innerHTML = `<div class="card"><textarea id="p-text" class="input-box" style="height:80px;resize:none;" placeholder="Write something..."></textarea><button class="input-box" style="background:var(--primary);font-weight:600;" onclick="submitPost()">Post</button></div>`;
                 globalData.posts.forEach(p => {
                     f.innerHTML += `<div class="card"><div class="card-header"><div class="avatar-circle" style="background:${p.author === 'tomato_24' ? '#9146FF' : '#2f2f35'}">${p.author[0].toUpperCase()}</div><div class="meta-name">${p.author}</div>${isAdmin ? `<span class="material-symbols-rounded admin-del" onclick="deleteItem('posts', '${p.id}')">delete</span>` : ''}</div><div class="post-text-content">${p.text}</div></div>`;
                 });
