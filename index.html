@@ -81,7 +81,13 @@
         <div id="login-modal"><div class="modal-content" id="login-panel">
             <div id="login-form">
                 <input type="text" id="login-nick" class="input-box" placeholder="Username">
-                <input type="password" id="login-pass" class="input-box" placeholder="Minimum 6 characters">
+                
+                <!-- PASSWORD CONTAINER WITH EYE ICON -->
+                <div style="position: relative; width: 100%; margin-bottom: 12px;">
+                    <input type="password" id="login-pass" class="input-box" placeholder="Minimum 6 characters" style="margin-bottom: 0; padding-right: 45px;">
+                    <span class="material-symbols-rounded" id="eye-icon" style="position: absolute; right: 15px; top: 50%; transform: translateY(-50%); color: var(--text-muted); cursor: pointer; user-select: none;" onclick="togglePassword()">visibility</span>
+                </div>
+
                 <button class="input-box" id="login-btn" style="background:var(--primary); font-weight:700;" onclick="handleLogin()">Sign In / Register</button>
             </div>
             <div id="profile-form" style="display:none; text-align:center;">
@@ -110,10 +116,7 @@
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script>
         const SUPABASE_URL = 'https://yhxcuayiwqpjvalyrcqv.supabase.co', SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InloeGN1YXlpd3FwanZhbHlyY3F2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzg1Nzk1ODEsImV4cCI6MjA5NDE1NTU4MX0.z7EDgqRz1OT25UdxtmeJxFvwx4UCwaPRwWWJuzd46kc';
-        
-        // --- CHANGE YOUR ADMIN USERNAME HERE ---
         const ADMIN_USERNAME = 'tomato_24';
-        // ---------------------------------------
 
         let sbClient = null, currentTab = 'home', currentUser = null, isAdmin = false, globalData = { clips: [], posts: [], users: [] };
         let likedIds = JSON.parse(localStorage.getItem('miko_likes') || '[]'), currentPlayingIframe = null;
@@ -201,15 +204,43 @@
             target.innerHTML += `<div class="card">${isAdmin ? `<span class="material-symbols-rounded admin-del" onclick="deleteItem('clips', '${c.id}')">delete</span>` : ''}<div style="display:flex; align-items:center; margin-bottom:10px;"><div class="avatar-ring">${avatarChar}</div><div style="font-weight:600;">${c.added_by || 'CodeMiko'}</div></div><div class="video-container"><iframe data-src="https://clips.twitch.tv/embed?clip=${c.id}&parent=${window.location.hostname}" title="Twitch Clip"></iframe></div><div class="card-actions"><div class="action-btn ${isLiked?'liked':''}" onclick="toggleLike('${c.id}')"><span class="material-symbols-rounded">favorite</span> ${isLiked ? 1 : 0}</div></div></div>`;
         }
 
+        // TOGGLE PASSWORD VISIBILITY
+        function togglePassword() {
+            const input = document.getElementById('login-pass');
+            const icon = document.getElementById('eye-icon');
+            if (input.type === 'password') {
+                input.type = 'text';
+                icon.innerText = 'visibility_off';
+            } else {
+                input.type = 'password';
+                icon.innerText = 'visibility';
+            }
+        }
+
+        // CRYPTOGRAPHIC HASHING FUNCTION
+        async function hashPassword(password) {
+            const msgBuffer = new TextEncoder().encode(password);
+            const hashBuffer = await crypto.subtle.digest('SHA-256', msgBuffer);
+            const hashArray = Array.from(new Uint8Array(hashBuffer));
+            return hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
+        }
+
         async function handleLogin() {
-            const n = document.getElementById('login-nick').value.trim().toLowerCase(), p = document.getElementById('login-pass').value.trim();
-            if (!n || p.length < 6) { showToast("Minimum 6 characters required"); return; }
+            const n = document.getElementById('login-nick').value.trim().toLowerCase();
+            const rawPass = document.getElementById('login-pass').value.trim();
+            if (!n || rawPass.length < 6) { showToast("Minimum 6 characters required"); return; }
+            
+            // Hash the password before it ever touches the network
+            const secureHash = await hashPassword(rawPass);
+
             const { data } = await sbClient.from('profiles').select('*').eq('username', n).single();
             if (data) {
-                if (data.password === p) completeLogin(n);
+                // Compare hashes securely
+                if (data.password === secureHash) completeLogin(n);
                 else showToast("Incorrect password for this user");
             } else {
-                const { error: regErr } = await sbClient.from('profiles').insert([{ username: n, password: p }]);
+                // Store the hash in the database, never the real password
+                const { error: regErr } = await sbClient.from('profiles').insert([{ username: n, password: secureHash }]);
                 if (!regErr) completeLogin(n);
                 else showToast("Username unavailable");
             }
@@ -231,7 +262,28 @@
         async function deleteItem(table, id) { if(!isAdmin) return; await sbClient.from(table).delete().eq('id', id); loadData(); }
         async function deleteUser(user) { if(!isAdmin) return; await sbClient.from('profiles').delete().eq('username', user); loadData(); }
         function switchTab(t) { currentTab = t; document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active')); document.getElementById('nav-' + t).classList.add('active'); render(); }
-        function openModal(id) { if(id === 'login' && currentUser) { document.getElementById('login-form').style.display='none'; document.getElementById('profile-form').style.display='block'; document.getElementById('display-name').innerText=currentUser; const tag = document.getElementById('admin-tag'), mgr = document.getElementById('admin-manager'); if(isAdmin) { tag.style.display='block'; mgr.style.display='block'; const list = document.getElementById('user-list-container'); list.innerHTML = ''; globalData.users.filter(u => u.username !== ADMIN_USERNAME).forEach(u => { list.innerHTML += `<div class="user-row"><span>${u.username}</span><span class="material-symbols-rounded" style="color:var(--danger); cursor:pointer;" onclick="deleteUser('${u.username}')">person_remove</span></div>`; }); } else { tag.style.display='none'; mgr.style.display='none'; } } else { document.getElementById('login-form').style.display='block'; document.getElementById('profile-form').style.display='none'; } document.getElementById(id + '-modal').style.display = 'flex'; setTimeout(() => document.getElementById(id + '-panel').style.transform = 'translateY(0)', 10); }
+        function openModal(id) { 
+            if(id === 'login' && currentUser) { 
+                document.getElementById('login-form').style.display='none'; 
+                document.getElementById('profile-form').style.display='block'; 
+                document.getElementById('display-name').innerText=currentUser; 
+                const tag = document.getElementById('admin-tag'), mgr = document.getElementById('admin-manager'); 
+                if(isAdmin) { 
+                    tag.style.display='block'; mgr.style.display='block'; 
+                    const list = document.getElementById('user-list-container'); list.innerHTML = ''; 
+                    globalData.users.filter(u => u.username !== ADMIN_USERNAME).forEach(u => { 
+                        list.innerHTML += `<div class="user-row"><span>${u.username}</span><span class="material-symbols-rounded" style="color:var(--danger); cursor:pointer;" onclick="deleteUser('${u.username}')">person_remove</span></div>`; 
+                    }); 
+                } else { 
+                    tag.style.display='none'; mgr.style.display='none'; 
+                } 
+            } else { 
+                document.getElementById('login-form').style.display='block'; 
+                document.getElementById('profile-form').style.display='none'; 
+            } 
+            document.getElementById(id + '-modal').style.display = 'flex'; 
+            setTimeout(() => document.getElementById(id + '-panel').style.transform = 'translateY(0)', 10); 
+        }
         function closeModal(id) { document.getElementById(id + '-panel').style.transform = 'translateY(100%)'; setTimeout(() => document.getElementById(id + '-modal').style.display = 'none', 300); }
         function showToast(m) { const t = document.getElementById('toast'); t.innerText = m; t.style.display = 'block'; setTimeout(() => t.style.display = 'none', 2500); }
         window.addEventListener('load', init);
