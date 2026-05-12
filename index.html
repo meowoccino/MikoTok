@@ -171,6 +171,12 @@
             currentPlayingIframe = iframe;
         }
 
+        function formatDateTime(isoString) {
+            if (!isoString) return '';
+            const d = new Date(isoString);
+            return d.toLocaleDateString(undefined, { month: 'short', day: 'numeric' }) + ' • ' + d.toLocaleTimeString(undefined, { hour: '2-digit', minute: '2-digit' });
+        }
+
         function render() {
             const f = document.getElementById('feed-content'); f.innerHTML = '';
             
@@ -183,7 +189,18 @@
                 f.innerHTML = `<div class="card"><textarea id="p-text" class="input-box" style="height:80px;resize:none;" placeholder="Write a post..."></textarea><button class="input-box" style="background:var(--primary);font-weight:700;" onclick="submitPost()">Post</button></div>`;
                 globalData.posts.forEach(p => {
                     const avatarChar = p.author === ADMIN_USERNAME ? ADMIN_USERNAME[0].toUpperCase() : (p.author ? p.author[0].toUpperCase() : '?');
-                    f.innerHTML += `<div class="card">${isAdmin ? `<span class="material-symbols-rounded admin-del" onclick="deleteItem('posts', '${p.id}')">delete</span>` : ''}<div style="display:flex; align-items:center; margin-bottom:10px;"><div class="avatar-ring">${avatarChar}</div><div style="font-weight:600;">${p.author}</div></div><div style="font-size:14px; color:#ccc;">${p.text}</div></div>`;
+                    const dateStr = formatDateTime(p.created_at);
+                    
+                    f.innerHTML += `<div class="card">${isAdmin ? `<span class="material-symbols-rounded admin-del" onclick="deleteItem('posts', '${p.id}')">delete</span>` : ''}
+                        <div style="display:flex; align-items:center; margin-bottom:10px;">
+                            <div class="avatar-ring">${avatarChar}</div>
+                            <div style="display:flex; flex-direction:column;">
+                                <div style="font-weight:600; line-height:1.2;">${p.author}</div>
+                                ${dateStr ? `<div style="font-size:11px; color:var(--text-muted); margin-top:2px;">${dateStr}</div>` : ''}
+                            </div>
+                        </div>
+                        <div style="font-size:14px; color:#ccc;">${p.text}</div>
+                    </div>`;
                 });
             } else if (currentTab === 'clips') {
                 const items = globalData.clips.filter(c => likedIds.includes(c.id));
@@ -197,7 +214,23 @@
         function renderCard(target, c) {
             const avatarChar = (c.added_by === ADMIN_USERNAME) ? ADMIN_USERNAME[0].toUpperCase() : (c.added_by === 'codemiko' || !c.added_by ? 'M' : c.added_by[0].toUpperCase());
             const isLiked = likedIds.includes(c.id);
-            target.innerHTML += `<div class="card">${isAdmin ? `<span class="material-symbols-rounded admin-del" onclick="deleteItem('clips', '${c.id}')">delete</span>` : ''}<div style="display:flex; align-items:center; margin-bottom:10px;"><div class="avatar-ring">${avatarChar}</div><div style="font-weight:600;">${c.added_by || 'CodeMiko'}</div></div><div class="video-container"><iframe data-src="https://clips.twitch.tv/embed?clip=${c.id}&parent=${window.location.hostname}" title="Twitch Clip"></iframe></div><div class="card-actions"><div class="action-btn ${isLiked?'liked':''}" onclick="toggleLike('${c.id}')"><span class="material-symbols-rounded">favorite</span> ${isLiked ? 1 : 0}</div></div></div>`;
+            const dateStr = formatDateTime(c.created_at);
+
+            target.innerHTML += `<div class="card">${isAdmin ? `<span class="material-symbols-rounded admin-del" onclick="deleteItem('clips', '${c.id}')">delete</span>` : ''}
+                <div style="display:flex; align-items:center; margin-bottom:10px;">
+                    <div class="avatar-ring">${avatarChar}</div>
+                    <div style="display:flex; flex-direction:column;">
+                        <div style="font-weight:600; line-height:1.2;">${c.added_by || 'CodeMiko'}</div>
+                        ${dateStr ? `<div style="font-size:11px; color:var(--text-muted); margin-top:2px;">${dateStr}</div>` : ''}
+                    </div>
+                </div>
+                <div class="video-container">
+                    <iframe data-src="https://clips.twitch.tv/embed?clip=${c.id}&parent=${window.location.hostname}" title="Twitch Clip"></iframe>
+                </div>
+                <div class="card-actions">
+                    <div class="action-btn ${isLiked?'liked':''}" onclick="toggleLike('${c.id}')"><span class="material-symbols-rounded">favorite</span> ${isLiked ? 1 : 0}</div>
+                </div>
+            </div>`;
         }
 
         function togglePassword() {
