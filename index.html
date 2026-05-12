@@ -108,7 +108,8 @@
 
         async function init() {
             sbClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
-            currentUser = localStorage.getItem('miko_user'); isAdmin = (currentUser === ADMIN_USERNAME);
+            currentUser = localStorage.getItem('miko_user'); 
+            isAdmin = (currentUser === ADMIN_USERNAME);
             await loadData();
             setupSwipe('login-panel', 'login'); setupSwipe('add-panel', 'add');
             setTimeout(() => { document.getElementById('splash-screen').style.opacity='0'; setTimeout(()=>document.getElementById('splash-screen').style.display='none', 600); }, 1500);
@@ -117,23 +118,38 @@
         async function loadData() {
             const { data: clips } = await sbClient.from('clips').select('*').order('created_at', { ascending: false });
             const { data: posts } = await sbClient.from('posts').select('*').order('created_at', { ascending: false });
+            
+            // 1. Fetch ALL like records to count them
             const { data: allLikes } = await sbClient.from('likes').select('clip_id');
-            globalData.counts = {}; if (allLikes) allLikes.forEach(l => { globalData.counts[l.clip_id] = (globalData.counts[l.clip_id] || 0) + 1; });
+            globalData.counts = {}; 
+            if (allLikes) allLikes.forEach(l => { globalData.counts[l.clip_id] = (globalData.counts[l.clip_id] || 0) + 1; });
+            
+            // 2. Fetch specific likes for the logged-in user to fill the hearts
             if (currentUser) {
                 const { data: userLikes } = await sbClient.from('likes').select('clip_id').eq('username', currentUser);
                 globalData.likes = userLikes ? userLikes.map(l => l.clip_id) : [];
+            } else {
+                globalData.likes = [];
             }
+            
             globalData.clips = clips || []; globalData.posts = posts || []; render();
         }
 
         function render() {
             const f = document.getElementById('feed-content'); f.innerHTML = '';
+            document.getElementById('live-container').style.display = (currentTab === 'home') ? 'block' : 'none';
+
             if (currentTab === 'community') {
                 f.innerHTML = `<div class="card"><textarea id="p-text" class="input-box" style="height:60px;resize:none;" placeholder="Say something..."></textarea><button class="input-box" style="background:var(--primary);font-weight:700;margin-bottom:0;border:none;" onclick="submitPost()">Post</button></div>`;
                 globalData.posts.forEach(p => { f.innerHTML += `<div class="card"><div style="display:flex;align-items:center;"><div class="avatar-ring">${p.author?p.author[0].toUpperCase():'?'}</div><div style="font-weight:600;font-size:14px;">${p.author}</div></div><div style="margin-top:10px;font-size:14px;">${p.text}</div></div>`; });
             } else if (currentTab === 'clips') {
-                globalData.clips.filter(c => globalData.likes.includes(c.id)).forEach(c => renderCard(f, c));
-            } else { globalData.clips.forEach(c => renderCard(f, c)); }
+                // FIXED: Only show clips that the user has liked
+                const likedOnes = globalData.clips.filter(c => globalData.likes.includes(c.id));
+                if(likedOnes.length === 0) f.innerHTML = `<div style="text-align:center;padding:40px;color:var(--text-muted);">No liked clips yet!</div>`;
+                else likedOnes.forEach(c => renderCard(f, c));
+            } else { 
+                globalData.clips.forEach(c => renderCard(f, c)); 
+            }
         }
 
         function renderCard(target, c) {
@@ -172,6 +188,22 @@
         function handleUploadClick() { if(!currentUser) openModal('login'); else openModal('add'); }
         async function submitPost() { const t = document.getElementById('p-text').value.trim(); if(t && currentUser) { await sbClient.from('posts').insert([{ author: currentUser, text: t }]); loadData(); } }
         async function submitClip() { const u = document.getElementById('clip-url').value.trim(); if(u.includes('twitch.tv')) { const id = u.split('/').pop().split('?')[0]; await sbClient.from('clips').insert([{ id, added_by: currentUser }]); closeModal('add'); loadData(); } }
+        
+        function handleScroll() {
+            const iframes = document.querySelectorAll('iframe:not(#live-player)');
+            iframes.forEach(iframe => {
+                const rect = iframe.getBoundingClientRect();
+                if (rect.top < window.innerHeight/2 && rect.bottom > window.innerHeight/2) {
+                    const host = window.location.hostname || "localhost";
+                    if (currentPlayingIframe !== iframe) {
+                        if(currentPlayingIframe) currentPlayingIframe.src = currentPlayingIframe.getAttribute('data-src') + "&parent=" + host + "&autoplay=false";
+                        iframe.src = iframe.getAttribute('data-src') + "&parent=" + host + "&autoplay=true&muted=true";
+                        currentPlayingIframe = iframe;
+                    }
+                }
+            });
+        }
+        let currentPlayingIframe = null;
         window.addEventListener('load', init);
     </script>
 </body>
