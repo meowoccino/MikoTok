@@ -147,9 +147,9 @@
                         
                         <!-- HIDDEN KEY ENTRY FORM -->
                         <div id="twitch-keys-form" style="display:none; margin-bottom: 10px;">
-                            <p style="font-size: 11px; color: var(--text-muted); margin: 0 0 8px;">Paste keys from your Twitch Dev Dashboard</p>
-                            <input type="text" id="twitch-client-id" class="input-box" placeholder="Client ID" style="padding: 10px; margin-bottom: 8px;">
-                            <input type="text" id="twitch-client-secret" class="input-box" placeholder="Client Secret" style="padding: 10px; margin-bottom: 8px;">
+                            <p style="font-size: 11px; color: var(--text-muted); margin: 0 0 8px;">Paste exactly from twitchtokengenerator.com</p>
+                            <input type="text" id="twitch-client-id" class="input-box" placeholder="CLIENT ID" style="padding: 10px; margin-bottom: 8px;">
+                            <input type="text" id="twitch-access-token" class="input-box" placeholder="ACCESS TOKEN" style="padding: 10px; margin-bottom: 8px;">
                             <button class="input-box" style="background:var(--primary); font-weight:700; border:none; margin-bottom:0;" onclick="saveKeysAndSync()">Save & Fetch</button>
                         </div>
 
@@ -301,83 +301,78 @@
             }
         }
 
-        /* ----- DEV DASHBOARD OAUTH SYNC LOGIC ----- */
+        /* ----- FRONT-END OAUTH SYNC LOGIC (RESTORED FOR CORS FIX) ----- */
         function startSyncFlow() {
-            let clientId = localStorage.getItem('twitch_dev_client_id');
-            let clientSecret = localStorage.getItem('twitch_dev_client_secret');
+            let clientId = localStorage.getItem('twitch_client_id');
+            let token = localStorage.getItem('twitch_access_token');
 
-            if (!clientId || !clientSecret) {
+            if (!clientId || !token) {
                 document.getElementById('sync-btn').style.display = 'none';
                 document.getElementById('twitch-keys-form').style.display = 'block';
             } else {
-                executeTwitchSync(clientId, clientSecret);
+                executeTwitchSync(clientId, token);
             }
         }
 
         function saveKeysAndSync() {
             let clientId = document.getElementById('twitch-client-id').value.trim();
-            let clientSecret = document.getElementById('twitch-client-secret').value.trim();
+            let token = document.getElementById('twitch-access-token').value.trim();
+            
+            // Clean token of 'Bearer ' or 'oauth:' just in case
+            token = token.replace(/^(Bearer\s+|oauth:)/i, '').trim();
 
-            if (!clientId || !clientSecret) {
-                alert("Please enter both your Client ID and Client Secret to continue.");
+            if (!clientId || !token) {
+                alert("Please enter both the Client ID and Access Token to continue.");
                 return;
             }
 
-            localStorage.setItem('twitch_dev_client_id', clientId);
-            localStorage.setItem('twitch_dev_client_secret', clientSecret);
+            localStorage.setItem('twitch_client_id', clientId);
+            localStorage.setItem('twitch_access_token', token);
             
             document.getElementById('twitch-keys-form').style.display = 'none';
             document.getElementById('sync-btn').style.display = 'block';
             
-            executeTwitchSync(clientId, clientSecret);
+            executeTwitchSync(clientId, token);
         }
 
         function resetTwitchKeys() {
-            localStorage.removeItem('twitch_dev_client_id');
-            localStorage.removeItem('twitch_dev_client_secret');
+            localStorage.removeItem('twitch_client_id');
+            localStorage.removeItem('twitch_access_token');
             document.getElementById('twitch-client-id').value = '';
-            document.getElementById('twitch-client-secret').value = '';
+            document.getElementById('twitch-access-token').value = '';
             document.getElementById('twitch-keys-form').style.display = 'block';
             document.getElementById('sync-btn').style.display = 'none';
             alert("Saved Twitch credentials have been cleared.");
         }
 
-        async function executeTwitchSync(clientId, clientSecret) {
-            document.getElementById('live-text').innerText = "GENERATING TOKEN...";
+        async function executeTwitchSync(clientId, token) {
+            document.getElementById('live-text').innerText = "SYNCING...";
             
+            const cleanToken = token.replace(/^(Bearer\s+|oauth:)/i, '').trim();
+            const cleanClientId = clientId.trim();
+
             try {
-                // STEP 1: Exchange Client ID and Secret for an Access Token directly with Twitch
-                const tokenRes = await fetch(`https://id.twitch.tv/oauth2/token?client_id=${clientId}&client_secret=${clientSecret}&grant_type=client_credentials`, {
-                    method: 'POST'
+                // 1. Get Broadcaster ID
+                const userRes = await fetch(`https://api.twitch.tv/helix/users?login=${TWITCH_CHANNEL}`, { 
+                    headers: { 'Client-ID': cleanClientId, 'Authorization': `Bearer ${cleanToken}` } 
                 });
                 
-                if (!tokenRes.ok) {
+                if (!userRes.ok) {
+                    const errorDetails = await userRes.json();
                     resetTwitchKeys();
-                    alert(`Authentication Failed. Make sure your Client ID and Client Secret match exactly.`);
+                    alert(`Twitch Error: ${errorDetails.message || 'Invalid Token'}. Make sure your Client ID and Token are copied exactly from twitchtokengenerator.com.`);
                     updateStatus(false);
                     return;
                 }
-                
-                const tokenData = await tokenRes.json();
-                const accessToken = tokenData.access_token;
-
-                document.getElementById('live-text').innerText = "SYNCING...";
-
-                // STEP 2: Get Broadcaster ID
-                const userRes = await fetch(`https://api.twitch.tv/helix/users?login=${TWITCH_CHANNEL}`, { 
-                    headers: { 'Client-ID': clientId, 'Authorization': `Bearer ${accessToken}` } 
-                });
-                
-                if (!userRes.ok) throw new Error("Failed to fetch user data with generated token.");
 
                 const userData = await userRes.json();
                 if (!userData.data || userData.data.length === 0) throw new Error("Could not find user.");
                 const broadcasterId = userData.data[0].id;
 
-                // STEP 3: Fetch clips
+                // 2. Fetch clips
                 const startDate = new Date(Date.now() - 90 * 24 * 60 * 60 * 1000).toISOString();
                 const clipsRes = await fetch(`https://api.twitch.tv/helix/clips?broadcaster_id=${broadcasterId}&started_at=${startDate}&first=50`, { 
-                    headers: { 'Client-ID': clientId, 'Authorization': `Bearer ${accessToken}` } 
+                    headers: { 'Client-ID': cleanClientId, 'Authorization': `Bearer ${cleanToken}` } 
                 });
                 const clipsData = await clipsRes.json();
 
@@ -387,23 +382,23 @@
                     return; 
                 }
 
-                // STEP 4: Format for Supabase
+                // 3. Format for Supabase
                 const insertData = clipsData.data.map(c => ({
                     id: c.id,
                     added_by: 'CodeMiko',
                     created_at: c.created_at
                 }));
 
-                // STEP 5: Upsert avoids duplicates and updates data
+                // 4. Upsert avoids duplicates and updates data
                 const { error } = await sbClient.from('clips').upsert(insertData, { onConflict: 'id', ignoreDuplicates: true });
                 if (error) throw error;
 
-                alert(`Success! Generated token and auto-fetched ${insertData.length} recent clips.`);
+                alert(`Success! Auto-fetched ${insertData.length} recent clips.`);
                 closeModal('login');
                 loadData();
                 updateStatus(false);
             } catch (err) {
-                alert("Network Error. Check Console for details.");
+                alert("Network Error. This happens if you use a Secret instead of a Token. Please use twitchtokengenerator.com.");
                 console.error("Sync Error:", err);
                 updateStatus(false);
             }
