@@ -9,6 +9,9 @@
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="theme-color" content="#000000">
 
+    <!-- PWA Manifest Link -->
+    <link rel="manifest" href="manifest.json">
+
     <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' fill='%23000000'/><defs><linearGradient id='g' x1='0%25' y1='0%25' x2='100%25' y2='100%25'><stop offset='0%25' stop-color='%23ffffff'/><stop offset='100%25' stop-color='%239146FF'/></linearGradient></defs><circle cx='50' cy='50' r='35' fill='none' stroke='url(%23g)' stroke-width='6'/><path d='M 38 40 L 48 60 L 58 40 L 58 55 Q 58 63 65 62' fill='none' stroke='url(%23g)' stroke-width='6' stroke-linecap='round' stroke-linejoin='round'/></svg>">
     <link rel="apple-touch-icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' fill='%23000000'/><defs><linearGradient id='g' x1='0%25' y1='0%25' x2='100%25' y2='100%25'><stop offset='0%25' stop-color='%23ffffff'/><stop offset='100%25' stop-color='%239146FF'/></linearGradient></defs><circle cx='50' cy='50' r='35' fill='none' stroke='url(%23g)' stroke-width='6'/><path d='M 38 40 L 48 60 L 58 40 L 58 55 Q 58 63 65 62' fill='none' stroke='url(%23g)' stroke-width='6' stroke-linecap='round' stroke-linejoin='round'/></svg>">
 
@@ -247,7 +250,15 @@
                 const handleLogin = () => { if(loginNick.value) { localStorage.setItem('miko_user', loginNick.value); location.reload(); } };
                 const logout = () => { localStorage.removeItem('miko_user'); location.reload(); };
 
-                onMounted(() => { loadData(); setTimeout(() => { splashOpacity.value = 0; setTimeout(() => splashVisible.value = false, 600); }, 1500); });
+                onMounted(() => { 
+                    loadData(); 
+                    setTimeout(() => { splashOpacity.value = 0; setTimeout(() => splashVisible.value = false, 600); }, 1500); 
+
+                    // PWA Service Worker Registration
+                    if ('serviceWorker' in navigator) {
+                        navigator.serviceWorker.register('data:text/javascript,self.addEventListener("fetch", (e) => e.respondWith(fetch(e.request)));');
+                    }
+                });
 
                 return { splashVisible, splashOpacity, currentTab, isLive, currentUser, loginNick, loginPass, isAdmin, posts, clips, modals, activeClip, host, logoSvg, handleLogin, logout, isSyncing, handleSyncClick, showKeyInputs, tempId, tempTkn, saveKeysAndSync };
             }
