@@ -6,141 +6,88 @@
     <meta name="mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <meta name="apple-mobile-web-app-title" content="MikoTok">
     <meta name="theme-color" content="#9146FF">
     <title>MikoTok</title>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Outfit:wght@800&family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@24,400,1,0" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&family=Outfit:wght@800&family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@24,400,1,0" rel="stylesheet">
     <style>
-        :root { 
-            --bg-color: #0b0b0e; 
-            --card-bg: #18181b; 
-            --primary: #9146FF; 
-            --primary-light: #a970ff;
-            --text-main: #ffffff;
-            --text-muted: #adadb8;
-            --border-color: #2f2f35;
-            --danger: #ff4d4d;
-        }
-        
+        :root { --bg-color: #0b0b0e; --card-bg: #18181b; --primary: #9146FF; --primary-light: #a970ff; --text-main: #ffffff; --text-muted: #adadb8; --border-color: #2f2f35; --danger: #ff4d4d; }
         * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; font-family: 'Inter', sans-serif; }
+        body, html { margin: 0; padding: 0; height: 100%; width: 100%; background: #000; color: var(--text-main); overflow: hidden; display: flex; justify-content: center; }
         
-        /* DYNAMIC BACKGROUND TWEAK */
-        body, html { 
-            margin: 0; padding: 0; height: 100%; width: 100%; 
-            background: radial-gradient(circle at top, #1a0b2e 0%, #000 100%); 
-            color: var(--text-main); overflow: hidden; 
-            display: flex; justify-content: center;
-        }
+        #app-container { width: 100%; max-width: 480px; height: 100%; position: relative; background: radial-gradient(circle at top, #1a0b2e 0%, #000 100%); overflow: hidden; }
 
-        #app-container {
-            width: 100%; max-width: 480px; height: 100%; position: relative;
-            background: transparent; overflow: hidden; box-shadow: 0 0 40px rgba(0,0,0,0.9);
-        }
+        /* SPLASH SCREEN - Fixed Z-Index */
+        #splash-screen { position: absolute; inset: 0; background: var(--bg-color); display: flex; flex-direction: column; align-items: center; justify-content: center; z-index: 9999; transition: opacity 0.5s ease; }
+        #splash-icon { width: 100px; height: 100px; margin-bottom: 15px; }
+        .progress-bar { width: 120px; height: 3px; background: #2f2f35; border-radius: 4px; margin-top: 20px; overflow: hidden; position: relative; }
+        .progress-fill { position: absolute; left: 0; top: 0; height: 100%; width: 50%; background: var(--primary); animation: load 1.5s infinite ease-in-out; }
+        @keyframes load { 0% { left: -50%; } 100% { left: 100%; } }
 
-        /* SKELETON SCREEN TWEAK */
-        .skeleton { background: linear-gradient(90deg, #18181b 25%, #252529 50%, #18181b 75%); background-size: 200% 100%; animation: skeleton-load 1.5s infinite; border-radius: 12px; }
-        @keyframes skeleton-load { 0% { background-position: 200% 0; } 100% { background-position: -200% 0; } }
-
-        .app-header {
-            position: absolute; top: 0; left: 0; width: 100%; z-index: 100;
-            padding: 45px 20px 15px; display: flex; align-items: center; 
-            background: rgba(11, 11, 14, 0.6); backdrop-filter: blur(10px);
-            border-bottom: 1px solid var(--border-color);
-        }
-
-        .simple-logo { font-family: 'Outfit', sans-serif; font-size: 26px; font-weight: 800; letter-spacing: -0.5px; }
-        .text-part2 { color: var(--primary); text-shadow: 0 0 15px rgba(145, 70, 255, 0.5); }
+        .app-header { position: absolute; top: 0; left: 0; width: 100%; z-index: 100; padding: 45px 20px 15px; display: flex; align-items: center; background: rgba(11, 11, 14, 0.7); backdrop-filter: blur(15px); border-bottom: 1px solid var(--border-color); }
+        .simple-logo { display: flex; align-items: center; justify-content: center; font-family: 'Outfit', sans-serif; font-size: 26px; font-weight: 800; letter-spacing: -0.5px; }
+        .text-part2 { color: var(--primary); text-shadow: 0 0 12px rgba(145, 70, 255, 0.4); }
 
         #feed { height: 100%; width: 100%; overflow-y: auto; padding: 105px 15px 100px; scroll-behavior: smooth; }
-        #feed::-webkit-scrollbar { width: 4px; }
-        #feed::-webkit-scrollbar-thumb { background: var(--primary); border-radius: 10px; }
-
-        .card { 
-            background: var(--card-bg); border-radius: 18px; padding: 15px; margin-bottom: 20px; 
-            border: 1px solid rgba(255,255,255,0.03); position: relative;
-            box-shadow: 0 8px 16px rgba(0,0,0,0.3); animation: slideUp 0.5s ease;
-        }
-
-        .avatar-ring { 
-            width: 42px; height: 42px; border-radius: 50%; margin-right: 12px; 
-            display: flex; align-items: center; justify-content: center; font-weight: 800; 
-            border: 2px solid var(--primary); background: #000;
-            box-shadow: 0 0 15px rgba(145, 70, 255, 0.4);
-        }
-
-        .admin-del { position: absolute; top: 15px; right: 15px; color: var(--danger); cursor: pointer; font-size: 22px; opacity: 0.6; transition: 0.2s; }
-        .admin-del:active { transform: scale(0.8); opacity: 1; }
+        #feed::-webkit-scrollbar { display: none; }
+        
+        .card { background: var(--card-bg); border-radius: 18px; padding: 15px; margin-bottom: 20px; border: 1px solid rgba(255,255,255,0.05); position: relative; box-shadow: 0 8px 16px rgba(0,0,0,0.3); }
+        .avatar-ring { width: 42px; height: 42px; border-radius: 50%; margin-right: 12px; display: flex; align-items: center; justify-content: center; font-weight: 800; border: 2px solid var(--primary); background: #000; box-shadow: 0 0 15px rgba(145, 70, 255, 0.4); }
+        
+        .admin-del { position: absolute; top: 15px; right: 15px; color: var(--danger); cursor: pointer; font-size: 22px; z-index: 10; opacity: 0.7; }
 
         .video-container { width: 100%; border-radius: 12px; overflow: hidden; background: #000; aspect-ratio: 16/9; border: 1px solid var(--border-color); }
         iframe { width: 100%; height: 100%; border: none; }
 
         .card-actions { display: flex; align-items: center; gap: 8px; margin-top: 14px; }
-        .action-btn { font-size: 14px; color: var(--text-muted); cursor: pointer; display: flex; align-items: center; gap: 4px; }
+        .action-btn { display: flex; align-items: center; gap: 6px; color: var(--text-muted); font-size: 14px; cursor: pointer; }
         .action-btn.liked { color: var(--primary-light); }
-        .action-btn.liked span { font-variation-settings: 'FILL' 1; text-shadow: 0 0 10px var(--primary); }
+        .action-btn.liked span { font-variation-settings: 'FILL' 1; }
 
-        .bottom-nav {
-            position: absolute; bottom: 0; left: 0; width: 100%; 
-            background: rgba(11, 11, 14, 0.8); backdrop-filter: blur(25px);
-            border-top: 1px solid var(--border-color);
-            display: flex; justify-content: space-between; align-items: center; 
-            padding: 12px 20px 30px; z-index: 100;
-        }
-
-        .nav-item { display: flex; flex-direction: column; align-items: center; width: 60px; color: var(--text-muted); font-size: 10px; gap: 4px; cursor: pointer; transition: 0.3s; }
+        .bottom-nav { position: absolute; bottom: 0; left: 0; width: 100%; background: rgba(11, 11, 14, 0.8); backdrop-filter: blur(20px); border-top: 1px solid var(--border-color); display: flex; justify-content: space-between; align-items: center; padding: 12px 20px 28px; z-index: 100; }
+        .nav-item { display: flex; flex-direction: column; align-items: center; width: 60px; color: var(--text-muted); font-size: 10px; gap: 4px; cursor: pointer; }
         .nav-item.active { color: var(--primary-light); }
-        /* GLOW TWEAK */
-        .nav-item.active span { text-shadow: 0 0 15px var(--primary); font-variation-settings: 'FILL' 1; }
+        .nav-fab { width: 60px; height: 60px; display: flex; align-items: center; justify-content: center; cursor: pointer; }
 
-        .nav-fab { width: 60px; height: 60px; transition: 0.2s; }
-        .nav-fab:active { transform: scale(0.9); }
-
-        .modal-content { background: var(--card-bg); border-radius: 28px 28px 0 0; padding: 25px 20px 50px; transform: translateY(100%); transition: transform 0.4s cubic-bezier(0.1, 0.7, 0.1, 1); border-top: 1px solid var(--border-color); }
-
-        #toast { position: absolute; top: 100px; left: 50%; transform: translateX(-50%); background: var(--primary); color: white; padding: 12px 24px; border-radius: 14px; z-index: 9999; display: none; font-weight: 600; box-shadow: 0 10px 20px rgba(0,0,0,0.5); }
+        #login-modal, #add-modal { position: absolute; inset: 0; background: rgba(0,0,0,0.8); z-index: 1500; display: none; flex-direction: column; justify-content: flex-end; backdrop-filter: blur(8px); }
+        .modal-content { background: var(--card-bg); border-radius: 28px 28px 0 0; padding: 25px 20px 50px; transform: translateY(100%); transition: transform 0.4s; }
+        .input-box { width: 100%; background: #0e0e10; border: 1px solid var(--border-color); color: white; padding: 14px; border-radius: 10px; outline: none; margin-bottom: 12px; }
+        #toast { position: absolute; top: 110px; left: 50%; transform: translateX(-50%); background: var(--primary); color: white; padding: 12px 24px; border-radius: 12px; z-index: 9999; display: none; }
     </style>
 </head>
 <body>
     <div id="app-container">
         <div id="splash-screen">
             <div id="splash-icon"></div>
-            <div class="simple-logo"><span style="color:#fff">Miko</span><span class="text-part2">Tok</span></div>
+            <div class="simple-logo"><span>Miko</span><span class="text-part2">Tok</span></div>
             <div class="progress-bar"><div class="progress-fill"></div></div>
         </div>
 
-        <div class="app-header">
-            <div class="simple-logo"><span style="color:#fff">Miko</span><span class="text-part2">Tok</span></div>
-        </div>
-
+        <div class="app-header"><div class="simple-logo"><span>Miko</span><span class="text-part2">Tok</span></div></div>
         <div id="toast"></div>
         <div id="feed" onscroll="handleScroll()"><div id="feed-content"></div></div>
 
-        <div id="login-modal" style="display:none; position:absolute; inset:0; background:rgba(0,0,0,0.8); z-index:1500; backdrop-filter:blur(10px); display:flex; flex-direction:column; justify-content:flex-end;">
-            <div class="modal-content" id="login-panel">
-                <input type="text" id="login-nick" class="input-box" placeholder="Username" style="width:100%; margin-bottom:10px; padding:12px; background:#000; border:1px solid #333; color:#fff; border-radius:8px;">
-                <input type="password" id="login-pass" class="input-box" placeholder="Password" style="width:100%; margin-bottom:15px; padding:12px; background:#000; border:1px solid #333; color:#fff; border-radius:8px;">
-                <button class="input-box" style="background:var(--primary); font-weight:700; width:100%; padding:12px; border:none; border-radius:8px; color:#fff;" onclick="handleLogin()">Sign In</button>
-                
-                <div id="profile-view" style="display:none; text-align:center; margin-top:20px;">
-                    <div id="admin-tag" style="display:none; color:var(--primary-light); font-size:12px; font-weight:700;">ADMIN SYSTEM</div>
-                    <h3 id="display-name" style="color:#fff;"></h3>
-                    <div id="admin-manager" style="display:none; background:#000; padding:10px; border-radius:8px; margin-bottom:10px; text-align:left;">
-                        <p style="font-size:10px; color:#666;">USER MANAGEMENT</p>
-                        <div id="user-list-container"></div>
-                    </div>
-                    <button style="background:var(--danger); width:100%; padding:12px; border-radius:8px; border:none; color:#fff;" onclick="logout()">Logout</button>
+        <div id="login-modal"><div class="modal-content" id="login-panel">
+            <div id="login-form">
+                <input type="text" id="login-nick" class="input-box" placeholder="Username">
+                <input type="password" id="login-pass" class="input-box" placeholder="Password">
+                <button class="input-box" style="background:var(--primary); font-weight:700;" onclick="handleLogin()">Sign In</button>
+            </div>
+            <div id="profile-form" style="display:none; text-align:center;">
+                <div style="color:var(--primary-light); font-size:10px; font-weight:800; margin-bottom:10px; display:none;" id="admin-tag">SYSTEM ADMIN</div>
+                <h3 id="display-name" style="margin-bottom:20px;"></h3>
+                <div id="admin-manager" style="display:none; background:rgba(0,0,0,0.4); padding:15px; border-radius:12px; border:1px solid var(--border-color); text-align:left;">
+                    <div id="user-list-container"></div>
                 </div>
-                <button style="background:transparent; color:#666; width:100%; margin-top:10px; border:none;" onclick="closeModal('login')">Dismiss</button>
+                <button class="input-box" style="background:var(--danger); font-weight:700; margin-top:15px;" onclick="logout()">Logout</button>
             </div>
-        </div>
+            <button class="input-box" style="background:transparent; border:none; color:var(--text-muted);" onclick="closeModal('login')">Dismiss</button>
+        </div></div>
 
-        <div id="add-modal" style="display:none; position:absolute; inset:0; background:rgba(0,0,0,0.8); z-index:1500; backdrop-filter:blur(10px); display:flex; flex-direction:column; justify-content:flex-end;">
-            <div class="modal-content" id="add-panel">
-                <input type="text" id="clip-url" class="input-box" placeholder="Twitch Clip URL" style="width:100%; margin-bottom:15px; padding:12px; background:#000; border:1px solid #333; color:#fff; border-radius:8px;">
-                <button style="background:var(--primary); width:100%; padding:12px; border-radius:8px; border:none; color:#fff;" onclick="submitClip()">Upload Clip</button>
-                <button style="background:transparent; color:#666; width:100%; margin-top:10px; border:none;" onclick="closeModal('add')">Cancel</button>
-            </div>
-        </div>
+        <div id="add-modal"><div class="modal-content" id="add-panel">
+            <input type="text" id="clip-url" class="input-box" placeholder="Twitch Clip URL">
+            <button class="input-box" style="background:var(--primary); font-weight:700;" onclick="submitClip()">Upload Clip</button>
+            <button class="input-box" style="background:transparent; border:none; color:var(--text-muted);" onclick="closeModal('add')">Cancel</button>
+        </div></div>
 
         <div class="bottom-nav">
             <div class="nav-item active" id="nav-home" onclick="switchTab('home')"><span class="material-symbols-rounded">home</span>Home</div>
@@ -155,32 +102,68 @@
     <script>
         const SUPABASE_URL = 'https://yhxcuayiwqpjvalyrcqv.supabase.co', SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InloeGN1YXlpd3FwanZhbHlyY3F2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzg1Nzk1ODEsImV4cCI6MjA5NDE1NTU4MX0.z7EDgqRz1OT25UdxtmeJxFvwx4UCwaPRwWWJuzd46kc';
         let sbClient = null, currentTab = 'home', currentUser = null, isAdmin = false, globalData = { clips: [], posts: [] };
-        let likedIds = JSON.parse(localStorage.getItem('miko_likes') || '[]');
-        let currentPlayingIframe = null;
+        let likedIds = JSON.parse(localStorage.getItem('miko_likes') || '[]'), currentPlayingIframe = null;
 
         const getLogoSvg = (id) => `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" style="width:100%;height:100%"><defs><linearGradient id="grad-${id}" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stop-color="#ffffff"/><stop offset="100%" stop-color="#9146FF"/></linearGradient></defs><circle cx="50" cy="50" r="40" fill="none" stroke="url(#grad-${id})" stroke-width="7"/><path d="M 33 38 L 48 62 L 62 38 L 62 55 Q 62 65 69 64" fill="none" stroke="url(#grad-${id})" stroke-width="7" stroke-linecap="round" stroke-linejoin="round"/></svg>`;
         document.getElementById('upload-btn-container').innerHTML = getLogoSvg('nav');
         document.getElementById('splash-icon').innerHTML = getLogoSvg('splash');
 
-        // HAPTIC FEEDBACK TWEAK
-        function pulse() { if (window.navigator.vibrate) window.navigator.vibrate(15); }
-
         async function init() {
-            if (window.supabase) {
+            try {
                 sbClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
                 const saved = localStorage.getItem('miko_user');
                 if (saved) { currentUser = saved; isAdmin = (saved === 'tomato_24'); document.getElementById('login-text').innerText = saved; }
-                loadData();
-            } else { setTimeout(init, 100); }
+                await loadData();
+            } catch (e) {
+                console.error("Init failed", e);
+                hideSplash(); // Force hide splash even on error
+            }
         }
 
         async function loadData() {
-            // Skeleton loader visual
-            document.getElementById('feed-content').innerHTML = `<div class="card skeleton" style="height:250px;"></div><div class="card skeleton" style="height:250px;"></div>`;
             const { data: clips } = await sbClient.from('clips').select('*').order('created_at', { ascending: false }).limit(50);
             const { data: posts } = await sbClient.from('posts').select('*').order('created_at', { ascending: false });
-            globalData.clips = clips || []; globalData.posts = posts || []; render();
-            setTimeout(() => { document.getElementById('splash-screen').style.opacity = '0'; setTimeout(() => document.getElementById('splash-screen').style.display = 'none', 500); }, 1200);
+            globalData.clips = clips || []; globalData.posts = posts || []; 
+            render();
+            hideSplash();
+        }
+
+        function hideSplash() {
+            const splash = document.getElementById('splash-screen');
+            if(splash) { splash.style.opacity = '0'; setTimeout(() => splash.style.display = 'none', 500); }
+        }
+
+        function handleScroll() {
+            const iframes = document.querySelectorAll('iframe');
+            iframes.forEach(iframe => {
+                const rect = iframe.getBoundingClientRect();
+                const inView = (rect.top >= 100 && rect.bottom <= window.innerHeight - 100);
+                if (inView && currentPlayingIframe !== iframe) {
+                    if (currentPlayingIframe) currentPlayingIframe.src = currentPlayingIframe.getAttribute('data-src') + "&autoplay=false";
+                    iframe.src = iframe.getAttribute('data-src') + "&autoplay=true&muted=false";
+                    currentPlayingIframe = iframe;
+                }
+            });
+        }
+
+        function render() {
+            const f = document.getElementById('feed-content'); f.innerHTML = '';
+            const items = currentTab === 'clips' ? globalData.clips.filter(c => likedIds.includes(c.id)) : globalData.clips;
+            
+            if (currentTab === 'community') {
+                if (!currentUser) { f.innerHTML = `<p style="text-align:center; padding:40px; color:#666;">Login to view Feed</p>`; return; }
+                f.innerHTML = `<div class="card"><textarea id="p-text" class="input-box" style="height:80px;resize:none;" placeholder="Write a post..."></textarea><button class="input-box" style="background:var(--primary);font-weight:700;" onclick="submitPost()">Post</button></div>`;
+                globalData.posts.forEach(p => {
+                    const avatarChar = p.author === 'tomato_24' ? 'T' : p.author[0].toUpperCase();
+                    f.innerHTML += `<div class="card">${isAdmin ? `<span class="material-symbols-rounded admin-del" onclick="deleteItem('posts', '${p.id}')">delete</span>` : ''}<div style="display:flex; align-items:center; margin-bottom:10px;"><div class="avatar-ring">${avatarChar}</div><div style="font-weight:600;">${p.author}</div></div><div style="font-size:14px; color:#ccc;">${p.text}</div></div>`;
+                });
+            } else {
+                items.forEach(c => {
+                    const isLiked = likedIds.includes(c.id);
+                    const avatarChar = (c.added_by === 'tomato_24') ? 'T' : (c.added_by === 'CodeMiko' || !c.added_by ? 'M' : c.added_by[0].toUpperCase());
+                    f.innerHTML += `<div class="card">${isAdmin ? `<span class="material-symbols-rounded admin-del" onclick="deleteItem('clips', '${c.id}')">delete</span>` : ''}<div style="display:flex; align-items:center; margin-bottom:10px;"><div class="avatar-ring">${avatarChar}</div><div style="font-weight:600;">${c.added_by || 'CodeMiko'}</div></div><div class="video-container"><iframe data-src="https://clips.twitch.tv/embed?clip=${c.id}&parent=${window.location.hostname}" title="Twitch Clip"></iframe></div><div class="card-actions"><div class="action-btn ${isLiked?'liked':''}" onclick="toggleLike('${c.id}')"><span class="material-symbols-rounded">favorite</span> ${isLiked ? 1 : 0}</div></div></div>`;
+                });
+            }
         }
 
         function handleLogin() {
@@ -188,72 +171,39 @@
             if (n === 'tomato_24' && p === '9ruwuF') { isAdmin = true; currentUser = n; }
             else if (n && p.length >= 8) { isAdmin = false; currentUser = n; }
             else { showToast("Check credentials"); return; }
-            localStorage.setItem('miko_user', currentUser); document.getElementById('login-text').innerText = currentUser; closeModal('login'); render(); pulse();
+            localStorage.setItem('miko_user', currentUser); document.getElementById('login-text').innerText = currentUser; closeModal('login'); render();
         }
 
         function logout() { localStorage.removeItem('miko_user'); currentUser = null; isAdmin = false; document.getElementById('login-text').innerText = "Profile"; closeModal('login'); render(); }
-        function handleUploadClick() { if(!currentUser) openModal('login'); else openModal('add'); pulse(); }
-
+        function handleUploadClick() { if(!currentUser) openModal('login'); else openModal('add'); }
         async function submitClip() {
             const u = document.getElementById('clip-url').value.trim(); if (!u.includes('twitch.tv')) return;
             const id = u.split('/').pop().split('?')[0];
             await sbClient.from('clips').insert([{ id, title: 'Clip', added_by: currentUser }]);
-            closeModal('add'); loadData(); pulse();
+            closeModal('add'); loadData();
         }
-
-        function toggleLike(id) {
-            pulse();
-            if (likedIds.includes(id)) likedIds = likedIds.filter(i => i !== id);
-            else likedIds.push(id);
-            localStorage.setItem('miko_likes', JSON.stringify(likedIds)); render();
-        }
-
-        async function deleteItem(table, id) { if(!isAdmin) return; await sbClient.from(table).delete().eq('id', id); loadData(); pulse(); }
-
-        // ONE-AT-A-TIME AUTOPLAY TWEAK
-        function handleScroll() {
-            const iframes = document.querySelectorAll('iframe');
-            iframes.forEach(iframe => {
-                const rect = iframe.getBoundingClientRect();
-                const inView = (rect.top >= 100 && rect.bottom <= window.innerHeight - 100);
-                const baseSrc = iframe.getAttribute('data-src');
-
-                if (inView) {
-                    if (currentPlayingIframe !== iframe) {
-                        if (currentPlayingIframe) currentPlayingIframe.src = currentPlayingIframe.getAttribute('data-src') + "&autoplay=false";
-                        iframe.src = baseSrc + "&autoplay=true&muted=false";
-                        currentPlayingIframe = iframe;
-                    }
+        async function submitPost() { const t = document.getElementById('p-text').value.trim(); if (!t) return; await sbClient.from('posts').insert([{ author: currentUser, text: t }]); document.getElementById('p-text').value = ''; loadData(); }
+        function toggleLike(id) { if (likedIds.includes(id)) likedIds = likedIds.filter(i => i !== id); else likedIds.push(id); localStorage.setItem('miko_likes', JSON.stringify(likedIds)); render(); }
+        async function deleteItem(table, id) { if(!isAdmin) return; await sbClient.from(table).delete().eq('id', id); loadData(); }
+        function switchTab(t) { currentTab = t; document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active')); document.getElementById('nav-' + t).classList.add('active'); render(); }
+        function openModal(id) { 
+            const m = document.getElementById(id + '-modal');
+            m.style.display = 'flex';
+            if(id === 'login' && currentUser) {
+                document.getElementById('login-form').style.display='none'; document.getElementById('profile-form').style.display='block'; document.getElementById('display-name').innerText=currentUser;
+                if(isAdmin) { 
+                    document.getElementById('admin-tag').style.display='block'; document.getElementById('admin-manager').style.display='block';
+                    const allUsers = [...new Set([...globalData.posts.map(p=>p.author), ...globalData.clips.map(c=>c.added_by)])].filter(u => u && u !== 'tomato_24');
+                    const list = document.getElementById('user-list-container'); list.innerHTML = '';
+                    allUsers.forEach(u => { list.innerHTML += `<div style="display:flex; justify-content:space-between; align-items:center; padding:8px 0; border-bottom:1px solid #222;"><span>${u}</span><span class="material-symbols-rounded" style="color:var(--danger); cursor:pointer;">person_remove</span></div>`; });
                 }
-            });
+            } else { document.getElementById('login-form').style.display='block'; document.getElementById('profile-form').style.display='none'; }
+            setTimeout(() => document.getElementById(id + '-panel').style.transform = 'translateY(0)', 10);
         }
-
-        function render() {
-            const f = document.getElementById('feed-content'); f.innerHTML = '';
-            if (currentTab === 'community') {
-                if (!currentUser) { f.innerHTML = `<p style="text-align:center; padding:40px; color:#666;">Login to view Feed</p>`; return; }
-                f.innerHTML = `<div class="card"><textarea id="p-text" style="width:100%; height:60px; background:#000; border:1px solid #333; color:#fff; border-radius:8px; padding:10px; margin-bottom:10px;" placeholder="Post..."></textarea><button style="background:var(--primary); width:100%; padding:10px; border-radius:8px; border:none; color:#fff;" onclick="submitPost()">Post</button></div>`;
-                globalData.posts.forEach(p => {
-                    const avatarChar = p.author === 'tomato_24' ? 'T' : p.author[0].toUpperCase();
-                    f.innerHTML += `<div class="card">${isAdmin ? `<span class="material-symbols-rounded admin-del" onclick="deleteItem('posts', '${p.id}')">delete</span>` : ''}<div style="display:flex; align-items:center; margin-bottom:10px;"><div class="avatar-ring">${avatarChar}</div><div style="font-weight:600;">${p.author}</div></div><div style="font-size:14px; color:#ccc;">${p.text}</div></div>`;
-                });
-            } else {
-                const items = currentTab === 'clips' ? globalData.clips.filter(c => likedIds.includes(c.id)) : globalData.clips;
-                items.forEach(c => {
-                    const isLiked = likedIds.includes(c.id);
-                    const avatarChar = (c.added_by === 'tomato_24') ? 'T' : (c.added_by === 'CodeMiko' || !c.added_by ? 'M' : c.added_by[0].toUpperCase());
-                    const card = document.createElement('div'); card.className = 'card';
-                    card.innerHTML = `${isAdmin ? `<span class="material-symbols-rounded admin-del" onclick="deleteItem('clips', '${c.id}')">delete</span>` : ''}<div style="display:flex; align-items:center; margin-bottom:10px;"><div class="avatar-ring">${avatarChar}</div><div style="font-weight:600;">${c.added_by || 'CodeMiko'}</div></div><div class="video-container"><iframe data-src="https://clips.twitch.tv/embed?clip=${c.id}&parent=${window.location.hostname}" allow="autoplay; fullscreen"></iframe></div><div class="card-actions"><div class="action-btn ${isLiked?'liked':''}" onclick="toggleLike('${c.id}')"><span class="material-symbols-rounded">favorite</span> ${isLiked ? 1 : 0}</div></div>`;
-                    f.appendChild(card);
-                });
-            }
-        }
-
-        function switchTab(t) { currentTab = t; document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active')); document.getElementById('nav-' + t).classList.add('active'); render(); pulse(); }
-        function openModal(id) { document.getElementById(id + '-modal').style.display = 'flex'; if (id === 'login' && currentUser) { document.getElementById('login-form').style.display='none'; document.getElementById('profile-view').style.display='block'; document.getElementById('display-name').innerText=currentUser; if(isAdmin) { document.getElementById('admin-tag').style.display='block'; document.getElementById('admin-manager').style.display='block'; const users = [...new Set(globalData.posts.map(p => p.author))]; const list = document.getElementById('user-list-container'); list.innerHTML = ''; users.filter(u => u !== 'tomato_24').forEach(u => { list.innerHTML += `<div style="display:flex; justify-content:space-between; color:#999; font-size:12px; margin:5px 0;"><span>${u}</span><span class="material-symbols-rounded" style="color:var(--danger); cursor:pointer;">person_remove</span></div>`; }); } } setTimeout(() => document.getElementById(id + '-panel').style.transform = 'translateY(0)', 10); }
         function closeModal(id) { document.getElementById(id + '-panel').style.transform = 'translateY(100%)'; setTimeout(() => document.getElementById(id + '-modal').style.display = 'none', 300); }
         function showToast(m) { const t = document.getElementById('toast'); t.innerText = m; t.style.display = 'block'; setTimeout(() => t.style.display = 'none', 2500); }
-        init();
+        
+        window.addEventListener('load', init);
     </script>
 </body>
 </html>
