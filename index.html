@@ -138,9 +138,9 @@
                         
                         <!-- HIDDEN KEY ENTRY FORM -->
                         <div id="twitch-keys-form" style="display:none; margin-bottom: 10px;">
-                            <p style="font-size: 11px; color: var(--text-muted); margin: 0 0 8px;">Paste keys from twitchtokengenerator.com</p>
-                            <input type="text" id="twitch-client-id" class="input-box" placeholder="Client ID" style="padding: 10px; margin-bottom: 8px;">
-                            <input type="text" id="twitch-access-token" class="input-box" placeholder="Access Token (No 'Bearer')" style="padding: 10px; margin-bottom: 8px;">
+                            <p style="font-size: 11px; color: var(--text-muted); margin: 0 0 8px;">Paste exactly from 'Generated Tokens' section</p>
+                            <input type="text" id="twitch-client-id" class="input-box" placeholder="CLIENT ID" style="padding: 10px; margin-bottom: 8px;">
+                            <input type="text" id="twitch-access-token" class="input-box" placeholder="ACCESS TOKEN" style="padding: 10px; margin-bottom: 8px;">
                             <button class="input-box" style="background:var(--primary); font-weight:700; border:none; margin-bottom:0;" onclick="saveKeysAndSync()">Save & Sync</button>
                         </div>
 
@@ -279,6 +279,7 @@
                 </div>`;
         }
 
+        /* ----- AGGRESSIVE AUTO-FETCH LOGIC ----- */
         function startSyncFlow() {
             let clientId = localStorage.getItem('twitch_client_id');
             let token = localStorage.getItem('twitch_access_token');
@@ -295,8 +296,9 @@
             let clientId = document.getElementById('twitch-client-id').value.trim();
             let token = document.getElementById('twitch-access-token').value.trim();
             
-            // Auto-clean the token
-            token = token.replace(/^Bearer\s+/i, '');
+            // AGGRESSIVE TOKEN CLEANUP
+            // Removes 'Bearer ', 'oauth:', and any surrounding invisible spaces
+            token = token.replace(/^(Bearer\s+|oauth:)/i, '').trim();
 
             if (!clientId || !token) {
                 alert("Please enter both the Client ID and Access Token to continue.");
@@ -325,8 +327,8 @@
         async function executeTwitchSync(clientId, token) {
             document.getElementById('live-text').innerText = "SYNCING...";
             
-            // Clean tokens for API
-            const cleanToken = token.replace(/^Bearer\s+/i, '').trim();
+            // Final check to ensure absolute cleanliness for the API
+            const cleanToken = token.replace(/^(Bearer\s+|oauth:)/i, '').trim();
             const cleanClientId = clientId.trim();
 
             try {
@@ -338,7 +340,7 @@
                 if (!userRes.ok) {
                     const errorDetails = await userRes.json();
                     resetTwitchKeys();
-                    alert(`Twitch Error: ${errorDetails.message || 'Invalid Token'}. Make sure your Client ID and Token are copied exactly from the generator.`);
+                    alert(`Twitch Error: ${errorDetails.message || 'Invalid Token'}. Make sure your Client ID and Token are copied exactly from the 'Generated Tokens' section.`);
                     updateStatus(false);
                     return;
                 }
