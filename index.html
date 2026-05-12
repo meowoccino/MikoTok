@@ -117,13 +117,23 @@
 
         function handleLogin() {
             const n = document.getElementById('login-nick').value.trim(), p = document.getElementById('login-pass').value.trim();
-            if (n === 'tomato_24' && p === '9ruwuF') { 
-                isAdmin = true; currentUser = 'tomato_24'; 
-                document.getElementById('admin-sync').style.display = 'block';
-            } else if (n && p.length >= 8) { 
-                isAdmin = false; currentUser = n; 
+            
+            // STRICT ADMIN CHECK
+            if (n === 'tomato_24') {
+                if (p === '9ruwuF') {
+                    isAdmin = true; currentUser = 'tomato_24';
+                    document.getElementById('admin-sync').style.display = 'block';
+                } else {
+                    showToast("Wrong Password for Admin!"); //
+                    return;
+                }
+            } else if (n && p.length >= 8) {
+                isAdmin = false; currentUser = n;
                 document.getElementById('admin-sync').style.display = 'none';
-            } else { showToast("Error: Nick + 8 char Pass"); return; }
+            } else {
+                showToast("Need Nick + 8 char Password");
+                return;
+            }
             
             localStorage.setItem('miko_user', currentUser);
             document.getElementById('login-text').innerText = currentUser;
