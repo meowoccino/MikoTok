@@ -74,11 +74,12 @@
         .nav-item.active { color: #fff; }
         .nav-fab { width: 50px; height: 50px; display: flex; align-items: center; justify-content: center; cursor: pointer; }
 
-        #login-modal, #add-modal { position: absolute; inset: 0; background: rgba(0,0,0,0.9); z-index: 1500; display: none; flex-direction: column; justify-content: flex-end; }
-        .modal-content { background: #111113; border-radius: 20px 20px 0 0; padding: 25px 20px 40px; transform: translateY(100%); transition: transform 0.3s ease-out; border-top: 1px solid var(--border-color); }
+        /* MODALS WITH SWIPE */
+        #login-modal, #add-modal { position: absolute; inset: 0; background: rgba(0,0,0,0.9); z-index: 1500; display: none; flex-direction: column; justify-content: flex-end; transition: background 0.3s ease; }
+        .modal-content { background: #111113; border-radius: 20px 20px 0 0; padding: 10px 20px 40px; transform: translateY(100%); transition: transform 0.3s cubic-bezier(0.1, 0.5, 0.1, 1); border-top: 1px solid var(--border-color); touch-action: none; position: relative; }
+        .swipe-handle { width: 40px; height: 5px; background: #333; border-radius: 10px; margin: 10px auto 20px; }
         .input-box { width: 100%; background: #000; border: 1px solid var(--border-color); color: white; padding: 14px; border-radius: 8px; outline: none; margin-bottom: 12px; font-size: 14px; }
         
-        /* UPDATED LIKE BUTTON STYLE */
         .card-actions { display: flex; align-items: center; gap: 15px; margin-top: 12px; padding-top: 10px; border-top: 1px solid rgba(255,255,255,0.05); }
         .action-btn { display: flex; align-items: center; gap: 6px; font-size: 13px; color: var(--text-muted); cursor: pointer; font-weight: 700; transition: all 0.2s ease; }
         .action-btn.liked { color: var(--primary-light); }
@@ -117,23 +118,35 @@
             <div id="feed-content"></div>
         </div>
 
-        <div id="login-modal"><div class="modal-content" id="login-panel">
-            <div id="login-form">
-                <input type="text" id="login-nick" class="input-box" placeholder="Username">
-                <div style="position:relative; width:100%; margin-bottom:12px;">
-                    <input type="password" id="login-pass" class="input-box" placeholder="Password" style="margin-bottom:0; padding-right:45px;">
-                    <span class="material-symbols-rounded" id="eye-icon" onclick="togglePassword()" style="position:absolute; right:12px; top:50%; transform:translateY(-50%); color:var(--text-muted); cursor:pointer;">visibility</span>
+        <!-- PROFILE MODAL -->
+        <div id="login-modal" class="modal-bg">
+            <div class="modal-content" id="login-panel">
+                <div class="swipe-handle"></div>
+                <div id="login-form">
+                    <input type="text" id="login-nick" class="input-box" placeholder="Username">
+                    <div style="position:relative; width:100%; margin-bottom:12px;">
+                        <input type="password" id="login-pass" class="input-box" placeholder="Password" style="margin-bottom:0; padding-right:45px;">
+                        <span class="material-symbols-rounded" id="eye-icon" onclick="togglePassword()" style="position:absolute; right:12px; top:50%; transform:translateY(-50%); color:var(--text-muted); cursor:pointer;">visibility</span>
+                    </div>
+                    <button class="input-box" style="background:var(--primary); font-weight:700; border:none;" onclick="handleLogin()">Sign In</button>
                 </div>
-                <button class="input-box" style="background:var(--primary); font-weight:700; border:none;" onclick="handleLogin()">Sign In</button>
+                <div id="profile-form" style="display:none; text-align:center;">
+                    <h3 id="display-name" style="margin-bottom:20px;"></h3>
+                    <button class="input-box" style="background:var(--danger); font-weight:700; border:none;" onclick="logout()">Logout</button>
+                </div>
+                <button class="input-box" style="background:transparent; border:none; color:var(--text-muted);" onclick="closeModal('login')">Cancel</button>
             </div>
-            <div id="profile-form" style="display:none; text-align:center;">
-                <h3 id="display-name" style="margin-bottom:20px;"></h3>
-                <button class="input-box" style="background:var(--danger); font-weight:700; border:none;" onclick="logout()">Logout</button>
-            </div>
-            <button class="input-box" style="background:transparent; border:none; color:var(--text-muted);" onclick="closeModal('login')">Cancel</button>
-        </div></div>
+        </div>
 
-        <div id="add-modal"><div class="modal-content" id="add-panel"><input type="text" id="clip-url" class="input-box" placeholder="Twitch Clip URL"><button class="input-box" style="background:var(--primary); font-weight:700; border:none;" onclick="submitClip()">Add Clip</button></div></div>
+        <!-- ADD CLIP MODAL -->
+        <div id="add-modal" class="modal-bg">
+            <div class="modal-content" id="add-panel">
+                <div class="swipe-handle"></div>
+                <input type="text" id="clip-url" class="input-box" placeholder="Twitch Clip URL">
+                <button class="input-box" style="background:var(--primary); font-weight:700; border:none;" onclick="submitClip()">Add Clip</button>
+                <button class="input-box" style="background:transparent; border:none; color:var(--text-muted);" onclick="closeModal('add')">Cancel</button>
+            </div>
+        </div>
         
         <div class="bottom-nav">
             <div class="nav-item active" id="nav-home" onclick="switchTab('home')"><span class="material-symbols-rounded">home</span>Home</div>
@@ -162,7 +175,26 @@
             const saved = localStorage.getItem('miko_user');
             if (saved) { currentUser = saved; isAdmin = (saved === ADMIN_USERNAME); }
             await loadData();
+            setupSwipe('login-panel', 'login');
+            setupSwipe('add-panel', 'add');
             updateStatus(false); 
+        }
+
+        /* SWIPE LOGIC */
+        function setupSwipe(panelId, modalKey) {
+            const panel = document.getElementById(panelId);
+            let startY = 0, currentY = 0;
+
+            panel.addEventListener('touchstart', (e) => { startY = e.touches[0].clientY; panel.style.transition = 'none'; });
+            panel.addEventListener('touchmove', (e) => {
+                currentY = e.touches[0].clientY - startY;
+                if (currentY > 0) panel.style.transform = `translateY(${currentY}px)`;
+            });
+            panel.addEventListener('touchend', () => {
+                panel.style.transition = 'transform 0.3s cubic-bezier(0.1, 0.5, 0.1, 1)';
+                if (currentY > 120) closeModal(modalKey); else panel.style.transform = 'translateY(0)';
+                currentY = 0;
+            });
         }
 
         function updateStatus(isOnline) {
@@ -180,19 +212,13 @@
         async function loadData() {
             const { data: clips } = await sbClient.from('clips').select('*').order('created_at', { ascending: false });
             const { data: posts } = await sbClient.from('posts').select('*').order('created_at', { ascending: false });
-            
-            // Get total like counts for all clips
             const { data: allLikes } = await sbClient.from('likes').select('clip_id');
             globalData.counts = {};
-            if (allLikes) {
-                allLikes.forEach(l => { globalData.counts[l.clip_id] = (globalData.counts[l.clip_id] || 0) + 1; });
-            }
-
+            if (allLikes) allLikes.forEach(l => { globalData.counts[l.clip_id] = (globalData.counts[l.clip_id] || 0) + 1; });
             if (currentUser) {
                 const { data: userLikes } = await sbClient.from('likes').select('clip_id').eq('username', currentUser);
                 globalData.likes = userLikes ? userLikes.map(l => l.clip_id) : [];
             }
-            
             globalData.clips = clips || []; globalData.posts = posts || []; render(); 
             setTimeout(() => { document.getElementById('splash-screen').style.opacity='0'; setTimeout(()=>document.getElementById('splash-screen').style.display='none', 600); }, 1500);
         }
@@ -207,9 +233,8 @@
                 });
             } else if (currentTab === 'clips') {
                 const likedClips = globalData.clips.filter(c => globalData.likes.includes(c.id));
-                if (likedClips.length === 0) {
-                    f.innerHTML = `<div class="empty-state"><span class="material-symbols-rounded">favorite</span><h3>No liked clips yet</h3><p>Tap the heart on clips to save them here!</p></div>`;
-                } else { likedClips.forEach(c => renderCard(f, c)); }
+                if (likedClips.length === 0) f.innerHTML = `<div class="empty-state"><span class="material-symbols-rounded">favorite</span><h3>No liked clips yet</h3><p>Tap the heart on clips to save them here!</p></div>`;
+                else likedClips.forEach(c => renderCard(f, c));
             } else { globalData.clips.forEach(c => renderCard(f, c)); }
         }
 
@@ -228,17 +253,14 @@
         function handleUploadClick() { if(!currentUser) openModal('login'); else openModal('add'); }
         async function submitPost() { const t = document.getElementById('p-text').value.trim(); if (t && currentUser) { await sbClient.from('posts').insert([{ author: currentUser, text: t }]); loadData(); } }
         async function submitClip() { const u = document.getElementById('clip-url').value.trim(); if (u.includes('twitch.tv') && currentUser) { const id = u.split('/').pop().split('?')[0]; await sbClient.from('clips').insert([{ id, added_by: currentUser }]); closeModal('add'); loadData(); } }
-        
         async function toggleLike(clipId) { 
             if (!currentUser) { openModal('login'); return; }
             const index = globalData.likes.indexOf(clipId);
             if (index > -1) { 
-                globalData.likes.splice(index, 1); 
-                globalData.counts[clipId] = Math.max(0, (globalData.counts[clipId] || 1) - 1);
+                globalData.likes.splice(index, 1); globalData.counts[clipId] = Math.max(0, (globalData.counts[clipId] || 1) - 1);
                 await sbClient.from('likes').delete().eq('username', currentUser).eq('clip_id', clipId);
             } else { 
-                globalData.likes.push(clipId); 
-                globalData.counts[clipId] = (globalData.counts[clipId] || 0) + 1;
+                globalData.likes.push(clipId); globalData.counts[clipId] = (globalData.counts[clipId] || 0) + 1;
                 await sbClient.from('likes').insert([{ username: currentUser, clip_id: clipId }]); 
             }
             render(); 
@@ -256,12 +278,12 @@
             const iframes = document.querySelectorAll('iframe:not(#live-player)');
             iframes.forEach(iframe => {
                 const rect = iframe.getBoundingClientRect();
-                if (rect.top < window.innerHeight/2 && rect.bottom > window.innerHeight/2) { if (currentPlayingIframe !== iframe) playVideo(iframe); }
+                if (rect.top < window.innerHeight/2 && rect.bottom > window.innerHeight/2) if (currentPlayingIframe !== iframe) playVideo(iframe);
             });
         }
         function playVideo(iframe) {
             const host = window.location.hostname || "localhost";
-            if (currentPlayingIframe && currentPlayingIframe !== iframe) { currentPlayingIframe.src = currentPlayingIframe.getAttribute('data-src') + "&parent=" + host + "&autoplay=false"; }
+            if (currentPlayingIframe && currentPlayingIframe !== iframe) currentPlayingIframe.src = currentPlayingIframe.getAttribute('data-src') + "&parent=" + host + "&autoplay=false";
             iframe.src = iframe.getAttribute('data-src') + "&parent=" + host + "&autoplay=true&muted=true"; currentPlayingIframe = iframe;
         }
         window.addEventListener('load', init);
