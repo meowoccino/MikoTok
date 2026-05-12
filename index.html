@@ -36,17 +36,21 @@
             background: var(--bg-color); overflow: hidden; box-shadow: 0 0 20px rgba(0,0,0,0.8);
         }
 
-        .cyber-logo {
-            display: flex; flex-direction: column; align-items: center; justify-content: center;
-            line-height: 0.75; user-select: none; filter: drop-shadow(0 0 8px rgba(145, 70, 255, 0.5));
+        /* NEW HORIZONTAL CYBER LOGO STYLE */
+        .cyber-logo-wrap {
+            display: flex; align-items: center; justify-content: center;
+            filter: drop-shadow(0 0 12px rgba(145, 70, 255, 0.6));
+            user-select: none;
         }
-        .cyber-miko {
-            font-family: 'Permanent Marker', cursive; font-size: 34px; color: #fff;
-            transform: rotate(-4deg) translateX(-15px); text-shadow: 2px 2px 0px var(--neon-blue); z-index: 2;
+        .logo-miko {
+            font-family: 'Permanent Marker', cursive; font-size: 38px;
+            color: #fff; font-style: italic; letter-spacing: -2px;
+            text-shadow: 0 0 10px var(--neon-blue);
         }
-        .cyber-tok {
-            font-family: 'Permanent Marker', cursive; font-size: 54px; color: #9146FF;
-            transform: skewX(-10deg) translateY(-5px); text-shadow: 3px 3px 0px #220044, 0 0 15px rgba(145, 70, 255, 0.8); z-index: 1;
+        .logo-tok {
+            font-family: 'Permanent Marker', cursive; font-size: 42px;
+            color: #bd7dff; margin-left: -2px;
+            text-shadow: 2px 2px 0px #4a008a, 0 0 20px var(--primary);
         }
 
         #splash-screen {
@@ -54,8 +58,8 @@
             display: flex; flex-direction: column; align-items: center; justify-content: center; 
             z-index: 2000; transition: opacity 0.5s ease;
         }
-        .splash-logo .cyber-miko { font-size: 52px; }
-        .splash-logo .cyber-tok { font-size: 85px; }
+        .splash-logo .logo-miko { font-size: 55px; }
+        .splash-logo .logo-tok { font-size: 60px; }
 
         .progress-bar { width: 150px; height: 4px; background: #222; border-radius: 4px; margin-top: 50px; overflow: hidden; position: relative; }
         .progress-fill { position: absolute; left: 0; top: 0; height: 100%; width: 50%; background: var(--primary); border-radius: 4px; animation: load 1.5s infinite ease-in-out; }
@@ -66,12 +70,13 @@
             padding: 55px 20px 10px; display: flex; justify-content: center; align-items: center; border-bottom: 1px solid var(--border-color);
         }
 
-        #feed { height: 100%; width: 100%; overflow-y: auto; padding: 140px 15px 90px; }
+        #feed { height: 100%; width: 100%; overflow-y: auto; padding: 130px 15px 90px; }
         #feed::-webkit-scrollbar { display: none; }
 
+        /* CARDS */
         .card { background: var(--card-bg); border-radius: 16px; padding: 15px; margin-bottom: 20px; border: 1px solid rgba(255,255,255,0.03); position: relative; }
         .card-header { display: flex; align-items: center; margin-bottom: 12px; }
-        .card-avatar { width: 38px; height: 38px; border-radius: 50%; margin-right: 12px; border: 2px solid rgba(145, 70, 255, 0.5); }
+        .card-avatar { width: 38px; height: 38px; border-radius: 50%; margin-right: 12px; border: 2px solid var(--primary); }
         .meta-name { font-size: 14px; font-weight: 600; color: white; }
         .admin-del { position: absolute; top: 12px; right: 12px; color: var(--danger); cursor: pointer; z-index: 10; display: none; }
 
@@ -86,6 +91,7 @@
         .action-item.liked { color: var(--primary-light); }
         .action-item.liked span { font-variation-settings: 'FILL' 1; }
 
+        /* BOTTOM NAV */
         .bottom-nav {
             position: absolute; bottom: 0; left: 0; width: 100%; background: var(--bg-color); border-top: 1px solid var(--border-color);
             display: flex; justify-content: space-between; align-items: center; padding: 10px 10px 25px; z-index: 100;
@@ -93,16 +99,22 @@
         .nav-item { display: flex; flex-direction: column; align-items: center; width: 60px; color: var(--text-muted); font-size: 10px; gap: 4px; cursor: pointer; }
         .nav-item.active { color: var(--primary-light); }
         
+        /* HEXAGONAL LENS UPLOAD BUTTON */
         .nav-fab {
-            width: 70px; height: 44px; border-radius: 12px; background: #1a1a20;
+            width: 60px; height: 50px; background: #2a2a35;
+            clip-path: polygon(25% 0%, 75% 0%, 100% 50%, 75% 100%, 25% 100%, 0% 50%);
             display: flex; align-items: center; justify-content: center; transform: translateY(-15px);
-            border: 2px solid #333; box-shadow: 0 0 15px rgba(145, 70, 255, 0.4);
-            position: relative; overflow: visible;
+            border: 2px solid #555; position: relative; cursor: pointer;
+            box-shadow: 0 0 20px rgba(145, 70, 255, 0.5);
         }
-        .nav-fab::before { content: ''; position: absolute; top: 50%; left: -5px; right: -5px; height: 10px; background: #222; z-index: -1; transform: translateY(-50%); border-radius: 2px; }
-        .fab-lens { width: 32px; height: 32px; border-radius: 50%; background: radial-gradient(circle, #a970ff 0%, #4a008a 100%); display: flex; align-items: center; justify-content: center; border: 2px solid #fff; box-shadow: 0 0 10px #a970ff; }
-        .fab-m { font-family: 'Permanent Marker', cursive; font-size: 18px; color: #fff; text-shadow: 0 0 5px #fff; }
+        .fab-inner {
+            width: 44px; height: 36px; background: radial-gradient(circle, #a970ff 0%, #4a008a 100%);
+            clip-path: polygon(25% 0%, 75% 0%, 100% 50%, 75% 100%, 25% 100%, 0% 50%);
+            display: flex; align-items: center; justify-content: center; border: 1px solid #fff;
+        }
+        .fab-m { font-family: 'Permanent Marker', cursive; font-size: 22px; color: #fff; text-shadow: 0 0 8px #fff; }
 
+        /* MODALS */
         #login-modal, #add-modal { position: absolute; inset: 0; background: rgba(0,0,0,0.8); z-index: 1500; display: none; flex-direction: column; justify-content: flex-end; backdrop-filter: blur(5px); }
         .modal-content { background: var(--card-bg); border-radius: 20px 20px 0 0; padding: 25px 20px 40px; transform: translateY(100%); transition: transform 0.3s; border-top: 1px solid var(--border-color); }
         
@@ -119,12 +131,16 @@
 
     <div id="app-container">
         <div id="splash-screen">
-            <div class="cyber-logo splash-logo"><div class="cyber-miko">Miko</div><div class="cyber-tok">Tok</div></div>
+            <div class="cyber-logo-wrap splash-logo">
+                <div class="logo-miko">Miko</div><div class="logo-tok">Tok</div>
+            </div>
             <div class="progress-bar"><div class="progress-fill"></div></div>
         </div>
 
         <div class="app-header">
-            <div class="cyber-logo"><div class="cyber-miko">Miko</div><div class="cyber-tok">Tok</div></div>
+            <div class="cyber-logo-wrap">
+                <div class="logo-miko">Miko</div><div class="logo-tok">Tok</div>
+            </div>
         </div>
 
         <div id="toast"></div>
@@ -171,7 +187,7 @@
         <div class="bottom-nav">
             <div class="nav-item active" id="nav-home" onclick="switchTab('home')"><span class="material-symbols-rounded">home</span>Home</div>
             <div class="nav-item" id="nav-community" onclick="switchTab('community')"><span class="material-symbols-rounded">forum</span>Community</div>
-            <div class="nav-fab" onclick="openModal()"><div class="fab-lens"><div class="fab-m">M</div></div></div>
+            <div class="nav-fab" onclick="openModal()"><div class="fab-inner"><div class="fab-m">M</div></div></div>
             <div class="nav-item" id="nav-clips" onclick="switchTab('clips')"><span class="material-symbols-rounded">favorite</span>Favorites</div>
             <div class="nav-item" id="nav-login" onclick="openLogin()"><span class="material-symbols-rounded">account_circle</span><span id="login-text">Login</span></div>
         </div>
@@ -191,7 +207,7 @@
 
         function generateAvatar(name) {
             const char = name ? name.charAt(0).toUpperCase() : 'M';
-            const svg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><defs><linearGradient id="neonG" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stop-color="#00f3ff"/><stop offset="100%" stop-color="#9146FF"/></linearGradient></defs><circle cx="50" cy="50" r="48" fill="#141419" stroke="url(#neonG)" stroke-width="4"/><text x="50" y="68" font-family="Arial" font-size="50" font-weight="900" fill="url(#neonG)" text-anchor="middle" style="text-shadow: 0 0 8px rgba(145,70,255,0.6);">${char}</text></svg>`;
+            const svg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><defs><linearGradient id="neonG" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stop-color="#00f3ff"/><stop offset="100%" stop-color="#9146FF"/></linearGradient></defs><circle cx="50" cy="50" r="48" fill="#141419" stroke="url(#neonG)" stroke-width="4"/><text x="50" y="68" font-family="Arial" font-size="50" font-weight="900" fill="url(#neonG)" text-anchor="middle">${char}</text></svg>`;
             return `data:image/svg+xml;base64,${btoa(svg)}`;
         }
 
@@ -199,7 +215,7 @@
             const session = JSON.parse(localStorage.getItem('miko_session'));
             if (session) {
                 const now = new Date().getTime();
-                if (now - session.timestamp < 3600000) { // 1 hour
+                if (now - session.timestamp < 3600000) { 
                     currentUser = session.user;
                     if (currentUser === "Admin") isAdmin = true;
                     document.getElementById('login-text').innerText = currentUser;
@@ -225,25 +241,20 @@
             const isLogged = checkSession();
             const loginView = document.getElementById('login-view');
             const profileView = document.getElementById('profile-view');
-            
             if (isLogged) {
-                loginView.style.display = 'none';
-                profileView.style.display = 'block';
+                loginView.style.display = 'none'; profileView.style.display = 'block';
                 document.getElementById('profile-name').innerText = currentUser;
                 document.getElementById('profile-avatar-container').innerHTML = `<img src="${generateAvatar(currentUser)}" style="width:80px; height:80px; border-radius:50%; border:3px solid var(--primary);">`;
             } else {
-                loginView.style.display = 'block';
-                profileView.style.display = 'none';
+                loginView.style.display = 'block'; profileView.style.display = 'none';
             }
-            
             document.getElementById('login-modal').style.display='flex';
             setTimeout(()=>document.getElementById('login-panel').style.transform='translateY(0)', 10);
         }
 
         function logout(refresh = true) {
             localStorage.removeItem('miko_session');
-            currentUser = null;
-            isAdmin = false;
+            currentUser = null; isAdmin = false;
             document.getElementById('login-text').innerText = "Login";
             if (refresh) { closeLogin(); render(); }
         }
@@ -251,44 +262,35 @@
         async function handleLogin() {
             const nick = document.getElementById('login-nick').value.trim();
             const pass = document.getElementById('login-pass').value.trim();
-            if(!nick || !pass) { showToast("Enter Nickname & Password!"); return; }
-            
+            if(!nick || !pass) { showToast("Enter credentials!"); return; }
             let loggedUser = null;
-
-            if(nick === ADMIN_USER && pass === ADMIN_PASS) { 
-                isAdmin = true; loggedUser = "Admin"; 
-            } else {
+            if(nick === ADMIN_USER && pass === ADMIN_PASS) { isAdmin = true; loggedUser = "Admin"; } 
+            else {
                 const existing = globalData.users.find(u => u.nick.toLowerCase() === nick.toLowerCase());
                 if (existing) {
                     if (existing.pass === pass) { loggedUser = existing.nick; } 
                     else { showToast("Wrong password!"); return; }
                 } else {
-                    globalData.users.push({ nick, pass });
-                    loggedUser = nick;
-                    await sync();
+                    globalData.users.push({ nick, pass }); loggedUser = nick; await sync();
                 }
             }
-
             if (loggedUser) {
                 currentUser = loggedUser;
                 localStorage.setItem('miko_session', JSON.stringify({ user: currentUser, timestamp: new Date().getTime() }));
                 document.getElementById('login-text').innerText = currentUser;
-                showToast("Logged in!");
-                closeLogin(); render();
+                showToast("Welcome!"); closeLogin(); render();
             }
         }
 
         function togglePassword() {
-            const p = document.getElementById('login-pass');
-            const i = document.querySelector('.toggle-pass');
+            const p = document.getElementById('login-pass'); const i = document.querySelector('.toggle-pass');
             p.type = p.type === 'password' ? 'text' : 'password';
             i.innerText = p.type === 'password' ? 'visibility' : 'visibility_off';
         }
 
-        // Shared Logic
         async function sync() { await fetch(`https://api.jsonbin.io/v3/b/${BIN_ID}`, { method: 'PUT', headers: { 'Content-Type': 'application/json', 'X-Master-Key': MASTER_KEY }, body: JSON.stringify(globalData) }); }
         function closeLogin() { document.getElementById('login-panel').style.transform='translateY(100%)'; setTimeout(()=>document.getElementById('login-modal').style.display='none', 300); }
-        async function deleteItem(type, id) { if (!confirm("Confirm Delete?")) return; if (type === 'clip') globalData.clips = globalData.clips.filter(c => c.id !== id); else globalData.posts = globalData.posts.filter(p => p.id !== id); await sync(); render(); }
+        async function deleteItem(type, id) { if (!confirm("Delete?")) return; if (type === 'clip') globalData.clips = globalData.clips.filter(c => c.id !== id); else globalData.posts = globalData.posts.filter(p => p.id !== id); await sync(); render(); }
         function switchTab(t) { currentTab = t; document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active')); document.getElementById(`nav-${t}`).classList.add('active'); render(); }
         function render() {
             const f = document.getElementById('feed'); f.innerHTML = '';
