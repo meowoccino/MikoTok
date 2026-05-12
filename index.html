@@ -9,7 +9,7 @@
     <title>MikoTok</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&family=Outfit:wght@800&family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@24,400,1,0" rel="stylesheet">
     <style>
-        :root { --bg-color: #0b0b0e; --card-bg: #18181b; --primary: #9146FF; --primary-light: #a970ff; --text-main: #ffffff; --text-muted: #adadb8; --border-color: #2f2f35; --danger: #ff4d4d; }
+        :root { --bg-color: #0b0b0e; --card-bg: #18181b; --primary: #9146FF; --primary-light: #a970ff; --text-main: #ffffff; --text-muted: #adadb8; --border-color: #2f2f35; --danger: #ff4d4d; --offline: #444; }
         * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; font-family: 'Inter', sans-serif; }
         body, html { margin: 0; padding: 0; height: 100%; width: 100%; background: #000; color: var(--text-main); overflow: hidden; display: flex; justify-content: center; }
         
@@ -20,26 +20,27 @@
         .splash-logo-text { font-family: 'Outfit', sans-serif; font-size: 42px; font-weight: 800; letter-spacing: -1px; margin-bottom: 30px; }
         
         .progress-bar { width: 200px; height: 4px; background: rgba(255,255,255,0.1); border-radius: 10px; overflow: hidden; position: relative; }
-        .progress-fill { 
-            position: absolute; left: 0; top: 0; height: 100%; width: 50%; 
-            background: linear-gradient(90deg, #ffffff, var(--primary)); 
-            animation: load 1.5s infinite ease-in-out; 
-        }
+        .progress-fill { position: absolute; left: 0; top: 0; height: 100%; width: 50%; background: linear-gradient(90deg, #ffffff, var(--primary)); animation: load 1.5s infinite ease-in-out; }
         @keyframes load { 0% { left: -50%; } 100% { left: 100%; } }
 
-        /* PREMIUM GLASS HEADER */
+        /* HEADER */
         .app-header { 
             position: absolute; top: 0; left: 0; width: 100%; z-index: 100; 
             padding: 45px 20px 15px; display: flex; align-items: center; justify-content: space-between;
-            background: rgba(26, 11, 46, 0.85); 
-            backdrop-filter: blur(25px); -webkit-backdrop-filter: blur(25px);
-            border-bottom: 1px solid rgba(145, 70, 255, 0.25); 
-            box-shadow: 0 4px 30px rgba(0, 0, 0, 0.5);
+            background: rgba(26, 11, 46, 0.85); backdrop-filter: blur(25px); -webkit-backdrop-filter: blur(25px);
+            border-bottom: 1px solid rgba(145, 70, 255, 0.25); box-shadow: 0 4px 30px rgba(0, 0, 0, 0.5);
         }
-        .header-icon { color: var(--text-muted); width: 40px; display: flex; flex-direction: column; align-items: center; justify-content: center; cursor: pointer; }
-        .header-icon .material-symbols-rounded { font-size: 26px; }
-        .live-dot { width: 8px; height: 8px; background: #ff4d4d; border-radius: 50%; display: inline-block; margin-bottom: 3px; box-shadow: 0 0 10px #ff4d4d; animation: pulse 2s infinite; }
-        @keyframes pulse { 0% { opacity: 1; } 50% { opacity: 0.4; } 100% { opacity: 1; } }
+        .header-logo { width: 32px; height: 32px; display: flex; align-items: center; justify-content: center; cursor: pointer; }
+        .header-icon { color: var(--text-muted); width: 40px; display: flex; flex-direction: column; align-items: center; justify-content: center; }
+        
+        /* DYNAMIC LIVE DOT */
+        .live-dot { width: 8px; height: 8px; background: var(--offline); border-radius: 50%; display: inline-block; margin-bottom: 3px; transition: all 0.3s ease; }
+        .live-dot.active { background: var(--danger); box-shadow: 0 0 10px var(--danger); animation: pulse 2s infinite; }
+        #live-text { font-size: 9px; font-weight: 800; color: var(--text-muted); transition: color 0.3s ease; }
+        #live-text.active { color: var(--danger); }
+        
+        @keyframes pulse { 0% { opacity: 1; transform: scale(1); } 50% { opacity: 0.5; transform: scale(1.2); } 100% { opacity: 1; transform: scale(1); } }
+        
         .simple-logo { flex-grow: 1; display: flex; align-items: center; justify-content: center; font-family: 'Outfit', sans-serif; font-size: 28px; font-weight: 800; letter-spacing: -0.5px; }
         .text-part2 { color: var(--primary); text-shadow: 0 0 12px rgba(145, 70, 255, 0.4); }
 
@@ -48,36 +49,21 @@
         
         .card { background: var(--card-bg); border-radius: 18px; padding: 15px; margin-bottom: 20px; border: 1px solid rgba(255,255,255,0.05); position: relative; box-shadow: 0 8px 16px rgba(0,0,0,0.3); }
         .avatar-ring { width: 42px; height: 42px; border-radius: 50%; margin-right: 12px; display: flex; align-items: center; justify-content: center; font-weight: 800; border: 2px solid var(--primary); background: #000; box-shadow: 0 0 15px rgba(145, 70, 255, 0.4); }
-        
         .admin-del { position: absolute; top: 15px; right: 15px; color: var(--danger); cursor: pointer; font-size: 22px; z-index: 10; opacity: 0.7; }
         
-        /* POLISHED VIDEO CONTAINER */
         .video-container { 
-            width: 100%; 
-            border-radius: 12px; 
-            overflow: hidden; 
-            aspect-ratio: 16/9; 
-            border: 1px solid rgba(145, 70, 255, 0.2); 
-            position: relative; 
-            box-shadow: inset 0 0 20px rgba(0,0,0,0.8);
-            /* Loading Shimmer Background */
-            background: linear-gradient(90deg, #18181b 0%, #2a2a35 50%, #18181b 100%);
-            background-size: 200% 100%;
-            animation: shimmer 2s infinite linear;
+            width: 100%; border-radius: 12px; overflow: hidden; aspect-ratio: 16/9; border: 1px solid rgba(145, 70, 255, 0.2); 
+            position: relative; box-shadow: inset 0 0 20px rgba(0,0,0,0.8);
+            background: linear-gradient(90deg, #18181b 0%, #2a2a35 50%, #18181b 100%); background-size: 200% 100%; animation: shimmer 2s infinite linear;
         }
         @keyframes shimmer { 0% { background-position: 200% 0; } 100% { background-position: -200% 0; } }
-        
-        /* Smooth Fade-in for the iframe */
-        iframe { width: 100%; height: 100%; border: none; position: relative; z-index: 1; opacity: 0; transition: opacity 0.4s ease-in; }
+        iframe { width: 100%; height: 100%; border: none; opacity: 0; transition: opacity 0.4s ease-in; }
         iframe.loaded { opacity: 1; }
 
         .card-actions { display: flex; align-items: center; gap: 8px; margin-top: 14px; }
         .action-btn { display: flex; align-items: center; gap: 6px; color: var(--text-muted); font-size: 14px; cursor: pointer; }
         .action-btn.liked { color: var(--primary-light); }
         .action-btn.liked span { font-variation-settings: 'FILL' 1; }
-
-        .locked-view { text-align: center; padding-top: 80px; color: var(--text-muted); opacity: 0.6; }
-        .locked-view span { font-size: 56px; margin-bottom: 15px; display: block; color: var(--primary-light); }
 
         .bottom-nav { position: absolute; bottom: 0; left: 0; width: 100%; background: rgba(11, 11, 14, 0.8); backdrop-filter: blur(20px); border-top: 1px solid var(--border-color); display: flex; justify-content: space-between; align-items: center; padding: 12px 20px 28px; z-index: 100; }
         .nav-item { display: flex; flex-direction: column; align-items: center; width: 60px; color: var(--text-muted); font-size: 10px; gap: 4px; cursor: pointer; }
@@ -90,7 +76,6 @@
         .modal-content { background: var(--card-bg); border-radius: 28px 28px 0 0; padding: 25px 20px 50px; transform: translateY(100%); transition: transform 0.4s; }
         .input-box { width: 100%; background: #0e0e10; border: 1px solid var(--border-color); color: white; padding: 14px; border-radius: 10px; outline: none; margin-bottom: 12px; }
         #toast { position: absolute; top: 110px; left: 50%; transform: translateX(-50%); background: var(--primary); color: white; padding: 12px 24px; border-radius: 12px; z-index: 9999; display: none; text-align: center; font-size: 14px; }
-        .user-row { display: flex; justify-content: space-between; align-items: center; padding: 10px; background: rgba(255,255,255,0.05); border-radius: 8px; margin-bottom: 5px; font-size: 13px; }
     </style>
 </head>
 <body>
@@ -102,12 +87,11 @@
         </div>
 
         <div class="app-header">
-            <!-- REPLACED HAMBURGER MENU WITH APP ICON -->
-            <div class="header-icon" id="header-logo-container" style="width: 32px; height: 32px; display: flex; align-items: center; justify-content: center;"></div>
+            <div class="header-logo" id="header-logo-slot"></div>
             <div class="simple-logo"><span>Miko</span><span class="text-part2">Tok</span></div>
             <div class="header-icon">
-                <div class="live-dot"></div>
-                <span style="font-size:9px; font-weight:800; letter-spacing:0.5px; color:#ff4d4d;">LIVE</span>
+                <div class="live-dot" id="live-dot"></div>
+                <span id="live-text">OFFLINE</span>
             </div>
         </div>
         
@@ -117,21 +101,15 @@
         <div id="login-modal"><div class="modal-content" id="login-panel">
             <div id="login-form">
                 <input type="text" id="login-nick" class="input-box" placeholder="Username">
-                
                 <div style="position: relative; width: 100%; margin-bottom: 12px;">
-                    <input type="password" id="login-pass" class="input-box" placeholder="Minimum 6 characters" style="margin-bottom: 0; padding-right: 45px;">
-                    <span class="material-symbols-rounded" id="eye-icon" style="position: absolute; right: 15px; top: 50%; transform: translateY(-50%); color: var(--text-muted); cursor: pointer; user-select: none;" onclick="togglePassword()">visibility</span>
+                    <input type="password" id="login-pass" class="input-box" placeholder="Password" style="margin-bottom: 0; padding-right: 45px;">
+                    <span class="material-symbols-rounded" id="eye-icon" style="position: absolute; right: 15px; top: 50%; transform: translateY(-50%); color: var(--text-muted); cursor: pointer;" onclick="togglePassword()">visibility</span>
                 </div>
-
                 <button class="input-box" id="login-btn" style="background:var(--primary); font-weight:700;" onclick="handleLogin()">Sign In / Register</button>
             </div>
             <div id="profile-form" style="display:none; text-align:center;">
                 <div style="color:var(--primary-light); font-size:10px; font-weight:800; margin-bottom:10px; display:none;" id="admin-tag">SYSTEM ADMIN</div>
                 <h3 id="display-name" style="margin-bottom:20px;"></h3>
-                <div id="admin-manager" style="display:none; background:rgba(0,0,0,0.4); padding:15px; border-radius:12px; border:1px solid var(--border-color); text-align:left; max-height:200px; overflow-y:auto;">
-                    <div style="font-size:11px; font-weight:700; color:var(--text-muted); margin-bottom:10px;">USER REGISTRY</div>
-                    <div id="user-list-container"></div>
-                </div>
                 <button class="input-box" style="background:var(--danger); font-weight:700; margin-top:15px;" onclick="logout()">Logout</button>
             </div>
             <button class="input-box" style="background:transparent; border:none; color:var(--text-muted);" onclick="closeModal('login')">Dismiss</button>
@@ -152,16 +130,16 @@
     <script>
         const SUPABASE_URL = 'https://yhxcuayiwqpjvalyrcqv.supabase.co', SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InloeGN1YXlpd3FwanZhbHlyY3F2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzg1Nzk1ODEsImV4cCI6MjA5NDE1NTU4MX0.z7EDgqRz1OT25UdxtmeJxFvwx4UCwaPRwWWJuzd46kc';
         const ADMIN_USERNAME = 'tomato_24';
+        const TWITCH_CHANNEL = 'codemiko';
 
-        let sbClient = null, currentTab = 'home', currentUser = null, isAdmin = false, globalData = { clips: [], posts: [], users: [] };
+        let sbClient = null, currentTab = 'home', currentUser = null, isAdmin = false, globalData = { clips: [], posts: [] };
         let likedIds = JSON.parse(localStorage.getItem('miko_likes') || '[]'), currentPlayingIframe = null;
 
         const getLogoSvg = (id) => `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" style="width:100%;height:100%"><defs><linearGradient id="grad-${id}" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stop-color="#ffffff"/><stop offset="100%" stop-color="#9146FF"/></linearGradient></defs><circle cx="50" cy="50" r="40" fill="none" stroke="url(#grad-${id})" stroke-width="7"/><path d="M 33 38 L 48 62 L 62 38 L 62 55 Q 62 65 69 64" fill="none" stroke="url(#grad-${id})" stroke-width="7" stroke-linecap="round" stroke-linejoin="round"/></svg>`;
         
-        // INJECTING LOGO INTO THE HEADER AS WELL
         document.getElementById('upload-btn-container').innerHTML = getLogoSvg('nav');
         document.getElementById('splash-icon').innerHTML = getLogoSvg('splash');
-        document.getElementById('header-logo-container').innerHTML = getLogoSvg('header');
+        document.getElementById('header-logo-slot').innerHTML = getLogoSvg('header');
 
         async function init() {
             try {
@@ -169,189 +147,105 @@
                 const saved = localStorage.getItem('miko_user');
                 if (saved) { currentUser = saved; isAdmin = (saved === ADMIN_USERNAME); document.getElementById('login-text').innerText = saved; document.getElementById('upload-btn-container').classList.add('logged-in'); }
                 await loadData();
-                setupIntersectionObserver();
+                checkTwitchLive(); // Start the live check
             } catch (e) { setTimeout(hideSplash, 2000); }
+        }
+
+        // --- NEW LIVE CHECK LOGIC ---
+        async function checkTwitchLive() {
+            const dot = document.getElementById('live-dot');
+            const text = document.getElementById('live-text');
+            
+            try {
+                // In a real app, you'd fetch this from your own secure backend 
+                // to avoid exposing Twitch Secrets. For now, we simulate a check.
+                const isLive = false; // Logic: fetch(`https://your-backend.com/is-live?user=${TWITCH_CHANNEL}`)
+                
+                if(isLive) {
+                    dot.classList.add('active');
+                    text.innerText = "LIVE";
+                    text.classList.add('active');
+                } else {
+                    dot.classList.remove('active');
+                    text.innerText = "OFFLINE";
+                    text.classList.remove('active');
+                }
+            } catch (e) { console.log("Live check failed"); }
         }
 
         async function loadData() {
             const { data: clips } = await sbClient.from('clips').select('*').order('created_at', { ascending: false });
             const { data: posts } = await sbClient.from('posts').select('*').order('created_at', { ascending: false });
-            const { data: users } = await sbClient.from('profiles').select('*');
-            globalData.clips = clips || []; globalData.posts = posts || []; globalData.users = users || []; render(); 
+            globalData.clips = clips || []; globalData.posts = posts || []; render(); 
             setTimeout(hideSplash, 2000);
         }
 
         function hideSplash() { 
             const s = document.getElementById('splash-screen'); 
-            if(s) { 
-                s.style.opacity='0'; 
-                setTimeout(() => { 
-                    s.style.display='none'; 
-                    const first = document.querySelector('iframe');
-                    if(first) playVideo(first);
-                }, 600); 
-            }
+            if(s) { s.style.opacity='0'; setTimeout(() => { s.style.display='none'; const first = document.querySelector('iframe'); if(first) playVideo(first); }, 600); }
         }
 
-        function setupIntersectionObserver() {
-            const observer = new IntersectionObserver((entries) => {
-                entries.forEach(entry => {
-                    if (entry.isIntersecting) {
-                        const iframe = entry.target.querySelector('iframe');
-                        if (iframe && currentPlayingIframe !== iframe) playVideo(iframe);
-                    }
-                });
-            }, { threshold: 0.6 });
-            document.querySelectorAll('.card').forEach(card => observer.observe(card));
+        function handleScroll() {
+            const iframes = document.querySelectorAll('iframe');
+            iframes.forEach(iframe => {
+                const rect = iframe.getBoundingClientRect();
+                if (rect.top >= 50 && rect.bottom <= window.innerHeight - 50 && currentPlayingIframe !== iframe) playVideo(iframe);
+            });
         }
 
         function playVideo(iframe) {
-            if (currentPlayingIframe && currentPlayingIframe !== iframe) {
-                currentPlayingIframe.src = currentPlayingIframe.getAttribute('data-src') + "&autoplay=false";
-            }
+            if (currentPlayingIframe && currentPlayingIframe !== iframe) { currentPlayingIframe.src = currentPlayingIframe.getAttribute('data-src') + "&autoplay=false"; }
             iframe.src = iframe.getAttribute('data-src') + "&autoplay=true&muted=false";
             currentPlayingIframe = iframe;
         }
 
-        function formatDateTime(isoString) {
-            if (!isoString) return '';
-            const d = new Date(isoString);
-            return d.toLocaleDateString(undefined, { month: 'short', day: 'numeric' }) + ' • ' + d.toLocaleTimeString(undefined, { hour: '2-digit', minute: '2-digit' });
-        }
+        function formatDateTime(iso) { if (!iso) return ''; const d = new Date(iso); return d.toLocaleDateString(undefined, { month: 'short', day: 'numeric' }) + ' • ' + d.toLocaleTimeString(undefined, { hour: '2-digit', minute: '2-digit' }); }
 
         function render() {
             const f = document.getElementById('feed-content'); f.innerHTML = '';
-            
-            if ((currentTab === 'community' || currentTab === 'clips') && !currentUser) {
-                f.innerHTML = `<div class="locked-view"><span class="material-symbols-rounded">lock</span><p>Authentication required</p></div>`;
-                return;
-            }
+            if ((currentTab === 'community' || currentTab === 'clips') && !currentUser) { f.innerHTML = `<div class="locked-view"><span class="material-symbols-rounded">lock</span><p>Login required</p></div>`; return; }
 
             if (currentTab === 'community') {
                 f.innerHTML = `<div class="card"><textarea id="p-text" class="input-box" style="height:80px;resize:none;" placeholder="Write a post..."></textarea><button class="input-box" style="background:var(--primary);font-weight:700;" onclick="submitPost()">Post</button></div>`;
                 globalData.posts.forEach(p => {
-                    const avatarChar = p.author === ADMIN_USERNAME ? ADMIN_USERNAME[0].toUpperCase() : (p.author ? p.author[0].toUpperCase() : '?');
-                    const dateStr = formatDateTime(p.created_at);
-                    
-                    f.innerHTML += `<div class="card">${isAdmin ? `<span class="material-symbols-rounded admin-del" onclick="deleteItem('posts', '${p.id}')">delete</span>` : ''}
-                        <div style="display:flex; align-items:center; margin-bottom:10px;">
-                            <div class="avatar-ring">${avatarChar}</div>
-                            <div style="display:flex; flex-direction:column;">
-                                <div style="font-weight:600; line-height:1.2;">${p.author}</div>
-                                ${dateStr ? `<div style="font-size:11px; color:var(--text-muted); margin-top:2px;">${dateStr}</div>` : ''}
-                            </div>
-                        </div>
-                        <div style="font-size:14px; color:#ccc;">${p.text}</div>
-                    </div>`;
+                    const avatar = p.author === ADMIN_USERNAME ? 'T' : (p.author ? p.author[0].toUpperCase() : '?');
+                    f.innerHTML += `<div class="card">${isAdmin ? `<span class="material-symbols-rounded admin-del" onclick="deleteItem('posts', '${p.id}')">delete</span>` : ''}<div style="display:flex; align-items:center; margin-bottom:10px;"><div class="avatar-ring">${avatar}</div><div><div style="font-weight:600;">${p.author}</div><div style="font-size:11px; color:var(--text-muted);">${formatDateTime(p.created_at)}</div></div></div><div style="font-size:14px; color:#ccc;">${p.text}</div></div>`;
                 });
             } else if (currentTab === 'clips') {
                 const items = globalData.clips.filter(c => likedIds.includes(c.id));
-                if (items.length === 0) f.innerHTML = `<p style="text-align:center; padding:40px; color:#666;">No saved clips</p>`;
-                else items.forEach(c => renderCard(f, c));
-            } else {
-                globalData.clips.forEach(c => renderCard(f, c));
-            }
+                items.forEach(c => renderCard(f, c));
+            } else { globalData.clips.forEach(c => renderCard(f, c)); }
         }
 
         function renderCard(target, c) {
-            const avatarChar = (c.added_by === ADMIN_USERNAME) ? ADMIN_USERNAME[0].toUpperCase() : (c.added_by === 'codemiko' || !c.added_by ? 'M' : c.added_by[0].toUpperCase());
+            const avatar = (c.added_by === ADMIN_USERNAME) ? 'T' : (c.added_by ? c.added_by[0].toUpperCase() : 'M');
             const isLiked = likedIds.includes(c.id);
-            const dateStr = formatDateTime(c.created_at);
-
-            target.innerHTML += `<div class="card">${isAdmin ? `<span class="material-symbols-rounded admin-del" onclick="deleteItem('clips', '${c.id}')">delete</span>` : ''}
-                <div style="display:flex; align-items:center; margin-bottom:10px;">
-                    <div class="avatar-ring">${avatarChar}</div>
-                    <div style="display:flex; flex-direction:column;">
-                        <div style="font-weight:600; line-height:1.2;">${c.added_by || 'CodeMiko'}</div>
-                        ${dateStr ? `<div style="font-size:11px; color:var(--text-muted); margin-top:2px;">${dateStr}</div>` : ''}
-                    </div>
-                </div>
-                <div class="video-container">
-                    <iframe data-src="https://clips.twitch.tv/embed?clip=${c.id}&parent=${window.location.hostname}" title="Twitch Clip" onload="this.classList.add('loaded')"></iframe>
-                </div>
-                <div class="card-actions">
-                    <div class="action-btn ${isLiked?'liked':''}" onclick="toggleLike('${c.id}')"><span class="material-symbols-rounded">favorite</span> ${isLiked ? 1 : 0}</div>
-                </div>
-            </div>`;
+            target.innerHTML += `<div class="card">${isAdmin ? `<span class="material-symbols-rounded admin-del" onclick="deleteItem('clips', '${c.id}')">delete</span>` : ''}<div style="display:flex; align-items:center; margin-bottom:10px;"><div class="avatar-ring">${avatar}</div><div><div style="font-weight:600;">${c.added_by || 'CodeMiko'}</div><div style="font-size:11px; color:var(--text-muted);">${formatDateTime(c.created_at)}</div></div></div><div class="video-container"><iframe data-src="https://clips.twitch.tv/embed?clip=${c.id}&parent=${window.location.hostname}" onload="this.classList.add('loaded')"></iframe></div><div class="card-actions"><div class="action-btn ${isLiked?'liked':''}" onclick="toggleLike('${c.id}')"><span class="material-symbols-rounded">favorite</span> ${isLiked ? 1 : 0}</div></div></div>`;
         }
 
-        function togglePassword() {
-            const input = document.getElementById('login-pass');
-            const icon = document.getElementById('eye-icon');
-            if (input.type === 'password') {
-                input.type = 'text';
-                icon.innerText = 'visibility_off';
-            } else {
-                input.type = 'password';
-                icon.innerText = 'visibility';
-            }
-        }
-
-        async function hashPassword(password) {
-            const msgBuffer = new TextEncoder().encode(password);
-            const hashBuffer = await crypto.subtle.digest('SHA-256', msgBuffer);
-            const hashArray = Array.from(new Uint8Array(hashBuffer));
-            return hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
-        }
+        async function hashPassword(p) { const b = new TextEncoder().encode(p); const h = await crypto.subtle.digest('SHA-256', b); return Array.from(new Uint8Array(h)).map(b => b.toString(16).padStart(2, '0')).join(''); }
 
         async function handleLogin() {
-            const n = document.getElementById('login-nick').value.trim().toLowerCase();
-            const rawPass = document.getElementById('login-pass').value.trim();
-            if (!n || rawPass.length < 6) { showToast("Minimum 6 characters required"); return; }
-            
-            const secureHash = await hashPassword(rawPass);
-
+            const n = document.getElementById('login-nick').value.trim().toLowerCase(), p = document.getElementById('login-pass').value.trim();
+            if (!n || p.length < 6) { showToast("Invalid credentials"); return; }
+            const secureHash = await hashPassword(p);
             const { data } = await sbClient.from('profiles').select('*').eq('username', n).single();
-            if (data) {
-                if (data.password === secureHash) completeLogin(n);
-                else showToast("Incorrect password for this user");
-            } else {
-                const { error: regErr } = await sbClient.from('profiles').insert([{ username: n, password: secureHash }]);
-                if (!regErr) completeLogin(n);
-                else showToast("Username unavailable");
-            }
+            if (data) { if (data.password === secureHash) completeLogin(n); else showToast("Wrong password"); }
+            else { await sbClient.from('profiles').insert([{ username: n, password: secureHash }]); completeLogin(n); }
         }
 
-        function completeLogin(name) {
-            currentUser = name; isAdmin = (name === ADMIN_USERNAME);
-            localStorage.setItem('miko_user', currentUser);
-            document.getElementById('login-text').innerText = currentUser;
-            document.getElementById('upload-btn-container').classList.add('logged-in');
-            closeModal('login'); render();
-        }
-
-        function logout() { localStorage.removeItem('miko_user'); currentUser = null; isAdmin = false; document.getElementById('login-text').innerText = "Profile"; document.getElementById('upload-btn-container').classList.remove('logged-in'); closeModal('login'); render(); }
+        function completeLogin(name) { currentUser = name; isAdmin = (name === ADMIN_USERNAME); localStorage.setItem('miko_user', name); location.reload(); }
+        function logout() { localStorage.removeItem('miko_user'); location.reload(); }
         function handleUploadClick() { if(!currentUser) openModal('login'); else openModal('add'); }
-        async function submitPost() { const t = document.getElementById('p-text').value.trim(); if (!t) return; await sbClient.from('posts').insert([{ author: currentUser, text: t }]); document.getElementById('p-text').value = ''; loadData(); }
-        async function submitClip() { const u = document.getElementById('clip-url').value.trim(); if (!u.includes('twitch.tv')) return; const id = u.split('/').pop().split('?')[0]; await sbClient.from('clips').insert([{ id, title: 'Clip', added_by: currentUser }]); closeModal('add'); loadData(); }
-        function toggleLike(id) { if (!currentUser) { showToast("Authentication required"); return; } if (likedIds.includes(id)) likedIds = likedIds.filter(i => i !== id); else likedIds.push(id); localStorage.setItem('miko_likes', JSON.stringify(likedIds)); render(); }
+        async function submitPost() { const t = document.getElementById('p-text').value.trim(); if (!t) return; await sbClient.from('posts').insert([{ author: currentUser, text: t }]); loadData(); }
+        async function submitClip() { const u = document.getElementById('clip-url').value.trim(); if (!u.includes('twitch.tv')) return; const id = u.split('/').pop().split('?')[0]; await sbClient.from('clips').insert([{ id, added_by: currentUser }]); closeModal('add'); loadData(); }
+        function toggleLike(id) { if (!currentUser) { showToast("Login required"); return; } if (likedIds.includes(id)) likedIds = likedIds.filter(i => i !== id); else likedIds.push(id); localStorage.setItem('miko_likes', JSON.stringify(likedIds)); render(); }
         async function deleteItem(table, id) { if(!isAdmin) return; await sbClient.from(table).delete().eq('id', id); loadData(); }
-        async function deleteUser(user) { if(!isAdmin) return; await sbClient.from('profiles').delete().eq('username', user); loadData(); }
         function switchTab(t) { currentTab = t; document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active')); document.getElementById('nav-' + t).classList.add('active'); render(); }
-        function openModal(id) { 
-            if(id === 'login' && currentUser) { 
-                document.getElementById('login-form').style.display='none'; 
-                document.getElementById('profile-form').style.display='block'; 
-                document.getElementById('display-name').innerText=currentUser; 
-                const tag = document.getElementById('admin-tag'), mgr = document.getElementById('admin-manager'); 
-                if(isAdmin) { 
-                    tag.style.display='block'; mgr.style.display='block'; 
-                    const list = document.getElementById('user-list-container'); list.innerHTML = ''; 
-                    globalData.users.filter(u => u.username !== ADMIN_USERNAME).forEach(u => { 
-                        list.innerHTML += `<div class="user-row"><span>${u.username}</span><span class="material-symbols-rounded" style="color:var(--danger); cursor:pointer;" onclick="deleteUser('${u.username}')">person_remove</span></div>`; 
-                    }); 
-                } else { 
-                    tag.style.display='none'; mgr.style.display='none'; 
-                } 
-            } else { 
-                document.getElementById('login-form').style.display='block'; 
-                document.getElementById('profile-form').style.display='none'; 
-            } 
-            document.getElementById(id + '-modal').style.display = 'flex'; 
-            setTimeout(() => document.getElementById(id + '-panel').style.transform = 'translateY(0)', 10); 
-        }
+        function openModal(id) { if(id === 'login' && currentUser) { document.getElementById('login-form').style.display='none'; document.getElementById('profile-form').style.display='block'; document.getElementById('display-name').innerText=currentUser; if(isAdmin) document.getElementById('admin-tag').style.display='block'; } else { document.getElementById('login-form').style.display='block'; document.getElementById('profile-form').style.display='none'; } document.getElementById(id + '-modal').style.display = 'flex'; setTimeout(() => document.getElementById(id + '-panel').style.transform = 'translateY(0)', 10); }
         function closeModal(id) { document.getElementById(id + '-panel').style.transform = 'translateY(100%)'; setTimeout(() => document.getElementById(id + '-modal').style.display = 'none', 300); }
         function showToast(m) { const t = document.getElementById('toast'); t.innerText = m; t.style.display = 'block'; setTimeout(() => t.style.display = 'none', 2500); }
+        function togglePassword() { const i = document.getElementById('login-pass'), e = document.getElementById('eye-icon'); i.type = i.type === 'password' ? 'text' : 'password'; e.innerText = i.type === 'password' ? 'visibility' : 'visibility_off'; }
         window.addEventListener('load', init);
     </script>
 </body>
