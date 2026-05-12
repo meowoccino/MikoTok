@@ -92,7 +92,6 @@
         .nav-item:hover { color: white; }
         .nav-item.active { color: var(--primary); }
         
-        /* UPDATED NAV FAB USING THE NEW LOGO */
         .nav-fab {
             width: 65px; height: 65px; 
             background: transparent;
@@ -192,7 +191,6 @@
 
     <script>
         // --- LOGO & APP ICON GENERATOR ---
-        // Creating the SVG dynamically allows us to use it as an installable PWA icon seamlessly
         const appIconSvg = `
             <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" class="fab-icon-svg">
                 <defs>
@@ -206,9 +204,9 @@
             </svg>
         `;
 
-        // Inject the logo into the UI
-        document.getElementById('upload-btn-container').innerHTML = appIconSvg;
-        document.getElementById('splash-icon').innerHTML = appIconSvg;
+        // We replace the ID for each instance to prevent the gradient from disappearing when the splash screen hides
+        document.getElementById('upload-btn-container').innerHTML = appIconSvg.replace(/mGradient/g, 'mGradientNav');
+        document.getElementById('splash-icon').innerHTML = appIconSvg.replace(/mGradient/g, 'mGradientSplash');
 
         // Generate the Base64 icon for the browser to use as a Favicon and App Icon
         const base64Icon = `data:image/svg+xml;base64,${btoa(appIconSvg.replace('class="fab-icon-svg"', ''))}`;
