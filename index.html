@@ -3,20 +3,15 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
-    
     <meta name="mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="apple-mobile-web-app-title" content="MikoTok">
     <meta name="theme-color" content="#9146FF">
-    
     <title>MikoTok</title>
-    
     <link rel="manifest" href="manifest.json">
     <link id="favicon-link" rel="icon" href="">
-    
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Outfit:wght@800&family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@24,400,1,0" rel="stylesheet">
-    
     <style>
         :root { 
             --bg-color: #0b0b0e; 
@@ -28,286 +23,83 @@
             --border-color: #2f2f35;
             --danger: #eb0400;
         }
-        
         * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; font-family: 'Inter', sans-serif; }
-        
-        body, html { 
-            margin: 0; padding: 0; height: 100%; width: 100%; 
-            background: #000; color: var(--text-main); overflow: hidden; 
-            display: flex; justify-content: center;
-        }
-
-        #app-container {
-            width: 100%; max-width: 480px; height: 100%; position: relative;
-            background: var(--bg-color); overflow: hidden; box-shadow: 0 0 20px rgba(0,0,0,0.8);
-        }
-
-        .simple-logo {
-            display: flex; align-items: center; justify-content: center;
-            font-family: 'Outfit', sans-serif; font-size: 26px; font-weight: 800;
-            letter-spacing: -0.5px; user-select: none;
-        }
+        body, html { margin: 0; padding: 0; height: 100%; width: 100%; background: #000; color: var(--text-main); overflow: hidden; display: flex; justify-content: center; }
+        #app-container { width: 100%; max-width: 480px; height: 100%; position: relative; background: var(--bg-color); overflow: hidden; box-shadow: 0 0 20px rgba(0,0,0,0.8); }
+        .simple-logo { display: flex; align-items: center; justify-content: center; font-family: 'Outfit', sans-serif; font-size: 26px; font-weight: 800; letter-spacing: -0.5px; user-select: none; }
         .text-part1 { color: #ffffff; }
         .text-part2 { color: var(--primary); text-shadow: 0 0 12px rgba(145, 70, 255, 0.4); }
-
-        #splash-screen {
-            position: absolute; inset: 0; background: var(--bg-color); 
-            display: flex; flex-direction: column; align-items: center; justify-content: center; 
-            z-index: 2000; transition: opacity 0.5s ease;
-        }
-        .splash-logo { font-size: 50px; margin-bottom: 20px; }
-        #splash-icon { width: 100px; height: 100px; margin-bottom: 15px; }
-
+        #splash-screen { position: absolute; inset: 0; background: var(--bg-color); display: flex; flex-direction: column; align-items: center; justify-content: center; z-index: 2000; transition: opacity 0.5s ease; }
         .progress-bar { width: 120px; height: 3px; background: #2f2f35; border-radius: 4px; margin-top: 20px; overflow: hidden; position: relative; }
-        .progress-fill { 
-            position: absolute; left: 0; top: 0; height: 100%; width: 50%; 
-            background: linear-gradient(90deg, #ffffff 0%, var(--primary) 100%); 
-            border-radius: 4px; animation: load 1.5s infinite ease-in-out; 
-            box-shadow: 0 0 8px rgba(145, 70, 255, 0.4);
-        }
+        .progress-fill { position: absolute; left: 0; top: 0; height: 100%; width: 50%; background: linear-gradient(90deg, #ffffff 0%, var(--primary) 100%); border-radius: 4px; animation: load 1.5s infinite ease-in-out; }
         @keyframes load { 0% { left: -50%; } 100% { left: 100%; } }
-
-        .app-header {
-            position: absolute; top: 0; left: 0; width: 100%; background: var(--bg-color); z-index: 100;
-            padding: 40px 20px 15px; display: flex; justify-content: flex-start; align-items: center; border-bottom: 1px solid var(--border-color);
-            transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-        }
-
+        .app-header { position: absolute; top: 0; left: 0; width: 100%; background: var(--bg-color); z-index: 100; padding: 40px 20px 15px; display: flex; justify-content: flex-start; align-items: center; border-bottom: 1px solid var(--border-color); transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1); }
         #feed { height: 100%; width: 100%; overflow-y: auto; padding: 95px 15px 90px; scroll-behavior: smooth; }
         #feed::-webkit-scrollbar { display: none; }
-
-        #pull-indicator {
-            height: 0; overflow: hidden; display: flex; justify-content: center; align-items: center;
-            color: var(--primary); transition: height 0.2s ease;
-        }
+        #pull-indicator { height: 0; overflow: hidden; display: flex; justify-content: center; align-items: center; color: var(--primary); transition: height 0.2s ease; }
         .spinner { animation: spin 1s linear infinite; }
         @keyframes spin { 100% { transform: rotate(360deg); } }
-
-        .card { background: var(--card-bg); border-radius: 12px; padding: 15px; margin-bottom: 20px; border: 1px solid rgba(255,255,255,0.05); position: relative; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
+        .card { background: var(--card-bg); border-radius: 12px; padding: 15px; margin-bottom: 20px; border: 1px solid rgba(255,255,255,0.05); position: relative; }
         .card-header { display: flex; align-items: center; margin-bottom: 12px; }
         .card-avatar { width: 38px; height: 38px; border-radius: 50%; margin-right: 12px; border: 2px solid var(--primary); background: #000; }
         .meta-name { font-size: 14px; font-weight: 600; color: white; }
         .post-date { font-size: 11px; color: var(--text-muted); margin-left: auto; font-weight: 500; margin-right: 30px; }
         .admin-del { position: absolute; top: 12px; right: 12px; color: var(--danger); cursor: pointer; z-index: 10; display: none; }
-
         .video-container { position: relative; width: 100%; border-radius: 8px; overflow: hidden; background: #000; aspect-ratio: 16/9; display: flex; align-items: center; justify-content: center; border: 1px solid var(--border-color); }
         iframe { width: 100%; height: 100%; border: none; }
-
-        .clip-title { font-size: 15px; font-weight: 600; margin: 12px 0 4px; line-height: 1.4; }
-        
-        .post-text-wrapper { position: relative; }
-        .post-text-content { font-size: 14px; line-height: 1.5; color: #eaeaea; word-wrap: break-word; display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; }
+        .clip-title { font-size: 15px; font-weight: 600; margin: 12px 0 4px; }
+        .post-text-content { font-size: 14px; line-height: 1.5; color: #eaeaea; display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; }
         .post-text-content.expanded { -webkit-line-clamp: unset; }
         .read-more-btn { color: var(--primary); font-size: 13px; font-weight: 600; cursor: pointer; margin-top: 4px; display: inline-block; }
-
         .card-actions { display: flex; align-items: center; gap: 20px; margin-top: 15px; }
-        .action-item { display: flex; align-items: center; gap: 6px; color: var(--text-muted); font-size: 13px; cursor: pointer; transition: color 0.2s; }
+        .action-item { display: flex; align-items: center; gap: 6px; color: var(--text-muted); font-size: 13px; cursor: pointer; }
         .action-item.liked { color: var(--primary-light); }
         .action-item.liked span { font-variation-settings: 'FILL' 1; }
-
-        .empty-state { text-align: center; color: var(--text-muted); padding: 40px 20px; font-size: 14px; font-weight: 500; display: flex; flex-direction: column; align-items: center; gap: 10px; }
-        .empty-state span { font-size: 40px; color: #2f2f35; }
-
-        .bottom-nav {
-            position: absolute; bottom: 0; left: 0; width: 100%; background: var(--bg-color); border-top: 1px solid var(--border-color);
-            display: flex; justify-content: space-between; align-items: center; padding: 10px 15px 25px; z-index: 100;
-        }
-        .nav-item { display: flex; flex-direction: column; align-items: center; width: 60px; color: var(--text-muted); font-size: 10px; gap: 4px; cursor: pointer; transition: color 0.2s; position: relative; }
+        .bottom-nav { position: absolute; bottom: 0; left: 0; width: 100%; background: var(--bg-color); border-top: 1px solid var(--border-color); display: flex; justify-content: space-between; align-items: center; padding: 10px 15px 25px; z-index: 100; }
+        .nav-item { display: flex; flex-direction: column; align-items: center; width: 60px; color: var(--text-muted); font-size: 10px; gap: 4px; cursor: pointer; }
         .nav-item.active { color: var(--primary); }
-        .nav-item::after { content: ''; display: block; width: 4px; height: 4px; background: transparent; border-radius: 50%; transition: background 0.3s, box-shadow 0.3s; margin-top: 4px; position: absolute; bottom: -8px; }
-        .nav-item.active::after { background: var(--primary); box-shadow: 0 0 8px var(--primary); }
-        
-        .nav-fab {
-            width: 56px; height: 56px; background: transparent;
-            display: flex; align-items: center; justify-content: center; 
-            cursor: pointer; transition: transform 0.2s ease;
-        }
-        .nav-fab:active { transform: scale(0.95); }
+        .nav-fab { width: 56px; height: 56px; display: flex; align-items: center; justify-content: center; cursor: pointer; }
         .fab-icon-svg { width: 100%; height: 100%; filter: drop-shadow(0 4px 10px rgba(145, 70, 255, 0.5)); }
-
         #login-modal, #add-modal { position: absolute; inset: 0; background: rgba(0,0,0,0.8); z-index: 1500; display: none; flex-direction: column; justify-content: flex-end; backdrop-filter: blur(5px); }
-        .modal-content { background: var(--card-bg); border-radius: 20px 20px 0 0; padding: 25px 20px 40px; transform: translateY(100%); transition: transform 0.3s; border-top: 1px solid var(--border-color); touch-action: pan-y; }
-        
-        .modal-handle { width: 40px; height: 4px; background: #3f3f46; border-radius: 4px; margin: 0 auto 15px; }
-
-        .input-wrapper { position: relative; width: 100%; margin-bottom: 12px; }
-        .input-box { width: 100%; background: #0e0e10; border: 1px solid var(--border-color); color: white; padding: 12px; border-radius: 6px; outline: none; transition: border 0.2s; }
-        .input-box:focus { border-color: var(--primary); }
-        .toggle-pass { position: absolute; right: 12px; top: 50%; transform: translateY(-50%); color: var(--text-muted); cursor: pointer; font-size: 20px; }
-        .btn-post { width: 100%; background: var(--primary); color: white; border: none; padding: 14px; border-radius: 6px; font-weight: 600; cursor: pointer; transition: background 0.2s; }
-
-        #char-counter { color: var(--text-muted); font-size: 12px; text-align: right; margin-bottom: 12px; transition: color 0.3s; }
-
-        #toast { 
-            position: absolute; top: 100px; left: 50%; transform: translateX(-50%); 
-            background: var(--primary); color: white; padding: 10px 20px; border-radius: 6px; 
-            z-index: 9999; display: none; box-shadow: 0 4px 12px rgba(145, 70, 255, 0.4); 
-            font-weight: 600; font-size: 14px; text-align: center;
-        }
-        @keyframes toastFade {
-            from { opacity: 0; transform: translate(-50%, 10px); }
-            to { opacity: 1; transform: translate(-50%, 0); }
-        }
+        .modal-content { background: var(--card-bg); border-radius: 20px 20px 0 0; padding: 25px 20px 40px; transform: translateY(100%); transition: transform 0.3s; border-top: 1px solid var(--border-color); }
+        .input-box { width: 100%; background: #0e0e10; border: 1px solid var(--border-color); color: white; padding: 12px; border-radius: 6px; outline: none; margin-bottom: 12px; }
+        #char-counter { color: var(--text-muted); font-size: 12px; text-align: right; margin-bottom: 12px; }
+        #toast { position: absolute; top: 100px; left: 50%; transform: translateX(-50%); background: var(--primary); color: white; padding: 10px 20px; border-radius: 6px; z-index: 9999; display: none; font-weight: 600; }
     </style>
 </head>
 <body>
-
     <div id="app-container">
-        <div id="splash-screen">
-            <div id="splash-icon"></div>
-            <div class="simple-logo splash-logo"><span class="text-part1">Miko</span><span class="text-part2">Tok</span></div>
-            <div class="progress-bar"><div class="progress-fill"></div></div>
-        </div>
-
-        <div class="app-header">
-            <div class="simple-logo"><span class="text-part1">Miko</span><span class="text-part2">Tok</span></div>
-        </div>
-
+        <div id="splash-screen"><div id="splash-icon"></div><div class="simple-logo"><span class="text-part1">Miko</span><span class="text-part2">Tok</span></div><div class="progress-bar"><div class="progress-fill"></div></div></div>
+        <div class="app-header"><div class="simple-logo"><span class="text-part1">Miko</span><span class="text-part2">Tok</span></div></div>
         <div id="toast"></div>
-        
-        <div id="feed">
-            <div id="pull-indicator"><span class="material-symbols-rounded spinner">refresh</span></div>
-            <div id="feed-content"></div>
-        </div>
-
-        <div id="login-modal">
-            <div class="modal-content" id="login-panel">
-                <div class="modal-handle"></div>
-                <div id="login-view">
-                    <div style="font-size:18px; font-weight:700; color:white; margin-bottom:15px; text-align:center;">Login / Registration</div>
-                    <div class="input-wrapper">
-                        <input type="text" id="login-nick" class="input-box" placeholder="Nickname (Max 10 chars)" maxlength="10">
-                    </div>
-                    <div class="input-wrapper">
-                        <input type="password" id="login-pass" class="input-box" placeholder="Password (Min 8 chars)" minlength="8">
-                        <span class="material-symbols-rounded toggle-pass" onclick="togglePassword()">visibility</span>
-                    </div>
-                    <div style="display:flex; gap:10px; margin-top:10px;">
-                        <button class="btn-post" style="flex:1;" onclick="handleLogin()">Login</button>
-                    </div>
-                </div>
-                <div id="profile-view" style="display:none; text-align:center;">
-                    <div id="profile-avatar-container"></div>
-                    <h2 id="profile-name" style="margin: 10px 0 20px;"></h2>
-                    <button id="btn-pwa-install" class="btn-post" style="display:none; margin-bottom: 15px; background: #fff; color: var(--primary);" onclick="triggerPWAInstall()">Install App</button>
-                    <div style="display:flex; gap:10px;">
-                        <button class="btn-post" style="flex:1; background:var(--danger);" onclick="logout()">Logout</button>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <div id="add-modal">
-            <div class="modal-content" id="modal-panel">
-                <div class="modal-handle"></div>
-                <div style="font-size:18px; font-weight:700; color:white; margin-bottom:20px; text-align:center;">Add a New Clip</div>
-                <input type="text" id="clip-title" class="input-box" placeholder="Clip Title" style="margin-bottom:12px;">
-                <input type="url" id="clip-url" class="input-box" placeholder="Twitch Clip URL" style="margin-bottom:12px;">
-                <div style="display:flex; gap:10px;">
-                    <button class="btn-post" style="flex:1;" onclick="submitClip()">Upload</button>
-                </div>
-            </div>
-        </div>
-
+        <div id="feed"><div id="pull-indicator"><span class="material-symbols-rounded spinner">refresh</span></div><div id="feed-content"></div></div>
+        <div id="login-modal"><div class="modal-content"><input type="text" id="login-nick" class="input-box" placeholder="Nickname" maxlength="10"><input type="password" id="login-pass" class="input-box" placeholder="Password" minlength="8"><button class="input-box" style="background:var(--primary); color:white; font-weight:600;" onclick="handleLogin()">Login</button></div></div>
+        <div id="add-modal"><div class="modal-content"><input type="text" id="clip-title" class="input-box" placeholder="Clip Title"><input type="url" id="clip-url" class="input-box" placeholder="Twitch URL"><button class="input-box" style="background:var(--primary); color:white; font-weight:600;" onclick="submitClip()">Upload</button></div></div>
         <div class="bottom-nav">
-            <div class="nav-item active" id="nav-home" onclick="switchTab('home')"><span class="material-symbols-rounded">home</span>Home</div>
-            <div class="nav-item" id="nav-community" onclick="switchTab('community')"><span class="material-symbols-rounded">forum</span>Community</div>
+            <div class="nav-item active" onclick="switchTab('home')"><span class="material-symbols-rounded">home</span>Home</div>
+            <div class="nav-item" onclick="switchTab('community')"><span class="material-symbols-rounded">forum</span>Community</div>
             <div class="nav-fab" onclick="openModal()" id="upload-btn-container"></div>
-            <div class="nav-item" id="nav-clips" onclick="switchTab('clips')"><span class="material-symbols-rounded">favorite</span>Favorites</div>
-            <div class="nav-item" id="nav-login" onclick="openLogin()"><span class="material-symbols-rounded">account_circle</span><span id="login-text">Login</span></div>
+            <div class="nav-item" onclick="switchTab('clips')"><span class="material-symbols-rounded">favorite</span>Favorites</div>
+            <div class="nav-item" onclick="openLogin()"><span class="material-symbols-rounded">account_circle</span><span id="login-text">Login</span></div>
         </div>
     </div>
-
     <script>
-        // --- UI LOGO GENERATOR ---
-        const appIconSvg = `
-            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" class="fab-icon-svg">
-                <defs>
-                    <linearGradient id="mGradient" x1="0%" y1="0%" x2="100%" y2="100%">
-                        <stop offset="0%" stop-color="#ffffff"/>
-                        <stop offset="100%" stop-color="#9146FF"/>
-                    </linearGradient>
-                </defs>
-                <circle cx="50" cy="50" r="40" fill="none" stroke="url(#mGradient)" stroke-width="7"/>
-                <path d="M 33 38 L 48 62 L 62 38 L 62 55 Q 62 65 69 64" fill="none" stroke="url(#mGradient)" stroke-width="7" stroke-linecap="round" stroke-linejoin="round"/>
-            </svg>
-        `;
-        document.getElementById('upload-btn-container').innerHTML = appIconSvg.replace(/mGradient/g, 'mGradientNav');
-        document.getElementById('splash-icon').innerHTML = appIconSvg.replace(/mGradient/g, 'mGradientSplash');
-        const base64Icon = `data:image/svg+xml;base64,${btoa(appIconSvg.replace('class="fab-icon-svg"', ''))}`;
-        document.getElementById('favicon-link').href = base64Icon;
-
-        // --- UI INTERACTIONS ---
-        const feedContainer = document.getElementById('feed');
-        const headerElement = document.querySelector('.app-header');
-        let lastScrollY = 0;
+        const appIconSvg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" class="fab-icon-svg"><defs><linearGradient id="mGradient" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stop-color="#ffffff"/><stop offset="100%" stop-color="#9146FF"/></linearGradient></defs><circle cx="50" cy="50" r="40" fill="none" stroke="url(#mGradient)" stroke-width="7"/><path d="M 33 38 L 48 62 L 62 38 L 62 55 Q 62 65 69 64" fill="none" stroke="url(#mGradient)" stroke-width="7" stroke-linecap="round" stroke-linejoin="round"/></svg>`;
+        document.getElementById('upload-btn-container').innerHTML = appIconSvg;
+        document.getElementById('splash-icon').innerHTML = appIconSvg;
+        const BIN_ID = '6a026ec4c0954111d80cc1f9', MASTER_KEY = '$2a$10$kP1lbR4aymd6Gv5PkLUHVeum37M4wDDyIc1nCHT5pWK8DeJ5xkSke', ADMIN_USER = 'tomato_24', ADMIN_PASS = '9ruwuF';
+        let currentTab = 'home', isAdmin = false, currentUser = null, globalData = { clips: [], posts: [], users: [] };
+        const feedContainer = document.getElementById('feed'), headerElement = document.querySelector('.app-header');
         
-        feedContainer.addEventListener('scroll', () => {
-            const currentY = feedContainer.scrollTop;
-            if (currentY > lastScrollY && currentY > 60) headerElement.style.transform = 'translateY(-100%)';
-            else headerElement.style.transform = 'translateY(0)';
-            lastScrollY = currentY;
+        feedContainer.addEventListener('scroll', () => { 
+            headerElement.style.transform = feedContainer.scrollTop > 60 ? 'translateY(-100%)' : 'translateY(0)';
         });
-
-        const pullIndicator = document.getElementById('pull-indicator');
-        let touchStartY = 0; let isPulling = false;
-
-        feedContainer.addEventListener('touchstart', (e) => {
-            if (feedContainer.scrollTop === 0) { touchStartY = e.touches[0].clientY; isPulling = true; }
-        }, { passive: true });
-
-        feedContainer.addEventListener('touchmove', (e) => {
-            if (!isPulling) return;
-            const diff = e.touches[0].clientY - touchStartY;
-            if (diff > 0 && diff < 80) pullIndicator.style.height = `${diff}px`;
-        }, { passive: true });
-
-        feedContainer.addEventListener('touchend', async (e) => {
-            if (!isPulling) return;
-            isPulling = false;
-            if (e.changedTouches[0].clientY - touchStartY > 60) {
-                if (navigator.vibrate) navigator.vibrate(50);
-                pullIndicator.style.height = '40px';
-                await loadData();
-            }
-            pullIndicator.style.height = '0';
-        }, { passive: true });
-
-        function enableSwipeDismiss(panelId, closeFunc) {
-            const panel = document.getElementById(panelId);
-            let pStartY = 0, currentDiff = 0;
-            panel.addEventListener('touchstart', e => { pStartY = e.touches[0].clientY; panel.style.transition = 'none'; }, {passive: true});
-            panel.addEventListener('touchmove', e => {
-                let diff = e.touches[0].clientY - pStartY;
-                if(diff > 0) { currentDiff = diff; panel.style.transform = `translateY(${diff}px)`; }
-            }, {passive: true});
-            panel.addEventListener('touchend', e => {
-                panel.style.transition = 'transform 0.3s cubic-bezier(0.4, 0, 0.2, 1)';
-                if(currentDiff > 100) closeFunc();
-                else panel.style.transform = 'translateY(0)';
-            }, {passive: true});
-        }
-        enableSwipeDismiss('login-panel', closeLogin);
-        enableSwipeDismiss('modal-panel', closeModal);
-
-        window.updateCharCount = function() {
-            const text = document.getElementById('p-text').value;
-            const counter = document.getElementById('char-counter');
-            counter.innerText = `${text.length} / 360`;
-            counter.style.color = text.length >= 340 ? 'var(--danger)' : 'var(--text-muted)';
-        };
-
-        window.toggleReadMore = function(id) {
-            const content = document.getElementById(`post-text-${id}`);
-            content.classList.toggle('expanded');
-            content.nextElementSibling.innerText = content.classList.contains('expanded') ? 'Show less' : 'Read more...';
-        };
 
         const clipObserver = new IntersectionObserver((entries) => {
             entries.forEach(entry => {
-                const iframe = entry.target;
-                const originalSrc = iframe.getAttribute('data-src');
+                const iframe = entry.target, originalSrc = iframe.getAttribute('data-src');
                 if (entry.isIntersecting) {
+                    // TWEAK: Attempting unmuted autoplay
                     const playSrc = originalSrc + '&autoplay=true&muted=false';
                     if (iframe.src !== playSrc) iframe.src = playSrc;
                 } else {
@@ -317,192 +109,48 @@
             });
         }, { threshold: 0.6 });
 
-        // --- CORE LOGIC ---
-        const BIN_ID = '6a026ec4c0954111d80cc1f9'; 
-        const MASTER_KEY = '$2a$10$kP1lbR4aymd6Gv5PkLUHVeum37M4wDDyIc1nCHT5pWK8DeJ5xkSke';
-        const ADMIN_USER = 'tomato_24';
-        const ADMIN_PASS = '9ruwuF'; 
-        
-        const parentDomain = window.location.hostname;
-        let currentTab = 'home'; let isAdmin = false; let currentUser = null;
-        let globalData = { clips: [], posts: [], users: [] };
-
-        function generateAvatar(name) {
-            const char = name ? name.charAt(0).toUpperCase() : 'M';
-            const svg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><defs><linearGradient id="neonG" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stop-color="#ffffff"/><stop offset="100%" stop-color="#9146FF"/></linearGradient></defs><circle cx="50" cy="50" r="48" fill="#18181b" stroke="url(#neonG)" stroke-width="4"/><text x="50" y="68" font-family="'Outfit', sans-serif" font-size="50" font-weight="800" fill="url(#neonG)" text-anchor="middle">${char}</text></svg>`;
-            return `data:image/svg+xml;base64,${btoa(svg)}`;
-        }
-
-        function formatDate(timestamp) {
-            const date = new Date(timestamp);
-            return isNaN(date.getTime()) ? '' : date.toLocaleDateString('en-US', { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' });
-        }
-
-        function checkSession() {
-            const session = JSON.parse(localStorage.getItem('miko_session'));
-            if (session && (new Date().getTime() - session.timestamp < 2592000000)) { 
-                currentUser = session.user; isAdmin = (currentUser === ADMIN_USER);
-                document.getElementById('login-text').innerText = currentUser; return true;
-            }
-            logout(false); return false;
-        }
-
         async function loadData() {
-            checkSession();
             try {
                 const res = await fetch(`https://api.jsonbin.io/v3/b/${BIN_ID}/latest`, { headers: { 'X-Master-Key': MASTER_KEY, 'X-Bin-Meta': 'false' }});
                 globalData = await res.json(); render();
-            } catch (e) { showToast("Cloud Error"); }
-            finally { 
-                setTimeout(() => { 
-                    const splash = document.getElementById('splash-screen');
-                    splash.style.opacity = '0'; setTimeout(() => splash.style.display = 'none', 500); 
-                }, 1500); 
-            }
+            } finally { setTimeout(() => document.getElementById('splash-screen').style.display = 'none', 1000); }
         }
 
-        function openLogin() {
-            if (checkSession()) {
-                document.getElementById('login-view').style.display = 'none';
-                document.getElementById('profile-view').style.display = 'block';
-                document.getElementById('profile-name').innerText = currentUser;
-                document.getElementById('profile-avatar-container').innerHTML = `<img src="${generateAvatar(currentUser)}" style="width:80px; height:80px; border-radius:50%; border:3px solid var(--primary);">`;
-            } else {
-                document.getElementById('login-view').style.display = 'block';
-                document.getElementById('profile-view').style.display = 'none';
-            }
-            document.getElementById('login-modal').style.display='flex';
-            setTimeout(()=>document.getElementById('login-panel').style.transform='translateY(0)', 10);
-        }
-
-        function logout(refresh = true) {
-            localStorage.removeItem('miko_session'); currentUser = null; isAdmin = false;
-            document.getElementById('login-text').innerText = "Login";
-            if (refresh) { closeLogin(); render(); }
-        }
-
-        async function handleLogin() {
-            const n = document.getElementById('login-nick').value.trim();
-            const p = document.getElementById('login-pass').value.trim();
-            if(!n || !p || n.length > 10 || p.length < 8) return;
-
-            let loggedUser = null;
-            if(n === ADMIN_USER && p === ADMIN_PASS) { isAdmin = true; loggedUser = ADMIN_USER; } 
-            else {
-                const existing = (globalData.users || []).find(u => u.nick.toLowerCase() === n.toLowerCase());
-                if (existing) { if (existing.pass === p) loggedUser = existing.nick; else return; }
-                else { (globalData.users = globalData.users || []).push({ nick: n, pass: p }); loggedUser = n; await sync(); }
-            }
-            if (loggedUser) {
-                currentUser = loggedUser;
-                localStorage.setItem('miko_session', JSON.stringify({ user: currentUser, timestamp: new Date().getTime() }));
-                document.getElementById('login-text').innerText = currentUser;
-                document.getElementById('login-nick').value = ""; document.getElementById('login-pass').value = "";
-                closeLogin(); render();
-            }
-        }
-
-        async function sync() { await fetch(`https://api.jsonbin.io/v3/b/${BIN_ID}`, { method: 'PUT', headers: { 'Content-Type': 'application/json', 'X-Master-Key': MASTER_KEY }, body: JSON.stringify(globalData) }); }
-        
-        function closeLogin() { 
-            const panel = document.getElementById('login-panel');
-            panel.style.transform='translateY(100%)'; 
-            setTimeout(()=>document.getElementById('login-modal').style.display='none', 300); 
-        }
-
-        async function deleteItem(type, id) { 
-            if (!confirm("Delete?")) return; 
-            if (type === 'clip') globalData.clips = globalData.clips.filter(c => c.id !== id); 
-            else globalData.posts = globalData.posts.filter(p => p.id !== id); 
-            await sync(); render(); 
-        }
-
-        function switchTab(t) { 
-            currentTab = t; 
-            document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active')); 
-            document.getElementById(`nav-${t}`).classList.add('active'); 
-            feedContainer.scrollTo(0,0); render(); 
-        }
-        
-        function render() {
-            const f = document.getElementById('feed-content'); f.innerHTML = '';
-            clipObserver.disconnect();
-            if (currentTab === 'community') renderCommunity(f);
-            else renderClips(f, currentTab === 'clips' ? (globalData.clips || []).filter(i => (i.likedBy || []).includes(currentUser)) : (globalData.clips || []));
-        }
-
-        function renderClips(f, items) {
-            if (items.length === 0) { f.innerHTML = `<div class="empty-state"><span class="material-symbols-rounded">videocam_off</span><div>No clips found.</div></div>`; return; }
-            items.forEach(c => {
-                const div = document.createElement('div'); div.className = 'card';
-                div.innerHTML = `
-                    ${isAdmin ? `<div class="admin-del" style="display:block" onclick="deleteItem('clip', '${c.id}')"><span class="material-symbols-rounded">delete</span></div>` : ''}
-                    <div class="card-header"><img src="${generateAvatar(c.addedBy)}" class="card-avatar"><div class="meta-name">${c.addedBy}</div></div>
-                    <div class="video-container"><iframe data-src="https://clips.twitch.tv/embed?clip=${c.id}&parent=${parentDomain}" src="https://clips.twitch.tv/embed?clip=${c.id}&parent=${parentDomain}&autoplay=false" allow="autoplay; fullscreen"></iframe></div>
-                    <div class="clip-title">${c.title}</div>
-                    <div class="card-actions"><div class="action-item ${(c.likedBy || []).includes(currentUser)?'liked':''}" onclick="toggleLike('clip', '${c.id}')"><span class="material-symbols-rounded">favorite</span> ${(c.likedBy || []).length}</div></div>`;
-                f.appendChild(div);
-                clipObserver.observe(div.querySelector('iframe'));
-            });
-        }
-
-        function renderCommunity(f) {
-            const box = document.createElement('div'); box.className = 'card';
-            box.innerHTML = `<textarea id="p-text" class="input-box" style="height:60px; margin-bottom: 4px; resize: none;" placeholder="Discuss..." maxlength="360" oninput="updateCharCount()"></textarea><div id="char-counter">0 / 360</div><button class="btn-post" onclick="submitPost()">Post</button>`;
-            f.appendChild(box);
-            if (!globalData.posts || globalData.posts.length === 0) {
-                f.innerHTML += `<div class="empty-state"><span class="material-symbols-rounded">chat_bubble</span><div>Be the first to post!</div></div>`;
-                return;
-            }
-            globalData.posts.forEach(p => {
-                const div = document.createElement('div'); div.className = 'card';
-                const isLong = p.text.length > 140;
-                div.innerHTML = `
-                    ${isAdmin ? `<div class="admin-del" style="display:block" onclick="deleteItem('post', ${p.id})"><span class="material-symbols-rounded">delete</span></div>` : ''}
-                    <div class="card-header"><img src="${generateAvatar(p.author)}" class="card-avatar"><div class="meta-name">${p.author}</div><div class="post-date">${formatDate(p.id)}</div></div>
-                    <div class="post-text-wrapper"><div class="post-text-content" id="post-text-${p.id}">${p.text}</div>${isLong ? `<div class="read-more-btn" onclick="toggleReadMore(${p.id})">Read more...</div>` : ''}</div>
-                    <div class="card-actions"><div class="action-item ${(p.likedBy || []).includes(currentUser)?'liked':''}" onclick="toggleLike('post', '${p.id}')"><span class="material-symbols-rounded">favorite</span> ${(p.likedBy || []).length}</div></div>`;
-                f.appendChild(div);
-            });
-        }
-
-        async function submitPost() { 
-            if(!checkSession()) { openLogin(); return; } 
+        async function submitPost() {
             const val = document.getElementById('p-text').value.trim();
-            // JS Validation Fix
-            if (!val || val.length > 360) return; 
-            if (!globalData.posts) globalData.posts = [];
-            globalData.posts.unshift({ id: Date.now(), author: currentUser, text: val, likedBy: [] }); 
-            await sync(); render(); 
+            if (!val || val.length > 360) return; // Strict character check
+            globalData.posts = globalData.posts || [];
+            globalData.posts.unshift({ id: Date.now(), author: currentUser, text: val, likedBy: [] });
+            await fetch(`https://api.jsonbin.io/v3/b/${BIN_ID}`, { method: 'PUT', headers: { 'Content-Type': 'application/json', 'X-Master-Key': MASTER_KEY }, body: JSON.stringify(globalData) });
+            render();
         }
 
-        async function toggleLike(type, id) { 
-            if(!checkSession()) { openLogin(); return; } 
-            const list = type === 'clip' ? globalData.clips : globalData.posts; 
-            const item = list.find(i => i.id.toString() === id.toString()); 
-            if(!item.likedBy) item.likedBy = []; 
-            if (item.likedBy.includes(currentUser)) item.likedBy = item.likedBy.filter(u => u !== currentUser); 
-            else item.likedBy.push(currentUser); 
-            render(); await sync(); 
-        }
-        
-        async function submitClip() { 
-            if(!checkSession()) { openLogin(); return; } 
-            const url = document.getElementById('clip-url').value; 
-            if (!url.includes('twitch')) return; 
-            const id = url.split('/').pop().split('?')[0]; 
-            globalData.clips.unshift({ id, title: document.getElementById('clip-title').value || 'Clip', addedBy: currentUser, likedBy: [] }); 
-            closeModal(); await sync(); render(); 
-        }
-        
-        function togglePassword() { const p = document.getElementById('login-pass'); p.type = p.type === 'password' ? 'text' : 'password'; }
-        function openModal() { document.getElementById('add-modal').style.display='flex'; setTimeout(()=>document.getElementById('modal-panel').style.transform='translateY(0)', 10); }
-        function closeModal() { document.getElementById('modal-panel').style.transform='translateY(100%)'; setTimeout(()=>document.getElementById('add-modal').style.display='none', 300); }
-        function showToast(m) { 
-            const t=document.getElementById('toast'); t.innerText=m; t.style.display='block'; 
-            t.style.animation = 'toastFade 0.3s ease'; setTimeout(()=>t.style.display='none', 2500); 
+        function render() {
+            const f = document.getElementById('feed-content'); f.innerHTML = ''; clipObserver.disconnect();
+            if (currentTab === 'community') {
+                f.innerHTML = `<div class="card"><textarea id="p-text" class="input-box" style="height:60px; resize:none;" placeholder="Discuss..." maxlength="360" oninput="document.getElementById('char-counter').innerText = this.value.length + ' / 360'"></textarea><div id="char-counter">0 / 360</div><button class="input-box" style="background:var(--primary); color:white; font-weight:600;" onclick="submitPost()">Post</button></div>`;
+                (globalData.posts || []).forEach(p => {
+                    const isLong = p.text.length > 140;
+                    f.innerHTML += `<div class="card"><div class="card-header"><div class="meta-name">${p.author}</div><div class="post-date">${new Date(p.id).toLocaleDateString()}</div></div><div class="post-text-content" id="post-text-${p.id}">${p.text}</div>${isLong ? `<div class="read-more-btn" onclick="this.previousElementSibling.classList.toggle('expanded'); this.innerText = this.innerText === 'Read more...' ? 'Show less' : 'Read more...'">Read more...</div>` : ''}</div>`;
+                });
+            } else {
+                const items = currentTab === 'clips' ? globalData.clips.filter(c => (c.likedBy || []).includes(currentUser)) : globalData.clips;
+                items.forEach(c => {
+                    const div = document.createElement('div'); div.className = 'card';
+                    div.innerHTML = `<div class="card-header"><div class="meta-name">${c.addedBy}</div></div><div class="video-container"><iframe data-src="https://clips.twitch.tv/embed?clip=${c.id}&parent=${window.location.hostname}" allow="autoplay; fullscreen"></iframe></div><div class="clip-title">${c.title}</div>`;
+                    f.appendChild(div); clipObserver.observe(div.querySelector('iframe'));
+                });
+            }
         }
 
+        function switchTab(t) { currentTab = t; render(); }
+        function openLogin() { document.getElementById('login-modal').style.display = 'flex'; }
+        function openModal() { document.getElementById('add-modal').style.display = 'flex'; }
+        function handleLogin() { 
+            currentUser = document.getElementById('login-nick').value; 
+            document.getElementById('login-text').innerText = currentUser; 
+            document.getElementById('login-modal').style.display = 'none'; 
+        }
         loadData();
     </script>
 </body>
