@@ -17,11 +17,20 @@
 
         #splash-screen { position: absolute; inset: 0; background: var(--bg-color); display: flex; flex-direction: column; align-items: center; justify-content: center; z-index: 9999; transition: opacity 0.6s ease; }
         #splash-icon { width: 160px; height: 160px; margin-bottom: 25px; }
-        .splash-logo-text { font-family: 'Outfit', sans-serif; font-size: 42px; font-weight: 800; letter-spacing: -1px; margin-bottom: 30px; }
+        .splash-logo-text { font-family: 'Outfit', sans-serif; font-size: 46px; font-weight: 800; letter-spacing: -1px; margin-bottom: 30px; }
         
         .progress-bar { width: 200px; height: 4px; background: rgba(255,255,255,0.1); border-radius: 10px; overflow: hidden; position: relative; }
         .progress-fill { position: absolute; left: 0; top: 0; height: 100%; width: 50%; background: linear-gradient(90deg, #ffffff, var(--primary)); animation: load 1.5s infinite ease-in-out; }
         @keyframes load { 0% { left: -50%; } 100% { left: 100%; } }
+
+        /* TEXT GRADIENT FIX: inline-block ensures gradient wraps text exactly */
+        .gradient-text {
+            display: inline-block;
+            background: linear-gradient(135deg, #ffffff 20%, var(--primary) 90%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            filter: drop-shadow(0 0 12px rgba(145, 70, 255, 0.3));
+        }
 
         /* HEADER */
         .app-header { 
@@ -30,7 +39,7 @@
             background: rgba(26, 11, 46, 0.85); backdrop-filter: blur(25px); -webkit-backdrop-filter: blur(25px);
             border-bottom: 1px solid rgba(145, 70, 255, 0.25); box-shadow: 0 4px 30px rgba(0, 0, 0, 0.5);
         }
-        .header-logo { width: 32px; height: 32px; display: flex; align-items: center; justify-content: center; cursor: pointer; }
+        .header-logo { width: 32px; height: 32px; display: flex; align-items: center; justify-content: center; cursor: pointer; filter: drop-shadow(0 0 8px rgba(145, 70, 255, 0.4)); }
         .header-icon { color: var(--text-muted); width: 40px; display: flex; flex-direction: column; align-items: center; justify-content: center; }
         
         /* DYNAMIC LIVE DOT */
@@ -42,7 +51,6 @@
         @keyframes pulse { 0% { opacity: 1; transform: scale(1); } 50% { opacity: 0.5; transform: scale(1.2); } 100% { opacity: 1; transform: scale(1); } }
         
         .simple-logo { flex-grow: 1; display: flex; align-items: center; justify-content: center; font-family: 'Outfit', sans-serif; font-size: 28px; font-weight: 800; letter-spacing: -0.5px; }
-        .text-part2 { color: var(--primary); text-shadow: 0 0 12px rgba(145, 70, 255, 0.4); }
 
         #feed { height: 100%; width: 100%; overflow-y: auto; padding: 115px 15px 100px; scroll-behavior: smooth; -webkit-overflow-scrolling: touch; }
         #feed::-webkit-scrollbar { display: none; }
@@ -76,19 +84,24 @@
         .modal-content { background: var(--card-bg); border-radius: 28px 28px 0 0; padding: 25px 20px 50px; transform: translateY(100%); transition: transform 0.4s; }
         .input-box { width: 100%; background: #0e0e10; border: 1px solid var(--border-color); color: white; padding: 14px; border-radius: 10px; outline: none; margin-bottom: 12px; }
         #toast { position: absolute; top: 110px; left: 50%; transform: translateX(-50%); background: var(--primary); color: white; padding: 12px 24px; border-radius: 12px; z-index: 9999; display: none; text-align: center; font-size: 14px; }
+        .locked-view { text-align: center; padding-top: 80px; color: var(--text-muted); opacity: 0.6; }
+        .locked-view span { font-size: 56px; margin-bottom: 15px; display: block; color: var(--primary-light); }
+        .user-row { display: flex; justify-content: space-between; align-items: center; padding: 10px; background: rgba(255,255,255,0.05); border-radius: 8px; margin-bottom: 5px; font-size: 13px; }
     </style>
 </head>
 <body>
     <div id="app-container">
         <div id="splash-screen">
             <div id="splash-icon"></div>
-            <div class="splash-logo-text"><span style="color:#fff">Miko</span><span class="text-part2">Tok</span></div>
+            <!-- APPLIED TEXT WRAPPER HERE -->
+            <div class="splash-logo-text"><span class="gradient-text">MikoTok</span></div>
             <div class="progress-bar"><div class="progress-fill"></div></div>
         </div>
 
         <div class="app-header">
             <div class="header-logo" id="header-logo-slot"></div>
-            <div class="simple-logo"><span>Miko</span><span class="text-part2">Tok</span></div>
+            <!-- APPLIED TEXT WRAPPER HERE -->
+            <div class="simple-logo"><span class="gradient-text">MikoTok</span></div>
             <div class="header-icon">
                 <div class="live-dot" id="live-dot"></div>
                 <span id="live-text">OFFLINE</span>
@@ -110,6 +123,9 @@
             <div id="profile-form" style="display:none; text-align:center;">
                 <div style="color:var(--primary-light); font-size:10px; font-weight:800; margin-bottom:10px; display:none;" id="admin-tag">SYSTEM ADMIN</div>
                 <h3 id="display-name" style="margin-bottom:20px;"></h3>
+                <div id="admin-manager" style="display:none; background:rgba(0,0,0,0.4); padding:15px; border-radius:12px; text-align:left; max-height:200px; overflow-y:auto;">
+                    <div id="user-list-container"></div>
+                </div>
                 <button class="input-box" style="background:var(--danger); font-weight:700; margin-top:15px;" onclick="logout()">Logout</button>
             </div>
             <button class="input-box" style="background:transparent; border:none; color:var(--text-muted);" onclick="closeModal('login')">Dismiss</button>
@@ -132,7 +148,7 @@
         const ADMIN_USERNAME = 'tomato_24';
         const TWITCH_CHANNEL = 'codemiko';
 
-        let sbClient = null, currentTab = 'home', currentUser = null, isAdmin = false, globalData = { clips: [], posts: [] };
+        let sbClient = null, currentTab = 'home', currentUser = null, isAdmin = false, globalData = { clips: [], posts: [], users: [] };
         let likedIds = JSON.parse(localStorage.getItem('miko_likes') || '[]'), currentPlayingIframe = null;
 
         const getLogoSvg = (id) => `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" style="width:100%;height:100%"><defs><linearGradient id="grad-${id}" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stop-color="#ffffff"/><stop offset="100%" stop-color="#9146FF"/></linearGradient></defs><circle cx="50" cy="50" r="40" fill="none" stroke="url(#grad-${id})" stroke-width="7"/><path d="M 33 38 L 48 62 L 62 38 L 62 55 Q 62 65 69 64" fill="none" stroke="url(#grad-${id})" stroke-width="7" stroke-linecap="round" stroke-linejoin="round"/></svg>`;
@@ -147,20 +163,15 @@
                 const saved = localStorage.getItem('miko_user');
                 if (saved) { currentUser = saved; isAdmin = (saved === ADMIN_USERNAME); document.getElementById('login-text').innerText = saved; document.getElementById('upload-btn-container').classList.add('logged-in'); }
                 await loadData();
-                checkTwitchLive(); // Start the live check
+                checkTwitchLive();
             } catch (e) { setTimeout(hideSplash, 2000); }
         }
 
-        // --- NEW LIVE CHECK LOGIC ---
         async function checkTwitchLive() {
             const dot = document.getElementById('live-dot');
             const text = document.getElementById('live-text');
-            
             try {
-                // In a real app, you'd fetch this from your own secure backend 
-                // to avoid exposing Twitch Secrets. For now, we simulate a check.
-                const isLive = false; // Logic: fetch(`https://your-backend.com/is-live?user=${TWITCH_CHANNEL}`)
-                
+                const isLive = false; 
                 if(isLive) {
                     dot.classList.add('active');
                     text.innerText = "LIVE";
@@ -176,7 +187,8 @@
         async function loadData() {
             const { data: clips } = await sbClient.from('clips').select('*').order('created_at', { ascending: false });
             const { data: posts } = await sbClient.from('posts').select('*').order('created_at', { ascending: false });
-            globalData.clips = clips || []; globalData.posts = posts || []; render(); 
+            const { data: users } = await sbClient.from('profiles').select('*');
+            globalData.clips = clips || []; globalData.posts = posts || []; globalData.users = users || []; render(); 
             setTimeout(hideSplash, 2000);
         }
 
