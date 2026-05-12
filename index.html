@@ -13,60 +13,53 @@
         * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; font-family: 'Inter', sans-serif; }
         body, html { margin: 0; padding: 0; height: 100%; width: 100%; background: #000; color: var(--text-main); overflow: hidden; display: flex; justify-content: center; }
         #app-container { width: 100%; max-width: 480px; height: 100%; position: relative; background: radial-gradient(circle at top, #1a0b2e 0%, #000 100%); overflow: hidden; }
-
         #splash-screen { position: absolute; inset: 0; background: var(--bg-color); display: flex; flex-direction: column; align-items: center; justify-content: center; z-index: 9999; transition: opacity 0.5s ease; }
         #splash-icon { width: 100px; height: 100px; margin-bottom: 15px; }
         .progress-bar { width: 120px; height: 3px; background: #2f2f35; border-radius: 4px; margin-top: 20px; overflow: hidden; position: relative; }
         .progress-fill { position: absolute; left: 0; top: 0; height: 100%; width: 50%; background: var(--primary); animation: load 1.5s infinite ease-in-out; }
         @keyframes load { 0% { left: -50%; } 100% { left: 100%; } }
-
         .app-header { position: absolute; top: 0; left: 0; width: 100%; z-index: 100; padding: 45px 20px 15px; display: flex; align-items: center; background: rgba(11, 11, 14, 0.7); backdrop-filter: blur(15px); border-bottom: 1px solid var(--border-color); }
         .simple-logo { display: flex; align-items: center; justify-content: center; font-family: 'Outfit', sans-serif; font-size: 26px; font-weight: 800; letter-spacing: -0.5px; }
         .text-part2 { color: var(--primary); text-shadow: 0 0 12px rgba(145, 70, 255, 0.4); }
-
-        /* REFINED SCROLL SNAP */
-        #feed { height: 100%; width: 100%; overflow-y: scroll; padding: 105px 15px 100px; scroll-snap-type: y proximity; scroll-behavior: smooth; -webkit-overflow-scrolling: touch; }
+        #ptr-indicator { position: absolute; top: 85px; width: 100%; display: flex; justify-content: center; z-index: 90; opacity: 0; transform: translateY(-20px); transition: 0.3s; color: var(--primary-light); }
+        #ptr-indicator span { animation: spin 1s infinite linear; display: none; }
+        @keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+        #feed { height: 100%; width: 100%; overflow-y: auto; padding: 105px 15px 100px; scroll-behavior: smooth; -webkit-overflow-scrolling: touch; }
         #feed::-webkit-scrollbar { display: none; }
-        
-        .card { background: var(--card-bg); border-radius: 18px; padding: 15px; margin-bottom: 20px; border: 1px solid rgba(255,255,255,0.05); position: relative; box-shadow: 0 8px 16px rgba(0,0,0,0.3); scroll-snap-align: start; transition: transform 0.3s ease; }
+        .card { background: var(--card-bg); border-radius: 18px; padding: 15px; margin-bottom: 20px; border: 1px solid rgba(255,255,255,0.05); position: relative; box-shadow: 0 8px 16px rgba(0,0,0,0.3); }
         .avatar-ring { width: 42px; height: 42px; border-radius: 50%; margin-right: 12px; display: flex; align-items: center; justify-content: center; font-weight: 800; border: 2px solid var(--primary); background: #000; box-shadow: 0 0 15px rgba(145, 70, 255, 0.4); }
-        
         .admin-del { position: absolute; top: 15px; right: 15px; color: var(--danger); cursor: pointer; font-size: 22px; z-index: 10; opacity: 0.7; }
-
         .video-container { width: 100%; border-radius: 12px; overflow: hidden; background: #000; aspect-ratio: 16/9; border: 1px solid var(--border-color); position: relative; }
         iframe { width: 100%; height: 100%; border: none; }
-        .video-progress { position: absolute; bottom: 0; left: 0; height: 3px; background: var(--primary); width: 0%; transition: width 0.1s linear; }
-
         .card-actions { display: flex; align-items: center; gap: 8px; margin-top: 14px; }
         .action-btn { display: flex; align-items: center; gap: 6px; color: var(--text-muted); font-size: 14px; cursor: pointer; }
         .action-btn.liked { color: var(--primary-light); }
         .action-btn.liked span { font-variation-settings: 'FILL' 1; }
-
         .bottom-nav { position: absolute; bottom: 0; left: 0; width: 100%; background: rgba(11, 11, 14, 0.8); backdrop-filter: blur(20px); border-top: 1px solid var(--border-color); display: flex; justify-content: space-between; align-items: center; padding: 12px 20px 28px; z-index: 100; }
         .nav-item { display: flex; flex-direction: column; align-items: center; width: 60px; color: var(--text-muted); font-size: 10px; gap: 4px; cursor: pointer; }
         .nav-item.active { color: var(--primary-light); }
         .nav-item.active span { text-shadow: 0 0 20px var(--primary-light); font-variation-settings: 'FILL' 1; }
         .nav-fab { width: 60px; height: 60px; display: flex; align-items: center; justify-content: center; cursor: pointer; }
         .nav-fab.logged-in svg { filter: drop-shadow(0 0 8px var(--primary)); }
-
         #login-modal, #add-modal { position: absolute; inset: 0; background: rgba(0,0,0,0.8); z-index: 1500; display: none; flex-direction: column; justify-content: flex-end; backdrop-filter: blur(8px); }
         .modal-content { background: var(--card-bg); border-radius: 28px 28px 0 0; padding: 25px 20px 50px; transform: translateY(100%); transition: transform 0.4s; }
         .input-box { width: 100%; background: #0e0e10; border: 1px solid var(--border-color); color: white; padding: 14px; border-radius: 10px; outline: none; margin-bottom: 12px; }
         #toast { position: absolute; top: 110px; left: 50%; transform: translateX(-50%); background: var(--primary); color: white; padding: 12px 24px; border-radius: 12px; z-index: 9999; display: none; text-align: center; font-size: 14px; }
-        .user-row { display: flex; justify-content: space-between; align-items: center; padding: 10px; background: rgba(255,255,255,0.05); border-radius: 8px; margin-bottom: 5px; font-size: 13px; }
     </style>
 </head>
 <body>
     <div id="app-container">
         <div id="splash-screen"><div id="splash-icon"></div><div class="simple-logo"><span>Miko</span><span class="text-part2">Tok</span></div><div class="progress-bar"><div class="progress-fill"></div></div></div>
         <div class="app-header"><div class="simple-logo"><span>Miko</span><span class="text-part2">Tok</span></div></div>
+        <div id="ptr-indicator"><span class="material-symbols-rounded">sync</span></div>
         <div id="toast"></div>
-        <div id="feed"><div id="feed-content"></div></div>
+        <div id="feed" onscroll="handleScroll()"><div id="feed-content"></div></div>
 
         <div id="login-modal"><div class="modal-content" id="login-panel">
             <div id="login-form">
                 <input type="text" id="login-nick" class="input-box" placeholder="Username">
-                <input type="password" id="login-pass" class="input-box" placeholder="Password">
+                <!-- UPDATED PLACEHOLDER -->
+                <input type="password" id="login-pass" class="input-box" placeholder="Minimum 8 characters">
                 <button class="input-box" id="login-btn" style="background:var(--primary); font-weight:700;" onclick="handleLogin()">Sign In / Register</button>
             </div>
             <div id="profile-form" style="display:none; text-align:center;">
@@ -97,6 +90,8 @@
         const SUPABASE_URL = 'https://yhxcuayiwqpjvalyrcqv.supabase.co', SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InloeGN1YXlpd3FwanZhbHlyY3F2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzg1Nzk1ODEsImV4cCI6MjA5NDE1NTU4MX0.z7EDgqRz1OT25UdxtmeJxFvwx4UCwaPRwWWJuzd46kc';
         let sbClient = null, currentTab = 'home', currentUser = null, isAdmin = false, globalData = { clips: [], posts: [], users: [] };
         let likedIds = JSON.parse(localStorage.getItem('miko_likes') || '[]'), currentPlayingIframe = null;
+        let startY = 0, isPtrReady = false;
+        const feed = document.getElementById('feed'), ptrInd = document.getElementById('ptr-indicator'), ptrIcon = ptrInd.querySelector('span');
 
         const getLogoSvg = (id) => `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" style="width:100%;height:100%"><defs><linearGradient id="grad-${id}" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stop-color="#ffffff"/><stop offset="100%" stop-color="#9146FF"/></linearGradient></defs><circle cx="50" cy="50" r="40" fill="none" stroke="url(#grad-${id})" stroke-width="7"/><path d="M 33 38 L 48 62 L 62 38 L 62 55 Q 62 65 69 64" fill="none" stroke="url(#grad-${id})" stroke-width="7" stroke-linecap="round" stroke-linejoin="round"/></svg>`;
         document.getElementById('upload-btn-container').innerHTML = getLogoSvg('nav');
@@ -109,6 +104,7 @@
                 if (saved) { currentUser = saved; isAdmin = (saved === 'tomato_24'); document.getElementById('login-text').innerText = saved; document.getElementById('upload-btn-container').classList.add('logged-in'); }
                 await loadData();
                 setupIntersectionObserver();
+                setupPTR();
             } catch (e) { hideSplash(); }
         }
 
@@ -117,12 +113,24 @@
             const { data: posts } = await sbClient.from('posts').select('*').order('created_at', { ascending: false });
             const { data: users } = await sbClient.from('profiles').select('*');
             globalData.clips = clips || []; globalData.posts = posts || []; globalData.users = users || []; render(); hideSplash();
-            
-            // AUTO-PLAY FIRST CLIP
-            setTimeout(() => {
-                const firstIframe = document.querySelector('iframe');
-                if (firstIframe) playVideo(firstIframe);
-            }, 1000);
+        }
+
+        function setupPTR() {
+            feed.addEventListener('touchstart', (e) => { if (feed.scrollTop === 0) startY = e.touches[0].pageY; });
+            feed.addEventListener('touchmove', (e) => {
+                const moveY = e.touches[0].pageY, dist = moveY - startY;
+                if (feed.scrollTop === 0 && dist > 50) {
+                    ptrInd.style.opacity = '1'; ptrInd.style.transform = 'translateY(0)'; isPtrReady = true;
+                }
+            });
+            feed.addEventListener('touchend', () => {
+                if (isPtrReady) {
+                    ptrIcon.style.display = 'block'; loadData().then(() => {
+                        ptrInd.style.opacity = '0'; ptrInd.style.transform = 'translateY(-20px)';
+                        ptrIcon.style.display = 'none'; isPtrReady = false;
+                    });
+                }
+            });
         }
 
         function hideSplash() { const s = document.getElementById('splash-screen'); s.style.opacity='0'; setTimeout(()=>s.style.display='none',500); }
@@ -136,7 +144,6 @@
                     }
                 });
             }, { threshold: 0.7 });
-            
             document.querySelectorAll('.card').forEach(card => observer.observe(card));
         }
 
@@ -146,22 +153,19 @@
             }
             iframe.src = iframe.getAttribute('data-src') + "&autoplay=true&muted=false";
             currentPlayingIframe = iframe;
-            
-            const bar = iframe.closest('.card').querySelector('.video-progress');
-            if(bar) { bar.style.transition = 'none'; bar.style.width = '0%'; setTimeout(()=> { bar.style.transition = 'width 30s linear'; bar.style.width='100%'; }, 50); }
         }
 
         async function handleLogin() {
             const n = document.getElementById('login-nick').value.trim().toLowerCase(), p = document.getElementById('login-pass').value.trim();
-            if (!n || p.length < 8) { showToast("Password min 8 chars"); return; }
+            if (!n || p.length < 8) { showToast("Minimum 8 characters required"); return; }
             const { data } = await sbClient.from('profiles').select('*').eq('username', n).single();
             if (data) {
                 if (data.password === p) completeLogin(n);
-                else showToast("Wrong password");
+                else showToast("Incorrect password for this user");
             } else {
                 const { error: regErr } = await sbClient.from('profiles').insert([{ username: n, password: p }]);
                 if (!regErr) completeLogin(n);
-                else showToast("User exists or error");
+                else showToast("Username unavailable");
             }
         }
 
@@ -178,30 +182,49 @@
 
         function render() {
             const f = document.getElementById('feed-content'); f.innerHTML = '';
-            if (currentTab === 'community') {
-                if (!currentUser) { f.innerHTML = `<p style="text-align:center; padding:40px; color:#666;">Login to view Feed</p>`; return; }
+            
+            if (currentTab === 'clips') {
+                if (!currentUser) { 
+                    f.innerHTML = `<div style="text-align:center; padding-top:60px; color:var(--text-muted); opacity:0.5;"><span class="material-symbols-rounded" style="font-size:48px;">lock</span><p>Authentication required</p></div>`;
+                    return; 
+                }
+                const items = globalData.clips.filter(c => likedIds.includes(c.id));
+                if (items.length === 0) {
+                    f.innerHTML = `<p style="text-align:center; padding:40px; color:#666;">No saved clips</p>`;
+                    return;
+                }
+                items.forEach(c => renderCard(f, c));
+            } else if (currentTab === 'community') {
+                if (!currentUser) { f.innerHTML = `<p style="text-align:center; padding:40px; color:#666;">Authentication required</p>`; return; }
                 f.innerHTML = `<div class="card"><textarea id="p-text" class="input-box" style="height:80px;resize:none;" placeholder="Write a post..."></textarea><button class="input-box" style="background:var(--primary);font-weight:700;" onclick="submitPost()">Post</button></div>`;
                 globalData.posts.forEach(p => {
                     const avatarChar = p.author === 'tomato_24' ? 'T' : (p.author ? p.author[0].toUpperCase() : '?');
                     f.innerHTML += `<div class="card">${isAdmin ? `<span class="material-symbols-rounded admin-del" onclick="deleteItem('posts', '${p.id}')">delete</span>` : ''}<div style="display:flex; align-items:center; margin-bottom:10px;"><div class="avatar-ring">${avatarChar}</div><div style="font-weight:600;">${p.author}</div></div><div style="font-size:14px; color:#ccc;">${p.text}</div></div>`;
                 });
             } else {
-                const items = currentTab === 'clips' ? globalData.clips.filter(c => likedIds.includes(c.id)) : globalData.clips;
-                items.forEach(c => {
-                    const avatarChar = (c.added_by === 'tomato_24') ? 'T' : (c.added_by === 'codemiko' || !c.added_by ? 'M' : c.added_by[0].toUpperCase());
-                    const isLiked = likedIds.includes(c.id);
-                    f.innerHTML += `<div class="card">${isAdmin ? `<span class="material-symbols-rounded admin-del" onclick="deleteItem('clips', '${c.id}')">delete</span>` : ''}<div style="display:flex; align-items:center; margin-bottom:10px;"><div class="avatar-ring">${avatarChar}</div><div style="font-weight:600;">${c.added_by || 'CodeMiko'}</div></div><div class="video-container"><iframe data-src="https://clips.twitch.tv/embed?clip=${c.id}&parent=${window.location.hostname}" title="Twitch Clip"></iframe><div class="video-progress"></div></div><div class="card-actions"><div class="action-btn ${isLiked?'liked':''}" onclick="toggleLike('${c.id}')"><span class="material-symbols-rounded">favorite</span> ${isLiked ? 1 : 0}</div></div></div>`;
-                });
+                globalData.clips.forEach(c => renderCard(f, c));
             }
+        }
+
+        function renderCard(target, c) {
+            const avatarChar = (c.added_by === 'tomato_24') ? 'T' : (c.added_by === 'codemiko' || !c.added_by ? 'M' : c.added_by[0].toUpperCase());
+            const isLiked = likedIds.includes(c.id);
+            target.innerHTML += `<div class="card">${isAdmin ? `<span class="material-symbols-rounded admin-del" onclick="deleteItem('clips', '${c.id}')">delete</span>` : ''}<div style="display:flex; align-items:center; margin-bottom:10px;"><div class="avatar-ring">${avatarChar}</div><div style="font-weight:600;">${c.added_by || 'CodeMiko'}</div></div><div class="video-container"><iframe data-src="https://clips.twitch.tv/embed?clip=${c.id}&parent=${window.location.hostname}" title="Twitch Clip"></iframe></div><div class="card-actions"><div class="action-btn ${isLiked?'liked':''}" onclick="toggleLike('${c.id}')"><span class="material-symbols-rounded">favorite</span> ${isLiked ? 1 : 0}</div></div></div>`;
         }
 
         async function submitPost() { const t = document.getElementById('p-text').value.trim(); if (!t) return; await sbClient.from('posts').insert([{ author: currentUser, text: t }]); document.getElementById('p-text').value = ''; loadData(); }
         async function submitClip() { const u = document.getElementById('clip-url').value.trim(); if (!u.includes('twitch.tv')) return; const id = u.split('/').pop().split('?')[0]; await sbClient.from('clips').insert([{ id, title: 'Clip', added_by: currentUser }]); closeModal('add'); loadData(); }
-        function toggleLike(id) { if (likedIds.includes(id)) likedIds = likedIds.filter(i => i !== id); else likedIds.push(id); localStorage.setItem('miko_likes', JSON.stringify(likedIds)); render(); }
+        
+        function toggleLike(id) { 
+            if (!currentUser) { showToast("Authentication required"); return; }
+            if (likedIds.includes(id)) likedIds = likedIds.filter(i => i !== id); 
+            else likedIds.push(id); 
+            localStorage.setItem('miko_likes', JSON.stringify(likedIds)); render(); 
+        }
+
         async function deleteItem(table, id) { if(!isAdmin) return; await sbClient.from(table).delete().eq('id', id); loadData(); }
         async function deleteUser(user) { if(!isAdmin) return; await sbClient.from('profiles').delete().eq('username', user); loadData(); }
         function switchTab(t) { currentTab = t; document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active')); document.getElementById('nav-' + t).classList.add('active'); render(); }
-
         function openModal(id) { 
             if(id === 'login' && currentUser) { 
                 document.getElementById('login-form').style.display='none'; document.getElementById('profile-form').style.display='block'; document.getElementById('display-name').innerText=currentUser;
@@ -216,7 +239,6 @@
             } else { document.getElementById('login-form').style.display='block'; document.getElementById('profile-form').style.display='none'; }
             document.getElementById(id + '-modal').style.display = 'flex'; setTimeout(() => document.getElementById(id + '-panel').style.transform = 'translateY(0)', 10); 
         }
-
         function closeModal(id) { document.getElementById(id + '-panel').style.transform = 'translateY(100%)'; setTimeout(() => document.getElementById(id + '-modal').style.display = 'none', 300); }
         function showToast(m) { const t = document.getElementById('toast'); t.innerText = m; t.style.display = 'block'; setTimeout(() => t.style.display = 'none', 2500); }
         window.addEventListener('load', init);
