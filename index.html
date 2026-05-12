@@ -36,8 +36,6 @@
         #login-modal, #add-modal { position: absolute; inset: 0; background: rgba(0,0,0,0.8); z-index: 1500; display: none; flex-direction: column; justify-content: flex-end; backdrop-filter: blur(5px); }
         .modal-content { background: var(--card-bg); border-radius: 20px 20px 0 0; padding: 25px 20px 40px; transform: translateY(100%); transition: transform 0.3s; }
         .input-box { width: 100%; background: #0e0e10; border: 1px solid var(--border-color); color: white; padding: 12px; border-radius: 6px; outline: none; margin-bottom: 12px; }
-        #char-counter { color: var(--text-muted); font-size: 11px; text-align: right; margin-top: -8px; margin-bottom: 10px; }
-        #char-counter.limit-hit { color: var(--danger); font-weight: 800; }
         #toast { position: absolute; top: 100px; left: 50%; transform: translateX(-50%); background: var(--primary); color: white; padding: 10px 20px; border-radius: 6px; z-index: 9999; display: none; }
         .admin-btn { display: none; background: var(--primary); color: white; border: none; padding: 6px 12px; border-radius: 6px; font-size: 12px; font-weight: 700; }
     </style>
@@ -47,7 +45,7 @@
         <div id="splash-screen"><div id="splash-icon"></div><div class="simple-logo"><span class="text-part1">Miko</span><span class="text-part2">Tok</span></div></div>
         <div class="app-header">
             <div class="simple-logo"><span class="text-part1">Miko</span><span class="text-part2">Tok</span></div>
-            <button id="admin-sync" class="admin-btn" onclick="openModal('add')">ADD CLIP</button>
+            <button id="admin-sync" class="admin-btn" onclick="openModal('add')">SYNC MIKO</button>
         </div>
         <div id="toast"></div>
         <div id="feed"><div id="feed-content"></div></div>
@@ -58,8 +56,9 @@
             <button class="input-box" style="background:transparent; border:none;" onclick="closeModal('login')">Cancel</button>
         </div></div>
         <div id="add-modal"><div class="modal-content" id="add-panel">
-            <input type="text" id="clip-url" class="input-box" placeholder="Twitch Clip URL">
-            <button class="input-box" style="background:var(--primary); font-weight:600;" onclick="submitClip()">Post Clip</button>
+            <div style="font-size:12px; color:var(--text-muted); margin-bottom:10px;">Paste Twitch Clip URL (Most Recent first)</div>
+            <input type="text" id="clip-url" class="input-box" placeholder="https://clips.twitch.tv/...">
+            <button class="input-box" style="background:var(--primary); font-weight:600;" onclick="submitClip()">Post to Feed</button>
             <button class="input-box" style="background:transparent; border:none;" onclick="closeModal('add')">Cancel</button>
         </div></div>
         <div class="bottom-nav">
@@ -83,7 +82,7 @@
         }
 
         async function loadData() {
-            const { data: clips } = await sbClient.from('clips').select('*').order('created_at', { ascending: false });
+            const { data: clips } = await sbClient.from('clips').select('*').order('created_at', { ascending: false }).limit(50);
             const { data: posts } = await sbClient.from('posts').select('*').order('created_at', { ascending: false });
             globalData.clips = clips || []; globalData.posts = posts || []; render();
             setTimeout(() => { document.getElementById('splash-screen').style.opacity = '0'; setTimeout(() => document.getElementById('splash-screen').style.display = 'none', 500); }, 800);
@@ -92,14 +91,14 @@
         function handleLogin() {
             const n = document.getElementById('login-nick').value.trim(), p = document.getElementById('login-pass').value.trim();
             if (n === 'tomato_24' && p === '9ruwuF') { isAdmin = true; currentUser = 'tomato_24'; document.getElementById('admin-sync').style.display = 'block'; }
-            else if (n && p.length >= 8) { isAdmin = false; currentUser = n; }
+            else if (n && p.length >= 8) { isAdmin = false; currentUser = n; document.getElementById('admin-sync').style.display = 'none'; }
             else { showToast("Error: Nick + 8 char Pass"); return; }
             document.getElementById('login-text').innerText = currentUser; closeModal('login'); render();
         }
 
         async function submitPost() {
             const t = document.getElementById('p-text').value.trim();
-            if (!t || t.length > 360) return;
+            if (!t) return;
             const { error } = await sbClient.from('posts').insert([{ author: currentUser || 'Guest', text: t }]);
             if (!error) loadData();
         }
@@ -108,7 +107,8 @@
             const u = document.getElementById('clip-url').value.trim();
             if (!u.includes('twitch.tv')) return;
             const id = u.split('/').pop().split('?')[0];
-            await sbClient.from('clips').insert([{ id, title: 'Miko Clip', added_by: 'CodeMiko' }]);
+            await sbClient.from('clips').insert([{ id, title: 'CodeMiko Clip', added_by: 'CodeMiko' }]);
+            document.getElementById('clip-url').value = '';
             closeModal('add'); loadData();
         }
 
@@ -119,7 +119,7 @@
         function render() {
             const f = document.getElementById('feed-content'); f.innerHTML = '';
             if (currentTab === 'community') {
-                f.innerHTML = `<div class="card"><textarea id="p-text" class="input-box" style="height:60px;resize:none;" placeholder="Discuss..." maxlength="360" oninput="document.getElementById('char-counter').innerText = this.value.length + ' / 360'; this.value.length >= 360 ? document.getElementById('char-counter').classList.add('limit-hit') : document.getElementById('char-counter').classList.remove('limit-hit')"></textarea><div id="char-counter">0 / 360</div><button class="input-box" style="background:var(--primary);font-weight:600;" onclick="submitPost()">Post</button></div>`;
+                f.innerHTML = `<div class="card"><textarea id="p-text" class="input-box" style="height:80px;resize:none;" placeholder="Discuss..."></textarea><button class="input-box" style="background:var(--primary);font-weight:600;" onclick="submitPost()">Post</button></div>`;
                 globalData.posts.forEach(p => {
                     f.innerHTML += `<div class="card"><div class="card-header"><div class="avatar-circle" style="background:${p.author === 'tomato_24' ? '#9146FF' : '#2f2f35'}">${p.author[0].toUpperCase()}</div><div class="meta-name">${p.author}</div>${isAdmin ? `<span class="material-symbols-rounded admin-del" onclick="deleteItem('posts', '${p.id}')">delete</span>` : ''}</div><div class="post-text-content">${p.text}</div></div>`;
                 });
