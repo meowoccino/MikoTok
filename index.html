@@ -149,7 +149,10 @@
                 <div id="profile-view" style="display:none; text-align:center;">
                     <div id="profile-avatar-container"></div>
                     <h2 id="profile-name" style="margin: 10px 0 20px;"></h2>
-                    <button id="btn-pwa-install" class="btn-post" style="display:none; margin-bottom: 15px; background: #fff; color: var(--primary);" onclick="triggerPWAInstall()">Install App</button>
+                    
+                    <!-- PWA INSTALL BUTTON: Now always visible as a fallback -->
+                    <button id="btn-pwa-install" class="btn-post" style="margin-bottom: 15px; background: #fff; color: var(--primary);" onclick="triggerPWAInstall()">Install App</button>
+                    
                     <div style="display:flex; gap:10px;">
                         <button style="flex:1; background:#2f2f35; color:white; border:none; border-radius:6px;" onclick="closeLogin()">Close</button>
                         <button class="btn-post" style="flex:1; background:var(--danger);" onclick="logout()">Logout</button>
@@ -202,17 +205,18 @@
         window.addEventListener('beforeinstallprompt', (e) => {
             e.preventDefault();
             deferredPrompt = e;
-            const btn = document.getElementById('btn-pwa-install');
-            if(btn) btn.style.display = 'block';
         });
 
         async function triggerPWAInstall() {
-            if (!deferredPrompt) return;
+            // Fallback for browsers that don't support the native popup (e.g., iOS Safari)
+            if (!deferredPrompt) {
+                showToast("To install: Use browser menu -> Add to Home Screen");
+                return;
+            }
             deferredPrompt.prompt();
             const { outcome } = await deferredPrompt.userChoice;
             if (outcome === 'accepted') {
                 deferredPrompt = null;
-                document.getElementById('btn-pwa-install').style.display = 'none';
             }
         }
 
@@ -225,7 +229,6 @@
         // APP CORE
         const BIN_ID = '6a026ec4c0954111d80cc1f9'; 
         const MASTER_KEY = '$2a$10$kP1lbR4aymd6Gv5PkLUHVeum37M4wDDyIc1nCHT5pWK8DeJ5xkSke';
-        // Updated admin user to tomato_24
         const ADMIN_USER = 'tomato_24';
         const ADMIN_PASS = '9ruwuF'; 
         
@@ -247,7 +250,6 @@
                 const now = new Date().getTime();
                 if (now - session.timestamp < 2592000000) { 
                     currentUser = session.user;
-                    // Updated to check against the new ADMIN_USER constant
                     isAdmin = (currentUser === ADMIN_USER);
                     document.getElementById('login-text').innerText = currentUser;
                     return true;
@@ -301,13 +303,12 @@
             
             if(!nick || !pass) { showToast("Enter credentials!"); return; }
             
-            // New character limits validations
+            // Character limits validations
             if(nick.length > 10) { showToast("Nickname max 10 chars!"); return; }
             if(pass.length < 8) { showToast("Password min 8 chars!"); return; }
 
             let loggedUser = null;
             
-            // Replaced logic to assign admin rights using the new ADMIN_USER variable
             if(nick === ADMIN_USER && pass === ADMIN_PASS) { isAdmin = true; loggedUser = ADMIN_USER; } 
             else {
                 const existing = globalData.users.find(u => u.nick.toLowerCase() === nick.toLowerCase());
@@ -323,6 +324,7 @@
                 localStorage.setItem('miko_session', JSON.stringify({ user: currentUser, timestamp: new Date().getTime() }));
                 document.getElementById('login-text').innerText = currentUser;
                 nickInput.value = ""; passInput.value = "";
+                // Welcome toast completely removed here as requested
                 closeLogin(); render();
             }
         }
