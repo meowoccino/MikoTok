@@ -130,6 +130,11 @@
         #login-modal, #add-modal { position: absolute; inset: 0; background: rgba(0,0,0,0.9); z-index: 1500; display: none; flex-direction: column; justify-content: flex-end; }
         .modal-content { background: #111113; border-radius: 20px 20px 0 0; padding: 25px 20px 40px; transform: translateY(100%); transition: transform 0.3s ease-out; border-top: 1px solid var(--border-color); }
         .input-box { width: 100%; background: #000; border: 1px solid var(--border-color); color: white; padding: 14px; border-radius: 8px; outline: none; margin-bottom: 12px; font-size: 14px; }
+        
+        /* CARD ACTIONS */
+        .card-actions { display: flex; align-items: center; gap: 15px; margin-top: 12px; padding-top: 10px; border-top: 1px solid rgba(255,255,255,0.05); }
+        .action-btn { display: flex; align-items: center; gap: 5px; font-size: 13px; color: var(--text-muted); cursor: pointer; font-weight: 600; }
+        .action-btn.liked { color: var(--danger); font-variation-settings: 'FILL' 1; }
     </style>
 </head>
 <body>
@@ -204,8 +209,8 @@
         const ADMIN_USERNAME = 'tomato_24';
         const TWITCH_CHANNEL = 'codemiko';
 
-        let sbClient = null, currentTab = 'home', currentUser = null, isAdmin = false, globalData = { clips: [], posts: [] };
-        let likedIds = JSON.parse(localStorage.getItem('miko_likes') || '[]'), currentPlayingIframe = null;
+        let sbClient = null, currentTab = 'home', currentUser = null, isAdmin = false, globalData = { clips: [], posts: [], likes: [] };
+        let currentPlayingIframe = null;
 
         const getLogoSvg = (id) => `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" style="width:100%;height:100%"><defs><linearGradient id="grad-${id}" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stop-color="#ffffff"/><stop offset="100%" stop-color="#9146FF"/></linearGradient></defs><circle cx="50" cy="50" r="40" fill="none" stroke="url(#grad-${id})" stroke-width="8"/><path d="M 33 38 L 48 62 L 62 38 L 62 55 Q 62 65 69 64" fill="none" stroke="url(#grad-${id})" stroke-width="8" stroke-linecap="round" stroke-linejoin="round"/></svg>`;
         
@@ -218,8 +223,6 @@
             const saved = localStorage.getItem('miko_user');
             if (saved) { currentUser = saved; isAdmin = (saved === ADMIN_USERNAME); }
             await loadData();
-            
-            // STATUS TEST: false = Heartbeat Grey, true = Heartbeat Red
             updateStatus(false); 
         }
 
@@ -244,8 +247,20 @@
         async function loadData() {
             const { data: clips } = await sbClient.from('clips').select('*').order('created_at', { ascending: false });
             const { data: posts } = await sbClient.from('posts').select('*').order('created_at', { ascending: false });
-            globalData.clips = clips || []; globalData.posts = posts || []; render(); 
-            setTimeout(() => { document.getElementById('splash-screen').style.opacity='0'; setTimeout(()=>document.getElementById('splash-screen').style.display='none',600); }, 1500);
+            
+            // Sync likes from database if user is logged in
+            if (currentUser) {
+                const { data: userLikes } = await sbClient.from('likes').select('clip_id').eq('username', currentUser);
+                globalData.likes = userLikes ? userLikes.map(l => l.clip_id) : [];
+            }
+
+            globalData.clips = clips || []; 
+            globalData.posts = posts || []; 
+            render(); 
+            setTimeout(() => { 
+                document.getElementById('splash-screen').style.opacity='0'; 
+                setTimeout(()=>document.getElementById('splash-screen').style.display='none', 600); 
+            }, 1500);
         }
 
         function handleScroll() {
@@ -260,7 +275,9 @@
 
         function playVideo(iframe) {
             const host = window.location.hostname || "localhost";
-            if (currentPlayingIframe && currentPlayingIframe !== iframe) { currentPlayingIframe.src = currentPlayingIframe.getAttribute('data-src') + "&parent=" + host + "&autoplay=false"; }
+            if (currentPlayingIframe && currentPlayingIframe !== iframe) { 
+                currentPlayingIframe.src = currentPlayingIframe.getAttribute('data-src') + "&parent=" + host + "&autoplay=false"; 
+            }
             iframe.src = iframe.getAttribute('data-src') + "&parent=" + host + "&autoplay=true&muted=true";
             currentPlayingIframe = iframe;
         }
@@ -274,28 +291,46 @@
                     f.innerHTML += `<div class="card">${isAdmin ? `<span class="material-symbols-rounded admin-del" onclick="deleteItem('posts', '${p.id}')" style="position:absolute; right:12px; top:12px; cursor:pointer;">delete</span>` : ''}<div style="display:flex; align-items:center;"><div class="avatar-ring">${avatarChar}</div><div><div style="font-weight:600; font-size:14px;">${p.author}</div></div></div><div style="font-size:14px; color:#ddd; margin-top:10px;">${p.text}</div></div>`;
                 });
             } else if (currentTab === 'clips') {
-                globalData.clips.filter(c => likedIds.includes(c.id)).forEach(c => renderCard(f, c));
+                globalData.clips.filter(c => globalData.likes.includes(c.id)).forEach(c => renderCard(f, c));
             } else { globalData.clips.forEach(c => renderCard(f, c)); }
         }
 
         function renderCard(target, c) {
-            const isLiked = likedIds.includes(c.id);
+            const isLiked = globalData.likes.includes(c.id);
             const authorName = c.added_by || 'CodeMiko';
             const avatarChar = authorName === ADMIN_USERNAME ? 'T' : (authorName === 'CodeMiko' ? 'M' : authorName[0].toUpperCase());
-            target.innerHTML += `<div class="card">${isAdmin ? `<span class="material-symbols-rounded admin-del" onclick="deleteItem('clips', '${c.id}')" style="position:absolute; right:12px; top:12px; cursor:pointer;">delete</span>` : ''}<div style="display:flex; align-items:center;"><div class="avatar-ring">${avatarChar}</div><div><div style="font-weight:600; font-size:14px;">${authorName}</div></div></div><div class="video-container"><iframe data-src="https://clips.twitch.tv/embed?clip=${c.id}" loading="lazy" onload="this.classList.add('loaded')"></iframe></div><div class="card-actions"><div class="action-btn ${isLiked?'liked':''}" onclick="toggleLike('${c.id}')"><span class="material-symbols-rounded">favorite</span> ${isLiked ? 1 : 0}</div></div></div>`;
+            target.innerHTML += `<div class="card">${isAdmin ? `<span class="material-symbols-rounded admin-del" onclick="deleteItem('clips', '${c.id}')" style="position:absolute; right:12px; top:12px; cursor:pointer;">delete</span>` : ''}<div style="display:flex; align-items:center;"><div class="avatar-ring">${avatarChar}</div><div><div style="font-weight:600; font-size:14px;">${authorName}</div></div></div><div class="video-container"><iframe data-src="https://clips.twitch.tv/embed?clip=${c.id}" loading="lazy" onload="this.classList.add('loaded')"></iframe></div><div class="card-actions"><div class="action-btn ${isLiked?'liked':''}" onclick="toggleLike('${c.id}')"><span class="material-symbols-rounded">favorite</span> ${isLiked ? 'Liked' : 'Like'}</div></div></div>`;
         }
 
         async function handleLogin() {
             const n = document.getElementById('login-nick').value.trim(), p = document.getElementById('login-pass').value.trim();
-            if (n && p.length >= 6) { localStorage.setItem('miko_user', n); location.reload(); }
+            if (n && p.length >= 6) { 
+                localStorage.setItem('miko_user', n); 
+                // Silently ensure profile exists in DB
+                await sbClient.from('profiles').upsert([{ id: n, username: n }], { onConflict: 'id' });
+                location.reload(); 
+            }
         }
 
         function logout() { localStorage.removeItem('miko_user'); location.reload(); }
         function handleUploadClick() { if(!currentUser) openModal('login'); else openModal('add'); }
-        async function submitPost() { const t = document.getElementById('p-text').value.trim(); if (t) { await sbClient.from('posts').insert([{ author: currentUser, text: t }]); loadData(); } }
-        async function submitClip() { const u = document.getElementById('clip-url').value.trim(); if (u.includes('twitch.tv')) { const id = u.split('/').pop().split('?')[0]; await sbClient.from('clips').insert([{ id, added_by: currentUser }]); closeModal('add'); loadData(); } }
-        function toggleLike(id) { if (!currentUser) return; if (likedIds.includes(id)) likedIds = likedIds.filter(i => i !== id); else likedIds.push(id); localStorage.setItem('miko_likes', JSON.stringify(likedIds)); render(); }
-        async function deleteItem(table, id) { await sbClient.from(table).delete().eq('id', id); loadData(); }
+        async function submitPost() { const t = document.getElementById('p-text').value.trim(); if (t && currentUser) { await sbClient.from('posts').insert([{ author: currentUser, text: t }]); loadData(); } }
+        async function submitClip() { const u = document.getElementById('clip-url').value.trim(); if (u.includes('twitch.tv') && currentUser) { const id = u.split('/').pop().split('?')[0]; await sbClient.from('clips').insert([{ id, added_by: currentUser }]); closeModal('add'); loadData(); } }
+        
+        async function toggleLike(clipId) { 
+            if (!currentUser) { openModal('login'); return; }
+            const index = globalData.likes.indexOf(clipId);
+            if (index > -1) {
+                globalData.likes.splice(index, 1);
+                await sbClient.from('likes').delete().eq('username', currentUser).eq('clip_id', clipId);
+            } else {
+                globalData.likes.push(clipId);
+                await sbClient.from('likes').insert([{ username: currentUser, clip_id: clipId }]);
+            }
+            render(); 
+        }
+
+        async function deleteItem(table, id) { if(isAdmin) { await sbClient.from(table).delete().eq('id', id); loadData(); } }
         
         function switchTab(t) { 
             currentTab = t; 
