@@ -41,7 +41,6 @@
         #feed { height: 100%; width: 100%; overflow-y: auto; padding: 110px 12px 100px; scroll-behavior: smooth; }
         #feed::-webkit-scrollbar { display: none; }
         
-        /* RESTORED THE HUB STYLE */
         #live-container { 
             background: var(--card-bg); border-radius: 12px; padding: 15px; margin-bottom: 25px; 
             border: 2px solid var(--primary); box-shadow: 0 0 15px rgba(145, 70, 255, 0.4); 
@@ -93,7 +92,6 @@
         </div>
 
         <div id="feed" onscroll="handleScroll()">
-            <!-- RESTORED THE HUB WITH INDUCTIONS -->
             <div id="live-container">
                 <div class="live-label">
                     <div class="status-wrapper">
@@ -104,9 +102,6 @@
                 </div>
                 <div class="video-container">
                     <iframe id="live-player" src="" allowfullscreen="true" onload="this.classList.add('loaded')"></iframe>
-                </div>
-                <div id="hub-description" style="margin-top:10px; font-size:12px; font-weight:600; color:var(--text-muted);">
-                    Channel is offline. Catch up on highlights above!
                 </div>
             </div>
             <div id="feed-content"></div>
@@ -147,12 +142,12 @@
 
         function updateStatus(isOnline) {
             const host = window.location.hostname || "localhost";
-            const hDot = document.getElementById('header-dot'), hText = document.getElementById('live-text'), hubContainer = document.getElementById('live-container'), hubDot = document.getElementById('hub-dot'), hubText = document.getElementById('hub-text'), hubDesc = document.getElementById('hub-description'), player = document.getElementById('live-player');
+            const hDot = document.getElementById('header-dot'), hText = document.getElementById('live-text'), hubContainer = document.getElementById('live-container'), hubDot = document.getElementById('hub-dot'), hubText = document.getElementById('hub-text'), player = document.getElementById('live-player');
             if(isOnline) {
-                hDot.classList.add('active'); hText.innerText = "LIVE"; hText.classList.add('active'); hubContainer.classList.add('is-live'); hubDot.classList.add('active'); hubText.innerText = "STREAMING NOW"; hubDesc.innerText = "CodeMiko is Live! Tap to join the chaos.";
+                hDot.classList.add('active'); hText.innerText = "LIVE"; hText.classList.add('active'); hubContainer.classList.add('is-live'); hubDot.classList.add('active'); hubText.innerText = "STREAMING NOW";
                 player.src = `https://player.twitch.tv/?channel=${TWITCH_CHANNEL}&parent=${host}&autoplay=true&muted=true`;
             } else {
-                hDot.classList.remove('active'); hText.innerText = "OFFLINE"; hText.classList.remove('active'); hubContainer.classList.remove('is-live'); hubDot.classList.remove('active'); hubText.innerText = "OFFLINE NOW"; hubDesc.innerText = "Channel is offline. Catch up on highlights above!";
+                hDot.classList.remove('active'); hText.innerText = "OFFLINE"; hText.classList.remove('active'); hubContainer.classList.remove('is-live'); hubDot.classList.remove('active'); hubText.innerText = "OFFLINE NOW";
                 player.src = `https://player.twitch.tv/?channel=${TWITCH_CHANNEL}&parent=${host}&video=&autoplay=false`;
             }
         }
@@ -161,20 +156,18 @@
             const { data: clips } = await sbClient.from('clips').select('*').order('created_at', { ascending: false });
             const { data: posts } = await sbClient.from('posts').select('*').order('created_at', { ascending: false });
             const { data: allLikes } = await sbClient.from('likes').select('clip_id');
-            
             globalData.counts = {}; 
             if (allLikes) allLikes.forEach(l => { globalData.counts[l.clip_id] = (globalData.counts[l.clip_id] || 0) + 1; });
-            
             if (currentUser) {
                 const { data: userLikes } = await sbClient.from('likes').select('clip_id').eq('username', currentUser);
                 globalData.likes = userLikes ? userLikes.map(l => l.clip_id) : [];
             }
-            
             globalData.clips = clips || []; globalData.posts = posts || []; render();
         }
 
         function render() {
             const f = document.getElementById('feed-content'); f.innerHTML = '';
+            const host = window.location.hostname || "localhost";
             document.getElementById('live-container').style.display = (currentTab === 'home') ? 'block' : 'none';
 
             if (currentTab === 'community') {
@@ -183,15 +176,37 @@
             } else if (currentTab === 'clips') {
                 const likedOnes = globalData.clips.filter(c => globalData.likes.includes(c.id));
                 if(likedOnes.length === 0) f.innerHTML = `<div style="text-align:center;padding:40px;color:var(--text-muted);">No liked clips yet!</div>`;
-                else likedOnes.forEach(c => renderCard(f, c));
+                else likedOnes.forEach(c => renderCard(f, c, true)); // Force load for Liked tab
             } else { 
-                globalData.clips.forEach(c => renderCard(f, c)); 
+                globalData.clips.forEach(c => renderCard(f, c, false)); 
             }
         }
 
-        function renderCard(target, c) {
+        function renderCard(target, c, forceLoad) {
             const isLiked = globalData.likes.includes(c.id), count = globalData.counts[c.id] || 0;
-            target.innerHTML += `<div class="card"><div style="display:flex;align-items:center;margin-bottom:10px;"><div class="avatar-ring">${c.added_by?c.added_by[0].toUpperCase():'M'}</div><div style="font-weight:600;font-size:14px;">${c.added_by||'CodeMiko'}</div></div><div class="video-container"><iframe data-src="https://clips.twitch.tv/embed?clip=${c.id}" loading="lazy" onload="this.classList.add('loaded')"></iframe></div><div class="card-actions"><div class="action-btn ${isLiked?'liked':''}" onclick="toggleLike('${c.id}')"><span class="material-symbols-rounded">favorite</span> ${count}</div></div></div>`;
+            const host = window.location.hostname || "localhost";
+            const src = `https://clips.twitch.tv/embed?clip=${c.id}&parent=${host}&autoplay=false`;
+            
+            // On the Liked tab, we load the src immediately so it's not a black box
+            const iframeTag = forceLoad 
+                ? `<iframe src="${src}" class="loaded"></iframe>` 
+                : `<iframe data-src="${src}" loading="lazy" onload="this.classList.add('loaded')"></iframe>`;
+
+            target.innerHTML += `
+                <div class="card">
+                    <div style="display:flex;align-items:center;margin-bottom:10px;">
+                        <div class="avatar-ring">${c.added_by?c.added_by[0].toUpperCase():'M'}</div>
+                        <div style="font-weight:600;font-size:14px;">${c.added_by||'CodeMiko'}</div>
+                    </div>
+                    <div class="video-container">
+                        ${iframeTag}
+                    </div>
+                    <div class="card-actions">
+                        <div class="action-btn ${isLiked?'liked':''}" onclick="toggleLike('${c.id}')">
+                            <span class="material-symbols-rounded">favorite</span> ${count}
+                        </div>
+                    </div>
+                </div>`;
         }
 
         async function toggleLike(id) {
@@ -209,8 +224,8 @@
 
         function setupSwipe(pid, mkey) {
             const p = document.getElementById(pid); let startY = 0, currentY = 0;
-            p.addEventListener('touchstart', (e) => { startY = e.touches[0].clientY; p.style.transition = 'none'; });
-            p.addEventListener('touchmove', (e) => { currentY = e.touches[0].clientY - startY; if (currentY > 0) p.style.transform = `translateY(${currentY}px)`; });
+            p.addEventListener('touchstart', (e) => { startY = e.touches[0].clientY; p.style.transition = 'none'; }, {passive: true});
+            p.addEventListener('touchmove', (e) => { currentY = e.touches[0].clientY - startY; if (currentY > 0) p.style.transform = `translateY(${currentY}px)`; }, {passive: true});
             p.addEventListener('touchend', () => { p.style.transition = 'transform 0.3s cubic-bezier(0.1, 0.5, 0.1, 1)'; if (currentY > 120) closeModal(mkey); else p.style.transform = 'translateY(0)'; currentY = 0; });
         }
 
@@ -228,14 +243,27 @@
         
         function handleScroll() {
             const iframes = document.querySelectorAll('iframe:not(#live-player)');
+            const host = window.location.hostname || "localhost";
             iframes.forEach(iframe => {
                 const rect = iframe.getBoundingClientRect();
-                if (rect.top < window.innerHeight/2 && rect.bottom > window.innerHeight/2) {
-                    const host = window.location.hostname || "localhost";
-                    if (currentPlayingIframe !== iframe) {
-                        if(currentPlayingIframe) currentPlayingIframe.src = currentPlayingIframe.getAttribute('data-src') + "&parent=" + host + "&autoplay=false";
-                        iframe.src = iframe.getAttribute('data-src') + "&parent=" + host + "&autoplay=true&muted=true";
-                        currentPlayingIframe = iframe;
+                if (rect.top < window.innerHeight && rect.bottom > 0) {
+                    // Check if it has a data-src but no src
+                    if (iframe.getAttribute('data-src') && !iframe.src) {
+                        iframe.src = iframe.getAttribute('data-src');
+                    }
+                    // Auto-play logic
+                    if (rect.top < window.innerHeight/2 && rect.bottom > window.innerHeight/2) {
+                        if (currentPlayingIframe !== iframe) {
+                            if(currentPlayingIframe) {
+                                let oldSrc = currentPlayingIframe.src;
+                                if (oldSrc.includes('autoplay=true')) currentPlayingIframe.src = oldSrc.replace('autoplay=true', 'autoplay=false');
+                            }
+                            let newSrc = iframe.src || iframe.getAttribute('data-src');
+                            if (newSrc && !newSrc.includes('autoplay=true')) {
+                                iframe.src = newSrc.replace('autoplay=false', 'autoplay=true') + "&muted=true";
+                            }
+                            currentPlayingIframe = iframe;
+                        }
                     }
                 }
             });
