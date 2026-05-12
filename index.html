@@ -16,6 +16,7 @@
             --card-bg: #141419;
             --primary: #9146FF; 
             --primary-light: #a970ff;
+            --neon-blue: #00f3ff;
             --text-main: #ffffff;
             --text-muted: #a0a0ab;
             --border-color: #26262c;
@@ -35,29 +36,17 @@
             background: var(--bg-color); overflow: hidden; box-shadow: 0 0 20px rgba(0,0,0,0.8);
         }
 
-        /* STYLIZED MIKOTOK LOGO */
         .cyber-logo {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            line-height: 1;
-            filter: drop-shadow(0 0 10px var(--primary));
-            user-select: none;
+            display: flex; flex-direction: column; align-items: center; justify-content: center;
+            line-height: 0.75; user-select: none; filter: drop-shadow(0 0 8px rgba(145, 70, 255, 0.5));
         }
         .cyber-miko {
-            font-family: 'Permanent Marker', cursive;
-            font-size: 32px;
-            color: #fff;
-            transform: rotate(-2deg);
-            text-shadow: 2px 2px 0px var(--primary);
+            font-family: 'Permanent Marker', cursive; font-size: 34px; color: #fff;
+            transform: rotate(-4deg) translateX(-15px); text-shadow: 2px 2px 0px var(--neon-blue); z-index: 2;
         }
         .cyber-tok {
-            font-family: 'Permanent Marker', cursive;
-            font-size: 40px;
-            color: #b06fff;
-            transform: skewX(-5deg);
-            text-shadow: 2px 2px 0px #4a008a;
-            margin-left: -5px;
+            font-family: 'Permanent Marker', cursive; font-size: 54px; color: #9146FF;
+            transform: skewX(-10deg) translateY(-5px); text-shadow: 3px 3px 0px #220044, 0 0 15px rgba(145, 70, 255, 0.8); z-index: 1;
         }
 
         #splash-screen {
@@ -66,18 +55,18 @@
             z-index: 2000; transition: opacity 0.5s ease;
         }
         .splash-logo .cyber-miko { font-size: 52px; }
-        .splash-logo .cyber-tok { font-size: 65px; }
+        .splash-logo .cyber-tok { font-size: 85px; }
 
-        .progress-bar { width: 150px; height: 4px; background: #222; border-radius: 4px; margin-top: 40px; overflow: hidden; position: relative; }
+        .progress-bar { width: 150px; height: 4px; background: #222; border-radius: 4px; margin-top: 50px; overflow: hidden; position: relative; }
         .progress-fill { position: absolute; left: 0; top: 0; height: 100%; width: 50%; background: var(--primary); border-radius: 4px; animation: load 1.5s infinite ease-in-out; }
         @keyframes load { 0% { left: -50%; } 100% { left: 100%; } }
 
         .app-header {
             position: absolute; top: 0; left: 0; width: 100%; background: var(--bg-color); z-index: 100;
-            padding: 50px 20px 10px; display: flex; justify-content: center; align-items: center; border-bottom: 1px solid var(--border-color);
+            padding: 55px 20px 10px; display: flex; justify-content: center; align-items: center; border-bottom: 1px solid var(--border-color);
         }
 
-        #feed { height: 100%; width: 100%; overflow-y: auto; padding: 130px 15px 90px; }
+        #feed { height: 100%; width: 100%; overflow-y: auto; padding: 140px 15px 90px; }
         #feed::-webkit-scrollbar { display: none; }
 
         .card { background: var(--card-bg); border-radius: 16px; padding: 15px; margin-bottom: 20px; border: 1px solid rgba(255,255,255,0.03); position: relative; }
@@ -104,20 +93,19 @@
         .nav-item { display: flex; flex-direction: column; align-items: center; width: 60px; color: var(--text-muted); font-size: 10px; gap: 4px; cursor: pointer; }
         .nav-item.active { color: var(--primary-light); }
         
-        /* M-LENS UPLOAD BUTTON */
         .nav-fab {
-            width: 58px; height: 58px; border-radius: 50%;
-            background: #1a1a20;
+            width: 70px; height: 44px; border-radius: 12px; background: #1a1a20;
             display: flex; align-items: center; justify-content: center; transform: translateY(-15px);
             border: 2px solid #333; box-shadow: 0 0 15px rgba(145, 70, 255, 0.4);
-            position: relative; overflow: hidden;
+            position: relative; overflow: visible;
         }
-        .fab-glow { position: absolute; inset: 0; background: radial-gradient(circle, rgba(145, 70, 255, 0.3) 0%, transparent 70%); }
-        .fab-m { font-family: 'Permanent Marker', cursive; font-size: 24px; color: #fff; z-index: 2; text-shadow: 0 0 10px var(--primary-light); }
+        .nav-fab::before { content: ''; position: absolute; top: 50%; left: -5px; right: -5px; height: 10px; background: #222; z-index: -1; transform: translateY(-50%); border-radius: 2px; }
+        .fab-lens { width: 32px; height: 32px; border-radius: 50%; background: radial-gradient(circle, #a970ff 0%, #4a008a 100%); display: flex; align-items: center; justify-content: center; border: 2px solid #fff; box-shadow: 0 0 10px #a970ff; }
+        .fab-m { font-family: 'Permanent Marker', cursive; font-size: 18px; color: #fff; text-shadow: 0 0 5px #fff; }
 
-        /* MODALS */
         #login-modal, #add-modal { position: absolute; inset: 0; background: rgba(0,0,0,0.8); z-index: 1500; display: none; flex-direction: column; justify-content: flex-end; backdrop-filter: blur(5px); }
         .modal-content { background: var(--card-bg); border-radius: 20px 20px 0 0; padding: 25px 20px 40px; transform: translateY(100%); transition: transform 0.3s; border-top: 1px solid var(--border-color); }
+        
         .input-wrapper { position: relative; width: 100%; margin-bottom: 12px; }
         .input-box { width: 100%; background: #1c1c22; border: 1px solid var(--border-color); color: white; padding: 12px; border-radius: 8px; outline: none; }
         .input-box-pass { padding-right: 45px; }
@@ -125,25 +113,18 @@
         .btn-post { width: 100%; background: var(--primary); color: white; border: none; padding: 14px; border-radius: 8px; font-weight: 600; cursor: pointer; }
 
         #toast { position: absolute; top: 100px; left: 50%; transform: translateX(-50%); background: var(--primary); color: white; padding: 10px 20px; border-radius: 8px; z-index: 9999; display: none; }
-        .empty-state { display: flex; flex-direction: column; align-items: center; justify-content: center; height: 50vh; color: var(--text-muted); text-align: center; }
     </style>
 </head>
 <body>
 
     <div id="app-container">
         <div id="splash-screen">
-            <div class="cyber-logo splash-logo">
-                <div class="cyber-miko">Miko</div>
-                <div class="cyber-tok">Tok</div>
-            </div>
+            <div class="cyber-logo splash-logo"><div class="cyber-miko">Miko</div><div class="cyber-tok">Tok</div></div>
             <div class="progress-bar"><div class="progress-fill"></div></div>
         </div>
 
         <div class="app-header">
-            <div class="cyber-logo">
-                <div class="cyber-miko">Miko</div>
-                <div class="cyber-tok">Tok</div>
-            </div>
+            <div class="cyber-logo"><div class="cyber-miko">Miko</div><div class="cyber-tok">Tok</div></div>
         </div>
 
         <div id="toast"></div>
@@ -151,15 +132,26 @@
 
         <div id="login-modal">
             <div class="modal-content" id="login-panel">
-                <div style="font-size:18px; font-weight:700; color:white; margin-bottom:15px; text-align:center;">Login / Registration</div>
-                <div class="input-wrapper"><input type="text" id="login-nick" class="input-box" placeholder="Nickname"></div>
-                <div class="input-wrapper">
-                    <input type="password" id="login-pass" class="input-box input-box-pass" placeholder="Password">
-                    <span class="material-symbols-rounded toggle-pass" onclick="togglePassword()">visibility</span>
+                <div id="login-view">
+                    <div style="font-size:18px; font-weight:700; color:white; margin-bottom:15px; text-align:center;">Login / Registration</div>
+                    <div class="input-wrapper"><input type="text" id="login-nick" class="input-box" placeholder="Nickname"></div>
+                    <div class="input-wrapper">
+                        <input type="password" id="login-pass" class="input-box input-box-pass" placeholder="Password">
+                        <span class="material-symbols-rounded toggle-pass" onclick="togglePassword()">visibility</span>
+                    </div>
+                    <div style="display:flex; gap:10px; margin-top:10px;">
+                        <button style="flex:1; background:#222; color:white; border:none; border-radius:8px;" onclick="closeLogin()">Cancel</button>
+                        <button class="btn-post" style="flex:1;" onclick="handleLogin()">Login</button>
+                    </div>
                 </div>
-                <div style="display:flex; gap:10px; margin-top:10px;">
-                    <button style="flex:1; background:#222; color:white; border:none; border-radius:8px;" onclick="closeLogin()">Cancel</button>
-                    <button class="btn-post" style="flex:1;" onclick="handleLogin()">Login</button>
+                <div id="profile-view" style="display:none; text-align:center;">
+                    <div id="profile-avatar-container"></div>
+                    <h2 id="profile-name" style="margin: 10px 0;"></h2>
+                    <p style="color:var(--text-muted); font-size:12px; margin-bottom:20px;">Session active for 1 hour</p>
+                    <div style="display:flex; gap:10px;">
+                        <button style="flex:1; background:#222; color:white; border:none; border-radius:8px;" onclick="closeLogin()">Close</button>
+                        <button class="btn-post" style="flex:1; background:var(--danger);" onclick="logout()">Logout</button>
+                    </div>
                 </div>
             </div>
         </div>
@@ -179,7 +171,7 @@
         <div class="bottom-nav">
             <div class="nav-item active" id="nav-home" onclick="switchTab('home')"><span class="material-symbols-rounded">home</span>Home</div>
             <div class="nav-item" id="nav-community" onclick="switchTab('community')"><span class="material-symbols-rounded">forum</span>Community</div>
-            <div class="nav-fab" onclick="openModal()"><div class="fab-glow"></div><div class="fab-m">M</div></div>
+            <div class="nav-fab" onclick="openModal()"><div class="fab-lens"><div class="fab-m">M</div></div></div>
             <div class="nav-item" id="nav-clips" onclick="switchTab('clips')"><span class="material-symbols-rounded">favorite</span>Favorites</div>
             <div class="nav-item" id="nav-login" onclick="openLogin()"><span class="material-symbols-rounded">account_circle</span><span id="login-text">Login</span></div>
         </div>
@@ -194,7 +186,7 @@
         const parentDomain = window.location.hostname;
         let currentTab = 'home';
         let isAdmin = false;
-        let currentUser = localStorage.getItem('miko_user') || null;
+        let currentUser = null;
         let globalData = { clips: [], posts: [], users: [] };
 
         function generateAvatar(name) {
@@ -203,72 +195,101 @@
             return `data:image/svg+xml;base64,${btoa(svg)}`;
         }
 
+        function checkSession() {
+            const session = JSON.parse(localStorage.getItem('miko_session'));
+            if (session) {
+                const now = new Date().getTime();
+                if (now - session.timestamp < 3600000) { // 1 hour
+                    currentUser = session.user;
+                    if (currentUser === "Admin") isAdmin = true;
+                    document.getElementById('login-text').innerText = currentUser;
+                    return true;
+                }
+            }
+            logout(false);
+            return false;
+        }
+
         async function loadData() {
+            checkSession();
             try {
                 const res = await fetch(`https://api.jsonbin.io/v3/b/${BIN_ID}/latest`, { headers: { 'X-Master-Key': MASTER_KEY, 'X-Bin-Meta': 'false' }});
                 globalData = await res.json();
                 if(!globalData.users) globalData.users = [];
-                if(currentUser) document.getElementById('login-text').innerText = currentUser;
                 render();
             } catch (e) { showToast("Cloud Error"); }
             finally { setTimeout(() => { document.getElementById('splash-screen').style.opacity = '0'; setTimeout(() => document.getElementById('splash-screen').style.display = 'none', 500); }, 1500); }
         }
 
-        async function sync() { await fetch(`https://api.jsonbin.io/v3/b/${BIN_ID}`, { method: 'PUT', headers: { 'Content-Type': 'application/json', 'X-Master-Key': MASTER_KEY }, body: JSON.stringify(globalData) }); }
-
-        function openLogin() { document.getElementById('login-modal').style.display='flex'; setTimeout(()=>document.getElementById('login-panel').style.transform='translateY(0)', 10); }
-        function closeLogin() { document.getElementById('login-panel').style.transform='translateY(100%)'; setTimeout(()=>document.getElementById('login-modal').style.display='none', 300); }
-
-        function togglePassword() {
-            const passInput = document.getElementById('login-pass');
-            const icon = document.querySelector('.toggle-pass');
-            if (passInput.type === 'password') {
-                passInput.type = 'text';
-                icon.innerText = 'visibility_off';
+        function openLogin() {
+            const isLogged = checkSession();
+            const loginView = document.getElementById('login-view');
+            const profileView = document.getElementById('profile-view');
+            
+            if (isLogged) {
+                loginView.style.display = 'none';
+                profileView.style.display = 'block';
+                document.getElementById('profile-name').innerText = currentUser;
+                document.getElementById('profile-avatar-container').innerHTML = `<img src="${generateAvatar(currentUser)}" style="width:80px; height:80px; border-radius:50%; border:3px solid var(--primary);">`;
             } else {
-                passInput.type = 'password';
-                icon.innerText = 'visibility';
+                loginView.style.display = 'block';
+                profileView.style.display = 'none';
             }
+            
+            document.getElementById('login-modal').style.display='flex';
+            setTimeout(()=>document.getElementById('login-panel').style.transform='translateY(0)', 10);
+        }
+
+        function logout(refresh = true) {
+            localStorage.removeItem('miko_session');
+            currentUser = null;
+            isAdmin = false;
+            document.getElementById('login-text').innerText = "Login";
+            if (refresh) { closeLogin(); render(); }
         }
 
         async function handleLogin() {
             const nick = document.getElementById('login-nick').value.trim();
             const pass = document.getElementById('login-pass').value.trim();
             if(!nick || !pass) { showToast("Enter Nickname & Password!"); return; }
-            if(nick === ADMIN_USER && pass === ADMIN_PASS) { isAdmin = true; currentUser = "Admin"; showToast("Admin Mode!"); closeLogin(); render(); return; }
-            const existingUser = globalData.users.find(u => u.nick.toLowerCase() === nick.toLowerCase());
-            if (existingUser) {
-                if (existingUser.pass === pass) {
-                    currentUser = existingUser.nick;
-                    localStorage.setItem('miko_user', currentUser);
-                    document.getElementById('login-text').innerText = currentUser;
-                    showToast("Welcome, " + currentUser);
-                    closeLogin(); render();
-                } else { showToast("Nickname taken/Wrong pass!"); }
+            
+            let loggedUser = null;
+
+            if(nick === ADMIN_USER && pass === ADMIN_PASS) { 
+                isAdmin = true; loggedUser = "Admin"; 
             } else {
-                globalData.users.push({ nick: nick, pass: pass });
-                currentUser = nick;
-                localStorage.setItem('miko_user', nick);
-                document.getElementById('login-text').innerText = nick;
-                showToast("Nickname registered!");
-                await sync(); closeLogin(); render();
+                const existing = globalData.users.find(u => u.nick.toLowerCase() === nick.toLowerCase());
+                if (existing) {
+                    if (existing.pass === pass) { loggedUser = existing.nick; } 
+                    else { showToast("Wrong password!"); return; }
+                } else {
+                    globalData.users.push({ nick, pass });
+                    loggedUser = nick;
+                    await sync();
+                }
+            }
+
+            if (loggedUser) {
+                currentUser = loggedUser;
+                localStorage.setItem('miko_session', JSON.stringify({ user: currentUser, timestamp: new Date().getTime() }));
+                document.getElementById('login-text').innerText = currentUser;
+                showToast("Logged in!");
+                closeLogin(); render();
             }
         }
 
-        async function deleteItem(type, id) {
-            if (!confirm("Confirm Delete?")) return;
-            if (type === 'clip') globalData.clips = globalData.clips.filter(c => c.id !== id);
-            else globalData.posts = globalData.posts.filter(p => p.id !== id);
-            await sync(); render();
+        function togglePassword() {
+            const p = document.getElementById('login-pass');
+            const i = document.querySelector('.toggle-pass');
+            p.type = p.type === 'password' ? 'text' : 'password';
+            i.innerText = p.type === 'password' ? 'visibility' : 'visibility_off';
         }
 
-        function switchTab(t) {
-            currentTab = t;
-            document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
-            document.getElementById(`nav-${t}`).classList.add('active');
-            render();
-        }
-
+        // Shared Logic
+        async function sync() { await fetch(`https://api.jsonbin.io/v3/b/${BIN_ID}`, { method: 'PUT', headers: { 'Content-Type': 'application/json', 'X-Master-Key': MASTER_KEY }, body: JSON.stringify(globalData) }); }
+        function closeLogin() { document.getElementById('login-panel').style.transform='translateY(100%)'; setTimeout(()=>document.getElementById('login-modal').style.display='none', 300); }
+        async function deleteItem(type, id) { if (!confirm("Confirm Delete?")) return; if (type === 'clip') globalData.clips = globalData.clips.filter(c => c.id !== id); else globalData.posts = globalData.posts.filter(p => p.id !== id); await sync(); render(); }
+        function switchTab(t) { currentTab = t; document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active')); document.getElementById(`nav-${t}`).classList.add('active'); render(); }
         function render() {
             const f = document.getElementById('feed'); f.innerHTML = '';
             if (currentTab === 'community') renderCommunity(f);
@@ -278,9 +299,7 @@
                 renderClips(f, items);
             }
         }
-
         function renderClips(f, items) {
-            if (!items.length) { f.innerHTML = '<div class="empty-state"><h2>Feed is empty</h2></div>'; return; }
             items.forEach(c => {
                 const div = document.createElement('div'); div.className = 'card';
                 const hasLiked = (c.likedBy || []).includes(currentUser);
@@ -289,15 +308,10 @@
                     <div class="card-header"><img src="${generateAvatar(c.addedBy)}" class="card-avatar"><div class="meta-name">${c.addedBy}</div></div>
                     <div class="video-container"><iframe src="https://clips.twitch.tv/embed?clip=${c.id}&parent=${parentDomain}&autoplay=false"></iframe></div>
                     <div class="clip-title">${c.title}</div>
-                    <div class="card-actions">
-                        <div class="action-item ${hasLiked?'liked':''}" onclick="toggleLike('clip', '${c.id}')">
-                            <span class="material-symbols-rounded">favorite</span> ${(c.likedBy || []).length}
-                        </div>
-                    </div>`;
+                    <div class="card-actions"><div class="action-item ${hasLiked?'liked':''}" onclick="toggleLike('clip', '${c.id}')"><span class="material-symbols-rounded">favorite</span> ${(c.likedBy || []).length}</div></div>`;
                 f.appendChild(div);
             });
         }
-
         function renderCommunity(f) {
             const box = document.createElement('div'); box.className = 'card';
             box.innerHTML = `<textarea id="p-text" class="input-box" style="height:60px" placeholder="Discuss..."></textarea><button class="btn-post" onclick="submitPost()">Post</button>`;
@@ -309,41 +323,13 @@
                     ${isAdmin ? `<div class="admin-del" style="display:block" onclick="deleteItem('post', ${p.id})"><span class="material-symbols-rounded">delete</span></div>` : ''}
                     <div class="card-header"><img src="${generateAvatar(p.author)}" class="card-avatar"><div class="meta-name">${p.author}</div></div>
                     <div class="post-text">${p.text}</div>
-                    <div class="card-actions">
-                        <div class="action-item ${hasLiked?'liked':''}" onclick="toggleLike('post', '${p.id}')">
-                            <span class="material-symbols-rounded">favorite</span> ${(p.likedBy || []).length}
-                        </div>
-                    </div>`;
+                    <div class="card-actions"><div class="action-item ${hasLiked?'liked':''}" onclick="toggleLike('post', '${p.id}')"><span class="material-symbols-rounded">favorite</span> ${(p.likedBy || []).length}</div></div>`;
                 f.appendChild(div);
             });
         }
-
-        async function toggleLike(type, id) {
-            if(!currentUser) { showToast("Login to like!"); openLogin(); return; }
-            const list = type === 'clip' ? globalData.clips : globalData.posts;
-            const item = list.find(i => i.id.toString() === id.toString());
-            if(!item.likedBy) item.likedBy = [];
-            if (item.likedBy.includes(currentUser)) item.likedBy = item.likedBy.filter(u => u !== currentUser);
-            else item.likedBy.push(currentUser);
-            render(); await sync();
-        }
-
-        async function submitClip() {
-            if(!currentUser) { showToast("Login first!"); openLogin(); return; }
-            const url = document.getElementById('clip-url').value;
-            if (!url.includes('twitch')) return;
-            const id = url.split('/').pop().split('?')[0];
-            globalData.clips.unshift({ id, title: document.getElementById('clip-title').value || 'Clip', addedBy: currentUser, likedBy: [] });
-            closeModal(); await sync(); render();
-        }
-
-        async function submitPost() {
-            if(!currentUser) { showToast("Login first!"); openLogin(); return; }
-            const text = document.getElementById('p-text').value; if (!text) return;
-            globalData.posts.unshift({ id: Date.now(), author: currentUser, text, likedBy: [] });
-            await sync(); render();
-        }
-
+        async function toggleLike(type, id) { if(!checkSession()) { showToast("Login to like!"); openLogin(); return; } const list = type === 'clip' ? globalData.clips : globalData.posts; const item = list.find(i => i.id.toString() === id.toString()); if(!item.likedBy) item.likedBy = []; if (item.likedBy.includes(currentUser)) item.likedBy = item.likedBy.filter(u => u !== currentUser); else item.likedBy.push(currentUser); render(); await sync(); }
+        async function submitClip() { if(!checkSession()) { showToast("Login first!"); openLogin(); return; } const url = document.getElementById('clip-url').value; if (!url.includes('twitch')) return; const id = url.split('/').pop().split('?')[0]; globalData.clips.unshift({ id, title: document.getElementById('clip-title').value || 'Clip', addedBy: currentUser, likedBy: [] }); closeModal(); await sync(); render(); }
+        async function submitPost() { if(!checkSession()) { showToast("Login first!"); openLogin(); return; } const text = document.getElementById('p-text').value; if (!text) return; globalData.posts.unshift({ id: Date.now(), author: currentUser, text, likedBy: [] }); await sync(); render(); }
         function openModal() { document.getElementById('add-modal').style.display='flex'; setTimeout(()=>document.getElementById('modal-panel').style.transform='translateY(0)', 10); }
         function closeModal() { document.getElementById('modal-panel').style.transform='translateY(100%)'; setTimeout(()=>document.getElementById('add-modal').style.display='none', 300); }
         function showToast(m) { const t=document.getElementById('toast'); t.innerText=m; t.style.display='block'; setTimeout(()=>t.style.display='none', 2000); }
