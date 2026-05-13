@@ -48,12 +48,12 @@
         #live-player-box { background: linear-gradient(160deg, #160b24 0%, #0a0512 100%); border-radius: 16px; padding: 16px; margin-bottom: 25px; border: 1px solid rgba(145, 70, 255, 0.3); position: relative; }
         
         /* Badge Styles */
-        .status-badge-pinned { position: absolute; top: 12px; left: 12px; z-index: 10; padding: 4px 10px; border-radius: 6px; font-size: 10px; font-weight: 900; text-transform: uppercase; display: flex; align-items: center; gap: 6px; box-shadow: 0 4px 10px rgba(0,0,0,0.5); color: white; }
+        .status-badge-pinned { position: absolute; top: 12px; left: 12px; z-index: 10; padding: 4px 10px; border-radius: 6px; font-size: 10px; font-weight: 900; text-transform: uppercase; display: flex; align-items: center; gap: 6px; box-shadow: 0 4px 10px rgba(0,0,0,0.5); color: white; pointer-events: none; }
         .status-badge-pinned.live { background: var(--danger); }
         .status-badge-pinned.vod { background: var(--primary); } 
         
         .pulse-dot { width: 6px; height: 6px; border-radius: 50%; animation: heartbeat 1.5s infinite; background: white; }
-        .pinned-badge { position: absolute; top: 12px; right: 12px; z-index: 10; background: rgba(0,0,0,0.6); border: 1px solid rgba(255,255,255,0.1); width: 26px; height: 26px; border-radius: 50%; display: flex; align-items: center; justify-content: center; box-shadow: 0 4px 10px rgba(0,0,0,0.5); color: white; }
+        .pinned-badge { position: absolute; top: 12px; right: 12px; z-index: 10; background: rgba(0,0,0,0.6); border: 1px solid rgba(255,255,255,0.1); width: 26px; height: 26px; border-radius: 50%; display: flex; align-items: center; justify-content: center; box-shadow: 0 4px 10px rgba(0,0,0,0.5); color: white; pointer-events: none; }
 
         .card { background: var(--card-bg); border-radius: 12px; padding: 12px; margin-bottom: 16px; border: 1px solid var(--border-color); }
         .thumbnail-wrapper { width: 100%; border-radius: 8px; overflow: hidden; aspect-ratio: 16/9; background: #000; position: relative; cursor: pointer; }
@@ -127,22 +127,22 @@
                 </div>
 
                 <div id="live-player-box">
-                    <!-- Badge Logic -->
-                    <div class="status-badge-pinned live" v-if="isLive">
-                        <span class="pulse-dot"></span>
-                        <span>LIVE</span>
-                    </div>
-                    <div class="status-badge-pinned vod" v-else-if="latestVodId">
-                        <span class="pulse-dot"></span>
-                        <span>LATEST VOD</span>
-                    </div>
+                    <div style="width:100%; aspect-ratio:16/9; border-radius:10px; overflow:hidden; background:#000; position: relative;">
+                        <!-- Badges moved inside the video container -->
+                        <div class="status-badge-pinned live" v-if="isLive">
+                            <span class="pulse-dot"></span>
+                            <span>LIVE</span>
+                        </div>
+                        <div class="status-badge-pinned vod" v-else-if="latestVodId">
+                            <span class="pulse-dot"></span>
+                            <span>LATEST VOD</span>
+                        </div>
 
-                    <div class="pinned-badge">
-                        <span class="material-symbols-rounded" style="font-size:14px;">push_pin</span>
-                    </div>
+                        <div class="pinned-badge">
+                            <span class="material-symbols-rounded" style="font-size:14px;">push_pin</span>
+                        </div>
 
-                    <!-- Smart Iframe Logic -->
-                    <div style="width:100%; aspect-ratio:16/9; border-radius:10px; overflow:hidden; background:#000;">
+                        <!-- Smart Iframe Logic -->
                         <!-- Plays Live if active. Unmounts dynamically if a Clip is opened to prevent audio clashing -->
                         <iframe 
                             v-if="isLive && !activeClip"
@@ -184,14 +184,17 @@
             </div>
 
             <div id="feed-scroll" v-if="currentTab === 'community'">
-                <div class="card">
+                <div class="card" v-for="(post, index) in discordFeed" :key="index">
                     <div style="display:flex; align-items:center; margin-bottom:12px;">
-                        <div style="width:38px; height:38px; border-radius:50%; background:var(--discord); display:flex; align-items:center; justify-content:center; margin-right:12px;">
+                        <div style="width:38px; height:38px; border-radius:50%; background:var(--discord); display:flex; align-items:center; justify-content:center; margin-right:12px; flex-shrink: 0;">
                             <svg viewBox="0 0 127 96" style="width:22px; fill:white;"><path d="M107.7,8.07A105,105,0,0,0,81.47,0a72,72,0,0,0-3.36,6.83,97,97,0,0,0-49,0,72,72,0,0,0-3.36-6.83A105,105,0,0,0,19.39,8.09C2.71,32.65-1.82,56.6.48,80.1a105,105,0,0,0,32.19,16.18,77,77,0,0,0,6.89-11.11,64,64,0,0,1-10.85-5.18,75,75,0,0,0,64.32,0c.87.71,1.76,1.39,2.66,2a64,64,0,0,1-10.87,5.19,77,77,0,0,0,6.89,11.10,105,105,0,0,0,32.19-16.14c2.72-27.00-4.55-50.87-19.40-72.03ZM42.45,65.69C36.18,65.69,31.00,60,31.00,53s5.12-12.67,11.45-12.67S54,46,54,53s-5.17,12.69-11.55,12.69Zm42.24,0C78.41,65.69,73.25,60,73.25,53s5.12-12.67,11.44-12.67S96.20,46,96.20,53s-5.14,12.69-9.51,12.69Z"/></svg>
                         </div>
-                        <div><div style="font-weight:700; color:var(--discord);">Discord Feed</div><div style="font-size:10px; color:var(--text-muted);">Pinned</div></div>
+                        <div>
+                            <div style="font-weight:700; color:var(--discord);">{{ post.author || 'Discord Announcement' }}</div>
+                            <div style="font-size:10px; color:var(--text-muted);">{{ formatDateTime(post.created_at) }}</div>
+                        </div>
                     </div>
-                    <div style="font-size:14px;">Test text placeholder</div>
+                    <div style="font-size:14px; line-height: 1.5; white-space: pre-wrap; word-wrap: break-word;">{{ post.content }}</div>
                 </div>
             </div>
         </div>
@@ -291,7 +294,7 @@
 
         createApp({
             setup() {
-                const splashVisible = ref(true), splashOpacity = ref(1), currentTab = ref('home'), clips = ref([]), activeClip = ref(null), modals = ref({profile: false}), isSyncing = ref(false), isLive = ref(false), currentUser = ref(null), loginEmail = ref(''), loginPass = ref(''), toast = ref({visible: false, message: ''});
+                const splashVisible = ref(true), splashOpacity = ref(1), currentTab = ref('home'), clips = ref([]), discordFeed = ref([]), activeClip = ref(null), modals = ref({profile: false}), isSyncing = ref(false), isLive = ref(false), currentUser = ref(null), loginEmail = ref(''), loginPass = ref(''), toast = ref({visible: false, message: ''});
                 const stats = ref({ visitors: 0 }), apiHealthy = ref(false), apiConfig = ref({ cid: localStorage.getItem('twitch_client_id') || '', tkn: localStorage.getItem('twitch_access_token') || '' });
                 const latestVodId = ref(null), hostname = window.location.hostname || 'meowoccino.github.io';
 
@@ -306,6 +309,17 @@
                     clips.value = c || [];
                     const { count } = await sbClient.from('analytics').select('*', { count: 'exact', head: true });
                     stats.value.visitors = count || 0;
+                    
+                    const { data: f, error: fErr } = await sbClient.from('discord_feed').select('*').order('created_at', { ascending: false }).limit(50);
+                    if (!fErr && f && f.length > 0) {
+                        discordFeed.value = f;
+                    } else {
+                        discordFeed.value = [{ 
+                            author: 'System Placeholder', 
+                            content: 'Your Community feed is ready! Connect a Discord Webhook to the `discord_feed` table in your Supabase database to start displaying live announcements here automatically.', 
+                            created_at: new Date().toISOString() 
+                        }];
+                    }
                 };
 
                 const checkLiveStatusPublic = async () => {
@@ -417,7 +431,7 @@
                     setTimeout(() => { splashOpacity.value = 0; setTimeout(() => splashVisible.value = false, 400); }, 1500); 
                 });
 
-                return { hostname, splashVisible, splashOpacity, currentTab, clips, activeClip, modals, isSyncing, isLive, toast, logoSvg, runSync, currentUser, loginEmail, loginPass, handleLogin, handleLogout, openAdmin, closeAdmin, apiHealthy, apiConfig, stats, saveKeys, wipeClips, modalContentEl, ptrHeight, handleFeedTouchStart, handleFeedTouchMove, handleFeedTouchEnd, handleModalTouchStart, handleModalTouchMove, handleModalTouchEnd, latestVodId, formatDate: (d) => new Date(d).toLocaleDateString([], {month:'short', day:'numeric'}), formatViews: (v) => v ? v.toLocaleString() : '0' };
+                return { hostname, splashVisible, splashOpacity, currentTab, clips, discordFeed, activeClip, modals, isSyncing, isLive, toast, logoSvg, runSync, currentUser, loginEmail, loginPass, handleLogin, handleLogout, openAdmin, closeAdmin, apiHealthy, apiConfig, stats, saveKeys, wipeClips, modalContentEl, ptrHeight, handleFeedTouchStart, handleFeedTouchMove, handleFeedTouchEnd, handleModalTouchStart, handleModalTouchMove, handleModalTouchEnd, latestVodId, formatDate: (d) => new Date(d).toLocaleDateString([], {month:'short', day:'numeric'}), formatViews: (v) => v ? v.toLocaleString() : '0', formatDateTime: (d) => new Date(d).toLocaleString([], {month:'short', day:'numeric', hour:'2-digit', minute:'2-digit'}) };
             }
         }).mount('#app-container');
     </script>
