@@ -51,7 +51,7 @@
         .header-logo { width: 28px; height: 28px; display: flex; align-items: center; justify-content: center; }
         .simple-logo { flex-grow: 1; display: flex; align-items: center; justify-content: center; font-size: 24px; font-weight: 800; letter-spacing: -0.5px; }
 
-        /* NEW: Instagram Story Ring Styles */
+        /* Instagram Story Ring Styles */
         .story-status-wrapper {
             position: relative;
             display: flex;
@@ -84,7 +84,7 @@
             object-fit: cover;
             transition: opacity 0.3s ease;
         }
-        .story-ring.live .story-avatar { border: 2px solid #000; } /* Cuts out a gap between the image and ring */
+        .story-ring.live .story-avatar { border: 2px solid #000; } 
         .story-ring.offline .story-avatar { opacity: 0.4; border: 2px solid var(--offline-gray); }
         .live-badge {
             position: absolute;
@@ -192,8 +192,8 @@
                         <div class="banner-content">
                             <div class="live-label">
                                 <div class="status-pill">
-                                    <span class="status-dot" style="background: var(--danger); box-shadow: 0 0 10px var(--danger); animation: heartbeatLive 1.8s infinite ease-in-out;"></span> 
-                                    <span class="status-tag">Live</span>
+                                    <span class="status-dot" :class="{ active: isLive }"></span> 
+                                    <span class="status-tag">{{ isLive ? 'Live' : 'Offline' }}</span>
                                 </div>
                                 <span class="pinned-tag">Featured</span>
                             </div>
@@ -353,11 +353,7 @@
 
         createApp({
             setup() {
-                const splashVisible = ref(true), splashOpacity = ref(1), currentTab = ref('home');
-                
-                // I have HARDCODED isLive to true here so you can test the new Story Ring!
-                const isLive = ref(true); 
-
+                const splashVisible = ref(true), splashOpacity = ref(1), currentTab = ref('home'), isLive = ref(false);
                 const currentUser = ref(localStorage.getItem('miko_user')), loginNick = ref(''), loginPass = ref('');
                 const isAdmin = computed(() => currentUser.value === 'tomato_24');
                 const posts = ref([]), clips = ref([]), modals = ref({ profile: false }), activeClip = ref(null), isSyncing = ref(false), host = window.location.hostname || "localhost";
