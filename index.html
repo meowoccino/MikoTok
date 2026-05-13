@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
     <meta name="theme-color" content="#050505">
-    <title>MikoTok Premium</title>
+    <title>MikoTok Private</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&family=Outfit:wght@800;900&family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@24,400,1,0" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="https://unpkg.com/vue@3/dist/vue.global.prod.js"></script>
@@ -29,22 +29,29 @@
         #app-container { width: 100%; max-width: 540px; height: 100%; max-height: 100dvh; position: relative; background: var(--bg-color); overflow: hidden; display: flex; flex-direction: column; box-shadow: 0 0 50px rgba(0,0,0,0.8); transition: background 0.3s ease; }
         [v-cloak] { display: none !important; }
 
+        /* Smooth Entrance Animations */
+        @keyframes fadeInUp { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        .stagger-item { animation: fadeInUp 0.4s ease forwards; opacity: 0; }
+
+        /* Global App Lock */
+        #app-lock { position: absolute; inset: 0; z-index: 10000; background: var(--bg-color); display: flex; flex-direction: column; justify-content: center; padding: 40px; transition: opacity 0.3s; }
+
         /* Splash Screen */
         #splash-screen { position: absolute; inset: 0; background: var(--bg-color); display: flex; flex-direction: column; align-items: center; justify-content: center; z-index: 9999; transition: opacity 0.4s ease-out; will-change: opacity; }
         .progress-bar { width: 180px; height: 3px; background: rgba(145,70,255,0.2); border-radius: 10px; overflow: hidden; margin-top: 20px; position: relative; transform: translateZ(0); }
         .progress-fill { position: absolute; left: 0; top: 0; height: 100%; width: 50%; background: linear-gradient(90deg, transparent, var(--primary-light), var(--primary)); animation: load 1s infinite linear; will-change: transform; transform-origin: left; }
         @keyframes load { 0% { transform: translateX(-100%); } 100% { transform: translateX(200%); } }
-        .gradient-text { display: inline-block; background: linear-gradient(135deg, var(--text-main) 30%, var(--primary) 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; font-family: 'Outfit', sans-serif; }
-
-        /* Header */
+        
+        /* Header - Forced White Text for contrast against dark video overlays */
+        .gradient-text { display: inline-block; background: linear-gradient(135deg, #ffffff 30%, var(--primary) 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; font-family: 'Outfit', sans-serif; }
         .app-header { width: 100%; padding: 45px 20px 15px; display: flex; align-items: center; justify-content: space-between; background: transparent; z-index: 100; position: absolute; top: 0; left: 0; background: linear-gradient(to bottom, rgba(0,0,0,0.7) 0%, transparent 100%); pointer-events: none; }
         .app-header > * { pointer-events: auto; }
         .header-status-wrapper { position: relative; width: 44px; height: 44px; display: flex; align-items: center; justify-content: center; text-decoration: none; }
         .story-ring { width: 42px; height: 42px; border-radius: 50%; padding: 2px; display: flex; align-items: center; justify-content: center; position: relative; }
         .story-ring.live { background: linear-gradient(45deg, var(--danger), var(--primary), #ff4685, var(--danger)); background-size: 300% 300%; animation: storyGlow 3s ease infinite; }
         .story-ring.offline { border: 2px solid var(--offline-gray); filter: grayscale(1); opacity: 0.7; }
-        .story-avatar { width: 100%; height: 100%; border-radius: 50%; object-fit: cover; border: 2px solid #000; }
-        
+        .story-avatar { width: 100%; height: 100%; border-radius: 50%; object-fit: cover; border: 2px solid #000; transition: transform 0.2s; }
+        .header-status-wrapper:active .story-avatar { transform: scale(0.92); }
         .header-badge { position: absolute; bottom: -4px; left: 50%; transform: translateX(-50%); font-size: 7px; font-weight: 900; padding: 2px 5px; border-radius: 4px; border: 1.5px solid #000; text-transform: uppercase; z-index: 10; display: flex; align-items: center; gap: 3px; }
         .header-badge.live { background: var(--danger); color: white; }
         .header-badge.offline { background: var(--offline-gray); color: #fff; }
@@ -54,8 +61,11 @@
         #feed-scroll { height: 100%; width: 100%; overflow-y: scroll; scroll-snap-type: y mandatory; scroll-behavior: smooth; touch-action: pan-y; }
         #feed-scroll::-webkit-scrollbar { display: none; }
         
-        .feed-snap-item { height: 100%; width: 100%; scroll-snap-align: center; scroll-snap-stop: always; display: flex; flex-direction: column; justify-content: center; position: relative; background: #000; }
+        .feed-snap-item { height: 100%; width: 100%; scroll-snap-align: center; scroll-snap-stop: always; display: flex; flex-direction: column; justify-content: center; position: relative; background: #000; overflow: hidden; }
         
+        /* Cinematic Blurred Background to kill black space */
+        .cinematic-blur { position: absolute; inset: -15%; background-size: cover; background-position: center; filter: blur(35px) brightness(0.35); z-index: 0; pointer-events: none; }
+
         /* Floating TikTok Metadata Overlay */
         .tiktok-metadata { position: absolute; bottom: 100px; left: 15px; z-index: 10; color: white; text-shadow: 0 2px 4px rgba(0,0,0,0.8); pointer-events: none; }
         .tiktok-metadata .author-info { display: flex; align-items: center; margin-bottom: 6px; }
@@ -79,7 +89,7 @@
         .premium-badge.vod .dot { background: var(--primary); color: var(--primary); animation: heartbeat 1.5s infinite; }
 
         /* Edge-to-Edge Animated Video Border */
-        .animated-border-wrap { position: relative; width: 100%; aspect-ratio: 16/9; background: #000; overflow: hidden; display: flex; justify-content: center; align-items: center; }
+        .animated-border-wrap { position: relative; width: 100%; aspect-ratio: 16/9; background: #000; overflow: hidden; display: flex; justify-content: center; align-items: center; z-index: 2; box-shadow: 0 10px 40px rgba(0,0,0,0.6); }
         .animated-border-wrap.active::before { content: ''; position: absolute; top: -50%; left: -50%; width: 200%; height: 200%; background: conic-gradient(from 0deg, transparent 60%, var(--primary) 80%, #ffffff 100%); animation: spin-border 4s linear infinite; z-index: 0; }
         .animated-border-inner { position: absolute; inset: 3px; background: #000; overflow: hidden; z-index: 1; }
         @keyframes spin-border { 100% { transform: rotate(360deg); } }
@@ -103,7 +113,8 @@
         /* Modals & Smart Transitions */
         .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.95); z-index: 1500; display: flex; flex-direction: column; justify-content: flex-end; align-items: center; opacity: 0; pointer-events: none; transition: opacity 0.3s ease; }
         .modal-overlay.open { opacity: 1; pointer-events: auto; }
-        .modal-content { background: var(--modal-bg); border-radius: 32px 32px 0 0; padding: 30px 24px 40px; border-top: 1px solid var(--border-color); width: 100%; max-width: 540px; align-self: center; overflow-y: auto; max-height: 90vh; touch-action: pan-y; overscroll-behavior-y: contain; margin-top: auto; transform: translateY(100vh); transition: transform 0.3s cubic-bezier(0.2, 0.8, 0.2, 1); will-change: transform; }
+        /* Added heavy padding-bottom to ensure admin panel scrolls completely past nav bar */
+        .modal-content { background: var(--modal-bg); border-radius: 32px 32px 0 0; padding: 30px 24px 80px; border-top: 1px solid var(--border-color); width: 100%; max-width: 540px; align-self: center; overflow-y: auto; max-height: 90vh; touch-action: pan-y; overscroll-behavior-y: contain; margin-top: auto; transform: translateY(100vh); transition: transform 0.3s cubic-bezier(0.2, 0.8, 0.2, 1); will-change: transform; }
         .modal-overlay.open .modal-content { transform: translateY(0); }
         .drag-handle { width: 40px; height: 6px; background: var(--offline-gray); border-radius: 10px; margin: -10px auto 25px; opacity: 0.6; }
 
@@ -136,49 +147,99 @@
     <div id="app-container" v-cloak>
         <div class="toast-popup" :class="{ show: toast.visible }">{{ toast.message }}</div>
 
-        <div id="splash-screen" v-if="splashVisible" :style="{ opacity: splashOpacity }">
-            <div style="width:120px;height:120px;margin-bottom:20px;" v-html="logoSvg('splash')"></div>
-            <div class="gradient-text" style="font-size: 40px;">MikoTok</div>
-            <div class="progress-bar"><div class="progress-fill"></div></div>
+        <!-- Global Private Access Gate -->
+        <div id="app-lock" v-if="isAuthReady && !currentUser">
+            <div style="text-align: center; margin-bottom: 40px;">
+                <div style="width:90px;height:90px;margin: 0 auto 20px;" v-html="logoSvg('login')"></div>
+                <h1 class="gradient-text" style="font-size: 36px; margin:0;">MikoTok</h1>
+                <p style="color: var(--primary); font-size: 11px; margin-top: 8px; font-weight: 800; text-transform: uppercase; letter-spacing: 1px;">Private App Access</p>
+            </div>
+            <input type="text" v-model="loginEmail" class="input-box" placeholder="Username">
+            <input type="password" v-model="loginPass" class="input-box" placeholder="Password" @keyup.enter="handleLogin">
+            <button class="sync-btn" @click="handleLogin" style="margin-top: 15px;">AUTHENTICATE</button>
         </div>
 
-        <!-- Floating Transparent Header -->
-        <header class="app-header" :style="{ opacity: splashVisible ? 0 : 1 }" v-if="currentTab === 'home'">
-            <div style="width:28px;height:28px;" v-html="logoSvg('header')"></div>
-            <div style="flex-grow:1; text-align:center;"><span class="gradient-text" style="font-size:20px; font-weight:900; letter-spacing: 0.5px; color: white;">MikoTok</span></div>
-            <a href="https://twitch.tv/codemiko" target="_blank" class="header-status-wrapper">
-                <div class="story-ring" :class="isLive ? 'live' : 'offline'">
-                    <img src="1000018850.png?v=2" class="story-avatar">
-                    <div class="header-badge" :class="isLive ? 'live' : 'offline'">
-                        <span class="pulse-dot" style="width: 4px; height: 4px;"></span>
-                        {{ isLive ? 'LIVE' : 'OFFLINE' }}
+        <!-- Secure App Content -->
+        <template v-if="currentUser">
+            <div id="splash-screen" v-if="splashVisible" :style="{ opacity: splashOpacity }">
+                <div style="width:120px;height:120px;margin-bottom:20px;" v-html="logoSvg('splash')"></div>
+                <div class="gradient-text" style="font-size: 40px;">MikoTok</div>
+                <div class="progress-bar"><div class="progress-fill"></div></div>
+            </div>
+
+            <!-- Floating Transparent Header -->
+            <header class="app-header" :style="{ opacity: splashVisible ? 0 : 1 }" v-if="currentTab === 'home'">
+                <div style="width:28px;height:28px;" v-html="logoSvg('header')"></div>
+                <div style="flex-grow:1; text-align:center;"><span class="gradient-text" style="font-size:20px; font-weight:900; letter-spacing: 0.5px; color: white;">MikoTok</span></div>
+                <a href="https://twitch.tv/codemiko" target="_blank" class="header-status-wrapper">
+                    <div class="story-ring" :class="isLive ? 'live' : 'offline'">
+                        <img src="1000018850.png?v=2" class="story-avatar">
+                        <div class="header-badge" :class="isLive ? 'live' : 'offline'">
+                            <span class="pulse-dot" style="width: 4px; height: 4px;"></span>
+                            {{ isLive ? 'LIVE' : 'OFFLINE' }}
+                        </div>
                     </div>
-                </div>
-            </a>
-        </header>
+                </a>
+            </header>
 
-        <div class="view-port" :style="{ opacity: splashVisible ? 0 : 1 }">
-            
-            <!-- TikTok Home Feed -->
-            <div id="feed-scroll" v-show="currentTab === 'home'" @scroll="onFeedScroll" @touchstart="handleFeedTouchStart" @touchmove="handleFeedTouchMove" @touchend="handleFeedTouchEnd">
-                <div class="ptr-container" :style="{ height: ptrHeight + 'px', transition: ptrHeight === 0 ? 'height 0.3s' : 'none' }">
-                    <span class="material-symbols-rounded" :style="{ transform: 'rotate(' + (ptrHeight * 5) + 'deg)', opacity: ptrHeight / 60 }">refresh</span>
-                </div>
+            <div class="view-port" :style="{ opacity: splashVisible ? 0 : 1 }">
+                
+                <!-- TikTok Home Feed -->
+                <div id="feed-scroll" v-show="currentTab === 'home'" @scroll="onFeedScroll" @touchstart="handleFeedTouchStart" @touchmove="handleFeedTouchMove" @touchend="handleFeedTouchEnd">
+                    <div class="ptr-container" :style="{ height: ptrHeight + 'px', transition: ptrHeight === 0 ? 'height 0.3s' : 'none' }">
+                        <span class="material-symbols-rounded" :style="{ transform: 'rotate(' + (ptrHeight * 5) + 'deg)', opacity: ptrHeight / 60 }">refresh</span>
+                    </div>
 
-                <!-- Featured Edge-to-Edge Player -->
-                <div class="feed-snap-item" data-id="featured" v-if="isLive || latestVodId">
-                    <div style="width: 100%; position: relative; display: flex; align-items: center; justify-content: center; height: 100%;">
-                        <div class="animated-border-wrap" :class="{ 'active': (isLive || latestVodId) && !activeClip }" style="width: 100%; aspect-ratio: 16/9; position: absolute;">
-                            <div class="animated-border-inner">
-                                <iframe v-if="activeFeedVideo === 'featured' && isLive && !activeClip" :src="'https://player.twitch.tv/?channel=codemiko&parent=' + hostname + '&autoplay=true&muted=true'" style="width:100%; height:100%; border:none; pointer-events:none;" allow="autoplay"></iframe>
-                                <iframe v-else-if="activeFeedVideo === 'featured' && latestVodId && !activeClip" :src="'https://player.twitch.tv/?video=' + latestVodId + '&parent=' + hostname + '&autoplay=true&muted=true'" style="width:100%; height:100%; border:none; pointer-events:none;" allow="autoplay"></iframe>
-                                <div class="skeleton" v-else></div>
+                    <!-- Featured Edge-to-Edge Player -->
+                    <div class="feed-snap-item" data-id="featured">
+                        <!-- Cinematic Blur Background for Featured (uses Miko's avatar to fill space) -->
+                        <div class="cinematic-blur" style="background-image: url('1000018850.png?v=2');"></div>
+                        
+                        <div style="width: 100%; position: relative; display: flex; align-items: center; justify-content: center; height: 100%; z-index: 2;">
+                            <div class="animated-border-wrap" :class="{ 'active': (isLive || latestVodId) && !activeClip }" style="width: 100%; aspect-ratio: 16/9; position: absolute;">
+                                <div class="animated-border-inner">
+                                    <!-- Direct interaction allowed for Featured Player (No Modal) -->
+                                    <iframe v-if="activeFeedVideo === 'featured' && isLive && !activeClip" :src="'https://player.twitch.tv/?channel=codemiko&parent=' + hostname + '&autoplay=true'" style="width:100%; height:100%; border:none; pointer-events:auto;" allow="autoplay; fullscreen" allowfullscreen></iframe>
+                                    <iframe v-else-if="activeFeedVideo === 'featured' && latestVodId && !activeClip" :src="'https://player.twitch.tv/?video=' + latestVodId + '&parent=' + hostname + '&autoplay=true'" style="width:100%; height:100%; border:none; pointer-events:auto;" allow="autoplay; fullscreen" allowfullscreen></iframe>
+                                    <div v-else style="width:100%; height:100%; display:flex; align-items:center; justify-content:center; color:white; font-size:14px; font-weight:800; background:#000;">STREAM OFFLINE</div>
+                                </div>
+                            </div>
+                            
+                            <div class="premium-badge live" v-if="isLive"><div class="dot"></div><span>LIVE NOW</span></div>
+                            <div class="premium-badge vod" v-else-if="latestVodId"><div class="dot"></div><span>LATEST VOD</span></div>
+                            <div class="premium-badge" v-else style="background: var(--offline-gray);"><span>OFFLINE</span></div>
+                            
+                            <div class="tiktok-metadata">
+                                <div class="author-info">
+                                    <img src="1000018850.png?v=2">
+                                    <span class="author-name">@CodeMiko</span>
+                                </div>
+                                <div class="clip-stats">
+                                    <span class="material-symbols-rounded" style="font-size:14px; color:var(--primary);">stars</span>
+                                    Featured Broadcast
+                                </div>
                             </div>
                         </div>
-                        <!-- TikTok Overlays -->
-                        <div class="swipe-overlay" @click="openFeaturedModal" style="position:absolute; inset:0; z-index:5;"></div>
-                        <div class="premium-badge live" v-if="isLive"><div class="dot"></div><span>LIVE NOW</span></div>
-                        <div class="premium-badge vod" v-else><div class="dot"></div><span>LATEST VOD</span></div>
+                    </div>
+
+                    <!-- Clip Snap Items -->
+                    <div v-if="loadingClips && !clips.length" class="feed-snap-item">
+                        <div style="width: 100%; aspect-ratio: 16/9; position: relative;"><div class="skeleton"></div></div>
+                    </div>
+
+                    <div class="feed-snap-item" v-for="clip in clips" :key="clip.id" :data-id="clip.id">
+                        <!-- Cinematic Blur Background for Clips -->
+                        <div class="cinematic-blur" :style="{ backgroundImage: 'url(' + optimizeTwitchImg(clip.thumbnail_url) + ')' }"></div>
+
+                        <div style="width: 100%; aspect-ratio: 16/9; position: relative; z-index: 2; box-shadow: 0 10px 30px rgba(0,0,0,0.6);">
+                            <img :src="optimizeTwitchImg(clip.thumbnail_url)" loading="lazy" style="width:100%; height:100%; object-fit:cover; position:absolute; inset:0;">
+                            <!-- Smart Mounter: Clip iframes cannot be muted on mobile, so we rely on the click overlay -->
+                            <iframe v-if="activeFeedVideo === clip.id && !activeClip" :src="'https://clips.twitch.tv/embed?clip=' + clip.id + '&parent=' + hostname" style="width:100%; height:100%; border:none; position:absolute; inset:0; pointer-events:none;" allow="fullscreen"></iframe>
+                            <!-- Touch capture overlay to open Modal for Clips -->
+                            <div class="swipe-overlay" @click="openClip(clip)" style="position:absolute; inset:0; z-index:5; display:flex; align-items:center; justify-content:center;">
+                                <span class="material-symbols-rounded" style="font-size:64px; color:white; opacity:0.8; filter: drop-shadow(0 4px 6px rgba(0,0,0,0.6));">play_circle</span>
+                            </div>
+                        </div>
                         
                         <div class="tiktok-metadata">
                             <div class="author-info">
@@ -186,157 +247,124 @@
                                 <span class="author-name">@CodeMiko</span>
                             </div>
                             <div class="clip-stats">
-                                <span class="material-symbols-rounded" style="font-size:14px; color:var(--primary);">stars</span>
-                                Featured Broadcast
+                                <span class="material-symbols-rounded" style="font-size:14px;">visibility</span> {{ formatViews(clip.view_count) }}
+                                <span style="margin: 0 4px;">•</span>
+                                <span class="material-symbols-rounded" style="font-size:14px;">calendar_today</span> {{ formatDate(clip.created_at) }}
                             </div>
                         </div>
                     </div>
                 </div>
 
-                <!-- Clip Snap Items -->
-                <div v-if="loadingClips && !clips.length" class="feed-snap-item">
-                    <div style="width: 100%; aspect-ratio: 16/9; position: relative;"><div class="skeleton"></div></div>
+                <!-- Chat Tab -->
+                <div class="chat-container" style="height:100%; padding-bottom: 80px;" v-if="currentTab === 'chat'">
+                    <iframe :src="'https://www.twitch.tv/embed/codemiko/chat?parent=' + hostname + '&darkpopout'" height="100%" width="100%" frameborder="0"></iframe>
                 </div>
 
-                <div class="feed-snap-item" v-for="clip in clips" :key="clip.id" :data-id="clip.id">
-                    <div style="width: 100%; aspect-ratio: 16/9; position: relative;">
-                        <!-- Lazy loaded thumbnail sits behind the iframe -->
-                        <img :src="optimizeTwitchImg(clip.thumbnail_url)" loading="lazy" style="width:100%; height:100%; object-fit:cover; position:absolute; inset:0;">
-                        <!-- Smart Mounter: Only loads Twitch if in view to prevent crashing -->
-                        <iframe v-if="activeFeedVideo === clip.id && !activeClip" :src="'https://clips.twitch.tv/embed?clip=' + clip.id + '&parent=' + hostname + '&autoplay=true&muted=true'" style="width:100%; height:100%; border:none; position:absolute; inset:0; pointer-events:none;" allow="autoplay"></iframe>
-                        <!-- Touch capture overlay -->
-                        <div class="swipe-overlay" @click="openClip(clip)" style="position:absolute; inset:0; z-index:5;"></div>
-                    </div>
-                    
-                    <div class="tiktok-metadata">
-                        <div class="author-info">
-                            <img src="1000018850.png?v=2">
-                            <span class="author-name">@CodeMiko</span>
+                <!-- Community Tab -->
+                <div class="community-feed" v-if="currentTab === 'community'">
+                    <div v-for="(post, index) in discordFeed" :key="index" class="card stagger-item" :style="{ animationDelay: (index * 0.05) + 's' }">
+                        <div style="display:flex;align-items:center;margin-bottom:16px;">
+                            <div style="width:42px;height:42px;border-radius:50%;border:2px solid var(--discord);display:flex;align-items:center;justify-content:center;background:rgba(88, 101, 242, 0.1);"><svg viewBox="0 0 127 96" style="width:20px; fill:var(--discord);"><path d="M107.7,8.07A105,105,0,0,0,81.47,0a72,72,0,0,0-3.36,6.83,97,97,0,0,0-49,0,72,72,0,0,0-3.36-6.83A105,105,0,0,0,19.39,8.09C2.71,32.65-1.82,56.6.48,80.1a105,105,0,0,0,32.19,16.18,77,77,0,0,0,6.89-11.11,64,64,0,0,1-10.85-5.18,75,75,0,0,0,64.32,0c.87.71,1.76,1.39,2.66,2a64,64,0,0,1-10.87,5.19,77,77,0,0,0,6.89,11.10,105,105,0,0,0,32.19-16.14c2.72-27.00-4.55-50.87-19.40-72.03ZM42.45,65.69C36.18,65.69,31.00,60,31.00,53s5.12-12.67,11.45-12.67S54,46,54,53s-5.17,12.69-11.55,12.69Zm42.24,0C78.41,65.69,73.25,60,73.25,53s5.12-12.67,11.44-12.67S96.20,46,96.20,53s-5.14,12.69-9.51,12.69Z"/></svg></div>
+                            <div style="margin-left:12px;">
+                                <div style="font-weight:900;font-size:15px; letter-spacing:0.3px;">{{ post.author }}</div>
+                                <div style="font-size:11px; color:var(--text-muted); font-weight:600;">{{ formatDateTime(post.created_at) }}</div>
+                            </div>
                         </div>
-                        <div class="clip-stats">
-                            <span class="material-symbols-rounded" style="font-size:14px;">visibility</span> {{ formatViews(clip.view_count) }}
-                            <span style="margin: 0 4px;">•</span>
-                            <span class="material-symbols-rounded" style="font-size:14px;">calendar_today</span> {{ formatDate(clip.created_at) }}
+                        <div style="background:var(--bg-color); border-radius:12px; padding:16px; border: 1px solid var(--border-color);">
+                            <div style="font-size:14px; line-height: 1.6; white-space: pre-wrap;">{{ post.content }}</div>
                         </div>
                     </div>
                 </div>
             </div>
 
-            <!-- Chat Tab -->
-            <div class="chat-container" style="height:100%; padding-bottom: 80px;" v-if="currentTab === 'chat'">
-                <iframe :src="'https://www.twitch.tv/embed/codemiko/chat?parent=' + hostname + '&darkpopout'" height="100%" width="100%" frameborder="0"></iframe>
-            </div>
+            <!-- Floating Glassmorphism Nav -->
+            <nav class="bottom-nav" :style="{ opacity: splashVisible ? 0 : 1 }">
+                <div class="nav-item" :class="{ active: currentTab === 'home' }" @click="currentTab = 'home'"><span class="material-symbols-rounded">home</span>Home</div>
+                <div class="nav-item" :class="{ active: currentTab === 'chat' }" @click="currentTab = 'chat'"><span class="material-symbols-rounded">chat</span>Chat</div>
+                <div class="nav-item" :class="{ active: currentTab === 'community' }" @click="currentTab = 'community'"><span class="material-symbols-rounded">forum</span>Feed</div>
+                <div class="nav-item" @click="openAdmin"><span class="material-symbols-rounded">account_circle</span>Profile</div>
+            </nav>
 
-            <!-- Community Tab -->
-            <div class="community-feed" v-if="currentTab === 'community'">
-                <div v-for="(post, index) in discordFeed" :key="index" class="card stagger-item" :style="{ animationDelay: (index * 0.05) + 's' }">
-                    <div style="display:flex;align-items:center;margin-bottom:16px;">
-                        <div style="width:42px;height:42px;border-radius:50%;border:2px solid var(--discord);display:flex;align-items:center;justify-content:center;background:rgba(88, 101, 242, 0.1);"><svg viewBox="0 0 127 96" style="width:20px; fill:var(--discord);"><path d="M107.7,8.07A105,105,0,0,0,81.47,0a72,72,0,0,0-3.36,6.83,97,97,0,0,0-49,0,72,72,0,0,0-3.36-6.83A105,105,0,0,0,19.39,8.09C2.71,32.65-1.82,56.6.48,80.1a105,105,0,0,0,32.19,16.18,77,77,0,0,0,6.89-11.11,64,64,0,0,1-10.85-5.18,75,75,0,0,0,64.32,0c.87.71,1.76,1.39,2.66,2a64,64,0,0,1-10.87,5.19,77,77,0,0,0,6.89,11.10,105,105,0,0,0,32.19-16.14c2.72-27.00-4.55-50.87-19.40-72.03ZM42.45,65.69C36.18,65.69,31.00,60,31.00,53s5.12-12.67,11.45-12.67S54,46,54,53s-5.17,12.69-11.55,12.69Zm42.24,0C78.41,65.69,73.25,60,73.25,53s5.12-12.67,11.44-12.67S96.20,46,96.20,53s-5.14,12.69-9.51,12.69Z"/></svg></div>
-                        <div style="margin-left:12px;">
-                            <div style="font-weight:900;font-size:15px; letter-spacing:0.3px;">{{ post.author }}</div>
-                            <div style="font-size:11px; color:var(--text-muted); font-weight:600;">{{ formatDateTime(post.created_at) }}</div>
-                        </div>
-                    </div>
-                    <div style="background:var(--bg-color); border-radius:12px; padding:16px; border: 1px solid var(--border-color);">
-                        <div style="font-size:14px; line-height: 1.6; white-space: pre-wrap;">{{ post.content }}</div>
-                    </div>
+            <!-- Clip Player Modal (Only used for Clips now) -->
+            <div class="modal-overlay" :class="{ open: activeClip }" @click="closeVideoModal" style="background: rgba(0,0,0,0.98);">
+                <div style="width:100%; max-width:540px; margin: auto; aspect-ratio:16/9; background:#000; box-shadow: 0 10px 50px rgba(145, 70, 255, 0.2);" v-if="activeClip">
+                    <iframe :src="'https://clips.twitch.tv/embed?clip=' + activeClip.id + '&parent=' + hostname + '&autoplay=true&muted=false'" style="width:100%; height:100%; border:none;" allow="autoplay; fullscreen" allowfullscreen></iframe>
                 </div>
+                <div v-if="activeClip" style="position:absolute; bottom: 40px; color: white; opacity: 0.6; font-size: 12px; font-weight: 700; letter-spacing: 1px; text-transform: uppercase;">Tap anywhere outside video to close</div>
             </div>
-        </div>
 
-        <!-- Floating Glassmorphism Nav -->
-        <nav class="bottom-nav" :style="{ opacity: splashVisible ? 0 : 1 }">
-            <div class="nav-item" :class="{ active: currentTab === 'home' }" @click="currentTab = 'home'"><span class="material-symbols-rounded">home</span>Home</div>
-            <div class="nav-item" :class="{ active: currentTab === 'chat' }" @click="currentTab = 'chat'"><span class="material-symbols-rounded">chat</span>Chat</div>
-            <div class="nav-item" :class="{ active: currentTab === 'community' }" @click="currentTab = 'community'"><span class="material-symbols-rounded">forum</span>Feed</div>
-            <div class="nav-item" @click="openAdmin"><span class="material-symbols-rounded">account_circle</span>Profile</div>
-        </nav>
-
-        <!-- Tap-to-Unmute Interactive Player Modal -->
-        <div class="modal-overlay" :class="{ open: activeClip || activeFeatured }" @click="closeVideoModal" style="background: rgba(0,0,0,0.98);">
-            <div style="width:100%; max-width:540px; margin: auto; aspect-ratio:16/9; background:#000; box-shadow: 0 10px 50px rgba(145, 70, 255, 0.2);" v-if="activeClip || activeFeatured">
-                
-                <!-- If Clip -->
-                <iframe v-if="activeClip" :src="'https://clips.twitch.tv/embed?clip=' + activeClip.id + '&parent=' + hostname + '&autoplay=true&muted=false'" style="width:100%; height:100%; border:none;" allow="autoplay; fullscreen" allowfullscreen></iframe>
-                
-                <!-- If Featured -->
-                <iframe v-if="activeFeatured && isLive" :src="'https://player.twitch.tv/?channel=codemiko&parent=' + hostname + '&autoplay=true&muted=false'" style="width:100%; height:100%; border:none;" allow="autoplay; fullscreen" allowfullscreen></iframe>
-                <iframe v-else-if="activeFeatured && latestVodId" :src="'https://player.twitch.tv/?video=' + latestVodId + '&parent=' + hostname + '&autoplay=true&muted=false'" style="width:100%; height:100%; border:none;" allow="autoplay; fullscreen" allowfullscreen></iframe>
-            </div>
-            <!-- Quick close instruction -->
-            <div v-if="activeClip || activeFeatured" style="position:absolute; bottom: 40px; color: white; opacity: 0.6; font-size: 12px; font-weight: 700; letter-spacing: 1px; text-transform: uppercase;">Tap anywhere outside video to close</div>
-        </div>
-
-        <!-- MikoOS Command Center -->
-        <div class="modal-overlay" :class="{ open: modals.profile }" @click.self="closeAdmin">
-            <div class="modal-content" ref="modalContentEl" @touchstart="handleModalTouchStart" @touchmove="handleModalTouchMove" @touchend="handleModalTouchEnd">
-                <div class="drag-handle"></div>
-                <div v-if="!currentUser">
-                    <h1 style="font-family:'Outfit'; font-size:28px; margin:0 0 25px 0;">Sign In</h1>
-                    <input type="text" v-model="loginEmail" class="input-box" placeholder="Username">
-                    <input type="password" v-model="loginPass" class="input-box" placeholder="Password">
-                    <button class="sync-btn" @click="handleLogin" style="margin-top: 10px;">SIGN IN</button>
-                </div>
-                <div v-else>
-                    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:25px;">
-                        <div style="text-align: left;">
-                            <h1 style="font-family:'Outfit'; font-size:26px; margin:0;">MikoOS v4.0</h1>
-                            <p style="color:var(--primary); font-size:10px; font-weight:800; text-transform:uppercase;">Command Center</p>
+            <!-- MikoOS Command Center -->
+            <div class="modal-overlay" :class="{ open: modals.profile }" @click.self="closeAdmin">
+                <div class="modal-content" ref="modalContentEl" @touchstart="handleModalTouchStart" @touchmove="handleModalTouchMove" @touchend="handleModalTouchEnd">
+                    <div class="drag-handle"></div>
+                    <div>
+                        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:25px;">
+                            <div style="text-align: left;">
+                                <h1 style="font-family:'Outfit'; font-size:26px; margin:0;">MikoOS v4.1</h1>
+                                <p style="color:var(--primary); font-size:10px; font-weight:800; text-transform:uppercase;">Command Center</p>
+                            </div>
+                            <div style="display:flex; gap: 15px; align-items: center;">
+                                <button @click="toggleTheme" style="background:var(--bg-color); border:1px solid var(--border-color); width: 40px; height: 40px; border-radius: 50%; color:var(--text-main); cursor:pointer; display:flex; align-items:center; justify-content:center; transition: 0.2s;">
+                                    <span class="material-symbols-rounded" style="font-size: 20px;">{{ theme === 'dark' ? 'light_mode' : 'dark_mode' }}</span>
+                                </button>
+                                <button @click="closeAdmin" style="background:none; border:none; color:var(--text-muted); cursor:pointer;"><span class="material-symbols-rounded">close</span></button>
+                            </div>
                         </div>
-                        <div style="display:flex; gap: 15px; align-items: center;">
-                            <!-- Theme Toggle Button -->
-                            <button @click="toggleTheme" style="background:var(--bg-color); border:1px solid var(--border-color); width: 40px; height: 40px; border-radius: 50%; color:var(--text-main); cursor:pointer; display:flex; align-items:center; justify-content:center; transition: 0.2s;">
-                                <span class="material-symbols-rounded" style="font-size: 20px;">{{ theme === 'dark' ? 'light_mode' : 'dark_mode' }}</span>
+
+                        <div class="infra-bar">
+                            <div class="status-node">
+                                <div class="pulse" :class="{ error: !apiHealthy }"></div> 
+                                TWITCH API: {{ apiHealthy ? 'READY' : 'KEY REQD' }}
+                            </div>
+                        </div>
+
+                        <div class="metric-card-large">
+                            <div>
+                                <div style="font-size:10px; color:var(--text-muted); text-transform:uppercase; font-weight:800; margin-bottom:4px;">Global Traffic</div>
+                                <div style="font-family:'Outfit'; font-size:34px; font-weight:900;">{{ stats.visitors }}</div>
+                            </div>
+                            <span class="material-symbols-rounded" style="color:var(--primary); font-size:36px; opacity:0.8;">monitoring</span>
+                        </div>
+
+                        <div class="stat-grid">
+                            <div class="stat-card">
+                                <div style="font-size:10px; color:var(--text-muted); text-transform:uppercase; font-weight:800; margin-bottom:4px;">Clips Database</div>
+                                <div style="font-family:'Outfit'; font-size:22px; font-weight:700;">{{ clips.length }} <span style="font-size:11px; color:var(--text-muted); font-weight:400;">PCS</span></div>
+                            </div>
+                            <div class="stat-card">
+                                <div style="font-size:10px; color:var(--text-muted); text-transform:uppercase; font-weight:800; margin-bottom:4px;">Est. Storage</div>
+                                <div style="font-family:'Outfit'; font-size:22px; font-weight:700;">{{ (clips.length * 0.015).toFixed(1) }} <span style="font-size:11px; color:var(--text-muted); font-weight:400;">MB</span></div>
+                            </div>
+                        </div>
+
+                        <div style="margin-bottom:20px; padding:18px; background:var(--bg-color); border-radius:18px; border:1px solid var(--border-color);">
+                            <div style="font-size:10px; color:var(--text-muted); margin-bottom:12px; font-weight:800; text-align: left;">API CONFIGURATION</div>
+                            <input type="text" class="input-box" v-model="apiConfig.cid" placeholder="Client ID">
+                            <input type="password" class="input-box" v-model="apiConfig.tkn" placeholder="Access Token">
+                            <button class="sync-btn" @click="saveKeys" style="background:var(--card-bg); color: var(--text-main); border: 2px solid var(--border-color); box-shadow:none; font-size:12px; margin-bottom: 0;">SAVE KEYS</button>
+                        </div>
+
+                        <button class="sync-btn" @click="runSync" :disabled="syncState !== 'idle'" :class="syncState" style="margin-bottom: 25px;">
+                            <span v-if="syncState === 'syncing'" class="spinner"></span>
+                            <span v-else-if="syncState === 'success'" class="material-symbols-rounded">check_circle</span>
+                            <span v-else class="material-symbols-rounded" style="font-size: 20px;">rocket_launch</span>
+                            {{ syncState === 'syncing' ? 'SYNCING DATA...' : syncState === 'success' ? 'SYNC COMPLETE' : 'FORCE GLOBAL SYNC' }}
+                        </button>
+                        
+                        <!-- Restored Danger Zone Wipe Button -->
+                        <div style="margin-bottom:20px; padding:18px; background:rgba(239, 68, 68, 0.05); border-radius:18px; border:1px dashed var(--danger);">
+                            <div style="font-size:10px; color:var(--danger); margin-bottom:8px; font-weight:800; text-align: left;">DANGER ZONE</div>
+                            <p style="font-size:12px; color:var(--text-muted); text-align:left; margin:0 0 16px 0; line-height:1.4;">Permanently delete all clips from the database.</p>
+                            <button class="logout-btn" @click="wipeClips" style="background:#000; border-color:var(--danger); color:var(--danger); font-size: 12px; padding: 12px; display: flex; align-items: center; justify-content: center; gap: 8px;">
+                                <span class="material-symbols-rounded" style="font-size: 16px;">delete_forever</span> WIPE REPOSITORY
                             </button>
-                            <button @click="closeAdmin" style="background:none; border:none; color:var(--text-muted); cursor:pointer;"><span class="material-symbols-rounded">close</span></button>
                         </div>
-                    </div>
 
-                    <div class="infra-bar">
-                        <div class="status-node">
-                            <div class="pulse" :class="{ error: !apiHealthy }"></div> 
-                            TWITCH API: {{ apiHealthy ? 'READY' : 'KEY REQD' }}
-                        </div>
+                        <button class="logout-btn" @click="handleLogout">SIGN OUT FROM MIKO-OS</button>
                     </div>
-
-                    <div class="metric-card-large">
-                        <div>
-                            <div style="font-size:10px; color:var(--text-muted); text-transform:uppercase; font-weight:800; margin-bottom:4px;">Global Traffic</div>
-                            <div style="font-family:'Outfit'; font-size:34px; font-weight:900;">{{ stats.visitors }}</div>
-                        </div>
-                        <span class="material-symbols-rounded" style="color:var(--primary); font-size:36px; opacity:0.8;">monitoring</span>
-                    </div>
-
-                    <div class="stat-grid">
-                        <div class="stat-card">
-                            <div style="font-size:10px; color:var(--text-muted); text-transform:uppercase; font-weight:800; margin-bottom:4px;">Clips Database</div>
-                            <div style="font-family:'Outfit'; font-size:22px; font-weight:700;">{{ clips.length }} <span style="font-size:11px; color:var(--text-muted); font-weight:400;">PCS</span></div>
-                        </div>
-                        <div class="stat-card">
-                            <div style="font-size:10px; color:var(--text-muted); text-transform:uppercase; font-weight:800; margin-bottom:4px;">Est. Storage</div>
-                            <div style="font-family:'Outfit'; font-size:22px; font-weight:700;">{{ (clips.length * 0.015).toFixed(1) }} <span style="font-size:11px; color:var(--text-muted); font-weight:400;">MB</span></div>
-                        </div>
-                    </div>
-
-                    <div style="margin-bottom:20px; padding:18px; background:var(--bg-color); border-radius:18px; border:1px solid var(--border-color);">
-                        <div style="font-size:10px; color:var(--text-muted); margin-bottom:12px; font-weight:800; text-align: left;">API CONFIGURATION</div>
-                        <input type="text" class="input-box" v-model="apiConfig.cid" placeholder="Client ID">
-                        <input type="password" class="input-box" v-model="apiConfig.tkn" placeholder="Access Token">
-                        <button class="sync-btn" @click="saveKeys" style="background:var(--card-bg); color: var(--text-main); border: 2px solid var(--border-color); box-shadow:none; font-size:12px; margin-bottom: 0;">SAVE KEYS</button>
-                    </div>
-
-                    <!-- Interactive Sync Button -->
-                    <button class="sync-btn" @click="runSync" :disabled="syncState !== 'idle'" :class="syncState" style="margin-bottom: 25px;">
-                        <span v-if="syncState === 'syncing'" class="spinner"></span>
-                        <span v-else-if="syncState === 'success'" class="material-symbols-rounded">check_circle</span>
-                        <span v-else class="material-symbols-rounded" style="font-size: 20px;">rocket_launch</span>
-                        {{ syncState === 'syncing' ? 'SYNCING DATA...' : syncState === 'success' ? 'SYNC COMPLETE' : 'FORCE GLOBAL SYNC' }}
-                    </button>
-                    
-                    <button class="logout-btn" @click="handleLogout">SIGN OUT FROM MIKO-OS</button>
                 </div>
             </div>
-        </div>
+        </template>
     </div>
 
     <script>
@@ -345,16 +373,17 @@
 
         createApp({
             setup() {
-                const splashVisible = ref(true), splashOpacity = ref(1), currentTab = ref('home'), clips = ref([]), discordFeed = ref([]), activeClip = ref(null), activeFeatured = ref(false), modals = ref({profile: false}), isLive = ref(false), currentUser = ref(null), loginEmail = ref(''), loginPass = ref(''), toast = ref({visible: false, message: ''}), loadingClips = ref(true);
+                const splashVisible = ref(true), splashOpacity = ref(1), currentTab = ref('home'), clips = ref([]), discordFeed = ref([]), activeClip = ref(null), modals = ref({profile: false}), isLive = ref(false), currentUser = ref(null), loginEmail = ref(''), loginPass = ref(''), toast = ref({visible: false, message: ''}), loadingClips = ref(true);
                 const stats = ref({ visitors: 0 }), apiHealthy = ref(false), apiConfig = ref({ cid: localStorage.getItem('twitch_client_id') || '', tkn: localStorage.getItem('twitch_access_token') || '' });
                 const latestVodId = ref(null), hostname = window.location.hostname || 'meowoccino.github.io';
                 const ptrHeight = ref(0); let feedStartY = 0, isScrollingFeed = false, scrollTimer = null;
                 const modalContentEl = ref(null); let modalStartY = 0, currentDeltaY = 0;
                 let lastStatusCheck = 0;
                 
-                // Theme Logic
+                // Auth & Theme
+                const isAuthReady = ref(false);
                 const theme = ref(localStorage.getItem('miko_theme') || 'dark');
-                const syncState = ref('idle'); // idle, syncing, success
+                const syncState = ref('idle'); 
                 const activeFeedVideo = ref(null);
                 let intersectionObserver = null;
 
@@ -389,7 +418,7 @@
                     const { data: c } = await sbClient.from('clips').select('*').order('created_at', { ascending: false }).limit(3000);
                     clips.value = c || [];
                     loadingClips.value = false;
-                    initObserver(); // Restart observer on new data
+                    initObserver();
                     
                     const { count } = await sbClient.from('analytics').select('*', { count: 'exact', head: true });
                     stats.value.visitors = count || 0;
@@ -418,11 +447,38 @@
                     } catch(e) {}
                 };
 
+                const initializeApp = async () => {
+                    await sbClient.from('analytics').insert([{ event_name: 'sys_ping' }]);
+                    loadData(); 
+                    checkLiveStatusPublic();
+                    setTimeout(() => { splashOpacity.value = 0; setTimeout(() => splashVisible.value = false, 400); }, 1500); 
+                };
+
+                const handleLogin = async () => { 
+                    if(!loginEmail.value || !loginPass.value) return;
+                    const email = loginEmail.value.includes('@') ? loginEmail.value : `${loginEmail.value}@mikotok.com`; 
+                    const { data, error } = await sbClient.auth.signInWithPassword({ email, password: loginPass.value }); 
+                    if (error) {
+                        showToast(error.message); 
+                    } else { 
+                        currentUser.value = data.user.id; 
+                        showToast("AUTHENTICATED"); 
+                        initializeApp();
+                    } 
+                };
+
+                const handleLogout = async () => { 
+                    await sbClient.auth.signOut(); 
+                    currentUser.value = null; 
+                    splashVisible.value = true;
+                    splashOpacity.value = 1;
+                    modals.value.profile = false;
+                    showToast("SIGNED OUT"); 
+                };
+
                 const onFeedScroll = () => { isScrollingFeed = true; clearTimeout(scrollTimer); scrollTimer = setTimeout(() => isScrollingFeed = false, 150); };
-                
                 const openClip = (clip) => { if (!isScrollingFeed) activeClip.value = clip; };
-                const openFeaturedModal = () => { if (!isScrollingFeed) activeFeatured.value = true; };
-                const closeVideoModal = () => { activeClip.value = null; activeFeatured.value = false; };
+                const closeVideoModal = () => { activeClip.value = null; };
 
                 const handleFeedTouchStart = (e) => { const sc = document.getElementById('feed-scroll'); if (sc && sc.scrollTop <= 0) feedStartY = e.touches[0].clientY; else feedStartY = 0; };
                 const handleFeedTouchMove = (e) => { if (!feedStartY) return; const y = e.touches[0].clientY; if (y > feedStartY) { ptrHeight.value = Math.min((y - feedStartY) * 0.4, 80); if (ptrHeight.value > 10 && document.getElementById('feed-scroll').scrollTop === 0 && e.cancelable) e.preventDefault(); } };
@@ -430,14 +486,13 @@
                 
                 const handleModalTouchStart = (e) => { if (e.currentTarget.scrollTop <= 0) { modalStartY = e.touches[0].clientY; currentDeltaY = 0; if(modalContentEl.value) modalContentEl.value.style.transition = 'none'; } else modalStartY = 0; };
                 const handleModalTouchMove = (e) => { if (!modalStartY) return; const y = e.touches[0].clientY; currentDeltaY = y - modalStartY; if (currentDeltaY > 0) { if (e.cancelable) e.preventDefault(); if (modalContentEl.value) modalContentEl.value.style.transform = `translateY(${currentDeltaY}px)`; } };
-                const handleModalTouchEnd = () => { if (modalContentEl.value) { modalContentEl.value.style.transition = ''; if (currentDeltaY > 150) closeAdmin(); else modalContentEl.value.style.transform = ''; } modalStartY = 0; currentDeltaY = 0; };
+                const handleModalTouchEnd = () => { if (!modalStartY) return; if (modalContentEl.value) { modalContentEl.value.style.transition = ''; if (currentDeltaY > 150) closeAdmin(); else modalContentEl.value.style.transform = ''; } modalStartY = 0; currentDeltaY = 0; };
 
-                const openAdmin = () => { loadData(); checkApi(); modals.value.profile = true; };
-                const closeAdmin = () => { modals.value.profile = false; };
+                const openAdmin = () => { loadData(); checkApi(); if(modalContentEl.value) { modalContentEl.value.style.transition = ''; modalContentEl.value.style.transform = ''; } modals.value.profile = true; };
+                const closeAdmin = () => { modals.value.profile = false; if(modalContentEl.value) modalContentEl.value.style.transform = ''; };
                 const checkApi = async () => { if (!apiConfig.value.cid || !apiConfig.value.tkn) return; try { const res = await fetch('https://api.twitch.tv/helix/users?login=codemiko', { headers: { 'Client-Id': apiConfig.value.cid, 'Authorization': `Bearer ${apiConfig.value.tkn}` } }); apiHealthy.value = res.ok; } catch { apiHealthy.value = false; } };
                 const saveKeys = () => { localStorage.setItem('twitch_client_id', apiConfig.value.cid); localStorage.setItem('twitch_access_token', apiConfig.value.tkn); checkApi(); showToast("KEYS SAVED"); };
-                const handleLogin = async () => { const email = loginEmail.value.includes('@') ? loginEmail.value : `${loginEmail.value}@mikotok.com`; const { data, error } = await sbClient.auth.signInWithPassword({ email, password: loginPass.value }); if (error) showToast(error.message); else { currentUser.value = data.user.id; showToast("SIGNED IN"); } };
-                const handleLogout = async () => { await sbClient.auth.signOut(); currentUser.value = null; showToast("SIGNED OUT"); };
+                const wipeClips = async () => { if(!confirm("DANGEROUS: Wipe everything?")) return; try { await sbClient.from('clips').delete().not('id', 'is', null); clips.value = []; await loadData(); showToast("WIPED"); } catch (e) { showToast("FAILED"); } };
 
                 const runSync = async () => {
                     if(syncState.value !== 'idle' || !apiHealthy.value) return; 
@@ -473,15 +528,14 @@
                     applyTheme();
                     const { data: { session } } = await sbClient.auth.getSession();
                     currentUser.value = session?.user?.id || null;
-                    
-                    // Fixed metrics tracking with sys_ping to bypass adblockers
-                    await sbClient.from('analytics').insert([{ event_name: 'sys_ping' }]);
-                    
-                    loadData(); checkLiveStatusPublic();
-                    setTimeout(() => { splashOpacity.value = 0; setTimeout(() => splashVisible.value = false, 400); }, 1500); 
+                    isAuthReady.value = true;
+
+                    if (currentUser.value) {
+                        initializeApp();
+                    }
                 });
 
-                return { hostname, splashVisible, splashOpacity, currentTab, clips, discordFeed, activeClip, activeFeatured, modals, syncState, isLive, toast, logoSvg, runSync, currentUser, loginEmail, loginPass, handleLogin, handleLogout, openAdmin, closeAdmin, apiHealthy, apiConfig, stats, saveKeys, modalContentEl, ptrHeight, handleFeedTouchStart, handleFeedTouchMove, handleFeedTouchEnd, handleModalTouchStart, handleModalTouchMove, handleModalTouchEnd, latestVodId, onFeedScroll, openClip, openFeaturedModal, closeVideoModal, loadingClips, optimizeTwitchImg, theme, toggleTheme, activeFeedVideo, formatDate: (d) => new Date(d).toLocaleDateString([], {month:'short', day:'numeric'}), formatViews: (v) => v ? v.toLocaleString() : '0', formatDateTime: (d) => new Date(d).toLocaleString([], {month:'short', day:'numeric', hour:'2-digit', minute:'2-digit'}) };
+                return { hostname, splashVisible, splashOpacity, currentTab, clips, discordFeed, activeClip, modals, syncState, isLive, toast, logoSvg, runSync, currentUser, isAuthReady, loginEmail, loginPass, handleLogin, handleLogout, openAdmin, closeAdmin, apiHealthy, apiConfig, stats, saveKeys, wipeClips, modalContentEl, ptrHeight, handleFeedTouchStart, handleFeedTouchMove, handleFeedTouchEnd, handleModalTouchStart, handleModalTouchMove, handleModalTouchEnd, latestVodId, onFeedScroll, openClip, closeVideoModal, loadingClips, optimizeTwitchImg, theme, toggleTheme, activeFeedVideo, formatDate: (d) => new Date(d).toLocaleDateString([], {month:'short', day:'numeric'}), formatViews: (v) => v ? v.toLocaleString() : '0', formatDateTime: (d) => new Date(d).toLocaleString([], {month:'short', day:'numeric', hour:'2-digit', minute:'2-digit'}) };
             }
         }).mount('#app-container');
     </script>
