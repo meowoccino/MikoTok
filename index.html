@@ -48,7 +48,6 @@
         #feed-scroll { height: 100%; width: 100%; overflow-y: scroll; scroll-snap-type: y mandatory; scroll-behavior: smooth; touch-action: pan-y; padding-bottom: 80px; }
         #feed-scroll::-webkit-scrollbar { display: none; }
         
-        /* Removed height: 100% to pack videos properly without dead space */
         .feed-snap-item { width: 100%; scroll-snap-align: center; scroll-snap-stop: always; display: flex; flex-direction: column; justify-content: flex-start; position: relative; padding: 0 15px 35px; }
 
         .miko-metadata { display: flex; align-items: center; padding: 12px 5px 0; background: transparent; }
@@ -70,7 +69,6 @@
         .premium-badge.live .dot { background: var(--danger); color: var(--danger); animation: heartbeat 1.5s infinite; }
         .premium-badge.vod .dot { background: var(--primary); color: var(--primary); animation: heartbeat 1.5s infinite; }
 
-        /* Unified Video Container to ensure all clips have perfect borders */
         .video-container { position: relative; width: 100%; aspect-ratio: 16/9; z-index: 2; box-shadow: 0 10px 40px rgba(0,0,0,0.6); background: #000; border-radius: 12px; overflow: hidden; }
 
         .community-feed { padding: 100px 12px 100px; height: 100%; overflow-y: auto; }
@@ -151,7 +149,6 @@
                     <span class="material-symbols-rounded" :style="{ transform: 'rotate(' + (ptrHeight * 5) + 'deg)', opacity: ptrHeight / 60 }">refresh</span>
                 </div>
 
-                <!-- Padding adjusted so it clears the header and pulls the next clip up tightly -->
                 <div class="feed-snap-item" data-id="featured" style="padding-top: 85px; padding-bottom: 25px; scroll-snap-align: start;">
                     
                     <div style="display: flex; justify-content: flex-start; align-items: flex-end; width: 100%; padding-bottom: 12px;">
@@ -167,8 +164,11 @@
                     
                     <template v-else>
                         <div class="video-container" style="box-shadow: 0 0 20px rgba(145, 70, 255, 0.4), 0 0 40px rgba(255, 255, 255, 0.1); border-bottom: 2px solid var(--primary);">
-                            <iframe v-if="activeFeedVideo === 'featured' && isLive" :src="'https://player.twitch.tv/?channel=codemiko&parent=' + hostname + '&autoplay=true&muted=true'" style="width:100%; height:100%; border:none; pointer-events:auto;" allow="autoplay; fullscreen" allowfullscreen></iframe>
-                            <iframe v-else-if="activeFeedVideo === 'featured' && latestVodId" :src="'https://player.twitch.tv/?video=' + latestVodId + '&parent=' + hostname + '&autoplay=true&muted=true'" style="width:100%; height:100%; border:none; pointer-events:auto;" allow="autoplay; fullscreen" allowfullscreen></iframe>
+                            <!-- The featured player now stays mounted so it never flashes "STREAM OFFLINE" while scrolling -->
+                            <iframe v-if="isLive" :src="'https://player.twitch.tv/?channel=codemiko&parent=' + hostname + '&autoplay=true&muted=true'" style="width:100%; height:100%; border:none; pointer-events:auto;" allow="autoplay; fullscreen" allowfullscreen></iframe>
+                            <iframe v-else-if="latestVodId" :src="'https://player.twitch.tv/?video=' + latestVodId + '&parent=' + hostname + '&autoplay=true&muted=true'" style="width:100%; height:100%; border:none; pointer-events:auto;" allow="autoplay; fullscreen" allowfullscreen></iframe>
+                            
+                            <!-- This will only show if there is genuinely no Live stream AND no VOD found -->
                             <div v-else style="width:100%; height:100%; display:flex; align-items:center; justify-content:center; color:white; font-size:14px; font-weight:800; background:rgba(0,0,0,0.3); border: 1px solid rgba(145, 70, 255, 0.3); border-radius: 12px; box-shadow: 0 4px 30px rgba(0,0,0,0.5);">STREAM OFFLINE</div>
                         </div>
                     </template>
@@ -321,7 +321,6 @@
                 const optimizeTwitchImg = (url) => url.replace('%{width}', '480').replace('%{height}', '270');
                 const cleanDiscordText = (txt) => txt ? txt.replace(/<a?:[^:]+:\d+>/g, '').trim() : '';
 
-                // Improved observer to precisely pick the video closest to the center of the screen
                 const initObserver = () => {
                     const scroller = document.getElementById('feed-scroll');
                     if(!scroller) return;
