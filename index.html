@@ -8,109 +8,156 @@
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="https://unpkg.com/vue@3/dist/vue.global.prod.js"></script>
     <style>
-        :root { --bg-color: #000000; --card-bg: #111113; --primary: #9146FF; --text-main: #ffffff; --text-muted: #71717a; --border-color: #27272a; --danger: #ef4444; }
-        * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
-        body, html { margin: 0; padding: 0; height: 100%; width: 100%; background: var(--bg-color); color: var(--text-main); overflow: hidden; }
-        #app-container { width: 100%; max-width: 480px; height: 100vh; margin: 0 auto; position: relative; display: flex; flex-direction: column; }
+        :root { --bg-color: #000000; --card-bg: #111113; --primary: #9146FF; --primary-light: #a970ff; --text-main: #ffffff; --text-muted: #71717a; --border-color: #27272a; --danger: #ef4444; --offline-gray: #3f3f46; }
+        * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; font-family: 'Inter', sans-serif; }
+        body, html { margin: 0; padding: 0; height: 100%; width: 100%; background: var(--bg-color); color: var(--text-main); overflow: hidden; display: flex; justify-content: center; }
         
-        .content-area { flex: 1; overflow-y: auto; padding: 110px 12px 100px; -webkit-overflow-scrolling: touch; }
-        .content-area::-webkit-scrollbar { display: none; }
+        #app-container { width: 100%; max-width: 480px; height: 100%; position: relative; background: var(--bg-color); overflow: hidden; }
+        [v-cloak] { display: none !important; }
 
-        .app-header { position: absolute; top: 0; left: 0; width: 100%; z-index: 100; padding: 50px 20px 15px; display: flex; align-items: center; background: rgba(0,0,0,0.9); backdrop-filter: blur(10px); }
-        .gradient-text { background: linear-gradient(135deg, #fff, var(--primary)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; font-family: 'Outfit', sans-serif; font-weight: 800; }
-        
-        .card { background: var(--card-bg); border-radius: 12px; padding: 14px; margin-bottom: 16px; border: 1px solid var(--border-color); }
-        .clip-meta { display: flex; justify-content: space-between; align-items: center; font-size: 11px; color: var(--text-muted); margin-top: 8px; }
-        .view-count { display: flex; align-items: center; gap: 4px; color: var(--primary); font-weight: 600; }
-        
-        .thumbnail-wrapper { width: 100%; border-radius: 8px; overflow: hidden; aspect-ratio: 16/9; background: #000; position: relative; cursor: pointer; border: 1px solid rgba(255,255,255,0.1); }
-        .thumbnail-wrapper img { width: 100%; height: 100%; object-fit: cover; }
-        .play-overlay { position: absolute; inset: 0; background: rgba(0,0,0,0.2); display: flex; align-items: center; justify-content: center; }
+        /* Splash Screen */
+        #splash-screen { position: absolute; inset: 0; background: var(--bg-color); display: flex; flex-direction: column; align-items: center; justify-content: center; z-index: 9999; transition: opacity 0.6s ease; }
+        .progress-bar { width: 180px; height: 3px; background: rgba(255,255,255,0.1); border-radius: 10px; overflow: hidden; margin-top: 20px; }
+        .progress-fill { position: absolute; left: 0; top: 0; height: 100%; width: 50%; background: linear-gradient(90deg, #ffffff, var(--primary)); animation: load 1.5s infinite ease-in-out; }
+        @keyframes load { 0% { left: -50%; } 100% { left: 100%; } }
+        .gradient-text { display: inline-block; background: linear-gradient(135deg, #ffffff 30%, var(--primary) 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; font-family: 'Outfit', sans-serif; }
 
-        .bottom-nav { position: absolute; bottom: 0; left: 0; width: 100%; background: #000; border-top: 1px solid var(--border-color); display: flex; justify-content: space-between; padding: 10px 15px 30px; z-index: 100; }
-        .nav-item { display: flex; flex-direction: column; align-items: center; color: var(--text-muted); font-size: 10px; cursor: pointer; text-decoration: none; }
+        /* App Layout */
+        .app-content-wrapper { position: absolute; inset: 0; width: 100%; height: 100%; overflow: hidden; }
+        .app-header { position: absolute; top: 0; left: 0; width: 100%; z-index: 100; padding: 50px 20px 15px; display: flex; align-items: center; justify-content: space-between; background: rgba(0, 0, 0, 0.90); backdrop-filter: blur(12px); }
+        .simple-logo { flex-grow: 1; display: flex; align-items: center; justify-content: center; font-size: 24px; font-weight: 800; letter-spacing: -0.5px; }
+        
+        /* Story Ring Status */
+        .header-status-wrapper { position: relative; width: 42px; height: 42px; cursor: pointer; display: flex; align-items: center; justify-content: center; }
+        .story-ring { width: 38px; height: 38px; border-radius: 50%; padding: 2px; background: transparent; display: flex; align-items: center; justify-content: center; }
+        .story-ring.live { background: linear-gradient(45deg, var(--danger), var(--primary), #ff4685, var(--danger)); background-size: 300% 300%; animation: storyGlow 3s ease infinite; }
+        .story-avatar { width: 100%; height: 100%; border-radius: 50%; object-fit: cover; }
+        .status-badge { position: absolute; bottom: -2px; left: 50%; transform: translateX(-50%); color: #fff; font-size: 7px; font-weight: 900; padding: 1px 5px; border-radius: 4px; border: 1.5px solid #000; text-transform: uppercase; z-index: 2; white-space: nowrap; }
+        .status-badge.live { background: var(--danger); }
+        .status-badge.offline { background: var(--offline-gray); }
+
+        /* Feed & Cards */
+        #feed { height: 100%; width: 100%; overflow-y: auto; padding: 120px 12px 100px; -webkit-overflow-scrolling: touch; }
+        #feed::-webkit-scrollbar { display: none; }
+        .card { background: var(--card-bg); border-radius: 12px; padding: 14px; margin-bottom: 16px; border: 1px solid var(--border-color); position: relative; }
+        .avatar-ring-feed { width: 38px; height: 38px; border-radius: 50%; margin-right: 12px; display: flex; align-items: center; justify-content: center; border: 1px solid var(--primary); background: #000; overflow: hidden; flex-shrink: 0; }
+        .avatar-ring-feed img { width: 100%; height: 100%; object-fit: cover; }
+        .thumbnail-wrapper { width: 100%; border-radius: 8px; overflow: hidden; aspect-ratio: 16/9; background: #000; position: relative; cursor: pointer; border: 1px solid rgba(255,255,255,0.05); }
+        .thumbnail-wrapper img { width: 100%; height: 100%; object-fit: cover; opacity: 0.8; }
+        .play-overlay { position: absolute; inset: 0; background: rgba(0,0,0,0.3); display: flex; align-items: center; justify-content: center; }
+        .clip-meta { display: flex; justify-content: space-between; align-items: center; font-size: 11px; color: var(--text-muted); margin-top: 10px; }
+        .view-count { display: flex; align-items: center; gap: 4px; color: var(--primary-light); font-weight: 700; }
+
+        /* Nav */
+        .bottom-nav { position: absolute; bottom: 0; left: 0; width: 100%; background: #000; border-top: 1px solid var(--border-color); display: flex; justify-content: space-between; align-items: center; padding: 10px 15px 30px; z-index: 100; }
+        .nav-item { display: flex; flex-direction: column; align-items: center; width: 50px; color: var(--text-muted); font-size: 10px; gap: 4px; cursor: pointer; text-decoration: none; }
         .nav-item.active { color: #fff; }
-        
-        /* Toast Notification Styling */
-        .toast { position: fixed; bottom: 100px; left: 50%; transform: translateX(-50%); background: var(--primary); color: white; padding: 10px 20px; border-radius: 50px; font-size: 13px; font-weight: 700; z-index: 3000; box-shadow: 0 4px 15px rgba(145, 70, 255, 0.4); opacity: 0; transition: opacity 0.3s; pointer-events: none; }
+
+        /* Toast Popup */
+        .toast { position: fixed; bottom: 100px; left: 50%; transform: translateX(-50%); background: var(--primary); color: white; padding: 10px 24px; border-radius: 50px; font-size: 13px; font-weight: 700; z-index: 3000; box-shadow: 0 4px 20px rgba(145, 70, 255, 0.5); opacity: 0; transition: opacity 0.3s; pointer-events: none; }
         .toast.show { opacity: 1; }
 
-        .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.9); z-index: 2000; display: flex; flex-direction: column; justify-content: flex-end; opacity: 0; pointer-events: none; transition: 0.3s; }
+        /* Modals */
+        .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.9); z-index: 1500; display: flex; flex-direction: column; justify-content: flex-end; opacity: 0; pointer-events: none; transition: 0.3s; }
         .modal-overlay.open { opacity: 1; pointer-events: auto; }
-        .input-box { width: 100%; background: #1c1c1e; border: 1px solid var(--border-color); color: white; padding: 14px; border-radius: 8px; margin-bottom: 12px; font-size: 14px; text-align: left; }
+        .modal-content { background: #111113; border-radius: 20px 20px 0 0; padding: 20px 20px 40px; border-top: 1px solid var(--border-color); text-align: center; }
+        .input-box { width: 100%; background: #000; border: 1px solid var(--border-color); color: white; padding: 14px; border-radius: 8px; margin-bottom: 12px; font-size: 14px; }
+
+        @keyframes storyGlow { 0% { background-position: 0% 50%; } 50% { background-position: 100% 50%; } 100% { background-position: 0% 50%; } }
     </style>
 </head>
 <body>
     <div id="app-container" v-cloak>
-        <!-- Toast Notification -->
         <div class="toast" :class="{ show: toast.visible }">{{ toast.message }}</div>
 
-        <header class="app-header">
-            <div style="flex:1; text-align:center;"><span class="gradient-text" style="font-size:24px;">MikoTok</span></div>
-        </header>
-
-        <div class="content-area" v-if="currentTab === 'home'">
-            <div class="card" v-for="clip in clips" :key="clip.id">
-                <div style="display:flex; align-items:center; margin-bottom:10px;">
-                    <img src="1000018850.png?v=2" style="width:32px; height:32px; border-radius:50%; border:1px solid var(--primary);">
-                    <div style="margin-left:10px;">
-                        <div style="font-weight:700; font-size:14px;">CodeMiko</div>
-                        <div style="font-size:10px; color:var(--text-muted);">{{ formatDate(clip.created_at) }}</div>
-                    </div>
-                </div>
-                <div class="thumbnail-wrapper" @click="activeClip = clip">
-                    <img :src="clip.thumbnail_url">
-                    <div class="play-overlay"><span class="material-symbols-rounded" style="font-size:48px; color:#fff;">play_circle</span></div>
-                </div>
-                <div class="clip-meta">
-                    <div class="view-count">
-                        <span class="material-symbols-rounded" style="font-size:14px;">visibility</span>
-                        {{ formatViews(clip.view_count) }}
-                    </div>
-                    <div style="max-width: 70%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">{{ clip.title }}</div>
-                </div>
-            </div>
+        <!-- Splash Screen -->
+        <div id="splash-screen" v-if="splashVisible" :style="{ opacity: splashOpacity }">
+            <div style="width:120px;height:120px;margin-bottom:20px;" v-html="logoSvg('splash')"></div>
+            <div class="gradient-text" style="font-size: 40px;">MikoTok</div>
+            <div class="progress-bar"><div class="progress-fill"></div></div>
         </div>
 
-        <div class="content-area" v-if="currentTab === 'community'">
-            <div class="card">
-                <div style="display:flex; align-items:center; margin-bottom:12px;">
-                    <img src="1000018850.png?v=2" style="width:32px; height:32px; border-radius:50%;">
-                    <div style="margin-left:10px;"><div style="font-weight:700;">CodeMiko</div><div style="font-size:10px; color:var(--text-muted);">Just now</div></div>
+        <div class="app-content-wrapper" :style="{ opacity: splashVisible ? 0 : 1 }">
+            <header class="app-header">
+                <div style="width:28px;height:28px;" v-html="logoSvg('header')"></div>
+                <div class="simple-logo"><span class="gradient-text">MikoTok</span></div>
+                <div class="header-status-wrapper">
+                    <div class="story-ring" :class="isLive ? 'live' : 'offline'"><img src="1000018850.png?v=2" class="story-avatar"></div>
+                    <div class="status-badge" :class="isLive ? 'live' : 'offline'">{{ isLive ? 'LIVE' : 'OFFLINE' }}</div>
                 </div>
-                <div style="font-size:14px;">Test text placeholder</div>
-            </div>
-            <div class="card" v-for="post in posts" :key="post.id">
-                <div style="display:flex; align-items:center; margin-bottom:12px;">
-                    <img src="1000018850.png?v=2" style="width:32px; height:32px; border-radius:50%;">
-                    <div style="margin-left:10px;"><div style="font-weight:700;">{{ post.author }}</div><div style="font-size:10px; color:var(--text-muted);">{{ formatDate(post.created_at) }}</div></div>
+            </header>
+
+            <!-- Home Tab -->
+            <div id="feed" v-if="currentTab === 'home'">
+                <div class="card" v-for="clip in clips" :key="clip.id">
+                    <div style="display:flex;align-items:center;margin-bottom:12px;">
+                        <div class="avatar-ring-feed"><img src="1000018850.png?v=2"></div>
+                        <div>
+                            <div style="font-weight:700;font-size:14px;">CodeMiko</div>
+                            <div style="font-size:10px; color:var(--text-muted);">{{ formatDate(clip.created_at) }}</div>
+                        </div>
+                    </div>
+                    <div class="thumbnail-wrapper" @click="activeClip = clip">
+                        <img :src="clip.thumbnail_url">
+                        <div class="play-overlay"><span class="material-symbols-rounded" style="font-size:48px; color:white;">play_circle</span></div>
+                    </div>
+                    <div class="clip-meta">
+                        <div class="view-count">
+                            <span class="material-symbols-rounded" style="font-size:14px;">visibility</span>
+                            {{ formatViews(clip.view_count) }}
+                        </div>
+                        <div style="max-width: 60%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">{{ clip.title }}</div>
+                    </div>
                 </div>
-                <div style="font-size:14px;">{{ post.text }}</div>
             </div>
+
+            <!-- Feed Tab -->
+            <div id="feed" v-if="currentTab === 'community'">
+                <div class="card">
+                    <div style="display:flex; align-items:center; margin-bottom:12px;">
+                        <div class="avatar-ring-feed"><img src="1000018850.png?v=2"></div>
+                        <div><div style="font-weight:700;">CodeMiko</div><div style="font-size:10px; color:var(--text-muted);">Just now</div></div>
+                    </div>
+                    <div style="font-size:14px;">Test text placeholder</div>
+                </div>
+                <div class="card" v-for="post in posts" :key="post.id">
+                    <div style="display:flex; align-items:center; margin-bottom:12px;">
+                        <div class="avatar-ring-feed"><img src="1000018850.png?v=2"></div>
+                        <div><div style="font-weight:700;">{{ post.author }}</div><div style="font-size:10px; color:var(--text-muted);">{{ formatDate(post.created_at) }}</div></div>
+                    </div>
+                    <div style="font-size:14px;">{{ post.text }}</div>
+                </div>
+            </div>
+
+            <nav class="bottom-nav">
+                <div class="nav-item" :class="{ active: currentTab === 'home' }" @click="currentTab = 'home'"><span class="material-symbols-rounded">home</span>Home</div>
+                <div class="nav-item" :class="{ active: currentTab === 'community' }" @click="currentTab = 'community'"><span class="material-symbols-rounded">forum</span>Feed</div>
+                <a href="https://discord.gg/codemiko" target="_blank" class="nav-item">
+                    <svg viewBox="0 0 127 96" style="width:22px; height:22px; fill:currentColor;"><path d="M107.7,8.07A105,105,0,0,0,81.47,0a72,72,0,0,0-3.36,6.83,97,97,0,0,0-49,0,72,72,0,0,0-3.36-6.83A105,105,0,0,0,19.39,8.09C2.71,32.65-1.82,56.6.48,80.1a105,105,0,0,0,32.19,16.18,77,77,0,0,0,6.89-11.11,64,64,0,0,1-10.85-5.18,75,75,0,0,0,64.32,0c.87.71,1.76,1.39,2.66,2a64,64,0,0,1-10.87,5.19,77,77,0,0,0,6.89,11.10,105,105,0,0,0,32.19-16.14c2.72-27.00-4.55-50.87-19.40-72.03ZM42.45,65.69C36.18,65.69,31.00,60,31.00,53s5.12-12.67,11.45-12.67S54,46,54,53s-5.17,12.69-11.55,12.69Zm42.24,0C78.41,65.69,73.25,60,73.25,53s5.12-12.67,11.44-12.67S96.20,46,96.20,53s-5.14,12.69-9.51,12.69Z"/></svg>
+                    Discord
+                </a>
+                <div class="nav-item" @click="modals.profile = true"><span class="material-symbols-rounded">account_circle</span>Admin</div>
+            </nav>
         </div>
 
-        <nav class="bottom-nav">
-            <div class="nav-item" :class="{active: currentTab === 'home'}" @click="currentTab = 'home'"><span class="material-symbols-rounded">home</span>Home</div>
-            <div class="nav-item" :class="{active: currentTab === 'community'}" @click="currentTab = 'community'"><span class="material-symbols-rounded">forum</span>Feed</div>
-            <div class="nav-item" @click="modals.profile = true"><span class="material-symbols-rounded">account_circle</span>Admin</div>
-        </nav>
-
+        <!-- Video Modal -->
         <div class="modal-overlay" :class="{ open: activeClip }" @click="activeClip = null" style="justify-content: center; background: rgba(0,0,0,0.95);">
             <div v-if="activeClip" style="width:100%; aspect-ratio:16/9; background:#000;">
                 <iframe :src="'https://clips.twitch.tv/embed?clip=' + activeClip.id + '&parent=' + host + '&autoplay=true'" style="width:100%; height:100%; border:none;" allowfullscreen></iframe>
             </div>
         </div>
 
+        <!-- Admin Modal -->
         <div class="modal-overlay" :class="{ open: modals.profile }" @click.self="modals.profile = false">
-            <div style="background:#111113; width:100%; padding:30px 20px; border-radius:20px 20px 0 0; border-top: 1px solid var(--border-color);">
+            <div class="modal-content">
                 <div v-if="!currentUser">
                     <input type="text" v-model="loginEmail" class="input-box" placeholder="Username">
                     <input type="password" v-model="loginPass" class="input-box" placeholder="Password">
-                    <button class="input-box" style="background:var(--primary); font-weight:700; text-align:center;" @click="handleLogin">Sign In</button>
+                    <button class="input-box" style="background:var(--primary); font-weight:700;" @click="handleLogin">Sign In</button>
                 </div>
                 <div v-else>
-                    <button class="input-box" style="background:var(--primary); font-weight:700; text-align:center;" @click="runSync" :disabled="isSyncing">{{ isSyncing ? 'SYNCING...' : 'Manual Sync (50 Clips)' }}</button>
-                    <button class="input-box" style="background:var(--danger); text-align:center;" @click="logout">Logout</button>
+                    <button class="input-box" style="background:var(--primary); font-weight:700;" @click="runSync" :disabled="isSyncing">{{ isSyncing ? 'SYNCING...' : 'Manual Sync (50 Clips)' }}</button>
+                    <button class="input-box" style="background:var(--danger);" @click="logout">Logout</button>
                 </div>
             </div>
         </div>
@@ -122,9 +169,10 @@
 
         createApp({
             setup() {
-                const currentTab = ref('home'), clips = ref([]), posts = ref([]), activeClip = ref(null), modals = ref({profile: false}), isSyncing = ref(false), currentUser = ref(null), loginEmail = ref(''), loginPass = ref(''), toast = ref({visible: false, message: ''});
+                const splashVisible = ref(true), splashOpacity = ref(1), currentTab = ref('home'), clips = ref([]), posts = ref([]), activeClip = ref(null), modals = ref({profile: false}), isSyncing = ref(false), isLive = ref(false), currentUser = ref(null), loginEmail = ref(''), loginPass = ref(''), toast = ref({visible: false, message: ''});
                 const host = window.location.hostname;
 
+                const logoSvg = (id) => `<svg viewBox="0 0 100 100"><defs><linearGradient id="grad-${id}" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stop-color="#ffffff"/><stop offset="100%" stop-color="#9146FF"/></linearGradient></defs><circle cx="50" cy="50" r="40" fill="none" stroke="url(#grad-${id})" stroke-width="8"/><path d="M 33 38 L 48 62 L 62 38 L 62 55 Q 62 65 69 64" fill="none" stroke="url(#grad-${id})" stroke-width="8" stroke-linecap="round" stroke-linejoin="round"/></svg>`;
                 const showToast = (msg) => { toast.value.message = msg; toast.value.visible = true; setTimeout(() => toast.value.visible = false, 3000); };
 
                 const loadData = async () => {
@@ -158,9 +206,10 @@
                     const { data: { session } } = await sbClient.auth.getSession();
                     currentUser.value = session?.user.id || null;
                     loadData();
+                    setTimeout(() => { splashOpacity.value = 0; setTimeout(() => splashVisible.value = false, 600); }, 1500); 
                 });
 
-                return { currentTab, clips, posts, activeClip, modals, isSyncing, currentUser, loginEmail, loginPass, host, toast, runSync, handleLogin, logout: () => { sbClient.auth.signOut(); location.reload(); }, formatDate: (d) => new Date(d).toLocaleDateString([], {month:'short', day:'numeric'}), formatViews: (v) => v ? v.toLocaleString() : '0' };
+                return { splashVisible, splashOpacity, currentTab, clips, posts, activeClip, modals, isSyncing, isLive, currentUser, loginEmail, loginPass, host, toast, logoSvg, runSync, handleLogin, logout: () => { sbClient.auth.signOut(); location.reload(); }, formatDate: (d) => new Date(d).toLocaleDateString([], {month:'short', day:'numeric'}), formatViews: (v) => v ? v.toLocaleString() : '0' };
             }
         }).mount('#app-container');
     </script>
