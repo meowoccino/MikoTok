@@ -12,7 +12,6 @@
         :root { --bg-color: #000000; --card-bg: #111113; --primary: #9146FF; --primary-light: #a970ff; --text-main: #ffffff; --text-muted: #71717a; --border-color: #27272a; --danger: #ef4444; --offline-gray: #3f3f46; --discord: #5865F2; --success: #00ffa3; }
         * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; font-family: 'Inter', sans-serif; }
         
-        /* Tablet & Desktop Optimization */
         body, html { margin: 0; padding: 0; height: 100%; width: 100%; background: #050505; color: var(--text-main); overflow: hidden; display: flex; justify-content: center; align-items: center; }
         #app-container { width: 100%; max-width: 540px; height: 100%; max-height: 100dvh; position: relative; background: var(--bg-color); overflow: hidden; display: flex; flex-direction: column; box-shadow: 0 0 50px rgba(0,0,0,0.8); }
         
@@ -47,9 +46,13 @@
         .toast-popup.show { opacity: 1; transform: translateX(-50%) translateY(0); }
 
         #live-player-box { background: linear-gradient(160deg, #160b24 0%, #0a0512 100%); border-radius: 16px; padding: 16px; margin-bottom: 25px; border: 1px solid rgba(145, 70, 255, 0.3); position: relative; }
-        .status-badge-pinned { position: absolute; top: 25px; left: 25px; z-index: 10; padding: 4px 10px; border-radius: 6px; font-size: 10px; font-weight: 900; text-transform: uppercase; display: flex; align-items: center; gap: 6px; box-shadow: 0 4px 10px rgba(0,0,0,0.5); background: var(--danger); color: white; }
+        
+        /* Badge Styles */
+        .status-badge-pinned { position: absolute; top: 25px; left: 25px; z-index: 10; padding: 4px 10px; border-radius: 6px; font-size: 10px; font-weight: 900; text-transform: uppercase; display: flex; align-items: center; gap: 6px; box-shadow: 0 4px 10px rgba(0,0,0,0.5); color: white; }
+        .status-badge-pinned.live { background: var(--danger); }
+        .status-badge-pinned.vod { background: var(--primary); } /* Purple for VOD */
+        
         .pulse-dot { width: 6px; height: 6px; border-radius: 50%; animation: heartbeat 1.5s infinite; background: white; }
-        .offline .pulse-dot { background: #bbb; animation: none; }
         .pinned-badge { position: absolute; top: 25px; right: 25px; z-index: 10; background: rgba(0,0,0,0.6); border: 1px solid rgba(255,255,255,0.1); padding: 4px 10px; border-radius: 6px; font-size: 10px; font-weight: 800; color: white; text-transform: uppercase; display: flex; align-items: center; gap: 4px; box-shadow: 0 4px 10px rgba(0,0,0,0.5); }
 
         .card { background: var(--card-bg); border-radius: 12px; padding: 12px; margin-bottom: 16px; border: 1px solid var(--border-color); }
@@ -70,15 +73,12 @@
         
         .modal-content { background: #0a0a0c; border-radius: 32px 32px 0 0; padding: 30px 24px 40px; border-top: 1px solid var(--border-color); width: 100%; max-width: 540px; align-self: center; overflow-y: auto; max-height: 90vh; touch-action: pan-y; overscroll-behavior-y: contain; transform: translateY(0); margin-top: auto; }
         
-        /* Drag Handle */
         .drag-handle { width: 36px; height: 5px; background: #3f3f46; border-radius: 10px; margin: -10px auto 25px; opacity: 0.8; }
 
         .input-box { width: 100%; background: #000; border: 1px solid var(--border-color); color: white; padding: 14px; border-radius: 12px; margin-bottom: 12px; font-size: 14px; outline: none; }
         .sync-btn { width: 100%; background: linear-gradient(135deg, var(--primary), var(--primary-light)); border: none; color: white; padding: 16px; border-radius: 16px; font-weight: 800; font-size: 14px; margin-bottom: 12px; cursor: pointer; box-shadow: 0 4px 15px rgba(145, 70, 255, 0.3); }
         .logout-btn { width: 100%; background: #1a1a1c; border: 1px solid var(--border-color); color: var(--text-muted); padding: 14px; border-radius: 16px; font-weight: 700; cursor: pointer; font-size: 13px; display: flex; align-items: center; justify-content: center; gap: 8px; transition: 0.2s; }
         .logout-btn:active { background: #27272a; color: white; }
-        .wipe-link { display: inline-block; margin-top: 15px; font-size: 11px; color: var(--text-muted); font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; text-decoration: underline; cursor: pointer; opacity: 0.6; }
-        .wipe-link:active { color: var(--danger); opacity: 1; }
 
         /* Admin UI */
         .infra-bar { background: var(--card-bg); border: 1px solid var(--border-color); border-radius: 16px; padding: 16px 20px; display: flex; justify-content: center; margin-bottom: 20px; align-items: center; }
@@ -120,23 +120,44 @@
 
         <div class="view-port" :style="{ opacity: splashVisible ? 0 : 1 }">
             <div id="feed-scroll" v-if="currentTab === 'home'" @touchstart="handleFeedTouchStart" @touchmove="handleFeedTouchMove" @touchend="handleFeedTouchEnd">
-                <!-- Pull to Refresh Visual Indicator -->
                 <div class="ptr-container" :style="{ height: ptrHeight + 'px', transition: ptrHeight === 0 ? 'height 0.3s' : 'none' }">
                     <span class="material-symbols-rounded" :style="{ transform: 'rotate(' + (ptrHeight * 5) + 'deg)', opacity: ptrHeight / 60 }">refresh</span>
                 </div>
 
                 <div id="live-player-box">
-                    <div class="status-badge-pinned" v-if="isLive">
+                    <!-- Badge Logic -->
+                    <div class="status-badge-pinned live" v-if="isLive">
                         <span class="pulse-dot"></span>
                         <span>LIVE</span>
                     </div>
+                    <div class="status-badge-pinned vod" v-else-if="latestVodId">
+                        <span class="pulse-dot"></span>
+                        <span>LATEST VOD</span>
+                    </div>
+
                     <div class="pinned-badge">
                         <span class="material-symbols-rounded" style="font-size:12px;">push_pin</span> Pinned
                     </div>
+
+                    <!-- Smart Iframe Logic -->
                     <div style="width:100%; aspect-ratio:16/9; border-radius:10px; overflow:hidden; background:#000;">
-                        <iframe :src="'https://player.twitch.tv/?channel=codemiko&parent=meowoccino.github.io&autoplay=false&muted=true'" style="width:100%; height:100%; border:none;" allowfullscreen></iframe>
+                        <!-- Plays Live if active, otherwise plays Latest VOD ID if found -->
+                        <iframe 
+                            v-if="isLive"
+                            :src="'https://player.twitch.tv/?channel=codemiko&parent=' + hostname + '&autoplay=false&muted=true'" 
+                            style="width:100%; height:100%; border:none;" 
+                            allowfullscreen>
+                        </iframe>
+                        <iframe 
+                            v-else-if="latestVodId"
+                            :src="'https://player.twitch.tv/?video=' + latestVodId + '&parent=' + hostname + '&autoplay=false&muted=true'" 
+                            style="width:100%; height:100%; border:none;" 
+                            allowfullscreen>
+                        </iframe>
+                        <div v-else style="width:100%; height:100%; display:flex; align-items:center; justify-content:center; color:var(--text-muted); font-size:12px;">Stream Offline</div>
                     </div>
                 </div>
+
                 <div class="card" v-for="clip in clips" :key="clip.id">
                     <div style="display:flex;align-items:center;margin-bottom:12px;">
                         <img src="1000018850.png?v=2" style="width:36px;height:36px;border-radius:50%;border:1px solid var(--primary);">
@@ -154,7 +175,7 @@
             </div>
 
             <div style="height:100%; background:#000;" v-if="currentTab === 'chat'">
-                <iframe :src="'https://www.twitch.tv/embed/codemiko/chat?parent=meowoccino.github.io&darkpopout'" height="100%" width="100%" frameborder="0"></iframe>
+                <iframe :src="'https://www.twitch.tv/embed/codemiko/chat?parent=' + hostname + '&darkpopout'" height="100%" width="100%" frameborder="0"></iframe>
             </div>
 
             <div id="feed-scroll" v-if="currentTab === 'community'">
@@ -181,23 +202,15 @@
             <div class="nav-item" @click="openAdmin"><span class="material-symbols-rounded">account_circle</span>Profile</div>
         </nav>
 
-        <!-- Video Player Overlay -->
         <div class="modal-overlay" :class="{ open: activeClip }" @click="activeClip = null" style="background: rgba(0,0,0,0.95);">
-            <!-- Added a container to center the video explicitly on tablets and desktop -->
             <div style="width:100%; max-width:540px; margin: auto; aspect-ratio:16/9; background:#000;" v-if="activeClip">
-                <iframe :src="'https://clips.twitch.tv/embed?clip=' + activeClip.id + '&parent=meowoccino.github.io&autoplay=true&muted=false'" style="width:100%; height:100%; border:none;" allow="autoplay; fullscreen" allowfullscreen></iframe>
+                <iframe :src="'https://clips.twitch.tv/embed?clip=' + activeClip.id + '&parent=' + hostname + '&autoplay=true&muted=false'" style="width:100%; height:100%; border:none;" allow="autoplay; fullscreen" allowfullscreen></iframe>
             </div>
         </div>
 
-        <!-- MikoOS Profile Modal with Native DOM Swipe -->
         <div class="modal-overlay" :class="{ open: modals.profile }" @click.self="closeAdmin">
-            <div class="modal-content" ref="modalContentEl"
-                 @touchstart="handleModalTouchStart"
-                 @touchmove="handleModalTouchMove"
-                 @touchend="handleModalTouchEnd">
-                 
+            <div class="modal-content" ref="modalContentEl" @touchstart="handleModalTouchStart" @touchmove="handleModalTouchMove" @touchend="handleModalTouchEnd">
                 <div class="drag-handle"></div>
-
                 <div v-if="!currentUser">
                     <h1 style="font-family:'Outfit'; font-size:26px; margin:0 0 20px 0;">Sign In</h1>
                     <input type="text" v-model="loginEmail" class="input-box" placeholder="Username">
@@ -212,56 +225,13 @@
                         </div>
                         <button @click="closeAdmin" style="background:none; border:none; color:var(--text-muted); cursor:pointer;"><span class="material-symbols-rounded">close</span></button>
                     </div>
-
-                    <div class="infra-bar">
-                        <div class="status-node">
-                            <div class="pulse" :class="{ error: !apiHealthy }"></div> 
-                            TWITCH API: {{ apiHealthy ? 'NORMAL' : 'CREDENTIALS EXPIRED' }}
-                        </div>
-                    </div>
-
-                    <div class="metric-card-large">
-                        <div>
-                            <div style="font-size:10px; color:var(--text-muted); text-transform:uppercase; font-weight:800; margin-bottom:4px;">Global Traffic</div>
-                            <div style="font-family:'Outfit'; font-size:34px; font-weight:900;">{{ stats.visitors }}</div>
-                        </div>
-                        <span class="material-symbols-rounded" style="color:var(--primary); font-size:36px; opacity:0.8;">monitoring</span>
-                    </div>
-
-                    <div class="stat-grid">
-                        <div class="stat-card">
-                            <div style="font-size:10px; color:var(--text-muted); text-transform:uppercase; font-weight:800; margin-bottom:4px;">Clips</div>
-                            <div style="font-family:'Outfit'; font-size:22px; font-weight:700;">{{ clips.length }} <span style="font-size:11px; color:var(--text-muted); font-weight:400;">PCS</span></div>
-                        </div>
-                        <div class="stat-card">
-                            <div style="font-size:10px; color:var(--text-muted); text-transform:uppercase; font-weight:800; margin-bottom:4px;">Storage</div>
-                            <div style="font-family:'Outfit'; font-size:22px; font-weight:700;">{{ (clips.length * 0.015).toFixed(1) }} <span style="font-size:11px; color:var(--text-muted); font-weight:400;">MB</span></div>
-                        </div>
-                    </div>
-
-                    <div style="margin-bottom:20px; padding:18px; background:rgba(255,255,255,0.03); border-radius:18px; border:1px dashed var(--border-color);">
-                        <div style="font-size:10px; color:var(--text-muted); margin-bottom:12px; font-weight:800; text-align: left;">API CONFIGURATION</div>
-                        <input type="text" class="input-box" v-model="apiConfig.cid" placeholder="Client ID">
-                        <input type="password" class="input-box" v-model="apiConfig.tkn" placeholder="Access Token">
-                        <button class="sync-btn" @click="saveKeys" style="font-size:12px; height:44px; background:#000; box-shadow: none;">SAVE API KEYS</button>
-                    </div>
-
-                    <button class="sync-btn" @click="runSync" :disabled="isSyncing" style="margin-bottom: 20px;">
-                        <span class="material-symbols-rounded" style="font-size: 18px; vertical-align: middle;">rocket_launch</span>
-                        {{ isSyncing ? 'SYNCING DATA...' : 'SYNC ALL CLIPS (12 MO)' }}
-                    </button>
-                    
-                    <div style="margin-bottom:20px; padding:18px; background:rgba(239, 68, 68, 0.05); border-radius:18px; border:1px dashed var(--danger);">
-                        <div style="font-size:10px; color:var(--danger); margin-bottom:8px; font-weight:800; text-align: left;">DANGER ZONE</div>
-                        <p style="font-size:12px; color:var(--text-muted); text-align:left; margin:0 0 16px 0; line-height:1.4;">Permanently delete all clips from the database. This action cannot be undone.</p>
-                        <button class="logout-btn" @click="wipeClips" style="background:#000; border-color:var(--danger); color:var(--danger); font-size: 12px; padding: 12px;">
-                            <span class="material-symbols-rounded" style="font-size: 16px;">delete_forever</span> WIPE REPOSITORY
-                        </button>
-                    </div>
-
-                    <button class="logout-btn" @click="handleLogout">
-                        <span class="material-symbols-rounded" style="font-size: 18px;">logout</span> SIGN OUT
-                    </button>
+                    <div class="infra-bar"><div class="status-node"><div class="pulse" :class="{ error: !apiHealthy }"></div> TWITCH API: {{ apiHealthy ? 'NORMAL' : 'EXPIRED' }}</div></div>
+                    <div class="metric-card-large"><div><div style="font-size:10px; color:var(--text-muted); text-transform:uppercase; font-weight:800; margin-bottom:4px;">Global Traffic</div><div style="font-family:'Outfit'; font-size:34px; font-weight:900;">{{ stats.visitors }}</div></div><span class="material-symbols-rounded" style="color:var(--primary); font-size:36px; opacity:0.8;">monitoring</span></div>
+                    <div class="stat-grid"><div class="stat-card"><div style="font-size:10px; color:var(--text-muted); text-transform:uppercase; font-weight:800; margin-bottom:4px;">Clips</div><div style="font-family:'Outfit'; font-size:22px; font-weight:700;">{{ clips.length }} <span style="font-size:11px; color:var(--text-muted); font-weight:400;">PCS</span></div></div><div class="stat-card"><div style="font-size:10px; color:var(--text-muted); text-transform:uppercase; font-weight:800; margin-bottom:4px;">Storage</div><div style="font-family:'Outfit'; font-size:22px; font-weight:700;">{{ (clips.length * 0.015).toFixed(1) }} <span style="font-size:11px; color:var(--text-muted); font-weight:400;">MB</span></div></div></div>
+                    <div style="margin-bottom:20px; padding:18px; background:rgba(255,255,255,0.03); border-radius:18px; border:1px dashed var(--border-color);"><div style="font-size:10px; color:var(--text-muted); margin-bottom:12px; font-weight:800; text-align: left;">API CONFIGURATION</div><input type="text" class="input-box" v-model="apiConfig.cid" placeholder="Client ID"><input type="password" class="input-box" v-model="apiConfig.tkn" placeholder="Access Token"><button class="sync-btn" @click="saveKeys" style="font-size:12px; height:44px; background:#000; box-shadow: none;">SAVE API KEYS</button></div>
+                    <button class="sync-btn" @click="runSync" :disabled="isSyncing" style="margin-bottom: 20px;"><span class="material-symbols-rounded" style="font-size: 18px; vertical-align: middle;">rocket_launch</span> {{ isSyncing ? 'SYNCING DATA...' : 'SYNC ALL CLIPS (12 MO)' }}</button>
+                    <div style="margin-bottom:20px; padding:18px; background:rgba(239, 68, 68, 0.05); border-radius:18px; border:1px dashed var(--danger);"><div style="font-size:10px; color:var(--danger); margin-bottom:8px; font-weight:800; text-align: left;">DANGER ZONE</div><button class="logout-btn" @click="wipeClips" style="background:#000; border-color:var(--danger); color:var(--danger); font-size: 12px; padding: 12px;"><span class="material-symbols-rounded" style="font-size: 16px;">delete_forever</span> WIPE REPOSITORY</button></div>
+                    <button class="logout-btn" @click="handleLogout"><span class="material-symbols-rounded" style="font-size: 18px;">logout</span> SIGN OUT</button>
                 </div>
             </div>
         </div>
@@ -275,13 +245,10 @@
             setup() {
                 const splashVisible = ref(true), splashOpacity = ref(1), currentTab = ref('home'), clips = ref([]), activeClip = ref(null), modals = ref({profile: false}), isSyncing = ref(false), isLive = ref(false), currentUser = ref(null), loginEmail = ref(''), loginPass = ref(''), toast = ref({visible: false, message: ''});
                 const stats = ref({ visitors: 0 }), apiHealthy = ref(false), apiConfig = ref({ cid: localStorage.getItem('twitch_client_id') || '', tkn: localStorage.getItem('twitch_access_token') || '' });
+                const latestVodId = ref(null), hostname = window.location.hostname || 'meowoccino.github.io';
 
-                const ptrHeight = ref(0);
-                let feedStartY = 0;
-                
-                const modalContentEl = ref(null);
-                let modalStartY = 0;
-                let currentDeltaY = 0;
+                const ptrHeight = ref(0); let feedStartY = 0;
+                const modalContentEl = ref(null); let modalStartY = 0, currentDeltaY = 0;
 
                 const logoSvg = (id) => `<svg viewBox="0 0 100 100"><defs><linearGradient id="grad-${id}" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stop-color="#ffffff"/><stop offset="100%" stop-color="#9146FF"/></linearGradient></defs><circle cx="50" cy="50" r="40" fill="none" stroke="url(#grad-${id})" stroke-width="8"/><path d="M 33 38 L 48 62 L 62 38 L 62 55 Q 62 65 69 64" fill="none" stroke="url(#grad-${id})" stroke-width="8" stroke-linecap="round" stroke-linejoin="round"/></svg>`;
                 const showToast = (msg) => { toast.value.message = msg; toast.value.visible = true; setTimeout(() => toast.value.visible = false, 3000); };
@@ -298,147 +265,41 @@
                         const res = await fetch('https://decapi.me/twitch/uptime/codemiko');
                         const text = await res.text();
                         isLive.value = !text.includes('offline');
+                        if (!isLive.value) fetchLatestVod(); // If offline, get VOD
                     } catch(e) { console.error("Live check failed"); }
                 };
 
-                /* Feed Pull to Refresh */
-                const handleFeedTouchStart = (e) => {
-                    const scrollContainer = document.getElementById('feed-scroll');
-                    if (scrollContainer && scrollContainer.scrollTop <= 0) feedStartY = e.touches[0].clientY;
-                    else feedStartY = 0;
-                };
-
-                const handleFeedTouchMove = (e) => {
-                    if (!feedStartY) return;
-                    const y = e.touches[0].clientY;
-                    if (y > feedStartY) {
-                        const distance = (y - feedStartY) * 0.4;
-                        ptrHeight.value = Math.min(distance, 80); 
-                        if (ptrHeight.value > 10 && document.getElementById('feed-scroll').scrollTop === 0) {
-                            if (e.cancelable) e.preventDefault(); 
-                        }
-                    }
-                };
-
-                const handleFeedTouchEnd = async () => {
-                    if (ptrHeight.value >= 50) {
-                        ptrHeight.value = 50; 
-                        await loadData(); 
-                    }
-                    ptrHeight.value = 0; 
-                    feedStartY = 0;
-                };
-
-                /* Native DOM Swipe Down (Lag-Free) */
-                const handleModalTouchStart = (e) => {
-                    const modalEl = e.currentTarget;
-                    if (modalEl.scrollTop <= 0) {
-                        modalStartY = e.touches[0].clientY;
-                        currentDeltaY = 0;
-                        if(modalContentEl.value) modalContentEl.value.style.transition = 'none';
-                    } else {
-                        modalStartY = 0;
-                    }
-                };
-
-                const handleModalTouchMove = (e) => {
-                    if (!modalStartY) return;
-                    const y = e.touches[0].clientY;
-                    currentDeltaY = y - modalStartY;
-                    if (currentDeltaY > 0) {
-                        if (e.cancelable) e.preventDefault();
-                        if (modalContentEl.value) {
-                            modalContentEl.value.style.transform = `translateY(${currentDeltaY}px)`;
-                        }
-                    }
-                };
-
-                const handleModalTouchEnd = () => {
-                    if (!modalStartY) return;
-                    if (modalContentEl.value) {
-                        modalContentEl.value.style.transition = 'transform 0.3s cubic-bezier(0.2, 0.8, 0.2, 1)';
-                        if (currentDeltaY > 150) {
-                            closeAdmin();
-                        } else {
-                            modalContentEl.value.style.transform = 'translateY(0px)';
-                        }
-                    }
-                    modalStartY = 0;
-                    currentDeltaY = 0;
-                };
-
-                const openAdmin = () => { 
-                    loadData(); 
-                    checkApi(); 
-                    if(modalContentEl.value) {
-                        modalContentEl.value.style.transition = 'none';
-                        modalContentEl.value.style.transform = 'translateY(0px)';
-                    }
-                    modals.value.profile = true; 
-                };
-                
-                const closeAdmin = () => {
-                    modals.value.profile = false;
-                    if(modalContentEl.value) {
-                        modalContentEl.value.style.transform = 'translateY(0px)';
-                    }
-                };
-
-                const checkApi = async () => {
-                    if (!apiConfig.value.cid || !apiConfig.value.tkn) { apiHealthy.value = false; return; }
+                const fetchLatestVod = async () => {
+                    if (!apiConfig.value.cid || !apiConfig.value.tkn) return;
                     try {
-                        const res = await fetch('https://api.twitch.tv/helix/users?login=codemiko', {
-                            headers: { 'Client-Id': apiConfig.value.cid, 'Authorization': `Bearer ${apiConfig.value.tkn}` }
-                        });
-                        apiHealthy.value = res.ok;
-                    } catch { apiHealthy.value = false; }
+                        // 1. Get Broadcaster ID
+                        const uR = await fetch('https://api.twitch.tv/helix/users?login=codemiko', { headers: { 'Client-Id': apiConfig.value.cid, 'Authorization': `Bearer ${apiConfig.value.tkn}` }});
+                        const uD = await uR.json();
+                        const bId = uD.data[0].id;
+                        // 2. Get latest Archive (VOD)
+                        const vR = await fetch(`https://api.twitch.tv/helix/videos?user_id=${bId}&first=1&type=archive`, { headers: { 'Client-Id': apiConfig.value.cid, 'Authorization': `Bearer ${apiConfig.value.tkn}` }});
+                        const vD = await vR.json();
+                        if (vD.data && vD.data.length > 0) latestVodId.value = vD.data[0].id;
+                    } catch(e) { console.error("VOD fetch error"); }
                 };
 
-                const saveKeys = () => {
-                    localStorage.setItem('twitch_client_id', apiConfig.value.cid);
-                    localStorage.setItem('twitch_access_token', apiConfig.value.tkn);
-                    checkApi();
-                    showToast("API KEYS SAVED");
-                };
+                const handleFeedTouchStart = (e) => { const sc = document.getElementById('feed-scroll'); if (sc && sc.scrollTop <= 0) feedStartY = e.touches[0].clientY; else feedStartY = 0; };
+                const handleFeedTouchMove = (e) => { if (!feedStartY) return; const y = e.touches[0].clientY; if (y > feedStartY) { ptrHeight.value = Math.min((y - feedStartY) * 0.4, 80); if (ptrHeight.value > 10 && document.getElementById('feed-scroll').scrollTop === 0) if (e.cancelable) e.preventDefault(); } };
+                const handleFeedTouchEnd = async () => { if (ptrHeight.value >= 50) { ptrHeight.value = 50; await loadData(); } ptrHeight.value = 0; feedStartY = 0; };
+                const handleModalTouchStart = (e) => { if (e.currentTarget.scrollTop <= 0) { modalStartY = e.touches[0].clientY; currentDeltaY = 0; if(modalContentEl.value) modalContentEl.value.style.transition = 'none'; } else modalStartY = 0; };
+                const handleModalTouchMove = (e) => { if (!modalStartY) return; const y = e.touches[0].clientY; currentDeltaY = y - modalStartY; if (currentDeltaY > 0) { if (e.cancelable) e.preventDefault(); if (modalContentEl.value) modalContentEl.value.style.transform = `translateY(${currentDeltaY}px)`; } };
+                const handleModalTouchEnd = () => { if (!modalStartY) return; if (modalContentEl.value) { modalContentEl.value.style.transition = 'transform 0.3s cubic-bezier(0.2, 0.8, 0.2, 1)'; if (currentDeltaY > 150) closeAdmin(); else modalContentEl.value.style.transform = 'translateY(0px)'; } modalStartY = 0; currentDeltaY = 0; };
 
-                const handleLogin = async () => {
-                    const email = loginEmail.value.includes('@') ? loginEmail.value : `${loginEmail.value}@mikotok.com`;
-                    const { data, error } = await sbClient.auth.signInWithPassword({ email, password: loginPass.value });
-                    if (error) showToast(error.message);
-                    else {
-                        currentUser.value = data.user.id;
-                        showToast("SIGNED IN");
-                    }
-                };
-
-                const handleLogout = async () => {
-                    const { error } = await sbClient.auth.signOut();
-                    if (error) {
-                        showToast(error.message);
-                    } else {
-                        currentUser.value = null;
-                        showToast("SIGNED OUT");
-                    }
-                };
-
-                const wipeClips = async () => {
-                    if(!confirm("DANGEROUS: Permanently clear all clips from the database?")) return;
-                    try {
-                        const { error } = await sbClient.from('clips').delete().not('id', 'is', null);
-                        if (error) throw error;
-                        
-                        clips.value = [];
-                        await loadData();
-                        showToast("REPOSITORY WIPED");
-                    } catch (e) { 
-                        console.error(e);
-                        showToast("WIPE FAILED"); 
-                    }
-                };
+                const openAdmin = () => { loadData(); checkApi(); if(modalContentEl.value) { modalContentEl.value.style.transition = 'none'; modalContentEl.value.style.transform = 'translateY(0px)'; } modals.value.profile = true; };
+                const closeAdmin = () => { modals.value.profile = false; if(modalContentEl.value) modalContentEl.value.style.transform = 'translateY(0px)'; };
+                const checkApi = async () => { if (!apiConfig.value.cid || !apiConfig.value.tkn) { apiHealthy.value = false; return; } try { const res = await fetch('https://api.twitch.tv/helix/users?login=codemiko', { headers: { 'Client-Id': apiConfig.value.cid, 'Authorization': `Bearer ${apiConfig.value.tkn}` } }); apiHealthy.value = res.ok; } catch { apiHealthy.value = false; } };
+                const saveKeys = () => { localStorage.setItem('twitch_client_id', apiConfig.value.cid); localStorage.setItem('twitch_access_token', apiConfig.value.tkn); checkApi(); showToast("API KEYS SAVED"); };
+                const handleLogin = async () => { const email = loginEmail.value.includes('@') ? loginEmail.value : `${loginEmail.value}@mikotok.com`; const { data, error } = await sbClient.auth.signInWithPassword({ email, password: loginPass.value }); if (error) showToast(error.message); else { currentUser.value = data.user.id; showToast("SIGNED IN"); } };
+                const handleLogout = async () => { const { error } = await sbClient.auth.signOut(); if (error) showToast(error.message); else { currentUser.value = null; showToast("SIGNED OUT"); } };
+                const wipeClips = async () => { if(!confirm("DANGEROUS: Wipe everything?")) return; try { await sbClient.from('clips').delete().not('id', 'is', null); clips.value = []; await loadData(); showToast("WIPED"); } catch (e) { showToast("FAILED"); } };
 
                 const runSync = async () => {
-                    if(isSyncing.value) return;
-                    if(!apiHealthy.value) { showToast("CHECK API KEYS"); return; }
+                    if(isSyncing.value || !apiHealthy.value) return;
                     isSyncing.value = true;
                     try {
                         const twelveMonthsAgo = new Date(Date.now() - 365 * 24 * 60 * 60 * 1000).toISOString();
@@ -447,14 +308,10 @@
                         const uR = await fetch('https://api.twitch.tv/helix/users?login=codemiko', { headers: {'Client-Id': cid, 'Authorization': `Bearer ${tkn}`} });
                         const uD = await uR.json();
                         const bId = uD.data[0].id;
-                        
-                        let totalSynced = 0;
-                        let cursor = '';
-                        
+                        let totalSynced = 0, cursor = '';
                         do {
                             const cR = await fetch(`https://api.twitch.tv/helix/clips?broadcaster_id=${bId}&started_at=${twelveMonthsAgo}&ended_at=${now}&first=100${cursor ? '&after='+cursor : ''}`, { headers: {'Client-Id': cid, 'Authorization': `Bearer ${tkn}`} });
                             const cD = await cR.json();
-                            
                             if (cD.data && cD.data.length > 0) {
                                 const ins = cD.data.map(x => ({ id: x.id, thumbnail_url: x.thumbnail_url, title: x.title, view_count: x.view_count, created_at: x.created_at, added_by: 'CodeMiko' }));
                                 await sbClient.from('clips').upsert(ins, { onConflict: 'id' });
@@ -462,33 +319,21 @@
                             }
                             cursor = cD.pagination?.cursor;
                         } while (cursor && totalSynced < 2500); 
-
                         await loadData();
-                        showToast(`SYNC SUCCESS! ${totalSynced} CLIPS.`);
-                    } catch (e) { console.error(e); showToast("SYNC ERROR"); } finally { isSyncing.value = false; }
+                        showToast(`SYNCED ${totalSynced} CLIPS`);
+                    } catch (e) { showToast("SYNC ERROR"); } finally { isSyncing.value = false; }
                 };
 
                 onMounted(async () => {
                     const { data: { session } } = await sbClient.auth.getSession();
                     currentUser.value = session?.user?.id || null;
-                    
-                    const { error: aErr } = await sbClient.from('analytics').insert([{ event_name: 'visit' }]);
-                    if (aErr) console.warn("Traffic tracking blocked by Supabase:", aErr.message);
-
+                    await sbClient.from('analytics').insert([{ event_name: 'visit' }]);
                     loadData();
                     checkLiveStatusPublic();
                     setTimeout(() => { splashOpacity.value = 0; setTimeout(() => splashVisible.value = false, 600); }, 1500); 
                 });
 
-                return { 
-                    splashVisible, splashOpacity, currentTab, clips, activeClip, modals, isSyncing, isLive, toast, logoSvg, 
-                    runSync, currentUser, loginEmail, loginPass, handleLogin, handleLogout, openAdmin, closeAdmin, apiHealthy, apiConfig, 
-                    stats, saveKeys, wipeClips, modalContentEl,
-                    ptrHeight, handleFeedTouchStart, handleFeedTouchMove, handleFeedTouchEnd,
-                    handleModalTouchStart, handleModalTouchMove, handleModalTouchEnd,
-                    formatDate: (d) => new Date(d).toLocaleDateString([], {month:'short', day:'numeric'}), 
-                    formatViews: (v) => v ? v.toLocaleString() : '0' 
-                };
+                return { hostname, splashVisible, splashOpacity, currentTab, clips, activeClip, modals, isSyncing, isLive, toast, logoSvg, runSync, currentUser, loginEmail, loginPass, handleLogin, handleLogout, openAdmin, closeAdmin, apiHealthy, apiConfig, stats, saveKeys, wipeClips, modalContentEl, ptrHeight, handleFeedTouchStart, handleFeedTouchMove, handleFeedTouchEnd, handleModalTouchStart, handleModalTouchMove, handleModalTouchEnd, latestVodId, formatDate: (d) => new Date(d).toLocaleDateString([], {month:'short', day:'numeric'}), formatViews: (v) => v ? v.toLocaleString() : '0' };
             }
         }).mount('#app-container');
     </script>
