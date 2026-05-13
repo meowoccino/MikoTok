@@ -33,13 +33,13 @@
         .header-badge.live { background: var(--danger); color: white; }
         .header-badge.offline { background: var(--offline-gray); color: #fff; }
 
-        /* Content Areas */
+        /* Content Viewport */
         .view-port { flex: 1; width: 100%; overflow: hidden; position: relative; }
         #feed-scroll { height: 100%; width: 100%; overflow-y: auto; padding: 10px 12px 100px; -webkit-overflow-scrolling: touch; }
         #feed-scroll::-webkit-scrollbar { display: none; }
         #chat-container { height: 100%; width: 100%; background: #000; padding-bottom: 80px; }
 
-        /* Centered Sync Toast */
+        /* Centered Toast */
         .toast-popup { position: absolute; top: 20px; left: 50%; transform: translateX(-50%) translateY(-10px); background: var(--primary); color: white; padding: 10px 24px; border-radius: 50px; font-size: 13px; font-weight: 800; text-align: center; z-index: 2000; opacity: 0; transition: 0.3s; pointer-events: none; box-shadow: 0 4px 15px rgba(145, 70, 255, 0.4); }
         .toast-popup.show { opacity: 1; transform: translateX(-50%) translateY(0); }
 
@@ -52,14 +52,14 @@
         .live .pulse-dot { background: white; }
         .offline .pulse-dot { background: #bbb; }
 
-        /* Card Elements */
+        /* Clip Cards */
         .card { background: var(--card-bg); border-radius: 12px; padding: 12px; margin-bottom: 16px; border: 1px solid var(--border-color); }
         .thumbnail-wrapper { width: 100%; border-radius: 8px; overflow: hidden; aspect-ratio: 16/9; background: #000; position: relative; cursor: pointer; }
         .thumbnail-wrapper img { width: 100%; height: 100%; object-fit: cover; opacity: 0.8; }
         .clip-overlay-top { position: absolute; top: 8px; right: 8px; background: rgba(0,0,0,0.6); padding: 4px 8px; border-radius: 6px; font-size: 10px; font-weight: 700; color: white; }
         .clip-overlay-bottom { position: absolute; bottom: 8px; left: 8px; background: rgba(145, 70, 255, 0.8); padding: 4px 8px; border-radius: 6px; font-size: 10px; font-weight: 800; color: white; display: flex; align-items: center; gap: 4px; }
 
-        /* Nav */
+        /* Bottom Nav */
         .bottom-nav { width: 100%; background: #000; border-top: 1px solid var(--border-color); display: flex; justify-content: space-between; align-items: center; padding: 10px 10px 30px; flex-shrink: 0; }
         .nav-item { display: flex; flex-direction: column; align-items: center; width: 20%; color: var(--text-muted); font-size: 10px; gap: 4px; cursor: pointer; text-decoration: none; }
         .nav-item.active { color: #fff; }
@@ -93,7 +93,7 @@
         </header>
 
         <div class="view-port" :style="{ opacity: splashVisible ? 0 : 1 }">
-            <!-- Sync Success Toast -->
+            <!-- Centered Notification -->
             <div class="toast-popup" :class="{ show: toast.visible }">{{ toast.message }}</div>
 
             <!-- Home Tab -->
@@ -107,6 +107,7 @@
                         <iframe :src="'https://player.twitch.tv/?channel=codemiko&parent=meowoccino.github.io&autoplay=false&muted=true'" style="width:100%; height:100%; border:none;" allowfullscreen></iframe>
                     </div>
                 </div>
+                <!-- Chronological Clips -->
                 <div class="card" v-for="clip in clips" :key="clip.id">
                     <div style="display:flex;align-items:center;margin-bottom:12px;">
                         <img src="1000018850.png?v=2" style="width:36px;height:36px;border-radius:50%;border:1px solid var(--primary);">
@@ -137,7 +138,7 @@
                         </div>
                         <div><div style="font-weight:700; color:var(--discord);">Discord Feed</div><div style="font-size:10px; color:var(--text-muted);">Pinned</div></div>
                     </div>
-                    <div style="font-size:14px; color:var(--text-main);">Test text placeholder</div>
+                    <div style="font-size:14px;">Test text placeholder</div>
                 </div>
                 <div class="card" v-for="post in posts" :key="post.id">
                     <div style="display:flex; align-items:center; margin-bottom:12px;">
@@ -162,6 +163,7 @@
 
         <div class="modal-overlay" :class="{ open: activeClip }" @click="activeClip = null" style="justify-content: center; background: rgba(0,0,0,0.95);">
             <div v-if="activeClip" style="width:100%; aspect-ratio:16/9; background:#000;">
+                <!-- Forced Audio for Clips -->
                 <iframe :src="'https://clips.twitch.tv/embed?clip=' + activeClip.id + '&parent=meowoccino.github.io&autoplay=true&muted=false'" style="width:100%; height:100%; border:none;" allowfullscreen></iframe>
             </div>
         </div>
@@ -192,6 +194,7 @@
                 const showToast = (msg) => { toast.value.message = msg; toast.value.visible = true; setTimeout(() => toast.value.visible = false, 3000); };
                 
                 const loadData = async () => {
+                    // Force latest clips first
                     const { data: c } = await sbClient.from('clips').select('*').order('created_at', { ascending: false });
                     const { data: p } = await sbClient.from('posts').select('*').order('created_at', { ascending: false });
                     clips.value = c || []; posts.value = p || [];
