@@ -13,20 +13,19 @@
             --bg-color: #050505; --card-bg: #111113; --primary: #9146FF; --primary-light: #a970ff; 
             --text-main: #ffffff; --text-muted: #a1a1aa; --border-color: #27272a; 
             --danger: #ef4444; --offline-gray: #3f3f46; --discord: #5865F2; --success: #00ffa3; 
+            --pinned: #ec4899; 
             --nav-bg: rgba(20, 20, 25, 0.7); --modal-bg: #0a0a0c;
         }
 
         * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; font-family: 'Inter', sans-serif; }
         body, html { margin: 0; padding: 0; height: 100%; width: 100%; background: var(--bg-color); color: var(--text-main); overflow: hidden; display: flex; justify-content: center; align-items: center; }
         
-        /* Brightened Deep Purple Cosmic Gradient Background */
         #app-container { width: 100%; max-width: 540px; height: 100%; max-height: 100dvh; position: relative; background: radial-gradient(circle at 50% 30%, #2a1147 0%, #050505 80%); overflow: hidden; display: flex; flex-direction: column; box-shadow: 0 0 50px rgba(0,0,0,0.8); }
         [v-cloak] { display: none !important; }
 
         @keyframes fadeInUp { from { opacity: 0; transform: translate3d(0, 10px, 0); } to { opacity: 1; transform: translate3d(0, 0, 0); } }
         .stagger-item { animation: fadeInUp 0.3s ease forwards; opacity: 0; will-change: transform, opacity; }
 
-        /* Splash Screen */
         #splash-screen { position: absolute; inset: 0; background: var(--bg-color); display: flex; flex-direction: column; align-items: center; justify-content: center; z-index: 9999; transition: opacity 0.3s ease-out; will-change: opacity; }
         .progress-bar { width: 180px; height: 3px; background: rgba(145,70,255,0.2); border-radius: 10px; overflow: hidden; margin-top: 20px; position: relative; transform: translateZ(0); }
         .progress-fill { position: absolute; left: 0; top: 0; height: 100%; width: 50%; background: linear-gradient(90deg, transparent, var(--primary-light), var(--primary)); animation: load 1s infinite linear; will-change: transform; transform-origin: left; }
@@ -45,20 +44,17 @@
         .header-badge.live { background: var(--danger); color: white; }
         .header-badge.offline { background: var(--offline-gray); color: #fff; }
 
-        /* TikTok Style Full-Screen Snapping Feed */
         .view-port { flex: 1; width: 100%; height: 100%; overflow: hidden; position: relative; }
-        #feed-scroll { height: 100%; width: 100%; overflow-y: scroll; scroll-snap-type: y mandatory; scroll-behavior: smooth; touch-action: pan-y; }
+        #feed-scroll { height: 100%; width: 100%; overflow-y: scroll; scroll-snap-type: y mandatory; scroll-behavior: smooth; touch-action: pan-y; padding-bottom: 80px; }
         #feed-scroll::-webkit-scrollbar { display: none; }
         
-        .feed-snap-item { height: 100%; width: 100%; scroll-snap-align: center; scroll-snap-stop: always; display: flex; flex-direction: column; justify-content: center; position: relative; overflow: hidden; }
+        .feed-snap-item { width: 100%; scroll-snap-align: center; scroll-snap-stop: always; display: flex; flex-direction: column; justify-content: flex-start; position: relative; padding: 0 15px 35px; }
 
-        /* Miko Metadata Section (Used for Clips Only) */
-        .miko-metadata { display: flex; align-items: center; padding: 16px 20px; background: transparent; }
+        .miko-metadata { display: flex; align-items: center; padding: 12px 5px 0; background: transparent; }
         .miko-metadata img { width: 44px; height: 44px; border-radius: 50%; border: 2px solid var(--primary); margin-right: 14px; box-shadow: 0 2px 10px rgba(0,0,0,0.5); flex-shrink: 0; }
         .miko-metadata .author-name { font-weight: 800; font-size: 15px; letter-spacing: 0.2px; color: white; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; text-overflow: ellipsis; line-height: 1.3; }
         .miko-metadata .clip-stats { font-size: 11px; font-weight: 700; color: var(--text-muted); display: flex; align-items: center; gap: 6px; margin-top: 5px; text-transform: uppercase; letter-spacing: 0.5px; }
 
-        /* Top Safe Zone for Pull-to-Refresh */
         .safe-refresh-zone { position: absolute; top: 0; left: 0; width: 100%; height: 90px; z-index: 90; }
 
         .ptr-container { position: absolute; top: 0; left: 0; width: 100%; display: flex; justify-content: center; align-items: center; color: var(--primary); overflow: hidden; z-index: 50; pointer-events: none; }
@@ -68,32 +64,27 @@
         @keyframes shimmer { 0% { background-position: -200% 0; } 100% { background-position: 200% 0; } }
         .skeleton { background: linear-gradient(90deg, #18181b 25%, #27272a 50%, #18181b 75%); background-size: 200% 100%; animation: shimmer 1.5s infinite; border-radius: 8px; width: 100%; height: 100%; position: absolute; inset: 0; z-index: -1; }
 
-        /* Premium Badges positioned at top left of video */
-        .premium-badge { position: absolute; top: 12px; left: 12px; z-index: 10; display: inline-flex; align-items: center; justify-content: center; gap: 8px; background: rgba(0, 0, 0, 0.7); backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); border: 1px solid rgba(255, 255, 255, 0.15); padding: 6px 14px; border-radius: 30px; color: #fff; font-size: 10px; font-weight: 900; letter-spacing: 0.5px; text-transform: uppercase; box-shadow: 0 4px 15px rgba(0,0,0,0.5); pointer-events: none; }
+        .premium-badge { display: inline-flex; align-items: center; justify-content: center; gap: 8px; background: rgba(0, 0, 0, 0.7); backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); border: 1px solid rgba(255, 255, 255, 0.15); padding: 6px 14px; border-radius: 30px; color: #fff; font-size: 10px; font-weight: 900; letter-spacing: 0.5px; text-transform: uppercase; box-shadow: 0 4px 15px rgba(0,0,0,0.5); pointer-events: none; }
         .premium-badge .dot { width: 6px; height: 6px; border-radius: 50%; box-shadow: 0 0 8px currentColor; }
         .premium-badge.live .dot { background: var(--danger); color: var(--danger); animation: heartbeat 1.5s infinite; }
         .premium-badge.vod .dot { background: var(--primary); color: var(--primary); animation: heartbeat 1.5s infinite; }
 
-        /* Edge-to-Edge Video Container */
-        .video-container { position: relative; width: 100%; aspect-ratio: 16/9; z-index: 2; box-shadow: 0 10px 40px rgba(0,0,0,0.6); background: #000; }
+        .video-container { position: relative; width: 100%; aspect-ratio: 16/9; z-index: 2; box-shadow: 0 10px 40px rgba(0,0,0,0.6); background: #000; border-radius: 12px; overflow: hidden; }
 
-        /* Community Feed Specifics */
         .community-feed { padding: 100px 12px 100px; height: 100%; overflow-y: auto; }
         .card { background: var(--card-bg); border-radius: 16px; padding: 16px; margin-bottom: 16px; border: 1px solid var(--border-color); box-shadow: 0 4px 20px rgba(0,0,0,0.2); }
 
-        /* Floating Glassmorphism Navigation */
         .bottom-nav { position: absolute; bottom: 20px; left: 50%; transform: translateX(-50%); width: calc(100% - 40px); background: var(--nav-bg); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px); border-radius: 30px; border: 1px solid rgba(255, 255, 255, 0.1); display: flex; justify-content: space-between; align-items: center; padding: 10px 15px; z-index: 100; box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
-        .nav-item { display: flex; flex-direction: column; align-items: center; width: 25%; color: var(--text-muted); font-size: 10px; gap: 4px; cursor: pointer; text-decoration: none; transition: transform 0.2s cubic-bezier(0.2, 0.8, 0.2, 1), color 0.2s; font-weight: 700; will-change: transform; }
+        .nav-item { display: flex; flex-direction: column; align-items: center; width: 20%; color: var(--text-muted); font-size: 10px; gap: 4px; cursor: pointer; text-decoration: none; transition: transform 0.2s cubic-bezier(0.2, 0.8, 0.2, 1), color 0.2s; font-weight: 700; will-change: transform; }
         .nav-item:active { transform: scale(0.85); }
         .nav-item.active { color: var(--text-main); }
         .nav-item.active .material-symbols-rounded { font-variation-settings: 'FILL' 1; color: var(--primary); }
+        .nav-item.active svg { fill: var(--primary) !important; }
 
-        /* Custom Scrollbar for Chat */
         .chat-container iframe { scrollbar-width: thin; scrollbar-color: var(--primary) transparent; }
         .chat-container::-webkit-scrollbar { width: 6px; }
         .chat-container::-webkit-scrollbar-thumb { background-color: var(--primary); border-radius: 10px; }
         
-        /* Admin Panel Modal */
         .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.85); z-index: 1500; display: flex; flex-direction: column; justify-content: flex-end; align-items: center; opacity: 0; pointer-events: none; transition: opacity 0.3s ease; backdrop-filter: blur(5px); }
         .modal-overlay.open { opacity: 1; pointer-events: auto; }
         .modal-content { background: var(--modal-bg); border-radius: 32px 32px 0 0; padding: 20px 20px 30px; border-top: 1px solid var(--border-color); width: 100%; max-width: 540px; align-self: center; overflow-y: auto; max-height: 95vh; touch-action: pan-y; overscroll-behavior-y: contain; margin-top: auto; transform: translate3d(0, 100vh, 0); transition: transform 0.3s cubic-bezier(0.2, 0.8, 0.2, 1); will-change: transform; backface-visibility: hidden; }
@@ -129,14 +120,12 @@
     <div id="app-container" v-cloak>
         <div class="toast-popup" :class="{ show: toast.visible }">{{ toast.message }}</div>
 
-        <!-- Splash Screen -->
         <div id="splash-screen" v-if="splashVisible" :style="{ opacity: splashOpacity }">
             <div style="width:120px;height:120px;margin-bottom:20px;" v-html="logoSvg('splash')"></div>
             <div class="gradient-text" style="font-size: 40px;">MikoTok</div>
             <div class="progress-bar"><div class="progress-fill"></div></div>
         </div>
 
-        <!-- Safe Pull-To-Refresh Target Zone overlaying the header -->
         <div class="safe-refresh-zone" v-if="currentTab === 'home'" @touchstart="handleFeedTouchStart" @touchmove="handleFeedTouchMove" @touchend="handleFeedTouchEnd"></div>
 
         <header class="app-header" :style="{ opacity: splashVisible ? 0 : 1 }" v-if="currentTab === 'home'">
@@ -155,26 +144,31 @@
 
         <div class="view-port" :style="{ opacity: splashVisible ? 0 : 1 }">
             
-            <!-- TikTok Home Feed -->
             <div id="feed-scroll" v-show="currentTab === 'home'">
                 <div class="ptr-container" :style="{ height: ptrHeight + 'px', transition: ptrHeight === 0 ? 'height 0.3s' : 'none' }">
                     <span class="material-symbols-rounded" :style="{ transform: 'rotate(' + (ptrHeight * 5) + 'deg)', opacity: ptrHeight / 60 }">refresh</span>
                 </div>
 
-                <!-- Guaranteed First Item: Featured Edge-to-Edge Player -->
-                <div class="feed-snap-item" data-id="featured">
+                <div class="feed-snap-item" data-id="featured" style="padding-top: 85px; padding-bottom: 25px; scroll-snap-align: start;">
+                    
+                    <div style="display: flex; justify-content: flex-start; align-items: flex-end; width: 100%; padding-bottom: 12px;">
+                        <div>
+                            <div class="premium-badge live" v-if="isLive"><div class="dot"></div><span>LIVE NOW</span></div>
+                            <div class="premium-badge vod" v-else-if="latestVodId"><div class="dot"></div><span>LATEST VOD</span></div>
+                        </div>
+                    </div>
+
                     <template v-if="loadingLiveStatus">
                         <div class="video-container"><div class="skeleton"></div></div>
                     </template>
                     
                     <template v-else>
-                        <div class="video-container">
-                            <div class="premium-badge live" v-if="isLive"><div class="dot"></div><span>LIVE NOW</span></div>
-                            <div class="premium-badge vod" v-else-if="latestVodId"><div class="dot"></div><span>LATEST VOD</span></div>
-
-                            <!-- Live/VOD starts muted so it can auto-play without browser blocking -->
-                            <iframe v-if="activeFeedVideo === 'featured' && isLive" :src="'https://player.twitch.tv/?channel=codemiko&parent=' + hostname + '&autoplay=true&muted=true'" style="width:100%; height:100%; border:none; pointer-events:auto;" allow="autoplay; fullscreen" allowfullscreen></iframe>
-                            <iframe v-else-if="activeFeedVideo === 'featured' && latestVodId" :src="'https://player.twitch.tv/?video=' + latestVodId + '&parent=' + hostname + '&autoplay=true&muted=true'" style="width:100%; height:100%; border:none; pointer-events:auto;" allow="autoplay; fullscreen" allowfullscreen></iframe>
+                        <div class="video-container" style="box-shadow: 0 0 20px rgba(145, 70, 255, 0.4), 0 0 40px rgba(255, 255, 255, 0.1); border-bottom: 2px solid var(--primary);">
+                            <!-- The featured player now stays mounted so it never flashes "STREAM OFFLINE" while scrolling -->
+                            <iframe v-if="isLive" :src="'https://player.twitch.tv/?channel=codemiko&parent=' + hostname + '&autoplay=true&muted=true'" style="width:100%; height:100%; border:none; pointer-events:auto;" allow="autoplay; fullscreen" allowfullscreen></iframe>
+                            <iframe v-else-if="latestVodId" :src="'https://player.twitch.tv/?video=' + latestVodId + '&parent=' + hostname + '&autoplay=true&muted=true'" style="width:100%; height:100%; border:none; pointer-events:auto;" allow="autoplay; fullscreen" allowfullscreen></iframe>
+                            
+                            <!-- This will only show if there is genuinely no Live stream AND no VOD found -->
                             <div v-else style="width:100%; height:100%; display:flex; align-items:center; justify-content:center; color:white; font-size:14px; font-weight:800; background:rgba(0,0,0,0.3); border: 1px solid rgba(145, 70, 255, 0.3); border-radius: 12px; box-shadow: 0 4px 30px rgba(0,0,0,0.5);">STREAM OFFLINE</div>
                         </div>
                     </template>
@@ -184,12 +178,10 @@
                     <div class="video-container"><div class="skeleton"></div></div>
                 </div>
 
-                <!-- Edge-to-Edge Clip Players -->
                 <div class="feed-snap-item" v-for="clip in clips" :key="clip.id" :data-id="clip.id">
                     <div class="video-container">
                         <img :src="optimizeTwitchImg(clip.thumbnail_url)" loading="lazy" style="width:100%; height:100%; object-fit:cover; position:absolute; inset:0; z-index:-1;">
                         
-                        <!-- Clips will auto-play with sound (if browser permits via user interaction) -->
                         <iframe v-if="activeFeedVideo === clip.id" :src="'https://clips.twitch.tv/embed?clip=' + clip.id + '&parent=' + hostname + '&autoplay=true'" style="width:100%; height:100%; border:none; position:absolute; inset:0; pointer-events:auto;" allow="autoplay; fullscreen" allowfullscreen></iframe>
                         <div class="skeleton" v-else></div>
                     </div>
@@ -215,33 +207,36 @@
             <div class="community-feed" v-if="currentTab === 'community'">
                 <div v-for="(post, index) in discordFeed" :key="index" class="card stagger-item" :style="{ animationDelay: (index * 0.05) + 's' }">
                     <div style="display:flex;align-items:center;margin-bottom:16px;">
-                        <div style="width:42px;height:42px;border-radius:50%;border:2px solid var(--discord);display:flex;align-items:center;justify-content:center;background:rgba(88, 101, 242, 0.1);"><svg viewBox="0 0 127 96" style="width:20px; fill:var(--discord);"><path d="M107.7,8.07A105,105,0,0,0,81.47,0a72,72,0,0,0-3.36,6.83,97,97,0,0,0-49,0,72,72,0,0,0-3.36-6.83A105,105,0,0,0,19.39,8.09C2.71,32.65-1.82,56.6.48,80.1a105,105,0,0,0,32.19,16.18,77,77,0,0,0,6.89-11.11,64,64,0,0,1-10.85-5.18,75,75,0,0,0,64.32,0c.87.71,1.76,1.39,2.66,2a64,64,0,0,1-10.87,5.19,77,77,0,0,0,6.89,11.10,105,105,0,0,0,32.19-16.14c2.72-27.00-4.55-50.87-19.40-72.03ZM42.45,65.69C36.18,65.69,31.00,60,31.00,53s5.12-12.67,11.45-12.67S54,46,54,53s-5.17,12.69-11.55,12.69Zm42.24,0C78.41,65.69,73.25,60,73.25,53s5.12-12.67,11.44-12.67S96.20,46,96.20,53s-5.14,12.69-9.51,12.69Z"/></svg></div>
+                        <img src="1000018850.png?v=2" style="width:42px;height:42px;border-radius:50%;border:2px solid var(--primary);object-fit:cover;flex-shrink:0;">
                         <div style="margin-left:12px;">
-                            <div style="font-weight:900;font-size:15px; letter-spacing:0.3px;">{{ post.author }}</div>
+                            <div style="font-weight:900;font-size:15px; letter-spacing:0.3px; display:flex; align-items:center; gap:4px; color: var(--text-main);">CodeMiko <span class="material-symbols-rounded" style="font-size: 16px; color: var(--primary);">verified</span></div>
                             <div style="font-size:11px; color:var(--text-muted); font-weight:600;">{{ formatDateTime(post.created_at) }}</div>
                         </div>
                     </div>
                     <div style="background:transparent; border-radius:12px; padding:16px; border: 1px solid var(--border-color);">
-                        <div style="font-size:14px; line-height: 1.6; white-space: pre-wrap;">{{ post.content }}</div>
+                        <div style="font-size:14px; line-height: 1.6; white-space: pre-wrap;">{{ cleanDiscordText(post.content) }}</div>
                     </div>
                 </div>
             </div>
         </div>
 
-        <!-- Floating Glassmorphism Nav -->
         <nav class="bottom-nav" :style="{ opacity: splashVisible ? 0 : 1 }">
             <div class="nav-item" :class="{ active: currentTab === 'home' }" @click="currentTab = 'home'"><span class="material-symbols-rounded">home</span>Home</div>
             <div class="nav-item" :class="{ active: currentTab === 'chat' }" @click="currentTab = 'chat'"><span class="material-symbols-rounded">chat</span>Chat</div>
             <div class="nav-item" :class="{ active: currentTab === 'community' }" @click="currentTab = 'community'"><span class="material-symbols-rounded">forum</span>Feed</div>
+            
+            <a href="https://discord.com/invite/codemiko" target="_blank" class="nav-item">
+                <svg viewBox="0 0 24 24" style="width: 24px; height: 24px; fill: currentColor; margin-bottom: 4px;"><path d="M20.317 4.3698a19.7913 19.7913 0 00-4.8851-1.5152.0741.0741 0 00-.0785.0371c-.211.3753-.4447.8648-.6083 1.2495-1.8447-.2762-3.68-.2762-5.4868 0-.1636-.3933-.4058-.8742-.6177-1.2495a.077.077 0 00-.0785-.037 19.7363 19.7363 0 00-4.8852 1.515.0699.0699 0 00-.0321.0277C.5334 9.0458-.319 13.5799.0992 18.0578a.0824.0824 0 00.0312.0561c2.0528 1.5076 4.0413 2.4228 5.9929 3.0294a.0777.0777 0 00.0842-.0276c.4616-.6304.8731-1.2952 1.226-1.9942a.076.076 0 00-.0416-.1057c-.6528-.2476-1.2743-.5495-1.8722-.8923a.077.077 0 01-.0076-.1277c.1258-.0943.2517-.1923.3718-.2914a.0743.0743 0 01.0776-.0105c3.9278 1.7933 8.18 1.7933 12.0614 0a.0739.0739 0 01.0785.0095c.1202.099.246.1981.3728.2924a.077.077 0 01-.0066.1276 12.2986 12.2986 0 01-1.873.8914.0766.0766 0 00-.0407.1067c.3604.698.7719 1.3628 1.225 1.9932a.076.076 0 00.0842.0286c1.961-.6067 3.9495-1.5219 6.0023-3.0294a.077.077 0 00.0313-.0552c.5004-5.177-.8382-9.6739-3.5485-13.6604a.061.061 0 00-.0312-.0286zM8.02 15.3312c-1.1825 0-2.1569-1.0857-2.1569-2.419 0-1.3332.9555-2.4189 2.157-2.4189 1.2108 0 2.1757 1.0952 2.1568 2.419 0 1.3332-.9555 2.4189-2.1569 2.4189zm7.9748 0c-1.1825 0-2.1569-1.0857-2.1569-2.419 0-1.3332.9554-2.4189 2.1569-2.4189 1.2108 0 2.1757 1.0952 2.1568 2.419 0 1.3332-.946 2.4189-2.1568 2.4189Z"/></svg>
+                Discord
+            </a>
+
             <div class="nav-item" @click="openAdmin"><span class="material-symbols-rounded">account_circle</span>Profile</div>
         </nav>
 
-        <!-- Admin Panel Modal -->
         <div class="modal-overlay" :class="{ open: modals.profile }" @click.self="closeAdmin">
             <div class="modal-content" ref="modalContentEl" @touchstart="handleModalTouchStart" @touchmove="handleModalTouchMove" @touchend="handleModalTouchEnd">
                 <div class="drag-handle"></div>
                 
-                <!-- Authentication Gate -->
                 <div v-if="!currentUser">
                     <h1 style="font-family:'Outfit'; font-size:26px; margin:0 0 20px 0;">Admin Sign In</h1>
                     <input type="text" v-model="loginEmail" class="input-box" placeholder="Username">
@@ -249,12 +244,11 @@
                     <button class="sync-btn" @click="handleLogin" style="margin-top: 10px;">AUTHENTICATE</button>
                 </div>
 
-                <!-- Admin Tools -->
                 <div v-else>
                     <div class="infra-bar">
                         <div class="status-node">
                             <div class="pulse" :class="{ error: !apiHealthy }"></div> 
-                            TWITCH API: {{ apiHealthy ? 'READY' : 'KEY REQD' }}
+                            TWITCH API: {{ apiHealthy ? 'CONNECTED' : 'CREDENTIALS REQUIRED' }}
                         </div>
                     </div>
 
@@ -320,47 +314,43 @@
                 
                 const syncState = ref('idle'); 
                 const activeFeedVideo = ref('featured');
-                let intersectionObserver = null;
                 let scrollTimer = null;
-                let isScrollingFeed = false;
-                let visibleItems = new Map();
 
                 const logoSvg = (id) => `<svg viewBox="0 0 100 100"><defs><linearGradient id="grad-${id}" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stop-color="#ffffff"/><stop offset="100%" stop-color="#9146FF"/></linearGradient></defs><circle cx="50" cy="50" r="40" fill="none" stroke="url(#grad-${id})" stroke-width="8"/><path d="M 33 38 L 48 62 L 62 38 L 62 55 Q 62 65 69 64" fill="none" stroke="url(#grad-${id})" stroke-width="8" stroke-linecap="round" stroke-linejoin="round"/></svg>`;
                 const showToast = (msg) => { toast.value.message = msg; toast.value.visible = true; setTimeout(() => toast.value.visible = false, 3000); };
                 const optimizeTwitchImg = (url) => url.replace('%{width}', '480').replace('%{height}', '270');
+                const cleanDiscordText = (txt) => txt ? txt.replace(/<a?:[^:]+:\d+>/g, '').trim() : '';
 
                 const initObserver = () => {
-                    if (intersectionObserver) intersectionObserver.disconnect();
-                    intersectionObserver = new IntersectionObserver((entries) => {
-                        entries.forEach(e => {
-                            if (e.isIntersecting) {
-                                visibleItems.set(e.target.dataset.id, e.intersectionRatio);
-                            } else {
-                                visibleItems.delete(e.target.dataset.id);
+                    const scroller = document.getElementById('feed-scroll');
+                    if(!scroller) return;
+                    const updateActive = () => {
+                        if (scroller.scrollTop < 50) {
+                            activeFeedVideo.value = 'featured';
+                            return;
+                        }
+                        const items = document.querySelectorAll('.feed-snap-item');
+                        let minDiff = Infinity;
+                        let bestId = null;
+                        const center = window.innerHeight / 2;
+                        items.forEach(el => {
+                            const rect = el.getBoundingClientRect();
+                            const elCenter = rect.top + rect.height / 2;
+                            const diff = Math.abs(center - elCenter);
+                            if (diff < minDiff) {
+                                minDiff = diff;
+                                bestId = el.dataset.id;
                             }
                         });
-                        
-                        let maxRatio = 0;
-                        let targetId = null;
-                        
-                        const scroller = document.getElementById('feed-scroll');
-                        if (scroller && scroller.scrollTop < 50) {
-                            targetId = 'featured';
-                        } else {
-                            for (const [id, ratio] of visibleItems.entries()) {
-                                if (ratio > maxRatio) {
-                                    maxRatio = ratio;
-                                    targetId = id;
-                                }
-                            }
+                        if (bestId && activeFeedVideo.value !== bestId) {
+                            activeFeedVideo.value = bestId;
                         }
-                        
-                        if (targetId) activeFeedVideo.value = targetId;
-                    }, { threshold: [0.3, 0.5, 0.7, 0.9] });
-                    
-                    setTimeout(() => {
-                        document.querySelectorAll('.feed-snap-item').forEach(el => intersectionObserver.observe(el));
-                    }, 500);
+                    };
+                    scroller.addEventListener('scroll', () => {
+                        clearTimeout(scrollTimer);
+                        scrollTimer = setTimeout(updateActive, 150);
+                    }, { passive: true });
+                    setTimeout(updateActive, 500);
                 };
 
                 const loadData = async () => {
@@ -398,13 +388,11 @@
                 };
 
                 const fetchLatestVod = async () => {
-                    if (!apiConfig.value.cid || !apiConfig.value.tkn) return;
                     try {
-                        const uR = await fetch('https://api.twitch.tv/helix/users?login=codemiko', { headers: { 'Client-Id': apiConfig.value.cid, 'Authorization': `Bearer ${apiConfig.value.tkn}` }});
-                        const uD = await uR.json();
-                        const vR = await fetch(`https://api.twitch.tv/helix/videos?user_id=${uD.data[0].id}&first=1&type=archive`, { headers: { 'Client-Id': apiConfig.value.cid, 'Authorization': `Bearer ${apiConfig.value.tkn}` }});
-                        const vD = await vR.json();
-                        if (vD.data?.length > 0) latestVodId.value = vD.data[0].id;
+                        const vRes = await fetch('https://decapi.me/twitch/videos/codemiko?limit=1');
+                        const vText = await vRes.text();
+                        const m = vText.match(/videos\/(\d+)/) || vText.match(/v(\d+)/);
+                        if (m) latestVodId.value = m[1];
                     } catch(e) {}
                 };
 
@@ -426,7 +414,14 @@
                     showToast("SIGNED OUT"); 
                 };
 
-                const handleFeedTouchStart = (e) => { feedStartY = e.touches[0].clientY; };
+                const handleFeedTouchStart = (e) => { 
+                    const scrollEl = document.getElementById('feed-scroll');
+                    if (scrollEl && scrollEl.scrollTop <= 0) {
+                        feedStartY = e.touches[0].clientY; 
+                    } else {
+                        feedStartY = 0;
+                    }
+                };
                 const handleFeedTouchMove = (e) => { 
                     if (!feedStartY) return; 
                     const y = e.touches[0].clientY; 
@@ -513,7 +508,6 @@
                     const { data: { session } } = await sbClient.auth.getSession();
                     currentUser.value = session?.user?.id || null;
                     
-                    // Allow unauthenticated pings to be tracked globally
                     await sbClient.from('analytics').insert([{ event_name: 'sys_ping' }]);
                     
                     loadData(); 
@@ -521,7 +515,7 @@
                     setTimeout(() => { splashOpacity.value = 0; setTimeout(() => splashVisible.value = false, 400); }, 1500); 
                 });
 
-                return { hostname, splashVisible, splashOpacity, currentTab, clips, discordFeed, modals, syncState, isLive, toast, logoSvg, runSync, currentUser, loginEmail, loginPass, handleLogin, handleLogout, openAdmin, closeAdmin, apiHealthy, apiConfig, stats, saveKeys, wipeClips, modalContentEl, ptrHeight, handleFeedTouchStart, handleFeedTouchMove, handleFeedTouchEnd, handleModalTouchStart, handleModalTouchMove, handleModalTouchEnd, latestVodId, loadingClips, loadingLiveStatus, optimizeTwitchImg, activeFeedVideo, formatDate: (d) => new Date(d).toLocaleDateString([], {month:'short', day:'numeric'}), formatViews: (v) => v ? v.toLocaleString() : '0', formatDateTime: (d) => new Date(d).toLocaleString([], {month:'short', day:'numeric', hour:'2-digit', minute:'2-digit'}) };
+                return { hostname, splashVisible, splashOpacity, currentTab, clips, discordFeed, modals, syncState, isLive, toast, logoSvg, runSync, currentUser, loginEmail, loginPass, handleLogin, handleLogout, openAdmin, closeAdmin, apiHealthy, apiConfig, stats, saveKeys, wipeClips, modalContentEl, ptrHeight, handleFeedTouchStart, handleFeedTouchMove, handleFeedTouchEnd, handleModalTouchStart, handleModalTouchMove, handleModalTouchEnd, latestVodId, loadingClips, loadingLiveStatus, optimizeTwitchImg, activeFeedVideo, cleanDiscordText, formatDate: (d) => new Date(d).toLocaleDateString([], {month:'short', day:'numeric'}), formatViews: (v) => v ? v.toLocaleString() : '0', formatDateTime: (d) => new Date(d).toLocaleString([], {month:'short', day:'numeric', hour:'2-digit', minute:'2-digit'}) };
             }
         }).mount('#app-container');
     </script>
