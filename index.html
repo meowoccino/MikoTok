@@ -1,4 +1,4 @@
- <!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en" data-theme="dark">
 <head>
     <meta charset="UTF-8">
@@ -138,7 +138,6 @@
                     <span class="material-symbols-rounded" :style="{ transform: 'rotate(' + (ptrHeight * 5) + 'deg)', opacity: ptrHeight / 60 }">refresh</span>
                 </div>
 
-                <!-- Increased padding-top to 110px to ensure the player sits safely below the header's avatar -->
                 <div class="feed-snap-item" data-id="featured" style="padding-top: 110px;">
                     
                     <div style="display: flex; justify-content: flex-start; align-items: flex-end; width: 100%;">
@@ -196,7 +195,7 @@
                 </div>
                 <div class="gerald-messages" id="gerald-msgs">
                     <div v-for="(m, i) in geraldMessages" :key="i" class="chat-bubble" :class="m.role">{{ m.content }}</div>
-                    <div v-if="isGeraldTyping" class="typing-indicator">Gerald is processing...</div>
+                    <div v-if="isGeraldTyping" class="typing-indicator">Gerald is computing...</div>
                 </div>
                 <div class="gerald-input-area">
                     <input type="text" class="gerald-input" placeholder="Bother Gerald..." v-model="geraldInput" @keyup.enter="talkToGerald">
@@ -244,7 +243,7 @@
             setup() {
                 const splashVisible = ref(true), splashOpacity = ref(1), currentTab = ref('home'), clips = ref([]), discordFeed = ref([]), modals = ref({profile: false}), isLive = ref(false), currentUser = ref(null), loginEmail = ref(''), loginPass = ref(''), toast = ref({visible: false, message: ''}), loadingClips = ref(true), loadingLiveStatus = ref(true), latestVodId = ref(null), hostname = window.location.hostname || 'meowoccino.github.io', ptrHeight = ref(0), activeFeedVideo = ref('featured');
                 
-                const apiConfig = ref({ gemini: localStorage.getItem('gemini_key') || 'AIzaSyCrgJ2tPI9eTAQTaUqhQSKulQtXjKd9iJA' });
+                const apiConfig = ref({ gemini: localStorage.getItem('gemini_key') || '' });
                 
                 const geraldInput = ref(''), geraldMessages = ref([{role:'gerald', content:'Ugh, system online. What do you want? Try not to break anything.'}]), isGeraldTyping = ref(false);
 
@@ -284,7 +283,6 @@
                         if (!isLive.value) {
                             const vRes = await fetch('https://decapi.me/twitch/videos/codemiko?limit=1');
                             const vText = await vRes.text();
-                            // Fixed RegEx to properly parse DecAPI's video output link
                             const m = vText.match(/videos\/(\d+)/); 
                             if (m && m[1]) {
                                 latestVodId.value = m[1];
