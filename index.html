@@ -8,170 +8,108 @@
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="https://unpkg.com/vue@3/dist/vue.global.prod.js"></script>
     <style>
-        :root { --bg-color: #000000; --card-bg: #111113; --primary: #9146FF; --primary-light: #a970ff; --text-main: #ffffff; --text-muted: #71717a; --border-color: #27272a; --danger: #ef4444; --offline-gray: #3f3f46; --discord: #5865F2; }
-        * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; font-family: 'Inter', sans-serif; }
-        body, html { margin: 0; padding: 0; height: 100%; width: 100%; background: var(--bg-color); color: var(--text-main); overflow: hidden; display: flex; justify-content: center; }
-        #app-container { width: 100%; max-width: 480px; height: 100%; position: relative; background: var(--bg-color); overflow: hidden; }
-        [v-cloak] { display: none !important; }
-        #splash-screen { position: absolute; inset: 0; background: var(--bg-color); display: flex; flex-direction: column; align-items: center; justify-content: center; z-index: 9999; transition: opacity 0.6s ease; }
-        .progress-bar { width: 180px; height: 3px; background: rgba(255,255,255,0.1); border-radius: 10px; overflow: hidden; position: relative; margin-top: 20px; }
-        .progress-fill { position: absolute; left: 0; top: 0; height: 100%; width: 50%; background: linear-gradient(90deg, #ffffff, var(--primary)); animation: load 1.5s infinite ease-in-out; }
-        @keyframes load { 0% { left: -50%; } 100% { left: 100%; } }
-        .gradient-text { display: inline-block; background: linear-gradient(135deg, #ffffff 30%, var(--primary) 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; font-family: 'Outfit', sans-serif; }
-        .app-header { position: absolute; top: 0; left: 0; width: 100%; z-index: 100; padding: 50px 20px 15px; display: flex; align-items: center; justify-content: space-between; background: rgba(0, 0, 0, 0.90); backdrop-filter: blur(12px); }
-        .simple-logo { flex-grow: 1; display: flex; align-items: center; justify-content: center; font-size: 24px; font-weight: 800; letter-spacing: -0.5px; }
-        .header-status-wrapper { position: relative; width: 42px; height: 42px; cursor: pointer; display: flex; align-items: center; justify-content: center; }
-        .story-ring { width: 38px; height: 38px; border-radius: 50%; padding: 2px; background: transparent; display: flex; align-items: center; justify-content: center; }
-        .story-ring.live { background: linear-gradient(45deg, var(--danger), var(--primary), #ff4685, var(--danger)); background-size: 300% 300%; animation: storyGlow 3s ease infinite; }
-        .story-avatar { width: 100%; height: 100%; border-radius: 50%; object-fit: cover; }
-        .status-badge { position: absolute; bottom: -2px; left: 50%; transform: translateX(-50%); color: #fff; font-size: 7px; font-weight: 900; padding: 1px 5px; border-radius: 4px; border: 1.5px solid #000; text-transform: uppercase; z-index: 2; white-space: nowrap; }
-        .status-badge.live { background: var(--danger); }
-        .status-badge.offline { background: var(--offline-gray); }
-        #feed { height: 100%; width: 100%; overflow-y: auto; padding: 120px 12px 100px; scroll-behavior: smooth; }
-        #feed::-webkit-scrollbar { display: none; }
-        #live-container { background: linear-gradient(160deg, #160b24 0%, #0a0512 100%); border-radius: 16px; padding: 16px; margin-bottom: 25px; border: 1px solid rgba(145, 70, 255, 0.3); }
-        .live-label { display: flex; align-items: center; justify-content: space-between; margin-bottom: 14px; }
-        .status-pill { background: rgba(0,0,0,0.5); border: 1px solid rgba(255,255,255,0.1); padding: 5px 12px; border-radius: 20px; display: flex; align-items: center; gap: 6px; backdrop-filter: blur(4px); }
-        .status-dot { width: 6px; height: 6px; background: var(--offline-gray); border-radius: 50%; }
-        .status-dot.active { background: var(--danger); box-shadow: 0 0 10px var(--danger); animation: heartbeatLive 1.8s infinite ease-in-out; }
-        .status-tag { font-size: 10px; font-weight: 800; letter-spacing: 0.5px; text-transform: uppercase; }
-        .player-wrapper { width: 100%; aspect-ratio: 16/9; border-radius: 10px; overflow: hidden; background: #000; border: 1px solid rgba(255,255,255,0.05); }
-        .card { background: var(--card-bg); border-radius: 12px; padding: 14px; margin-bottom: 12px; border: 1px solid var(--border-color); position: relative; }
-        .avatar-ring-feed { width: 38px; height: 38px; border-radius: 50%; margin-right: 12px; display: flex; align-items: center; justify-content: center; border: 1px solid var(--primary); background: #000; overflow: hidden; flex-shrink: 0; }
-        .avatar-ring-feed img { width: 100%; height: 100%; object-fit: cover; }
-        .thumbnail-wrapper { width: 100%; border-radius: 8px; overflow: hidden; aspect-ratio: 16/9; background: #000; position: relative; margin-top: 5px; cursor: pointer; }
-        .thumbnail-wrapper img { width: 100%; height: 100%; object-fit: cover; opacity: 0.8; }
-        .play-overlay { position: absolute; inset: 0; background: rgba(0,0,0,0.3); display: flex; align-items: center; justify-content: center; }
-        .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.9); z-index: 1500; display: flex; flex-direction: column; justify-content: flex-end; opacity: 0; pointer-events: none; transition: opacity 0.3s ease; }
-        .modal-overlay.open { opacity: 1; pointer-events: auto; }
-        .modal-content { background: #111113; border-radius: 20px 20px 0 0; padding: 10px 20px 40px; transform: translateY(100%); transition: transform 0.3s ease; border-top: 1px solid var(--border-color); text-align: center; }
-        .modal-overlay.open .modal-content { transform: translateY(0); }
-        .input-box { width: 100%; background: #000; border: 1px solid var(--border-color); color: white; padding: 14px; border-radius: 8px; outline: none; margin-bottom: 12px; font-size: 14px; text-align: left; }
-        .bottom-nav { position: absolute; bottom: 0; left: 0; width: 100%; background: #000; border-top: 1px solid var(--border-color); display: flex; justify-content: space-between; align-items: center; padding: 10px 15px 30px; z-index: 100; }
-        .nav-item { display: flex; flex-direction: column; align-items: center; width: 50px; color: var(--text-muted); font-size: 10px; gap: 4px; cursor: pointer; text-decoration: none; }
+        :root { --bg-color: #000000; --card-bg: #111113; --primary: #9146FF; --text-main: #ffffff; --text-muted: #71717a; --border-color: #27272a; --danger: #ef4444; }
+        * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+        body, html { margin: 0; padding: 0; height: 100%; width: 100%; background: var(--bg-color); color: var(--text-main); overflow: hidden; }
+        #app-container { width: 100%; max-width: 480px; height: 100vh; margin: 0 auto; position: relative; display: flex; flex-direction: column; }
+        
+        /* Fixed Scroll Fix */
+        .content-area { flex: 1; overflow-y: auto; padding: 110px 12px 100px; -webkit-overflow-scrolling: touch; }
+        .content-area::-webkit-scrollbar { display: none; }
+
+        .app-header { position: absolute; top: 0; left: 0; width: 100%; z-index: 100; padding: 50px 20px 15px; display: flex; align-items: center; background: rgba(0,0,0,0.9); backdrop-filter: blur(10px); }
+        .gradient-text { background: linear-gradient(135deg, #fff, var(--primary)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; font-family: 'Outfit', sans-serif; font-weight: 800; }
+        
+        .card { background: var(--card-bg); border-radius: 12px; padding: 14px; margin-bottom: 16px; border: 1px solid var(--border-color); }
+        .clip-meta { display: flex; justify-content: space-between; align-items: center; font-size: 11px; color: var(--text-muted); margin-top: 8px; }
+        .view-count { display: flex; align-items: center; gap: 4px; color: var(--primary); font-weight: 600; }
+        
+        .thumbnail-wrapper { width: 100%; border-radius: 8px; overflow: hidden; aspect-ratio: 16/9; background: #000; position: relative; cursor: pointer; border: 1px solid rgba(255,255,255,0.1); }
+        .thumbnail-wrapper img { width: 100%; height: 100%; object-fit: cover; }
+        .play-overlay { position: absolute; inset: 0; background: rgba(0,0,0,0.2); display: flex; align-items: center; justify-content: center; }
+
+        .bottom-nav { position: absolute; bottom: 0; left: 0; width: 100%; background: #000; border-top: 1px solid var(--border-color); display: flex; justify-content: space-between; padding: 10px 15px 30px; z-index: 100; }
+        .nav-item { display: flex; flex-direction: column; align-items: center; color: var(--text-muted); font-size: 10px; cursor: pointer; text-decoration: none; }
         .nav-item.active { color: #fff; }
-        @keyframes storyGlow { 0% { background-position: 0% 50%; } 50% { background-position: 100% 50%; } 100% { background-position: 0% 50%; } }
-        @keyframes heartbeatLive { 0% { transform: scale(1); opacity: 1; } 50% { transform: scale(1.25); opacity: 0.6; } 100% { transform: scale(1); opacity: 1; } }
+        
+        .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.95); z-index: 2000; display: flex; align-items: center; justify-content: center; opacity: 0; pointer-events: none; transition: 0.3s; }
+        .modal-overlay.open { opacity: 1; pointer-events: auto; }
+        .input-box { width: 100%; background: #1c1c1e; border: 1px solid var(--border-color); color: white; padding: 14px; border-radius: 8px; margin-bottom: 12px; }
     </style>
 </head>
 <body>
     <div id="app-container" v-cloak>
-        <div id="splash-screen" v-if="splashVisible" :style="{ opacity: splashOpacity }">
-            <div style="width:120px;height:120px;margin-bottom:20px;" v-html="logoSvg('splash')"></div>
-            <div class="gradient-text" style="font-size: 40px;">MikoTok</div>
-            <div class="progress-bar"><div class="progress-fill"></div></div>
+        <header class="app-header">
+            <div style="flex:1; text-align:center;"><span class="gradient-text" style="font-size:24px;">MikoTok</span></div>
+        </header>
+
+        <!-- Main Feed (Scrollable) -->
+        <div class="content-area" v-if="currentTab === 'home'">
+            <div class="card" v-for="clip in clips" :key="clip.id">
+                <div style="display:flex; align-items:center; margin-bottom:10px;">
+                    <img src="1000018850.png?v=2" style="width:32px; height:32px; border-radius:50%; border:1px solid var(--primary);">
+                    <div style="margin-left:10px;">
+                        <div style="font-weight:700; font-size:14px;">{{ clip.added_by }}</div>
+                        <div style="font-size:10px; color:var(--text-muted);">{{ formatDate(clip.created_at) }}</div>
+                    </div>
+                </div>
+                <div class="thumbnail-wrapper" @click="activeClip = clip">
+                    <img :src="clip.thumbnail_url">
+                    <div class="play-overlay"><span class="material-symbols-rounded" style="font-size:48px; color:#fff;">play_circle</span></div>
+                </div>
+                <div class="clip-meta">
+                    <div class="view-count">
+                        <span class="material-symbols-rounded" style="font-size:14px;">visibility</span>
+                        {{ formatViews(clip.view_count) }} views
+                    </div>
+                    <div style="max-width: 70%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">{{ clip.title }}</div>
+                </div>
+            </div>
         </div>
 
-        <div class="app-content-wrapper" :style="{ opacity: splashVisible ? 0 : 1, pointerEvents: splashVisible ? 'none' : 'auto' }">
-            <header class="app-header">
-                <div style="width:28px;height:28px;" v-html="logoSvg('header')"></div>
-                <div class="simple-logo"><span class="gradient-text">MikoTok</span></div>
-                <a href="https://www.twitch.tv/codemiko" target="_blank" class="header-status-wrapper" style="text-decoration:none;">
-                    <div class="story-ring" :class="isLive ? 'live' : 'offline'"><img src="1000018850.png?v=2" class="story-avatar"></div>
-                    <div class="status-badge" :class="isLive ? 'live' : 'offline'">{{ isLive ? 'LIVE' : 'OFFLINE' }}</div>
-                </a>
-            </header>
-
-            <div id="feed" v-if="currentTab === 'home'">
-                <div id="live-container">
-                    <div class="live-label">
-                        <div class="status-pill" :style="{ borderColor: isLive ? 'rgba(239, 68, 68, 0.4)' : 'rgba(145, 70, 255, 0.2)' }">
-                            <span class="status-dot" :class="{ active: isLive }"></span> 
-                            <span class="status-tag" :style="{ color: isLive ? 'var(--danger)' : 'var(--offline-gray)' }">{{ isLive ? 'ONLINE' : 'OFFLINE' }}</span>
-                        </div>
-                    </div>
-                    <div class="player-wrapper">
-                        <iframe :src="'https://player.twitch.tv/?channel=codemiko&parent=' + host + '&parent=' + windowHost + '&autoplay=false&muted=true'" referrerpolicy="no-referrer" allowfullscreen="true" style="width:100%; height:100%; border:none;"></iframe>
-                    </div>
+        <!-- Community Feed -->
+        <div class="content-area" v-if="currentTab === 'community'">
+            <div class="card">
+                <div style="display:flex; align-items:center; margin-bottom:12px;">
+                    <img src="1000018850.png?v=2" style="width:32px; height:32px; border-radius:50%;">
+                    <div style="margin-left:10px;"><div style="font-weight:700;">CodeMiko</div><div style="font-size:10px; color:var(--text-muted);">Just now</div></div>
                 </div>
-                <!-- Manual refresh hint if empty -->
-                <div v-if="clips.length === 0" style="text-align: center; color: var(--text-muted); margin-top: 40px;">
-                   No clips found. Log in to sync content.
-                </div>
-                <div class="card" v-for="clip in clips" :key="clip.id">
-                    <div style="display:flex;align-items:center;margin-bottom:10px;">
-                        <div class="avatar-ring-feed"><img src="1000018850.png?v=2"></div>
-                        <div style="font-weight:700;font-size:14px; margin-left: 10px;">{{ clip.added_by }}</div>
-                    </div>
-                    <div class="thumbnail-wrapper" @click="activeClip = clip">
-                        <img :src="clip.thumbnail_url">
-                        <div class="play-overlay"><span class="material-symbols-rounded" style="font-size:48px; color:white;">play_circle</span></div>
-                    </div>
-                </div>
+                <div style="font-size:14px;">Test text placeholder</div>
             </div>
-
-            <div class="chat-tab-container" v-if="currentTab === 'chat'">
-                <iframe :src="'https://www.twitch.tv/embed/codemiko/chat?parent=' + host + '&parent=' + windowHost + '&darkpopout'" referrerpolicy="no-referrer" style="width:100%; height:100%; border:none;"></iframe>
-            </div>
-
-            <div id="feed" v-if="currentTab === 'community'">
-                <!-- Test Placeholder Post -->
-                <div class="card">
-                    <div style="display:flex; align-items:center; margin-bottom:12px;">
-                        <div class="avatar-ring-feed"><img src="1000018850.png?v=2"></div>
-                        <div>
-                            <div style="font-weight:700; font-size:14px;">CodeMiko</div>
-                            <div style="font-size:10px; color:var(--text-muted);">Just now</div>
-                        </div>
-                    </div>
-                    <div style="font-size:14px; line-height: 1.5;">Test text placeholder</div>
+            <div class="card" v-for="post in posts" :key="post.id">
+                <div style="display:flex; align-items:center; margin-bottom:12px;">
+                    <img src="1000018850.png?v=2" style="width:32px; height:32px; border-radius:50%;">
+                    <div style="margin-left:10px;"><div style="font-weight:700;">{{ post.author }}</div><div style="font-size:10px; color:var(--text-muted);">{{ formatDate(post.created_at) }}</div></div>
                 </div>
-
-                <div class="card" v-for="post in posts" :key="post.id">
-                    <div style="display:flex; align-items:center; margin-bottom:12px;">
-                        <div class="avatar-ring-feed"><img src="1000018850.png?v=2"></div>
-                        <div>
-                            <div style="font-weight:700; font-size:14px;">{{ post.author }}</div>
-                            <div style="font-size:10px; color:var(--text-muted);">{{ formatDate(post.created_at) }}</div>
-                        </div>
-                    </div>
-                    <div style="font-size:14px; line-height: 1.5;">{{ post.text }}</div>
-                </div>
+                <div style="font-size:14px;">{{ post.text }}</div>
             </div>
-
-            <nav class="bottom-nav">
-                <div class="nav-item" :class="{ active: currentTab === 'home' }" @click="currentTab = 'home'"><span class="material-symbols-rounded">home</span>Home</div>
-                <div class="nav-item" :class="{ active: currentTab === 'chat' }" @click="currentTab = 'chat'"><span class="material-symbols-rounded">chat</span>Chat</div>
-                <div class="nav-item" :class="{ active: currentTab === 'community' }" @click="currentTab = 'community'"><span class="material-symbols-rounded">forum</span>Feed</div>
-                <a href="https://discord.gg/codemiko" target="_blank" class="nav-item">
-                    <svg viewBox="0 0 127 96" style="width:22px; height:22px; fill:currentColor; margin-bottom:2px;"><path d="M107.7,8.07A105,105,0,0,0,81.47,0a72,72,0,0,0-3.36,6.83,97,97,0,0,0-49,0,72,72,0,0,0-3.36-6.83A105,105,0,0,0,19.39,8.09C2.71,32.65-1.82,56.6.48,80.1a105,105,0,0,0,32.19,16.18,77,77,0,0,0,6.89-11.11,64,64,0,0,1-10.85-5.18,75,75,0,0,0,64.32,0c.87.71,1.76,1.39,2.66,2a64,64,0,0,1-10.87,5.19,77,77,0,0,0,6.89,11.10,105,105,0,0,0,32.19-16.14c2.72-27.00-4.55-50.87-19.40-72.03ZM42.45,65.69C36.18,65.69,31.00,60,31.00,53s5.12-12.67,11.45-12.67S54,46,54,53s-5.17,12.69-11.55,12.69Zm42.24,0C78.41,65.69,73.25,60,73.25,53s5.12-12.67,11.44-12.67S96.20,46,96.20,53s-5.14,12.69-9.51,12.69Z"/></svg>
-                    Discord
-                </a>
-                <div class="nav-item" @click="modals.profile = true"><span class="material-symbols-rounded">account_circle</span>Profile</div>
-            </nav>
         </div>
 
-        <div class="modal-overlay" :class="{ open: modals.profile }" @click.self="modals.profile = false">
-            <div class="modal-content">
+        <nav class="bottom-nav">
+            <div class="nav-item" :class="{active: currentTab === 'home'}" @click="currentTab = 'home'"><span class="material-symbols-rounded">home</span>Home</div>
+            <div class="nav-item" :class="{active: currentTab === 'community'}" @click="currentTab = 'community'"><span class="material-symbols-rounded">forum</span>Feed</div>
+            <div class="nav-item" @click="modals.profile = true"><span class="material-symbols-rounded">account_circle</span>Admin</div>
+        </nav>
+
+        <!-- Clip Player -->
+        <div class="modal-overlay" :class="{ open: activeClip }" @click="activeClip = null">
+            <div v-if="activeClip" style="width:100%; aspect-ratio:16/9; background:#000;">
+                <iframe :src="'https://clips.twitch.tv/embed?clip=' + activeClip.id + '&parent=' + host + '&autoplay=true'" style="width:100%; height:100%; border:none;" allowfullscreen></iframe>
+            </div>
+        </div>
+
+        <!-- Admin Modal -->
+        <div class="modal-overlay" :class="{ open: modals.profile }" @click.self="modals.profile = false" style="align-items:flex-end;">
+            <div style="background:#111113; width:100%; padding:30px 20px; border-radius:20px 20px 0 0;">
                 <div v-if="!currentUser">
                     <input type="text" v-model="loginEmail" class="input-box" placeholder="Username">
                     <input type="password" v-model="loginPass" class="input-box" placeholder="Password">
-                    <button class="input-box" style="background:var(--primary); font-weight:700; text-align:center;" @click="handleLogin">Sign In</button>
+                    <button class="input-box" style="background:var(--primary); font-weight:700;" @click="handleLogin">Sign In</button>
                 </div>
                 <div v-else>
-                    <div class="avatar-ring-feed" style="width:64px; height:64px; margin: 0 auto 15px;">
-                        <img src="1000018850.png?v=2" alt="Profile">
-                    </div>
-                    <h2>Welcome, tomato_24</h2>
-                    <div style="background:rgba(255,255,255,0.05); padding:15px; border-radius:12px; margin-bottom:15px;">
-                        <div v-if="showKeyInputs">
-                            <input type="text" v-model="tempId" class="input-box" placeholder="Twitch Client ID">
-                            <input type="text" v-model="tempTkn" class="input-box" placeholder="Twitch Access Token">
-                            <button class="input-box" style="background:var(--primary); font-weight:700; text-align:center;" @click="saveKeysAndSync">Save & Sync</button>
-                        </div>
-                        <div v-else>
-                            <button class="input-box" style="background:var(--primary); font-weight:700; text-align:center;" @click="handleSyncClick" :disabled="isSyncing">{{ isSyncing ? 'SYNCING...' : 'Sync Twitch Content' }}</button>
-                            <button class="input-box" style="background:transparent; border:1px solid var(--border-color); color:var(--text-muted);" @click="resetKeys">Update API Keys</button>
-                        </div>
-                    </div>
-                    <button class="input-box" style="background:var(--danger); text-align:center;" @click="logout">Logout</button>
+                    <button class="input-box" style="background:var(--primary); font-weight:700;" @click="runSync" :disabled="isSyncing">Manual Sync (50 Clips)</button>
+                    <button class="input-box" style="background:var(--danger);" @click="logout">Logout</button>
                 </div>
-            </div>
-        </div>
-
-        <div class="modal-overlay" :class="{ open: activeClip }" @click.self="activeClip = null" style="align-items: center; justify-content: center;">
-            <div v-if="activeClip" class="player-wrapper" style="width: 95%;">
-                <iframe :src="'https://clips.twitch.tv/embed?clip=' + activeClip.id + '&parent=' + host + '&parent=' + windowHost + '&autoplay=true&muted=false'" allow="autoplay" allowfullscreen="true" style="width:100%; height:100%; border:none;"></iframe>
             </div>
         </div>
     </div>
@@ -179,57 +117,45 @@
     <script>
         const { createApp, ref, onMounted } = Vue;
         const sbClient = supabase.createClient('https://yhxcuayiwqpjvalyrcqv.supabase.co', 'sb_publishable_VyFcNARHblJg10qlC_O7Dg_coouXK92');
+
         createApp({
             setup() {
-                const splashVisible = ref(true), splashOpacity = ref(1), currentTab = ref('home'), isLive = ref(false), isSyncing = ref(false), currentUser = ref(null), loginEmail = ref(''), loginPass = ref(''), posts = ref([]), clips = ref([]), modals = ref({ profile: false }), activeClip = ref(null), host = window.location.hostname || "localhost", windowHost = window.location.host, showKeyInputs = ref(false), tempId = ref(''), tempTkn = ref('');
-                const logoSvg = (id) => `<svg viewBox="0 0 100 100"><defs><linearGradient id="grad-${id}" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stop-color="#ffffff"/><stop offset="100%" stop-color="#9146FF"/></linearGradient></defs><circle cx="50" cy="50" r="40" fill="none" stroke="url(#grad-${id})" stroke-width="8"/><path d="M 33 38 L 48 62 L 62 38 L 62 55 Q 62 65 69 64" fill="none" stroke="url(#grad-${id})" stroke-width="8" stroke-linecap="round" stroke-linejoin="round"/></svg>`;
-                
-                const checkTwitchStatus = async () => {
-                    try {
-                        const cid = localStorage.getItem('twitch_client_id') || 'gp762nuuoqcoxypju8c569th9wz7q5';
-                        const tkn = localStorage.getItem('twitch_access_token');
-                        if (!tkn) { isLive.value = false; return; }
-                        const res = await fetch('https://api.twitch.tv/helix/streams?user_login=codemiko', { headers: { 'Client-Id': cid, 'Authorization': `Bearer ${tkn}` }});
-                        const data = await res.json();
-                        isLive.value = data.data && data.data.length > 0;
-                    } catch (e) { isLive.value = false; }
-                };
+                const currentTab = ref('home'), clips = ref([]), posts = ref([]), activeClip = ref(null), modals = ref({profile: false}), isSyncing = ref(false), currentUser = ref(null), loginEmail = ref(''), loginPass = ref('');
+                const host = window.location.hostname;
 
                 const loadData = async () => {
-                    const { data: p } = await sbClient.from('posts').select('*').order('created_at', { ascending: false });
                     const { data: c } = await sbClient.from('clips').select('*').order('created_at', { ascending: false });
-                    posts.value = p || []; clips.value = c || [];
-                };
-                
-                const handleLogin = async () => { 
-                    const formattedEmail = loginEmail.value.includes('@') ? loginEmail.value : `${loginEmail.value}@mikotok.com`;
-                    const { error } = await sbClient.auth.signInWithPassword({ email: formattedEmail, password: loginPass.value });
-                    if (error) alert(error.message); else location.reload(); 
+                    const { data: p } = await sbClient.from('posts').select('*').order('created_at', { ascending: false });
+                    clips.value = c || []; posts.value = p || [];
                 };
 
-                const runSync = async (cid, tkn) => {
+                const runSync = async () => {
                     isSyncing.value = true;
                     try {
-                        const h = { 'Client-Id': cid, 'Authorization': `Bearer ${tkn}` };
-                        const uR = await fetch('https://api.twitch.tv/helix/users?login=codemiko', { headers: h });
+                        const cid = 'gp762nuuoqcoxypju8c569th9wz7q5', tkn = localStorage.getItem('twitch_access_token');
+                        const uR = await fetch('https://api.twitch.tv/helix/users?login=codemiko', { headers: {'Client-Id': cid, 'Authorization': `Bearer ${tkn}`} });
                         const uD = await uR.json();
-                        // Batch set to 50 clips
-                        const cR = await fetch(`https://api.twitch.tv/helix/clips?broadcaster_id=${uD.data[0].id}&first=50`, { headers: h });
+                        const cR = await fetch(`https://api.twitch.tv/helix/clips?broadcaster_id=${uD.data[0].id}&first=50`, { headers: {'Client-Id': cid, 'Authorization': `Bearer ${tkn}`} });
                         const cD = await cR.json();
-                        const ins = cD.data.map(x => ({ id: x.id, added_by: 'CodeMiko', created_at: x.created_at, thumbnail_url: x.thumbnail_url, title: x.title, view_count: x.view_count }));
-                        await sbClient.from('clips').upsert(ins, { onConflict: 'id' });
-                        await loadData(); alert("Sync Success!");
-                    } catch (e) { alert("Sync failed."); } finally { isSyncing.value = false; }
+                        const ins = cD.data.map(x => ({ id: x.id, thumbnail_url: x.thumbnail_url, title: x.title, view_count: x.view_count, created_at: x.created_at, added_by: 'CodeMiko' }));
+                        await sbClient.from('clips').upsert(ins);
+                        loadData(); alert("Sync Success!");
+                    } catch (e) { alert("Sync Error. Check Token."); } finally { isSyncing.value = false; }
                 };
 
-                onMounted(async () => { 
-                    const { data: { session } } = await sbClient.auth.getSession(); currentUser.value = session?.user.id || null;
-                    await checkTwitchStatus();
-                    loadData(); 
-                    setTimeout(() => { splashOpacity.value = 0; setTimeout(() => splashVisible.value = false, 600); }, 1500); 
+                const handleLogin = async () => {
+                    const email = loginEmail.value.includes('@') ? loginEmail.value : `${loginEmail.value}@mikotok.com`;
+                    const { data, error } = await sbClient.auth.signInWithPassword({ email, password: loginPass.value });
+                    if (error) alert(error.message); else location.reload();
+                };
+
+                onMounted(async () => {
+                    const { data: { session } } = await sbClient.auth.getSession();
+                    currentUser.value = session?.user.id || null;
+                    loadData();
                 });
 
-                return { splashVisible, splashOpacity, currentTab, isLive, currentUser, posts, clips, modals, activeClip, host, windowHost, logoSvg, loginEmail, loginPass, handleLogin, logout: async () => { await sbClient.auth.signOut(); location.reload(); }, formatDate: (d) => new Date(d).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', month: 'short', day: 'numeric' }), isSyncing, showKeyInputs, tempId, tempTkn, handleSyncClick: () => { if (!localStorage.getItem('twitch_client_id')) showKeyInputs.value = true; else runSync(localStorage.getItem('twitch_client_id'), localStorage.getItem('twitch_access_token')); }, saveKeysAndSync: () => { localStorage.setItem('twitch_client_id', tempId.value); localStorage.setItem('twitch_access_token', tempTkn.value); showKeyInputs.value = false; runSync(tempId.value, tempTkn.value); }, resetKeys: () => { localStorage.removeItem('twitch_client_id'); showKeyInputs.value = true; } };
+                return { currentTab, clips, posts, activeClip, modals, isSyncing, currentUser, loginEmail, loginPass, host, runSync, handleLogin, logout: () => { sbClient.auth.signOut(); location.reload(); }, formatDate: (d) => new Date(d).toLocaleDateString([], {month:'short', day:'numeric'}), formatViews: (v) => v?.toLocaleString() };
             }
         }).mount('#app-container');
     </script>
