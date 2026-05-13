@@ -94,6 +94,8 @@
         .play-overlay { position: absolute; inset: 0; background: rgba(0,0,0,0.3); display: flex; align-items: center; justify-content: center; }
         .play-overlay span { font-size: 56px; color: white; filter: drop-shadow(0 4px 6px rgba(0,0,0,0.5)); }
 
+        .delete-btn { position: absolute; top: 12px; right: 12px; color: var(--text-muted); cursor: pointer; }
+
         .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.9); z-index: 1500; display: flex; flex-direction: column; justify-content: flex-end; opacity: 0; pointer-events: none; transition: opacity 0.3s ease; }
         .modal-overlay.open { opacity: 1; pointer-events: auto; }
         .modal-content { background: #111113; border-radius: 20px 20px 0 0; padding: 10px 20px 40px; transform: translateY(100%); transition: transform 0.3s ease; border-top: 1px solid var(--border-color); text-align: center; }
@@ -148,7 +150,7 @@
 
                 <div class="card" v-for="clip in clips" :key="clip.id">
                     <div style="display:flex;align-items:center;margin-bottom:10px;">
-                        <div class="avatar-ring-feed"><img v-if="clip.added_by === 'CodeMiko' || clip.added_by === 'tomato_24'" src="1000018850.png?v=2" alt="Avatar"></div>
+                        <div class="avatar-ring-feed"><img src="1000018850.png?v=2" alt="Avatar"></div>
                         <div style="font-weight:700;font-size:14px; margin-left: 10px;">{{ clip.added_by }}</div>
                     </div>
                     <div class="thumbnail-wrapper" @click="activeClip = clip">
@@ -199,14 +201,17 @@
                 </div>
 
                 <div class="card" v-for="post in posts" :key="post.id">
-                    <div style="display:flex;align-items:center;margin-bottom:10px;">
-                        <div class="avatar-ring-feed"><img v-if="post.author === 'CodeMiko' || post.author === 'tomato_24'" src="1000018850.png?v=2" alt="Avatar"></div>
+                    <div v-if="currentUser" class="delete-btn" @click="deletePost(post.id)"><span class="material-symbols-rounded" style="font-size:18px;">delete</span></div>
+                    <div style="display:flex; align-items:center; margin-bottom:12px;">
+                        <div class="avatar-ring-feed"><img src="1000018850.png?v=2" alt="CodeMiko"></div>
                         <div>
-                            <div style="font-weight:700; font-size:14px;">{{ post.author }}</div>
-                            <div style="font-size:10px; color:var(--text-muted);">{{ new Date(post.created_at).toLocaleDateString() }}</div>
+                            <div style="font-weight:700; font-size:14px; display: flex; align-items: center; gap: 6px;">
+                                {{ post.author }} <span v-if="post.author === 'CodeMiko'" style="background: rgba(88, 101, 242, 0.15); color: #5865F2; padding: 2px 6px; border-radius: 4px; font-size: 9px; font-weight: 800; text-transform: uppercase;">Discord</span>
+                            </div>
+                            <div style="font-size:10px; color:var(--text-muted); margin-top: 3px;">{{ formatDate(post.created_at) }}</div>
                         </div>
                     </div>
-                    <div style="font-size:14px;">{{ post.text }}</div>
+                    <div style="font-size:14px; line-height: 1.5; color: var(--text-main);">{{ post.text }}</div>
                 </div>
             </div>
 
@@ -226,7 +231,7 @@
             <div class="modal-content">
                 <div class="swipe-handle"></div>
                 <div v-if="!currentUser">
-                    <input type="text" v-model="loginNick" class="input-box" placeholder="Username">
+                    <input type="email" v-model="loginEmail" class="input-box" placeholder="Owner Email">
                     <input type="password" v-model="loginPass" class="input-box" placeholder="Password">
                     <button class="input-box" style="background:var(--primary); font-weight:700; text-align:center;" @click="handleLogin">Sign In</button>
                 </div>
@@ -234,9 +239,13 @@
                     <div class="avatar-ring-feed" style="width:64px; height:64px; margin: 0 auto 15px;">
                         <img src="1000018850.png?v=2" alt="Profile">
                     </div>
-                    <h2 style="margin-bottom:20px;">Welcome, {{ currentUser }}</h2>
+                    <h2 style="margin-bottom:20px;">Welcome, tomato_24</h2>
                     <div style="background:rgba(255,255,255,0.05); padding:15px; border-radius:12px; margin-bottom:15px;">
                         <h4 style="margin:0 0 10px; color:var(--primary-light);">Admin Panel</h4>
+                        <textarea v-model="newPostText" class="input-box" placeholder="Dispatch a card to feed..." style="height:80px; resize:none;"></textarea>
+                        <button class="input-box" style="background:var(--discord); font-weight:700; text-align:center; margin-bottom: 15px;" @click="dispatchPost">Dispatch Post</button>
+                        
+                        <!-- Restored Twitch Sync Button logic -->
                         <div v-if="showKeyInputs">
                             <input type="text" v-model="tempId" class="input-box" placeholder="Twitch Client ID">
                             <input type="text" v-model="tempTkn" class="input-box" placeholder="Twitch Access Token">
@@ -251,13 +260,13 @@
                             </button>
                             <button class="input-box" style="background:transparent; border:1px solid var(--border-color); color:var(--text-muted); font-weight:700; text-align:center; margin-bottom: 0;" @click="resetKeys">Update API Keys</button>
                         </div>
+
                     </div>
                     <button class="input-box" style="background:var(--danger); text-align:center; font-weight:700;" @click="logout">Logout</button>
                 </div>
             </div>
         </div>
 
-        <!-- Clip Player Pop-out Modal (Added allow="autoplay") -->
         <div class="modal-overlay" :class="{ open: activeClip }" @click.self="activeClip = null" style="align-items: center; justify-content: center; z-index: 2000;">
             <div v-if="activeClip" class="player-wrapper" style="width: 95%; max-width: 460px; aspect-ratio: 16/9; background: #000; border-radius: 12px; border: 1px solid rgba(255,255,255,0.1); box-shadow: 0 10px 40px rgba(0,0,0,0.8);">
                 <iframe :src="'https://clips.twitch.tv/embed?clip=' + activeClip.id + '&parent=' + host + '&parent=' + windowHost + '&autoplay=true&muted=false'" allow="autoplay" allowfullscreen="true" style="width:100%; height:100%; border:none;"></iframe>
@@ -266,38 +275,58 @@
     </div>
 
     <script>
-        const { createApp, ref, onMounted, computed } = Vue;
+        const { createApp, ref, onMounted } = Vue;
         const sbClient = supabase.createClient('https://yhxcuayiwqpjvalyrcqv.supabase.co', 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InloeGN1YXlpd3FwanZhbHlyY3F2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzg1Nzk1ODEsImV4cCI6MjA5NDE1NTU4MX0.z7EDgqRz1OT25UdxtmeJxFvwx4UCwaPRwWWJuzd46kc');
 
         createApp({
             setup() {
                 const splashVisible = ref(true), splashOpacity = ref(1), currentTab = ref('home');
                 const isLive = ref(false), isSyncing = ref(false); 
-                const currentUser = ref(localStorage.getItem('miko_user')), loginNick = ref(''), loginPass = ref('');
-                const posts = ref([]), clips = ref([]), modals = ref({ profile: false }), activeClip = ref(null);
-                const host = window.location.hostname || "localhost";
-                const windowHost = window.location.host;
+                const currentUser = ref(null), loginEmail = ref(''), loginPass = ref('');
+                const posts = ref([]), clips = ref([]), modals = ref({ profile: false }), activeClip = ref(null), newPostText = ref('');
+                const host = window.location.hostname || "localhost", windowHost = window.location.host;
                 const showKeyInputs = ref(false), tempId = ref(''), tempTkn = ref('');
 
                 const logoSvg = (id) => `<svg viewBox="0 0 100 100"><defs><linearGradient id="grad-${id}" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stop-color="#ffffff"/><stop offset="100%" stop-color="#9146FF"/></linearGradient></defs><circle cx="50" cy="50" r="40" fill="none" stroke="url(#grad-${id})" stroke-width="8"/><path d="M 33 38 L 48 62 L 62 38 L 62 55 Q 62 65 69 64" fill="none" stroke="url(#grad-${id})" stroke-width="8" stroke-linecap="round" stroke-linejoin="round"/></svg>`;
 
+                const checkSession = async () => {
+                    const { data: { session } } = await sbClient.auth.getSession();
+                    currentUser.value = session ? session.user.id : null;
+                };
+
                 const loadData = async () => {
                     const { data: p } = await sbClient.from('posts').select('*').order('created_at', { ascending: false });
                     const { data: c } = await sbClient.from('clips').select('*').order('created_at', { ascending: false });
-                    posts.value = p || []; clips.value = c || [];
+                    posts.value = p || [];
+                    clips.value = c || [];
                 };
 
-                const handleLogin = () => { 
-                    if(loginNick.value === 'tomato_24' && loginPass.value === 'codemiko') { 
-                        localStorage.setItem('miko_user', 'tomato_24'); location.reload(); 
-                    } else { alert("Access Denied."); }
+                const handleLogin = async () => { 
+                    const { error } = await sbClient.auth.signInWithPassword({ email: loginEmail.value, password: loginPass.value });
+                    if (error) alert("Access Denied: " + error.message);
+                    else location.reload(); 
                 };
                 
-                const logout = () => { localStorage.removeItem('miko_user'); location.reload(); };
+                const dispatchPost = async () => {
+                    if (!newPostText.value) return;
+                    const { error } = await sbClient.from('posts').insert([{ author: 'CodeMiko', text: newPostText.value }]);
+                    if (!error) { newPostText.value = ''; await loadData(); alert("Post Dispatched!"); }
+                    else alert("Error: Make sure your RLS policies allow authenticated inserts.");
+                };
+
+                const deletePost = async (id) => {
+                    if (confirm("Delete this post?")) {
+                        const { error } = await sbClient.from('posts').delete().eq('id', id);
+                        if(error) alert("Delete failed: Check RLS policies.");
+                        else await loadData();
+                    }
+                };
+
+                const logout = async () => { await sbClient.auth.signOut(); location.reload(); };
 
                 const handleSyncClick = () => {
-                    if (!localStorage.getItem('twitch_client_id')) { showKeyInputs.value = true; } 
-                    else { runSync(localStorage.getItem('twitch_client_id'), localStorage.getItem('twitch_access_token')); }
+                    if (!localStorage.getItem('twitch_client_id')) showKeyInputs.value = true;
+                    else runSync(localStorage.getItem('twitch_client_id'), localStorage.getItem('twitch_access_token'));
                 };
                 const saveKeysAndSync = () => {
                     localStorage.setItem('twitch_client_id', tempId.value); localStorage.setItem('twitch_access_token', tempTkn.value);
@@ -315,15 +344,18 @@
                         const ins = cD.data.map(x => ({ id: x.id, added_by: 'CodeMiko', created_at: x.created_at, thumbnail_url: x.thumbnail_url, title: x.title, view_count: x.view_count }));
                         await sbClient.from('clips').upsert(ins, { onConflict: 'id' });
                         loadData(); alert("Sync Success!");
-                    } catch (e) { alert("Sync failed."); } finally { isSyncing.value = false; }
+                    } catch (e) { alert("Sync failed. Check your API keys."); } finally { isSyncing.value = false; }
                 };
+                
+                const formatDate = (date) => new Date(date).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', month: 'short', day: 'numeric' });
 
                 onMounted(() => { 
+                    checkSession();
                     loadData(); 
                     setTimeout(() => { splashOpacity.value = 0; setTimeout(() => splashVisible.value = false, 600); }, 1500); 
                 });
 
-                return { splashVisible, splashOpacity, currentTab, isLive, currentUser, posts, clips, modals, activeClip, host, windowHost, logoSvg, loginNick, loginPass, handleLogin, logout, handleSyncClick, saveKeysAndSync, resetKeys, isSyncing, showKeyInputs, tempId, tempTkn };
+                return { splashVisible, splashOpacity, currentTab, isLive, currentUser, posts, clips, modals, activeClip, host, windowHost, logoSvg, loginEmail, loginPass, handleLogin, logout, newPostText, dispatchPost, deletePost, formatDate, isSyncing, showKeyInputs, tempId, tempTkn, handleSyncClick, saveKeysAndSync, resetKeys };
             }
         }).mount('#app-container');
     </script>
