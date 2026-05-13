@@ -19,7 +19,7 @@
         * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; font-family: 'Inter', sans-serif; }
         body, html { margin: 0; padding: 0; height: 100%; width: 100%; background: var(--bg-color); color: var(--text-main); overflow: hidden; display: flex; justify-content: center; align-items: center; }
         
-        /* Static Deep Purple Gradient Background */
+        /* Deep Purple Static Gradient Background */
         #app-container { width: 100%; max-width: 540px; height: 100%; max-height: 100dvh; position: relative; background: radial-gradient(circle at 50% 30%, #160b24 0%, #050505 80%); overflow: hidden; display: flex; flex-direction: column; box-shadow: 0 0 50px rgba(0,0,0,0.8); }
         [v-cloak] { display: none !important; }
 
@@ -55,12 +55,14 @@
         
         .feed-snap-item { height: 100%; width: 100%; scroll-snap-align: center; scroll-snap-stop: always; display: flex; flex-direction: column; justify-content: center; position: relative; overflow: hidden; }
 
-        /* Floating TikTok Metadata Overlay */
-        .tiktok-metadata { position: absolute; bottom: 100px; left: 15px; z-index: 10; color: white; text-shadow: 0 2px 4px rgba(0,0,0,0.8); pointer-events: none; }
-        .tiktok-metadata .author-info { display: flex; align-items: center; margin-bottom: 6px; }
-        .tiktok-metadata img { width: 42px; height: 42px; border-radius: 50%; border: 2px solid var(--primary); margin-right: 10px; box-shadow: 0 2px 10px rgba(0,0,0,0.5); }
-        .tiktok-metadata .author-name { font-weight: 900; font-size: 16px; letter-spacing: 0.5px; }
-        .tiktok-metadata .clip-stats { font-size: 12px; font-weight: 600; opacity: 0.9; display: flex; align-items: center; gap: 6px; }
+        /* Cleaned Up Metadata Section */
+        .miko-metadata { display: flex; align-items: center; padding: 12px 20px; background: transparent; }
+        .miko-metadata img { width: 42px; height: 42px; border-radius: 50%; border: 2px solid var(--primary); margin-right: 12px; box-shadow: 0 2px 10px rgba(0,0,0,0.5); }
+        .miko-metadata .author-name { font-weight: 900; font-size: 16px; letter-spacing: 0.5px; color: white; display: block; }
+        .miko-metadata .clip-stats { font-size: 12px; font-weight: 600; color: var(--text-muted); display: flex; align-items: center; gap: 6px; margin-top: 2px; }
+
+        /* Top Safe Zone for Pull-to-Refresh */
+        .safe-refresh-zone { position: absolute; top: 0; left: 0; width: 100%; height: 90px; z-index: 90; }
 
         .ptr-container { position: absolute; top: 0; left: 0; width: 100%; display: flex; justify-content: center; align-items: center; color: var(--primary); overflow: hidden; z-index: 50; pointer-events: none; }
         .toast-popup { position: absolute; top: 50px; left: 50%; transform: translate3d(-50%, -10px, 0); background: var(--primary); color: white; padding: 12px 24px; border-radius: 50px; font-size: 13px; font-weight: 800; text-align: center; z-index: 2000; opacity: 0; transition: opacity 0.3s, transform 0.3s; pointer-events: none; box-shadow: 0 4px 15px rgba(145, 70, 255, 0.4); will-change: transform, opacity; }
@@ -69,17 +71,11 @@
         @keyframes shimmer { 0% { background-position: -200% 0; } 100% { background-position: 200% 0; } }
         .skeleton { background: linear-gradient(90deg, #18181b 25%, #27272a 50%, #18181b 75%); background-size: 200% 100%; animation: shimmer 1.5s infinite; border-radius: 8px; width: 100%; height: 100%; position: absolute; inset: 0; z-index: -1; }
 
-        /* Premium Featured Badge */
-        .premium-badge { position: absolute; top: -45px; left: 0; z-index: 10; background: rgba(0, 0, 0, 0.5); backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); border: 1px solid rgba(255, 255, 255, 0.2); padding: 6px 14px; border-radius: 30px; display: flex; align-items: center; gap: 8px; color: #fff; font-size: 11px; font-weight: 900; letter-spacing: 0.5px; text-transform: uppercase; box-shadow: 0 4px 15px rgba(0,0,0,0.5); pointer-events: none; }
+        /* Premium Badges - Adjusted Position */
+        .premium-badge { position: absolute; top: 20px; left: 20px; z-index: 10; background: rgba(0, 0, 0, 0.65); backdrop-filter: blur(10px); border: 1px solid rgba(255, 255, 255, 0.15); padding: 6px 14px; border-radius: 30px; display: flex; align-items: center; gap: 8px; color: #fff; font-size: 11px; font-weight: 900; letter-spacing: 0.5px; text-transform: uppercase; box-shadow: 0 4px 15px rgba(0,0,0,0.5); pointer-events: none; }
         .premium-badge .dot { width: 8px; height: 8px; border-radius: 50%; box-shadow: 0 0 8px currentColor; }
         .premium-badge.live .dot { background: var(--danger); color: var(--danger); animation: heartbeat 1.5s infinite; }
         .premium-badge.vod .dot { background: var(--primary); color: var(--primary); animation: heartbeat 1.5s infinite; }
-
-        /* Edge-to-Edge Animated Video Border */
-        .animated-border-wrap { position: relative; width: 100%; aspect-ratio: 16/9; background: #000; overflow: visible; display: flex; justify-content: center; align-items: center; z-index: 2; box-shadow: 0 10px 40px rgba(0,0,0,0.6); margin-bottom: 80px; }
-        .animated-border-wrap.active::before { content: ''; position: absolute; top: -50%; left: -50%; width: 200%; height: 200%; background: conic-gradient(from 0deg, transparent 60%, var(--primary) 80%, #ffffff 100%); animation: spin-border 4s linear infinite; z-index: 0; }
-        .animated-border-inner { position: absolute; inset: 3px; background: #000; overflow: hidden; z-index: 1; }
-        @keyframes spin-border { 100% { transform: rotate(360deg); } }
 
         /* Community Feed Specifics */
         .community-feed { padding: 100px 12px 100px; height: 100%; overflow-y: auto; }
@@ -153,7 +149,9 @@
                 <div class="progress-bar"><div class="progress-fill"></div></div>
             </div>
 
-            <!-- Floating Transparent Header -->
+            <!-- Safe Pull-To-Refresh Target Zone -->
+            <div class="safe-refresh-zone" v-if="currentTab === 'home'" @touchstart="handleFeedTouchStart" @touchmove="handleFeedTouchMove" @touchend="handleFeedTouchEnd"></div>
+
             <header class="app-header" :style="{ opacity: splashVisible ? 0 : 1 }" v-if="currentTab === 'home'">
                 <div style="width:28px;height:28px;" v-html="logoSvg('header')"></div>
                 <div style="flex-grow:1; text-align:center;"><span class="gradient-text" style="font-size:20px; font-weight:900; letter-spacing: 0.5px; color: white;">MikoTok</span></div>
@@ -170,63 +168,69 @@
 
             <div class="view-port" :style="{ opacity: splashVisible ? 0 : 1 }">
                 
-                <!-- TikTok Home Feed -->
-                <div id="feed-scroll" v-show="currentTab === 'home'" @touchstart="handleFeedTouchStart" @touchmove="handleFeedTouchMove" @touchend="handleFeedTouchEnd">
+                <div id="feed-scroll" v-show="currentTab === 'home'">
                     <div class="ptr-container" :style="{ height: ptrHeight + 'px', transition: ptrHeight === 0 ? 'height 0.3s' : 'none' }">
                         <span class="material-symbols-rounded" :style="{ transform: 'rotate(' + (ptrHeight * 5) + 'deg)', opacity: ptrHeight / 60 }">refresh</span>
                     </div>
 
-                    <!-- Featured Edge-to-Edge Player -->
+                    <!-- Clean Edge-to-Edge Featured Player -->
                     <div class="feed-snap-item" data-id="featured" v-if="isLive || latestVodId">
-                        <div style="width: 100%; position: relative; display: flex; align-items: center; justify-content: center; height: 100%; z-index: 2;">
-                            <div class="animated-border-wrap" :class="{ 'active': isLive || latestVodId }">
-                                <div class="premium-badge live" v-if="isLive"><div class="dot"></div><span>LIVE NOW</span></div>
-                                <div class="premium-badge vod" v-else-if="latestVodId"><div class="dot"></div><span>LATEST VOD</span></div>
+                        <div style="width: 100%; aspect-ratio: 16/9; position: relative; z-index: 2;">
+                            <div class="premium-badge live" v-if="isLive"><div class="dot"></div><span>LIVE NOW</span></div>
+                            <div class="premium-badge vod" v-else-if="latestVodId"><div class="dot"></div><span>LATEST VOD</span></div>
 
-                                <div class="animated-border-inner">
-                                    <!-- Fully interactive inline player -->
-                                    <iframe v-if="activeFeedVideo === 'featured' && isLive" :src="'https://player.twitch.tv/?channel=codemiko&parent=' + hostname + '&autoplay=true&muted=false'" style="width:100%; height:100%; border:none; pointer-events:auto;" allow="autoplay; fullscreen" allowfullscreen></iframe>
-                                    <iframe v-else-if="activeFeedVideo === 'featured' && latestVodId" :src="'https://player.twitch.tv/?video=' + latestVodId + '&parent=' + hostname + '&autoplay=true&muted=false'" style="width:100%; height:100%; border:none; pointer-events:auto;" allow="autoplay; fullscreen" allowfullscreen></iframe>
-                                    <div class="skeleton" v-else></div>
+                            <!-- Fully interactive inline player -->
+                            <iframe v-if="activeFeedVideo === 'featured' && isLive" :src="'https://player.twitch.tv/?channel=codemiko&parent=' + hostname + '&autoplay=true&muted=false'" style="width:100%; height:100%; border:none; pointer-events:auto;" allow="autoplay; fullscreen" allowfullscreen></iframe>
+                            <iframe v-else-if="activeFeedVideo === 'featured' && latestVodId" :src="'https://player.twitch.tv/?video=' + latestVodId + '&parent=' + hostname + '&autoplay=true&muted=false'" style="width:100%; height:100%; border:none; pointer-events:auto;" allow="autoplay; fullscreen" allowfullscreen></iframe>
+                            <div class="skeleton" v-else></div>
+                        </div>
+
+                        <!-- Repositioned Metadata -->
+                        <div class="miko-metadata">
+                            <img src="1000018850.png?v=2">
+                            <div>
+                                <span class="author-name">CodeMiko</span>
+                                <div class="clip-stats">
+                                    <span class="material-symbols-rounded" style="font-size:14px; color:var(--primary);">stars</span>
+                                    Featured Broadcast
                                 </div>
                             </div>
                         </div>
                     </div>
 
-                    <!-- Clip Snap Items -->
                     <div v-if="loadingClips && !clips.length" class="feed-snap-item">
                         <div style="width: 100%; aspect-ratio: 16/9; position: relative;"><div class="skeleton"></div></div>
                     </div>
 
+                    <!-- Edge-to-Edge Clip Players -->
                     <div class="feed-snap-item" v-for="clip in clips" :key="clip.id" :data-id="clip.id">
-                        <div style="width: 100%; aspect-ratio: 16/9; position: relative; z-index: 2; box-shadow: 0 10px 30px rgba(0,0,0,0.6);">
-                            <!-- Image sits behind iframe to prevent blank gaps before iframe loads -->
+                        <div style="width: 100%; aspect-ratio: 16/9; position: relative; z-index: 2;">
+                            <!-- Image sits behind iframe -->
                             <img :src="optimizeTwitchImg(clip.thumbnail_url)" loading="lazy" style="width:100%; height:100%; object-fit:cover; position:absolute; inset:0; z-index:-1;">
                             <!-- Native Interactive Inline Iframe -->
                             <iframe v-if="activeFeedVideo === clip.id" :src="'https://clips.twitch.tv/embed?clip=' + clip.id + '&parent=' + hostname + '&autoplay=true&muted=false'" style="width:100%; height:100%; border:none; position:absolute; inset:0; pointer-events:auto;" allow="autoplay; fullscreen" allowfullscreen></iframe>
                             <div class="skeleton" v-else></div>
                         </div>
                         
-                        <div class="tiktok-metadata">
-                            <div class="author-info">
-                                <img src="1000018850.png?v=2">
-                                <span class="author-name">@CodeMiko</span>
-                            </div>
-                            <div class="clip-stats">
-                                <span class="material-symbols-rounded" style="font-size:14px;">visibility</span> {{ formatViews(clip.view_count) }}
-                                <span style="margin: 0 4px;">•</span>
-                                <span class="material-symbols-rounded" style="font-size:14px;">calendar_today</span> {{ formatDate(clip.created_at) }}
+                        <!-- Repositioned Metadata -->
+                        <div class="miko-metadata">
+                            <img src="1000018850.png?v=2">
+                            <div>
+                                <span class="author-name">CodeMiko</span>
+                                <div class="clip-stats">
+                                    <span class="material-symbols-rounded" style="font-size:14px;">visibility</span> {{ formatViews(clip.view_count) }}
+                                    <span style="margin: 0 4px;">•</span>
+                                    <span class="material-symbols-rounded" style="font-size:14px;">calendar_today</span> {{ formatDate(clip.created_at) }}
+                                </div>
                             </div>
                         </div>
                     </div>
                 </div>
 
-                <!-- Chat Tab -->
                 <div class="chat-container" style="height:100%; padding-bottom: 80px;" v-if="currentTab === 'chat'">
                     <iframe :src="'https://www.twitch.tv/embed/codemiko/chat?parent=' + hostname + '&darkpopout'" height="100%" width="100%" frameborder="0"></iframe>
                 </div>
 
-                <!-- Community Tab -->
                 <div class="community-feed" v-if="currentTab === 'community'">
                     <div v-for="(post, index) in discordFeed" :key="index" class="card stagger-item" :style="{ animationDelay: (index * 0.05) + 's' }">
                         <div style="display:flex;align-items:center;margin-bottom:16px;">
@@ -296,7 +300,6 @@
                             {{ syncState === 'syncing' ? 'SYNCING DATA...' : syncState === 'success' ? 'SYNC COMPLETE' : 'FORCE GLOBAL SYNC' }}
                         </button>
                         
-                        <!-- Restored Danger Zone Wipe Button -->
                         <div style="margin-bottom:16px; padding:16px; background:rgba(239, 68, 68, 0.05); border-radius:16px; border:1px dashed var(--danger);">
                             <div style="font-size:10px; color:var(--danger); margin-bottom:6px; font-weight:800; text-align: left;">DANGER ZONE</div>
                             <p style="font-size:11px; color:var(--text-muted); text-align:left; margin:0 0 12px 0; line-height:1.4;">Permanently delete all clips from the database.</p>
@@ -407,9 +410,25 @@
                     showToast("SIGNED OUT"); 
                 };
 
-                const handleFeedTouchStart = (e) => { const sc = document.getElementById('feed-scroll'); if (sc && sc.scrollTop <= 0) feedStartY = e.touches[0].clientY; else feedStartY = 0; };
-                const handleFeedTouchMove = (e) => { if (!feedStartY) return; const y = e.touches[0].clientY; if (y > feedStartY) { ptrHeight.value = Math.min((y - feedStartY) * 0.4, 80); if (ptrHeight.value > 10 && document.getElementById('feed-scroll').scrollTop === 0 && e.cancelable) e.preventDefault(); } };
-                const handleFeedTouchEnd = async () => { if (ptrHeight.value >= 50) { ptrHeight.value = 50; await loadData(); await checkLiveStatusPublic(true); } ptrHeight.value = 0; feedStartY = 0; };
+                // Pull-To-Refresh Logic hooked to safe-refresh-zone
+                const handleFeedTouchStart = (e) => { feedStartY = e.touches[0].clientY; };
+                const handleFeedTouchMove = (e) => { 
+                    if (!feedStartY) return; 
+                    const y = e.touches[0].clientY; 
+                    if (y > feedStartY) { 
+                        ptrHeight.value = Math.min((y - feedStartY) * 0.4, 80); 
+                        if (e.cancelable) e.preventDefault(); 
+                    } 
+                };
+                const handleFeedTouchEnd = async () => { 
+                    if (ptrHeight.value >= 50) { 
+                        ptrHeight.value = 50; 
+                        await loadData(); 
+                        await checkLiveStatusPublic(true); 
+                    } 
+                    ptrHeight.value = 0; 
+                    feedStartY = 0; 
+                };
                 
                 const handleModalTouchStart = (e) => { 
                     if (e.currentTarget.scrollTop <= 0) { 
