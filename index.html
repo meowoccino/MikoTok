@@ -13,7 +13,6 @@
         body, html { margin: 0; padding: 0; height: 100%; width: 100%; background: var(--bg-color); color: var(--text-main); overflow: hidden; }
         #app-container { width: 100%; max-width: 480px; height: 100vh; margin: 0 auto; position: relative; display: flex; flex-direction: column; }
         
-        /* Fixed Scroll Fix */
         .content-area { flex: 1; overflow-y: auto; padding: 110px 12px 100px; -webkit-overflow-scrolling: touch; }
         .content-area::-webkit-scrollbar { display: none; }
 
@@ -32,24 +31,30 @@
         .nav-item { display: flex; flex-direction: column; align-items: center; color: var(--text-muted); font-size: 10px; cursor: pointer; text-decoration: none; }
         .nav-item.active { color: #fff; }
         
-        .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.95); z-index: 2000; display: flex; align-items: center; justify-content: center; opacity: 0; pointer-events: none; transition: 0.3s; }
+        /* Toast Notification Styling */
+        .toast { position: fixed; bottom: 100px; left: 50%; transform: translateX(-50%); background: var(--primary); color: white; padding: 10px 20px; border-radius: 50px; font-size: 13px; font-weight: 700; z-index: 3000; box-shadow: 0 4px 15px rgba(145, 70, 255, 0.4); opacity: 0; transition: opacity 0.3s; pointer-events: none; }
+        .toast.show { opacity: 1; }
+
+        .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.9); z-index: 2000; display: flex; flex-direction: column; justify-content: flex-end; opacity: 0; pointer-events: none; transition: 0.3s; }
         .modal-overlay.open { opacity: 1; pointer-events: auto; }
-        .input-box { width: 100%; background: #1c1c1e; border: 1px solid var(--border-color); color: white; padding: 14px; border-radius: 8px; margin-bottom: 12px; }
+        .input-box { width: 100%; background: #1c1c1e; border: 1px solid var(--border-color); color: white; padding: 14px; border-radius: 8px; margin-bottom: 12px; font-size: 14px; text-align: left; }
     </style>
 </head>
 <body>
     <div id="app-container" v-cloak>
+        <!-- Toast Notification -->
+        <div class="toast" :class="{ show: toast.visible }">{{ toast.message }}</div>
+
         <header class="app-header">
             <div style="flex:1; text-align:center;"><span class="gradient-text" style="font-size:24px;">MikoTok</span></div>
         </header>
 
-        <!-- Main Feed (Scrollable) -->
         <div class="content-area" v-if="currentTab === 'home'">
             <div class="card" v-for="clip in clips" :key="clip.id">
                 <div style="display:flex; align-items:center; margin-bottom:10px;">
                     <img src="1000018850.png?v=2" style="width:32px; height:32px; border-radius:50%; border:1px solid var(--primary);">
                     <div style="margin-left:10px;">
-                        <div style="font-weight:700; font-size:14px;">{{ clip.added_by }}</div>
+                        <div style="font-weight:700; font-size:14px;">CodeMiko</div>
                         <div style="font-size:10px; color:var(--text-muted);">{{ formatDate(clip.created_at) }}</div>
                     </div>
                 </div>
@@ -60,14 +65,13 @@
                 <div class="clip-meta">
                     <div class="view-count">
                         <span class="material-symbols-rounded" style="font-size:14px;">visibility</span>
-                        {{ formatViews(clip.view_count) }} views
+                        {{ formatViews(clip.view_count) }}
                     </div>
                     <div style="max-width: 70%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">{{ clip.title }}</div>
                 </div>
             </div>
         </div>
 
-        <!-- Community Feed -->
         <div class="content-area" v-if="currentTab === 'community'">
             <div class="card">
                 <div style="display:flex; align-items:center; margin-bottom:12px;">
@@ -91,24 +95,22 @@
             <div class="nav-item" @click="modals.profile = true"><span class="material-symbols-rounded">account_circle</span>Admin</div>
         </nav>
 
-        <!-- Clip Player -->
-        <div class="modal-overlay" :class="{ open: activeClip }" @click="activeClip = null">
+        <div class="modal-overlay" :class="{ open: activeClip }" @click="activeClip = null" style="justify-content: center; background: rgba(0,0,0,0.95);">
             <div v-if="activeClip" style="width:100%; aspect-ratio:16/9; background:#000;">
                 <iframe :src="'https://clips.twitch.tv/embed?clip=' + activeClip.id + '&parent=' + host + '&autoplay=true'" style="width:100%; height:100%; border:none;" allowfullscreen></iframe>
             </div>
         </div>
 
-        <!-- Admin Modal -->
-        <div class="modal-overlay" :class="{ open: modals.profile }" @click.self="modals.profile = false" style="align-items:flex-end;">
-            <div style="background:#111113; width:100%; padding:30px 20px; border-radius:20px 20px 0 0;">
+        <div class="modal-overlay" :class="{ open: modals.profile }" @click.self="modals.profile = false">
+            <div style="background:#111113; width:100%; padding:30px 20px; border-radius:20px 20px 0 0; border-top: 1px solid var(--border-color);">
                 <div v-if="!currentUser">
                     <input type="text" v-model="loginEmail" class="input-box" placeholder="Username">
                     <input type="password" v-model="loginPass" class="input-box" placeholder="Password">
-                    <button class="input-box" style="background:var(--primary); font-weight:700;" @click="handleLogin">Sign In</button>
+                    <button class="input-box" style="background:var(--primary); font-weight:700; text-align:center;" @click="handleLogin">Sign In</button>
                 </div>
                 <div v-else>
-                    <button class="input-box" style="background:var(--primary); font-weight:700;" @click="runSync" :disabled="isSyncing">Manual Sync (50 Clips)</button>
-                    <button class="input-box" style="background:var(--danger);" @click="logout">Logout</button>
+                    <button class="input-box" style="background:var(--primary); font-weight:700; text-align:center;" @click="runSync" :disabled="isSyncing">{{ isSyncing ? 'SYNCING...' : 'Manual Sync (50 Clips)' }}</button>
+                    <button class="input-box" style="background:var(--danger); text-align:center;" @click="logout">Logout</button>
                 </div>
             </div>
         </div>
@@ -120,8 +122,10 @@
 
         createApp({
             setup() {
-                const currentTab = ref('home'), clips = ref([]), posts = ref([]), activeClip = ref(null), modals = ref({profile: false}), isSyncing = ref(false), currentUser = ref(null), loginEmail = ref(''), loginPass = ref('');
+                const currentTab = ref('home'), clips = ref([]), posts = ref([]), activeClip = ref(null), modals = ref({profile: false}), isSyncing = ref(false), currentUser = ref(null), loginEmail = ref(''), loginPass = ref(''), toast = ref({visible: false, message: ''});
                 const host = window.location.hostname;
+
+                const showToast = (msg) => { toast.value.message = msg; toast.value.visible = true; setTimeout(() => toast.value.visible = false, 3000); };
 
                 const loadData = async () => {
                     const { data: c } = await sbClient.from('clips').select('*').order('created_at', { ascending: false });
@@ -139,14 +143,15 @@
                         const cD = await cR.json();
                         const ins = cD.data.map(x => ({ id: x.id, thumbnail_url: x.thumbnail_url, title: x.title, view_count: x.view_count, created_at: x.created_at, added_by: 'CodeMiko' }));
                         await sbClient.from('clips').upsert(ins);
-                        loadData(); alert("Sync Success!");
-                    } catch (e) { alert("Sync Error. Check Token."); } finally { isSyncing.value = false; }
+                        await loadData();
+                        showToast("Sync Success!");
+                    } catch (e) { showToast("Sync Error. Check Token."); } finally { isSyncing.value = false; }
                 };
 
                 const handleLogin = async () => {
                     const email = loginEmail.value.includes('@') ? loginEmail.value : `${loginEmail.value}@mikotok.com`;
-                    const { data, error } = await sbClient.auth.signInWithPassword({ email, password: loginPass.value });
-                    if (error) alert(error.message); else location.reload();
+                    const { error } = await sbClient.auth.signInWithPassword({ email, password: loginPass.value });
+                    if (error) showToast(error.message); else location.reload();
                 };
 
                 onMounted(async () => {
@@ -155,7 +160,7 @@
                     loadData();
                 });
 
-                return { currentTab, clips, posts, activeClip, modals, isSyncing, currentUser, loginEmail, loginPass, host, runSync, handleLogin, logout: () => { sbClient.auth.signOut(); location.reload(); }, formatDate: (d) => new Date(d).toLocaleDateString([], {month:'short', day:'numeric'}), formatViews: (v) => v?.toLocaleString() };
+                return { currentTab, clips, posts, activeClip, modals, isSyncing, currentUser, loginEmail, loginPass, host, toast, runSync, handleLogin, logout: () => { sbClient.auth.signOut(); location.reload(); }, formatDate: (d) => new Date(d).toLocaleDateString([], {month:'short', day:'numeric'}), formatViews: (v) => v ? v.toLocaleString() : '0' };
             }
         }).mount('#app-container');
     </script>
