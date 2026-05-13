@@ -124,8 +124,8 @@
         </header>
 
         <div class="view-port" :style="{ opacity: splashVisible ? 0 : 1 }">
-            <div id="feed-scroll" v-if="currentTab === 'home'" @touchstart="handleFeedTouchStart" @touchmove="handleFeedTouchMove" @touchend="handleFeedTouchEnd">
-                <!-- Pull to Refresh Visual Indicator -->
+            <!-- Added @scroll="onFeedScroll" to detect scrolling and stop accidental clicks -->
+            <div id="feed-scroll" v-if="currentTab === 'home'" @scroll="onFeedScroll" @touchstart="handleFeedTouchStart" @touchmove="handleFeedTouchMove" @touchend="handleFeedTouchEnd">
                 <div class="ptr-container" :style="{ height: ptrHeight + 'px', transition: ptrHeight === 0 ? 'height 0.3s' : 'none' }">
                     <span class="material-symbols-rounded" :style="{ transform: 'rotate(' + (ptrHeight * 5) + 'deg)', opacity: ptrHeight / 60 }">refresh</span>
                 </div>
@@ -133,7 +133,6 @@
                 <div id="live-player-box">
                     <div class="animated-border-wrap" :class="{ 'active': (isLive || latestVodId) && !activeClip }">
                         <div class="animated-border-inner">
-                            <!-- New Unified Premium Badge without pin -->
                             <div class="premium-badge live" v-if="isLive">
                                 <div class="dot"></div>
                                 <span>LIVE</span>
@@ -143,7 +142,6 @@
                                 <span>LATEST VOD</span>
                             </div>
 
-                            <!-- Smart Iframe Logic -->
                             <iframe 
                                 v-if="isLive && !activeClip"
                                 :src="'https://player.twitch.tv/?channel=codemiko&parent=' + hostname + '&autoplay=true&muted=false'" 
@@ -168,7 +166,8 @@
                         <img src="1000018850.png?v=2" style="width:36px;height:36px;border-radius:50%;border:1px solid var(--primary);">
                         <div style="margin-left:12px;"><div style="font-weight:700;font-size:14px;">CodeMiko</div></div>
                     </div>
-                    <div class="thumbnail-wrapper" @click="activeClip = clip">
+                    <!-- Using openClip method to verify it's a real click, not a swipe -->
+                    <div class="thumbnail-wrapper" @click="openClip(clip)">
                         <img :src="clip.thumbnail_url">
                         <div class="clip-overlay-top">{{ formatDate(clip.created_at) }}</div>
                         <div class="clip-overlay-bottom"><span class="material-symbols-rounded" style="font-size:12px;">visibility</span>{{ formatViews(clip.view_count) }}</div>
@@ -185,16 +184,23 @@
 
             <div id="feed-scroll" v-if="currentTab === 'community'">
                 <div class="card" v-for="(post, index) in discordFeed" :key="index">
-                    <div style="display:flex; align-items:center; margin-bottom:12px;">
-                        <div style="width:38px; height:38px; border-radius:50%; background:var(--discord); display:flex; align-items:center; justify-content:center; margin-right:12px; flex-shrink: 0;">
-                            <svg viewBox="0 0 127 96" style="width:22px; fill:white;"><path d="M107.7,8.07A105,105,0,0,0,81.47,0a72,72,0,0,0-3.36,6.83,97,97,0,0,0-49,0,72,72,0,0,0-3.36-6.83A105,105,0,0,0,19.39,8.09C2.71,32.65-1.82,56.6.48,80.1a105,105,0,0,0,32.19,16.18,77,77,0,0,0,6.89-11.11,64,64,0,0,1-10.85-5.18,75,75,0,0,0,64.32,0c.87.71,1.76,1.39,2.66,2a64,64,0,0,1-10.87,5.19,77,77,0,0,0,6.89,11.10,105,105,0,0,0,32.19-16.14c2.72-27.00-4.55-50.87-19.40-72.03ZM42.45,65.69C36.18,65.69,31.00,60,31.00,53s5.12-12.67,11.45-12.67S54,46,54,53s-5.17,12.69-11.55,12.69Zm42.24,0C78.41,65.69,73.25,60,73.25,53s5.12-12.67,11.44-12.67S96.20,46,96.20,53s-5.14,12.69-9.51,12.69Z"/></svg>
+                    <!-- Redesigned Top Header identical to Clips feed -->
+                    <div style="display:flex;align-items:center;margin-bottom:12px;">
+                        <div style="width:36px;height:36px;border-radius:50%;border:1px solid var(--discord);display:flex;align-items:center;justify-content:center;background:rgba(88, 101, 242, 0.1);flex-shrink:0;">
+                            <svg viewBox="0 0 127 96" style="width:18px; fill:var(--discord);"><path d="M107.7,8.07A105,105,0,0,0,81.47,0a72,72,0,0,0-3.36,6.83,97,97,0,0,0-49,0,72,72,0,0,0-3.36-6.83A105,105,0,0,0,19.39,8.09C2.71,32.65-1.82,56.6.48,80.1a105,105,0,0,0,32.19,16.18,77,77,0,0,0,6.89-11.11,64,64,0,0,1-10.85-5.18,75,75,0,0,0,64.32,0c.87.71,1.76,1.39,2.66,2a64,64,0,0,1-10.87,5.19,77,77,0,0,0,6.89,11.10,105,105,0,0,0,32.19-16.14c2.72-27.00-4.55-50.87-19.40-72.03ZM42.45,65.69C36.18,65.69,31.00,60,31.00,53s5.12-12.67,11.45-12.67S54,46,54,53s-5.17,12.69-11.55,12.69Zm42.24,0C78.41,65.69,73.25,60,73.25,53s5.12-12.67,11.44-12.67S96.20,46,96.20,53s-5.14,12.69-9.51,12.69Z"/></svg>
                         </div>
-                        <div>
-                            <div style="font-weight:700; color:var(--discord);">{{ post.author || 'Discord Announcement' }}</div>
-                            <div style="font-size:10px; color:var(--text-muted);">{{ formatDateTime(post.created_at) }}</div>
+                        <div style="margin-left:12px;">
+                            <div style="font-weight:700;font-size:14px;color:var(--text-main);">{{ post.author || 'Discord Announcement' }}</div>
                         </div>
                     </div>
-                    <div style="font-size:14px; line-height: 1.5; white-space: pre-wrap; word-wrap: break-word;">{{ post.content }}</div>
+                    <!-- Redesigned Message Box matching clip dimensions -->
+                    <div style="background:#000; border-radius:8px; padding:16px; position:relative; border: 1px solid var(--border-color);">
+                        <div style="font-size:13px; line-height: 1.6; white-space: pre-wrap; word-wrap: break-word; color:var(--text-main);">{{ post.content }}</div>
+                        <div style="margin-top:16px; font-size:10px; color:var(--text-muted); font-weight:700; display:flex; align-items:center; gap:4px; text-transform:uppercase;">
+                            <span class="material-symbols-rounded" style="font-size:12px; color:var(--discord);">chat</span>
+                            {{ formatDateTime(post.created_at) }}
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
@@ -298,8 +304,14 @@
                 const stats = ref({ visitors: 0 }), apiHealthy = ref(false), apiConfig = ref({ cid: localStorage.getItem('twitch_client_id') || '', tkn: localStorage.getItem('twitch_access_token') || '' });
                 const latestVodId = ref(null), hostname = window.location.hostname || 'meowoccino.github.io';
 
-                const ptrHeight = ref(0); let feedStartY = 0;
-                const modalContentEl = ref(null); let modalStartY = 0, currentDeltaY = 0;
+                // Variables for scrolling and touch logic
+                const ptrHeight = ref(0); 
+                let feedStartY = 0;
+                const isScrollingFeed = ref(false);
+                let scrollTimer = null;
+
+                const modalContentEl = ref(null); 
+                let modalStartY = 0, currentDeltaY = 0;
 
                 const logoSvg = (id) => `<svg viewBox="0 0 100 100"><defs><linearGradient id="grad-${id}" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stop-color="#ffffff"/><stop offset="100%" stop-color="#9146FF"/></linearGradient></defs><circle cx="50" cy="50" r="40" fill="none" stroke="url(#grad-${id})" stroke-width="8"/><path d="M 33 38 L 48 62 L 62 38 L 62 55 Q 62 65 69 64" fill="none" stroke="url(#grad-${id})" stroke-width="8" stroke-linecap="round" stroke-linejoin="round"/></svg>`;
                 const showToast = (msg) => { toast.value.message = msg; toast.value.visible = true; setTimeout(() => toast.value.visible = false, 3000); };
@@ -343,8 +355,34 @@
                     } catch(e) { console.error("VOD fetch error"); }
                 };
 
-                const handleFeedTouchStart = (e) => { const sc = document.getElementById('feed-scroll'); if (sc && sc.scrollTop <= 0) feedStartY = e.touches[0].clientY; else feedStartY = 0; };
-                const handleFeedTouchMove = (e) => { if (!feedStartY) return; const y = e.touches[0].clientY; if (y > feedStartY) { ptrHeight.value = Math.min((y - feedStartY) * 0.4, 80); if (ptrHeight.value > 10 && document.getElementById('feed-scroll').scrollTop === 0) if (e.cancelable) e.preventDefault(); } };
+                // Advanced feed logic to prevent clips from opening while scrolling
+                const onFeedScroll = () => {
+                    isScrollingFeed.value = true;
+                    clearTimeout(scrollTimer);
+                    scrollTimer = setTimeout(() => {
+                        isScrollingFeed.value = false;
+                    }, 150);
+                };
+
+                const openClip = (clip) => {
+                    if (isScrollingFeed.value) return; // Ignores the tap if the user is scrolling the screen
+                    activeClip.value = clip;
+                };
+
+                const handleFeedTouchStart = (e) => { 
+                    const sc = document.getElementById('feed-scroll'); 
+                    if (sc && sc.scrollTop <= 0) feedStartY = e.touches[0].clientY; else feedStartY = 0; 
+                };
+                
+                const handleFeedTouchMove = (e) => { 
+                    if (!feedStartY) return; 
+                    const y = e.touches[0].clientY; 
+                    if (y > feedStartY) { 
+                        ptrHeight.value = Math.min((y - feedStartY) * 0.4, 80); 
+                        if (ptrHeight.value > 10 && document.getElementById('feed-scroll').scrollTop === 0) if (e.cancelable) e.preventDefault(); 
+                    } 
+                };
+                
                 const handleFeedTouchEnd = async () => { 
                     if (ptrHeight.value >= 50) { 
                         ptrHeight.value = 50; 
@@ -439,7 +477,7 @@
                     setTimeout(() => { splashOpacity.value = 0; setTimeout(() => splashVisible.value = false, 400); }, 1500); 
                 });
 
-                return { hostname, splashVisible, splashOpacity, currentTab, clips, discordFeed, activeClip, modals, isSyncing, isLive, toast, logoSvg, runSync, currentUser, loginEmail, loginPass, handleLogin, handleLogout, openAdmin, closeAdmin, apiHealthy, apiConfig, stats, saveKeys, wipeClips, modalContentEl, ptrHeight, handleFeedTouchStart, handleFeedTouchMove, handleFeedTouchEnd, handleModalTouchStart, handleModalTouchMove, handleModalTouchEnd, latestVodId, formatDate: (d) => new Date(d).toLocaleDateString([], {month:'short', day:'numeric'}), formatViews: (v) => v ? v.toLocaleString() : '0', formatDateTime: (d) => new Date(d).toLocaleString([], {month:'short', day:'numeric', hour:'2-digit', minute:'2-digit'}) };
+                return { hostname, splashVisible, splashOpacity, currentTab, clips, discordFeed, activeClip, modals, isSyncing, isLive, toast, logoSvg, runSync, currentUser, loginEmail, loginPass, handleLogin, handleLogout, openAdmin, closeAdmin, apiHealthy, apiConfig, stats, saveKeys, wipeClips, modalContentEl, ptrHeight, handleFeedTouchStart, handleFeedTouchMove, handleFeedTouchEnd, handleModalTouchStart, handleModalTouchMove, handleModalTouchEnd, latestVodId, onFeedScroll, openClip, formatDate: (d) => new Date(d).toLocaleDateString([], {month:'short', day:'numeric'}), formatViews: (v) => v ? v.toLocaleString() : '0', formatDateTime: (d) => new Date(d).toLocaleString([], {month:'short', day:'numeric', hour:'2-digit', minute:'2-digit'}) };
             }
         }).mount('#app-container');
     </script>
