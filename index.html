@@ -84,6 +84,10 @@
                         <iframe :src="'https://player.twitch.tv/?channel=codemiko&parent=' + host + '&parent=' + windowHost + '&autoplay=false&muted=true'" referrerpolicy="no-referrer" allowfullscreen="true" style="width:100%; height:100%; border:none;"></iframe>
                     </div>
                 </div>
+                <!-- Manual refresh hint if empty -->
+                <div v-if="clips.length === 0" style="text-align: center; color: var(--text-muted); margin-top: 40px;">
+                   No clips found. Log in to sync content.
+                </div>
                 <div class="card" v-for="clip in clips" :key="clip.id">
                     <div style="display:flex;align-items:center;margin-bottom:10px;">
                         <div class="avatar-ring-feed"><img src="1000018850.png?v=2"></div>
@@ -101,6 +105,18 @@
             </div>
 
             <div id="feed" v-if="currentTab === 'community'">
+                <!-- Test Placeholder Post -->
+                <div class="card">
+                    <div style="display:flex; align-items:center; margin-bottom:12px;">
+                        <div class="avatar-ring-feed"><img src="1000018850.png?v=2"></div>
+                        <div>
+                            <div style="font-weight:700; font-size:14px;">CodeMiko</div>
+                            <div style="font-size:10px; color:var(--text-muted);">Just now</div>
+                        </div>
+                    </div>
+                    <div style="font-size:14px; line-height: 1.5;">Test text placeholder</div>
+                </div>
+
                 <div class="card" v-for="post in posts" :key="post.id">
                     <div style="display:flex; align-items:center; margin-bottom:12px;">
                         <div class="avatar-ring-feed"><img src="1000018850.png?v=2"></div>
@@ -197,11 +213,12 @@
                         const h = { 'Client-Id': cid, 'Authorization': `Bearer ${tkn}` };
                         const uR = await fetch('https://api.twitch.tv/helix/users?login=codemiko', { headers: h });
                         const uD = await uR.json();
+                        // Batch set to 50 clips
                         const cR = await fetch(`https://api.twitch.tv/helix/clips?broadcaster_id=${uD.data[0].id}&first=50`, { headers: h });
                         const cD = await cR.json();
                         const ins = cD.data.map(x => ({ id: x.id, added_by: 'CodeMiko', created_at: x.created_at, thumbnail_url: x.thumbnail_url, title: x.title, view_count: x.view_count }));
                         await sbClient.from('clips').upsert(ins, { onConflict: 'id' });
-                        loadData(); alert("Sync Success!");
+                        await loadData(); alert("Sync Success!");
                     } catch (e) { alert("Sync failed."); } finally { isSyncing.value = false; }
                 };
 
