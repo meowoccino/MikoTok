@@ -40,11 +40,11 @@
 
         .app-content-wrapper { position: absolute; inset: 0; width: 100%; height: 100%; overflow: hidden; }
 
+        /* Header Style - Border removed */
         .app-header { 
             position: absolute; top: 0; left: 0; width: 100%; z-index: 100; 
             padding: 50px 20px 15px; display: flex; align-items: center; justify-content: space-between; 
             background: rgba(0, 0, 0, 0.90); backdrop-filter: blur(12px); 
-            border-bottom: 1px solid var(--border-color);
         }
         
         .header-logo { width: 28px; height: 28px; display: flex; align-items: center; justify-content: center; }
@@ -56,11 +56,14 @@
         .story-avatar { width: 100%; height: 100%; border-radius: 50%; object-fit: cover; transition: opacity 0.3s ease; }
         .story-ring.live .story-avatar { border: 2px solid #000; } 
         .story-ring.offline .story-avatar { opacity: 0.6; border: 1px solid var(--offline-gray); }
+        
         .status-badge { position: absolute; bottom: -2px; left: 50%; transform: translateX(-50%); color: #fff; font-size: 7px; font-weight: 900; padding: 1px 5px; border-radius: 4px; border: 1.5px solid #000; text-transform: uppercase; letter-spacing: 0.3px; z-index: 2; white-space: nowrap; }
         .status-badge.live { background: var(--danger); }
         .status-badge.offline { background: var(--offline-gray); }
 
-        #feed { height: 100%; width: 100%; overflow-y: auto; padding: 110px 12px 100px; scroll-behavior: smooth; }
+        @keyframes storyGlow { 0% { background-position: 0% 50%; } 50% { background-position: 100% 50%; } 100% { background-position: 0% 50%; } }
+
+        #feed { height: 100%; width: 100%; overflow-y: auto; padding: 120px 12px 100px; scroll-behavior: smooth; }
         #feed::-webkit-scrollbar { display: none; }
         
         #live-container { 
@@ -71,13 +74,17 @@
             position: relative; overflow: hidden; 
         }
         .live-label { display: flex; align-items: center; justify-content: space-between; margin-bottom: 14px; }
-        .status-pill { background: rgba(0,0,0,0.5); border: 1px solid rgba(255,255,255,0.1); padding: 5px 12px; border-radius: 20px; display: flex; align-items: center; gap: 6px; backdrop-filter: blur(4px); }
-        .status-tag { font-size: 10px; font-weight: 800; letter-spacing: 0.5px; text-transform: uppercase; }
-        .status-dot { width: 6px; height: 6px; background: var(--offline-gray); border-radius: 50%; }
+        .status-pill { background: rgba(0,0,0,0.5); border: 1px solid rgba(255,255,255,0.1); padding: 5px 12px; border-radius: 20px; display: flex; align-items: center; gap: 6px; backdrop-filter: blur(4px); transition: all 0.3s ease; }
+        .status-tag { font-size: 10px; font-weight: 800; letter-spacing: 0.5px; text-transform: uppercase; transition: color 0.3s ease; }
+        .status-dot { width: 6px; height: 6px; background: var(--offline-gray); border-radius: 50%; transition: all 0.3s ease; }
         .status-dot.active { background: var(--danger); box-shadow: 0 0 10px var(--danger); animation: heartbeatLive 1.8s infinite ease-in-out; }
         .status-dot.vod { background: var(--primary); box-shadow: 0 0 8px var(--primary); }
         .pinned-tag { background: rgba(255,255,255,0.1); color: #fff; padding: 4px 10px; border-radius: 12px; font-size: 9px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; }
         .player-wrapper { width: 100%; aspect-ratio: 16/9; border-radius: 10px; overflow: hidden; background: #000; box-shadow: 0 4px 20px rgba(0,0,0,0.4); border: 1px solid rgba(255,255,255,0.05); }
+
+        /* Full Height Chat Wrapper */
+        .chat-tab-container { height: 100%; padding: 110px 0 100px; background: #000; }
+        .chat-iframe { width: 100%; height: 100%; border: none; }
 
         .card { background: var(--card-bg); border-radius: 12px; padding: 14px; margin-bottom: 12px; border: 1px solid var(--border-color); position: relative; }
         .avatar-ring-feed { width: 38px; height: 38px; border-radius: 50%; margin-right: 12px; display: flex; align-items: center; justify-content: center; font-weight: 700; border: 1px solid var(--primary); background: #000; overflow: hidden; flex-shrink: 0; position: relative; }
@@ -98,7 +105,6 @@
         .nav-item { display: flex; flex-direction: column; align-items: center; width: 50px; color: var(--text-muted); font-size: 10px; gap: 4px; cursor: pointer; transition: color 0.2s; text-decoration: none; }
         .nav-item.active { color: #fff; }
 
-        @keyframes storyGlow { 0% { background-position: 0% 50%; } 50% { background-position: 100% 50%; } 100% { background-position: 0% 50%; } }
         @keyframes heartbeatLive { 0% { transform: scale(1); opacity: 1; } 50% { transform: scale(1.25); opacity: 0.6; } 100% { transform: scale(1); opacity: 1; } }
     </style>
 </head>
@@ -122,77 +128,86 @@
                 </div>
             </header>
 
-            <div id="feed">
-                <template v-if="currentTab === 'home'">
-                    <div id="live-container">
-                        <div class="banner-content">
-                            <div class="live-label">
-                                <div class="status-pill" :style="{ borderColor: isLive ? 'rgba(239, 68, 68, 0.4)' : 'rgba(145, 70, 255, 0.2)' }">
-                                    <span class="status-dot" :class="{ active: isLive, vod: !isLive }"></span> 
-                                    <span class="status-tag" :style="{ color: isLive ? 'var(--danger)' : 'var(--primary)' }">{{ isLive ? 'ONLINE' : 'LATEST VOD' }}</span>
-                                </div>
-                                <span class="pinned-tag">Featured</span>
+            <!-- Home Tab -->
+            <div id="feed" v-if="currentTab === 'home'">
+                <div id="live-container">
+                    <div class="banner-content">
+                        <div class="live-label">
+                            <div class="status-pill" :style="{ borderColor: isLive ? 'rgba(239, 68, 68, 0.4)' : 'rgba(145, 70, 255, 0.2)' }">
+                                <span class="status-dot" :class="{ active: isLive, vod: !isLive }"></span> 
+                                <span class="status-tag" :style="{ color: isLive ? 'var(--danger)' : 'var(--primary)' }">{{ isLive ? 'ONLINE' : 'LATEST VOD' }}</span>
                             </div>
-                            <div class="player-wrapper">
-                                <!-- Re-optimized with aggressive parent tracking and correct ID -->
-                                <iframe 
-                                    v-if="!isLive"
-                                    :src="'https://player.twitch.tv/?video=2143719460&parent=' + host + '&parent=' + windowHost + '&autoplay=false&muted=true'" 
-                                    allowfullscreen="true" 
-                                    style="width:100%; height:100%; border:none;">
-                                </iframe>
-                                <iframe 
-                                    v-else
-                                    :src="'https://player.twitch.tv/?channel=codemiko&parent=' + host + '&parent=' + windowHost + '&autoplay=false&muted=true'" 
-                                    allowfullscreen="true" 
-                                    style="width:100%; height:100%; border:none;">
-                                </iframe>
-                            </div>
+                            <span class="pinned-tag">Featured</span>
+                        </div>
+                        <div class="player-wrapper">
+                            <iframe v-if="isLive" :src="'https://player.twitch.tv/?channel=codemiko&parent=' + host + '&parent=' + windowHost + '&autoplay=false&muted=true'" allowfullscreen="true" style="width:100%; height:100%; border:none;"></iframe>
+                            <iframe v-else :src="'https://player.twitch.tv/?video=2143719460&parent=' + host + '&parent=' + windowHost + '&autoplay=false&muted=true'" allowfullscreen="true" style="width:100%; height:100%; border:none;"></iframe>
                         </div>
                     </div>
+                </div>
 
-                    <div class="card" v-for="clip in clips" :key="clip.id">
-                        <div style="display:flex;align-items:center;margin-bottom:10px;">
-                            <div class="avatar-ring-feed"><img v-if="clip.added_by === 'CodeMiko' || clip.added_by === 'tomato_24'" src="1000018850.png?v=2" alt="Avatar"></div>
-                            <div style="font-weight:700;font-size:14px; margin-left: 10px;">{{ clip.added_by }}</div>
-                        </div>
-                        <div class="thumbnail-wrapper" @click="activeClip = clip">
-                            <img :src="clip.thumbnail_url" alt="Thumbnail">
-                            <div class="play-overlay"><span class="material-symbols-rounded" style="font-size:48px; color:white;">play_circle</span></div>
-                        </div>
+                <div class="card" v-for="clip in clips" :key="clip.id">
+                    <div style="display:flex;align-items:center;margin-bottom:10px;">
+                        <div class="avatar-ring-feed"><img v-if="clip.added_by === 'CodeMiko' || clip.added_by === 'tomato_24'" src="1000018850.png?v=2" alt="Avatar"></div>
+                        <div style="font-weight:700;font-size:14px; margin-left: 10px;">{{ clip.added_by }}</div>
                     </div>
-                </template>
+                    <div class="thumbnail-wrapper" @click="activeClip = clip">
+                        <img :src="clip.thumbnail_url" alt="Thumbnail">
+                        <div class="play-overlay"><span class="material-symbols-rounded" style="font-size:48px; color:white;">play_circle</span></div>
+                    </div>
+                </div>
+            </div>
 
-                <template v-if="currentTab === 'community'">
-                    <!-- Restored Chaotic Post -->
-                    <div class="card">
-                        <div style="display:flex; align-items:center; margin-bottom:12px;">
-                            <div class="avatar-ring-feed"><img src="1000018850.png?v=2" alt="CodeMiko"></div>
-                            <div>
-                                <div style="font-weight:700; font-size:14px; display: flex; align-items: center; gap: 6px;">CodeMiko <span style="background: rgba(88, 101, 242, 0.15); color: #5865F2; padding: 2px 6px; border-radius: 4px; font-size: 9px; font-weight: 800; text-transform: uppercase;">Discord</span></div>
-                                <div style="font-size:10px; color:var(--text-muted); margin-top: 3px;">Today at 10:25 AM</div>
-                            </div>
-                        </div>
-                        <div style="font-size:14px; line-height: 1.5; color: var(--text-main);">
-                            MUWHEHEHEHHEHE im causing chaos in fanfix today and i dont give a fuck
-                        </div>
-                    </div>
+            <!-- Chat Tab -->
+            <div class="chat-tab-container" v-if="currentTab === 'chat'">
+                <iframe :src="'https://www.twitch.tv/embed/codemiko/chat?parent=' + host + '&parent=' + windowHost + '&darkpopout'" class="chat-iframe"></iframe>
+            </div>
 
-                    <div class="card" v-for="post in posts" :key="post.id">
-                        <div style="display:flex;align-items:center;margin-bottom:10px;">
-                            <div class="avatar-ring-feed"><img v-if="post.author === 'CodeMiko' || post.author === 'tomato_24'" src="1000018850.png?v=2" alt="Avatar"></div>
-                            <div>
-                                <div style="font-weight:700; font-size:14px;">{{ post.author }}</div>
-                                <div style="font-size:10px; color:var(--text-muted);">{{ new Date(post.created_at).toLocaleDateString() }}</div>
-                            </div>
+            <!-- Feed Tab -->
+            <div id="feed" v-if="currentTab === 'community'">
+                <!-- Discord Message 1 -->
+                <div class="card">
+                    <div style="display:flex; align-items:center; margin-bottom:12px;">
+                        <div class="avatar-ring-feed"><img src="1000018850.png?v=2" alt="CodeMiko"></div>
+                        <div>
+                            <div style="font-weight:700; font-size:14px; display: flex; align-items: center; gap: 6px;">CodeMiko <span style="background: rgba(88, 101, 242, 0.15); color: #5865F2; padding: 2px 6px; border-radius: 4px; font-size: 9px; font-weight: 800; text-transform: uppercase;">Discord</span></div>
+                            <div style="font-size:10px; color:var(--text-muted); margin-top: 3px;">Today at 10:25 AM</div>
                         </div>
-                        <div style="font-size:14px;">{{ post.text }}</div>
                     </div>
-                </template>
+                    <div style="font-size:14px; line-height: 1.5; color: var(--text-main);">
+                        MUWHEHEHEHHEHE im causing chaos in fanfix today and i dont give a fuck
+                    </div>
+                </div>
+
+                <!-- Discord Message 2 -->
+                <div class="card">
+                    <div style="display:flex; align-items:center; margin-bottom:12px;">
+                        <div class="avatar-ring-feed"><img src="1000018850.png?v=2" alt="CodeMiko"></div>
+                        <div>
+                            <div style="font-weight:700; font-size:14px; display: flex; align-items: center; gap: 6px;">CodeMiko <span style="background: rgba(88, 101, 242, 0.15); color: #5865F2; padding: 2px 6px; border-radius: 4px; font-size: 9px; font-weight: 800; text-transform: uppercase;">Discord</span></div>
+                            <div style="font-size:10px; color:var(--text-muted); margin-top: 3px;">Today at 9:02 AM</div>
+                        </div>
+                    </div>
+                    <div style="font-size:14px; line-height: 1.5; color: var(--text-main);">
+                        Love you chatties
+                    </div>
+                </div>
+
+                <div class="card" v-for="post in posts" :key="post.id">
+                    <div style="display:flex;align-items:center;margin-bottom:10px;">
+                        <div class="avatar-ring-feed"><img v-if="post.author === 'CodeMiko' || post.author === 'tomato_24'" src="1000018850.png?v=2" alt="Avatar"></div>
+                        <div>
+                            <div style="font-weight:700; font-size:14px;">{{ post.author }}</div>
+                            <div style="font-size:10px; color:var(--text-muted);">{{ new Date(post.created_at).toLocaleDateString() }}</div>
+                        </div>
+                    </div>
+                    <div style="font-size:14px;">{{ post.text }}</div>
+                </div>
             </div>
 
             <nav class="bottom-nav">
                 <div class="nav-item" :class="{ active: currentTab === 'home' }" @click="currentTab = 'home'"><span class="material-symbols-rounded">home</span>Home</div>
+                <div class="nav-item" :class="{ active: currentTab === 'chat' }" @click="currentTab = 'chat'"><span class="material-symbols-rounded">chat</span>Chat</div>
                 <div class="nav-item" :class="{ active: currentTab === 'community' }" @click="currentTab = 'community'"><span class="material-symbols-rounded">forum</span>Feed</div>
                 <a href="https://discord.gg/codemiko" target="_blank" class="nav-item">
                     <svg viewBox="0 0 127 96" style="width:24px; height:24px; fill:currentColor; opacity: 0.8;"><path d="M107.7,8.07A105,105,0,0,0,81.47,0a72,72,0,0,0-3.36,6.83,97,97,0,0,0-49,0,72,72,0,0,0-3.36-6.83A105,105,0,0,0,19.39,8.09C2.71,32.65-1.82,56.6.48,80.1a105,105,0,0,0,32.19,16.18,77,77,0,0,0,6.89-11.11,64,64,0,0,1-10.85-5.18,75,75,0,0,0,64.32,0c.87.71,1.76,1.39,2.66,2a64,64,0,0,1-10.87,5.19,77,77,0,0,0,6.89,11.10,105,105,0,0,0,32.19-16.14c2.72-27.00-4.55-50.87-19.40-72.03ZM42.45,65.69C36.18,65.69,31.00,60,31.00,53s5.12-12.67,11.45-12.67S54,46,54,53s-5.17,12.69-11.55,12.69Zm42.24,0C78.41,65.69,73.25,60,73.25,53s5.12-12.67,11.44-12.67S96.20,46,96.20,53s-5.14,12.69-9.51,12.69Z"/></svg>
@@ -202,10 +217,10 @@
             </nav>
         </div>
 
+        <!-- Profile Modal -->
         <div class="modal-overlay" :class="{ open: modals.profile }" @click.self="modals.profile = false">
             <div class="modal-content">
                 <div class="swipe-handle"></div>
-                <!-- RESTRICTED LOGIN -->
                 <div v-if="!currentUser">
                     <h3 style="margin-bottom: 20px;">Owner Login</h3>
                     <input type="text" v-model="loginNick" class="input-box" placeholder="Username">
@@ -218,7 +233,7 @@
                     </div>
                     <h2 style="margin-bottom:20px;">Welcome, {{ currentUser }}</h2>
                     <div style="background:rgba(255,255,255,0.05); padding:15px; border-radius:12px; margin-bottom:15px;">
-                        <h4 style="margin:0 0 10px; color:var(--primary-light);">Admin Panel</h4>
+                        <h4 style="margin:0 0 10px; color:var(--primary-light);">Admin Dashboard</h4>
                         <div v-if="showKeyInputs">
                             <input type="text" v-model="tempId" class="input-box" placeholder="Twitch Client ID">
                             <input type="text" v-model="tempTkn" class="input-box" placeholder="Twitch Access Token">
