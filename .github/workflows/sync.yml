@@ -10,30 +10,36 @@ jobs:
     steps:
       - name: Sync Messages
         run: |
-          # 1. Fetch messages from Discord
+          # 1. Fetch the latest 10 messages from Discord
           RESPONSE=$(curl -s -H "Authorization: Bot ${{ secrets.DISCORD_BOT_TOKEN }}" \
-            "https://discord.com/api/v10/channels/${{ secrets.DISCORD_CHANNEL_ID }}/messages?limit=5")
+            "https://discord.com/api/v10/channels/${{ secrets.DISCORD_CHANNEL_ID }}/messages?limit=10")
 
-          # 2. Check if Discord actually returned an array (list) of messages
-          # If it didn't, it will print the error and stop instead of crashing with Code 5
+          # 2. Check for API errors
           IS_ARRAY=$(echo "$RESPONSE" | jq 'type == "array"')
-          
           if [ "$IS_ARRAY" != "true" ]; then
             echo "❌ DISCORD API ERROR: $RESPONSE"
             exit 1
           fi
 
-          # 3. If it is an array, proceed to sync with Supabase
+          # 3. Process each message safely
           echo "$RESPONSE" | jq -c '.[]' | while read i; do
-            CONTENT=$(echo $i | jq -r '.content')
-            AUTHOR=$(echo $i | jq -r '.author.username')
-            TIMESTAMP=$(echo $i | jq -r '.timestamp')
             
-            curl -s -X POST "${{ secrets.SUPABASE_URL }}/rest/v1/discord_feed" \
-              -H "apikey: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}" \
-              -H "Authorization: Bearer ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}" \
-              -H "Content-Type: application/json" \
-              -H "Prefer: resolution=merge-duplicates" \
-              -d "{\"content\": \"$CONTENT\", \"author\": \"$AUTHOR\", \"created_at\": \"$TIMESTAMP\"}"
+            # Use jq to safely package quotes, newlines, and check for Embeds. 
+            # It also hardcodes the author to "CodeMiko"
+            PAYLOAD=$(echo "$i" | jq -c '{
+              content: (if .content != null and .content != "" then .content else .embeds[0].description // "" end),
+              author: "CodeMiko",
+              created_at: .timestamp
+            }')
+            
+            # Only push if content is not completely empty
+            if [ "$PAYLOAD" != '{"content":"","author":"CodeMiko","created_at":null}' ]; then
+              curl -s -X POST "${{ secrets.SUPABASE_URL }}/rest/v1/discord_feed" \
+                -H "apikey: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}" \
+                -H "Authorization: Bearer ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}" \
+                -H "Content-Type: application/json" \
+                -d "$PAYLOAD"
+            fi
           done
-          echo "✅ Sync completed successfully."
+          
+          echo "✅ Sync completed safely."
