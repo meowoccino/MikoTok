@@ -121,7 +121,6 @@
             <header class="app-header">
                 <div class="header-logo" v-html="logoSvg('header')"></div>
                 <div class="simple-logo"><span class="gradient-text">MikoTok</span></div>
-                <!-- Updated: Now links directly to Twitch -->
                 <a href="https://www.twitch.tv/codemiko" target="_blank" class="header-status-wrapper" style="text-decoration:none;">
                     <div class="story-ring" :class="isLive ? 'live' : 'offline'">
                         <img src="1000018850.png?v=2" class="story-avatar" alt="Miko">
@@ -167,7 +166,6 @@
 
             <!-- Feed Tab -->
             <div id="feed" v-if="currentTab === 'community'">
-                <!-- New Chaotic Placeholder -->
                 <div class="card">
                     <div style="display:flex; align-items:center; margin-bottom:12px;">
                         <div class="avatar-ring-feed"><img src="1000018850.png?v=2" alt="CodeMiko"></div>
@@ -263,7 +261,7 @@
         <!-- Clip Player Pop-out Modal -->
         <div class="modal-overlay" :class="{ open: activeClip }" @click.self="activeClip = null" style="align-items: center; justify-content: center; z-index: 2000;">
             <div v-if="activeClip" class="player-wrapper" style="width: 95%; max-width: 460px; aspect-ratio: 16/9; background: #000; border-radius: 12px; border: 1px solid rgba(255,255,255,0.1); box-shadow: 0 10px 40px rgba(0,0,0,0.8);">
-                <iframe :src="'https://clips.twitch.tv/embed?clip=' + activeClip.id + '&parent=' + host + '&parent=' + windowHost + '&autoplay=true'" allowfullscreen="true" style="width:100%; height:100%; border:none;"></iframe>
+                <iframe :src="'https://clips.twitch.tv/embed?clip=' + activeClip.id + '&parent=' + host + '&parent=' + windowHost + '&autoplay=true&muted=false'" allowfullscreen="true" style="width:100%; height:100%; border:none;"></iframe>
             </div>
         </div>
     </div>
