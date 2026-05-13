@@ -58,8 +58,14 @@
         /* Cleaned Up Metadata Section */
         .miko-metadata { display: flex; align-items: center; padding: 12px 20px; background: transparent; }
         .miko-metadata img { width: 42px; height: 42px; border-radius: 50%; border: 2px solid var(--primary); margin-right: 12px; box-shadow: 0 2px 10px rgba(0,0,0,0.5); }
-        .miko-metadata .author-name { font-weight: 900; font-size: 16px; letter-spacing: 0.5px; color: white; display: block; }
-        .miko-metadata .clip-stats { font-size: 12px; font-weight: 600; color: var(--text-muted); display: flex; align-items: center; gap: 6px; margin-top: 2px; }
+        .miko-metadata .author-name { font-weight: 900; font-size: 16px; letter-spacing: 0.5px; color: white; display: flex; align-items: center; gap: 8px; }
+        .miko-metadata .clip-stats { font-size: 12px; font-weight: 600; color: var(--text-muted); display: flex; align-items: center; gap: 6px; margin-top: 4px; }
+
+        /* New Integrated Badges */
+        .live-indicator, .vod-indicator { display: inline-flex; align-items: center; gap: 4px; padding: 3px 6px; border-radius: 6px; font-size: 10px; font-weight: 900; letter-spacing: 0.5px; text-transform: uppercase; color: #fff; vertical-align: middle; box-shadow: 0 2px 8px rgba(0,0,0,0.5); }
+        .live-indicator { background: var(--danger); }
+        .vod-indicator { background: var(--primary); }
+        .live-indicator .dot, .vod-indicator .dot { width: 5px; height: 5px; border-radius: 50%; background: #fff; animation: heartbeat 1.5s infinite; }
 
         /* Top Safe Zone for Pull-to-Refresh */
         .safe-refresh-zone { position: absolute; top: 0; left: 0; width: 100%; height: 90px; z-index: 90; }
@@ -70,12 +76,6 @@
 
         @keyframes shimmer { 0% { background-position: -200% 0; } 100% { background-position: 200% 0; } }
         .skeleton { background: linear-gradient(90deg, #18181b 25%, #27272a 50%, #18181b 75%); background-size: 200% 100%; animation: shimmer 1.5s infinite; border-radius: 8px; width: 100%; height: 100%; position: absolute; inset: 0; z-index: -1; }
-
-        /* Premium Badges - Adjusted Position */
-        .premium-badge { position: absolute; top: 20px; left: 20px; z-index: 10; background: rgba(0, 0, 0, 0.65); backdrop-filter: blur(10px); border: 1px solid rgba(255, 255, 255, 0.15); padding: 6px 14px; border-radius: 30px; display: flex; align-items: center; gap: 8px; color: #fff; font-size: 11px; font-weight: 900; letter-spacing: 0.5px; text-transform: uppercase; box-shadow: 0 4px 15px rgba(0,0,0,0.5); pointer-events: none; }
-        .premium-badge .dot { width: 8px; height: 8px; border-radius: 50%; box-shadow: 0 0 8px currentColor; }
-        .premium-badge.live .dot { background: var(--danger); color: var(--danger); animation: heartbeat 1.5s infinite; }
-        .premium-badge.vod .dot { background: var(--primary); color: var(--primary); animation: heartbeat 1.5s infinite; }
 
         /* Community Feed Specifics */
         .community-feed { padding: 100px 12px 100px; height: 100%; overflow-y: auto; }
@@ -168,7 +168,8 @@
 
             <div class="view-port" :style="{ opacity: splashVisible ? 0 : 1 }">
                 
-                <div id="feed-scroll" v-show="currentTab === 'home'">
+                <!-- TikTok Home Feed -->
+                <div id="feed-scroll" v-show="currentTab === 'home'" @touchstart="handleFeedTouchStart" @touchmove="handleFeedTouchMove" @touchend="handleFeedTouchEnd">
                     <div class="ptr-container" :style="{ height: ptrHeight + 'px', transition: ptrHeight === 0 ? 'height 0.3s' : 'none' }">
                         <span class="material-symbols-rounded" :style="{ transform: 'rotate(' + (ptrHeight * 5) + 'deg)', opacity: ptrHeight / 60 }">refresh</span>
                     </div>
@@ -176,20 +177,21 @@
                     <!-- Clean Edge-to-Edge Featured Player -->
                     <div class="feed-snap-item" data-id="featured" v-if="isLive || latestVodId">
                         <div style="width: 100%; aspect-ratio: 16/9; position: relative; z-index: 2;">
-                            <div class="premium-badge live" v-if="isLive"><div class="dot"></div><span>LIVE NOW</span></div>
-                            <div class="premium-badge vod" v-else-if="latestVodId"><div class="dot"></div><span>LATEST VOD</span></div>
-
                             <!-- Fully interactive inline player -->
                             <iframe v-if="activeFeedVideo === 'featured' && isLive" :src="'https://player.twitch.tv/?channel=codemiko&parent=' + hostname + '&autoplay=true&muted=false'" style="width:100%; height:100%; border:none; pointer-events:auto;" allow="autoplay; fullscreen" allowfullscreen></iframe>
                             <iframe v-else-if="activeFeedVideo === 'featured' && latestVodId" :src="'https://player.twitch.tv/?video=' + latestVodId + '&parent=' + hostname + '&autoplay=true&muted=false'" style="width:100%; height:100%; border:none; pointer-events:auto;" allow="autoplay; fullscreen" allowfullscreen></iframe>
                             <div class="skeleton" v-else></div>
                         </div>
 
-                        <!-- Repositioned Metadata -->
+                        <!-- Repositioned Metadata with Integrated Badges -->
                         <div class="miko-metadata">
                             <img src="1000018850.png?v=2">
                             <div>
-                                <span class="author-name">CodeMiko</span>
+                                <div class="author-name">
+                                    CodeMiko
+                                    <div class="live-indicator" v-if="isLive"><div class="dot"></div>LIVE</div>
+                                    <div class="vod-indicator" v-else-if="latestVodId"><div class="dot"></div>VOD</div>
+                                </div>
                                 <div class="clip-stats">
                                     <span class="material-symbols-rounded" style="font-size:14px; color:var(--primary);">stars</span>
                                     Featured Broadcast
@@ -212,7 +214,6 @@
                             <div class="skeleton" v-else></div>
                         </div>
                         
-                        <!-- Repositioned Metadata -->
                         <div class="miko-metadata">
                             <img src="1000018850.png?v=2">
                             <div>
@@ -410,25 +411,9 @@
                     showToast("SIGNED OUT"); 
                 };
 
-                // Pull-To-Refresh Logic hooked to safe-refresh-zone
-                const handleFeedTouchStart = (e) => { feedStartY = e.touches[0].clientY; };
-                const handleFeedTouchMove = (e) => { 
-                    if (!feedStartY) return; 
-                    const y = e.touches[0].clientY; 
-                    if (y > feedStartY) { 
-                        ptrHeight.value = Math.min((y - feedStartY) * 0.4, 80); 
-                        if (e.cancelable) e.preventDefault(); 
-                    } 
-                };
-                const handleFeedTouchEnd = async () => { 
-                    if (ptrHeight.value >= 50) { 
-                        ptrHeight.value = 50; 
-                        await loadData(); 
-                        await checkLiveStatusPublic(true); 
-                    } 
-                    ptrHeight.value = 0; 
-                    feedStartY = 0; 
-                };
+                const handleFeedTouchStart = (e) => { const sc = document.getElementById('feed-scroll'); if (sc && sc.scrollTop <= 0) feedStartY = e.touches[0].clientY; else feedStartY = 0; };
+                const handleFeedTouchMove = (e) => { if (!feedStartY) return; const y = e.touches[0].clientY; if (y > feedStartY) { ptrHeight.value = Math.min((y - feedStartY) * 0.4, 80); if (ptrHeight.value > 10 && document.getElementById('feed-scroll').scrollTop === 0 && e.cancelable) e.preventDefault(); } };
+                const handleFeedTouchEnd = async () => { if (ptrHeight.value >= 50) { ptrHeight.value = 50; await loadData(); await checkLiveStatusPublic(true); } ptrHeight.value = 0; feedStartY = 0; };
                 
                 const handleModalTouchStart = (e) => { 
                     if (e.currentTarget.scrollTop <= 0) { 
