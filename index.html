@@ -67,6 +67,10 @@
         .logout-btn { width: 100%; background: #1a1a1c; border: 1px solid var(--border-color); color: var(--text-muted); padding: 14px; border-radius: 16px; font-weight: 700; cursor: pointer; font-size: 13px; display: flex; align-items: center; justify-content: center; gap: 8px; transition: 0.2s; }
         .logout-btn:active { background: #27272a; color: white; }
 
+        /* Wipe Link Styling */
+        .wipe-link { display: inline-block; margin-top: 15px; font-size: 11px; color: var(--text-muted); font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; text-decoration: underline; cursor: pointer; opacity: 0.6; }
+        .wipe-link:active { color: var(--danger); opacity: 1; }
+
         /* Admin Layouts */
         .infra-bar { background: var(--card-bg); border: 1px solid var(--border-color); border-radius: 16px; padding: 16px 20px; display: flex; justify-content: center; margin-bottom: 20px; align-items: center; }
         .status-node { display: flex; align-items: center; gap: 8px; font-size: 11px; font-weight: 800; color: #fff; letter-spacing: 0.5px; }
@@ -303,7 +307,6 @@
                     } catch (e) { showToast("WIPE FAILED"); }
                 };
 
-                // UPDATED: Syncing in chunks to prevent database payload limits
                 const runSync = async () => {
                     if(isSyncing.value) return;
                     if(!apiHealthy.value) { showToast("CHECK API KEYS"); return; }
@@ -323,13 +326,12 @@
                             const cD = await cR.json();
                             
                             if (cD.data && cD.data.length > 0) {
-                                // Instantly chunk the payload to the database
                                 const ins = cD.data.map(x => ({ id: x.id, thumbnail_url: x.thumbnail_url, title: x.title, view_count: x.view_count, created_at: x.created_at, added_by: 'CodeMiko' }));
                                 await sbClient.from('clips').upsert(ins, { onConflict: 'id' });
                                 totalSynced += cD.data.length;
                             }
                             cursor = cD.pagination?.cursor;
-                        } while (cursor && totalSynced < 1000); // hard cap to prevent infinite loops
+                        } while (cursor && totalSynced < 1000); 
 
                         await loadData();
                         showToast(`SYNC SUCCESS! ${totalSynced} CLIPS.`);
