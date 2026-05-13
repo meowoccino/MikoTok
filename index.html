@@ -47,13 +47,12 @@
 
         #live-player-box { background: linear-gradient(160deg, #160b24 0%, #0a0512 100%); border-radius: 16px; padding: 16px; margin-bottom: 25px; border: 1px solid rgba(145, 70, 255, 0.3); position: relative; }
         
-        /* Badge Styles */
-        .status-badge-pinned { position: absolute; top: 12px; left: 12px; z-index: 10; padding: 4px 10px; border-radius: 6px; font-size: 10px; font-weight: 900; text-transform: uppercase; display: flex; align-items: center; gap: 6px; box-shadow: 0 4px 10px rgba(0,0,0,0.5); color: white; pointer-events: none; }
-        .status-badge-pinned.live { background: var(--danger); }
-        .status-badge-pinned.vod { background: var(--primary); } 
-        
-        .pulse-dot { width: 6px; height: 6px; border-radius: 50%; animation: heartbeat 1.5s infinite; background: white; }
-        .pinned-badge { position: absolute; top: 12px; right: 12px; z-index: 10; background: rgba(0,0,0,0.6); border: 1px solid rgba(255,255,255,0.1); width: 26px; height: 26px; border-radius: 50%; display: flex; align-items: center; justify-content: center; box-shadow: 0 4px 10px rgba(0,0,0,0.5); color: white; pointer-events: none; }
+        /* Premium Featured Badge */
+        .premium-badge { position: absolute; top: 12px; left: 12px; z-index: 10; background: rgba(0, 0, 0, 0.65); backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); border: 1px solid rgba(255, 255, 255, 0.15); padding: 6px 12px 6px 10px; border-radius: 30px; display: flex; align-items: center; gap: 6px; color: #fff; font-size: 10px; font-weight: 900; letter-spacing: 0.5px; text-transform: uppercase; box-shadow: 0 4px 15px rgba(0,0,0,0.5); pointer-events: none; }
+        .premium-badge .dot { width: 8px; height: 8px; border-radius: 50%; box-shadow: 0 0 8px currentColor; }
+        .premium-badge.live .dot { background: var(--danger); color: var(--danger); animation: heartbeat 1.5s infinite; }
+        .premium-badge.vod .dot { background: var(--primary); color: var(--primary); }
+        .premium-badge .pin-icon { font-size: 12px; opacity: 0.7; margin-right: 2px; }
 
         .card { background: var(--card-bg); border-radius: 12px; padding: 12px; margin-bottom: 16px; border: 1px solid var(--border-color); }
         .thumbnail-wrapper { width: 100%; border-radius: 8px; overflow: hidden; aspect-ratio: 16/9; background: #000; position: relative; cursor: pointer; }
@@ -128,22 +127,20 @@
 
                 <div id="live-player-box">
                     <div style="width:100%; aspect-ratio:16/9; border-radius:10px; overflow:hidden; background:#000; position: relative;">
-                        <!-- Badges moved inside the video container -->
-                        <div class="status-badge-pinned live" v-if="isLive">
-                            <span class="pulse-dot"></span>
-                            <span>LIVE</span>
+                        
+                        <!-- New Unified Premium Badge -->
+                        <div class="premium-badge live" v-if="isLive">
+                            <span class="material-symbols-rounded pin-icon">push_pin</span>
+                            <div class="dot"></div>
+                            <span>LIVE NOW</span>
                         </div>
-                        <div class="status-badge-pinned vod" v-else-if="latestVodId">
-                            <span class="pulse-dot"></span>
+                        <div class="premium-badge vod" v-else-if="latestVodId">
+                            <span class="material-symbols-rounded pin-icon">push_pin</span>
+                            <div class="dot"></div>
                             <span>LATEST VOD</span>
                         </div>
 
-                        <div class="pinned-badge">
-                            <span class="material-symbols-rounded" style="font-size:14px;">push_pin</span>
-                        </div>
-
                         <!-- Smart Iframe Logic -->
-                        <!-- Plays Live if active. Unmounts dynamically if a Clip is opened to prevent audio clashing -->
                         <iframe 
                             v-if="isLive && !activeClip"
                             :src="'https://player.twitch.tv/?channel=codemiko&parent=' + hostname + '&autoplay=true&muted=false'" 
@@ -151,7 +148,6 @@
                             allow="autoplay; fullscreen"
                             allowfullscreen>
                         </iframe>
-                        <!-- Plays Latest VOD if offline. Unmounts dynamically if a Clip is opened -->
                         <iframe 
                             v-else-if="latestVodId && !activeClip"
                             :src="'https://player.twitch.tv/?video=' + latestVodId + '&parent=' + hostname + '&autoplay=true&muted=false'" 
@@ -345,7 +341,15 @@
 
                 const handleFeedTouchStart = (e) => { const sc = document.getElementById('feed-scroll'); if (sc && sc.scrollTop <= 0) feedStartY = e.touches[0].clientY; else feedStartY = 0; };
                 const handleFeedTouchMove = (e) => { if (!feedStartY) return; const y = e.touches[0].clientY; if (y > feedStartY) { ptrHeight.value = Math.min((y - feedStartY) * 0.4, 80); if (ptrHeight.value > 10 && document.getElementById('feed-scroll').scrollTop === 0) if (e.cancelable) e.preventDefault(); } };
-                const handleFeedTouchEnd = async () => { if (ptrHeight.value >= 50) { ptrHeight.value = 50; await loadData(); } ptrHeight.value = 0; feedStartY = 0; };
+                const handleFeedTouchEnd = async () => { 
+                    if (ptrHeight.value >= 50) { 
+                        ptrHeight.value = 50; 
+                        await loadData(); 
+                        await checkLiveStatusPublic(); // Re-checks live status and fetches latest VOD on pull-to-refresh
+                    } 
+                    ptrHeight.value = 0; 
+                    feedStartY = 0; 
+                };
                 
                 const handleModalTouchStart = (e) => { 
                     if (e.currentTarget.scrollTop <= 0) { 
