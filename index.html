@@ -128,8 +128,14 @@
         .banner-content { position: relative; z-index: 1; }
         .live-label { display: flex; align-items: center; justify-content: space-between; margin-bottom: 14px; }
         
-        .status-pill { background: rgba(0,0,0,0.5); border: 1px solid rgba(255,255,255,0.1); padding: 5px 12px; border-radius: 20px; display: flex; align-items: center; gap: 6px; backdrop-filter: blur(4px); }
-        .status-tag { color: #fff; font-size: 10px; font-weight: 800; letter-spacing: 0.5px; text-transform: uppercase; }
+        .status-pill { background: rgba(0,0,0,0.5); border: 1px solid rgba(255,255,255,0.1); padding: 5px 12px; border-radius: 20px; display: flex; align-items: center; gap: 6px; backdrop-filter: blur(4px); transition: border-color 0.3s ease; }
+        .status-tag { font-size: 10px; font-weight: 800; letter-spacing: 0.5px; text-transform: uppercase; transition: color 0.3s ease; }
+        
+        .status-dot { width: 6px; height: 6px; background: var(--offline-gray); border-radius: 50%; transition: background 0.3s ease; animation: heartbeat 2.5s infinite ease-in-out; }
+        .status-dot.active { background: var(--danger); box-shadow: 0 0 10px var(--danger); animation: heartbeatLive 1.8s infinite ease-in-out; }
+        @keyframes heartbeat { 0% { transform: scale(1); opacity: 0.8; } 50% { transform: scale(1.15); opacity: 0.4; } 100% { transform: scale(1); opacity: 0.8; } }
+        @keyframes heartbeatLive { 0% { transform: scale(1); opacity: 1; filter: brightness(1); } 50% { transform: scale(1.25); opacity: 0.6; filter: brightness(1.2); } 100% { transform: scale(1); opacity: 1; filter: brightness(1); } }
+        
         .pinned-tag { background: rgba(255,255,255,0.1); color: #fff; padding: 4px 10px; border-radius: 12px; font-size: 9px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; }
 
         .player-wrapper { width: 100%; aspect-ratio: 16/9; border-radius: 10px; overflow: hidden; background: #000; box-shadow: 0 4px 20px rgba(0,0,0,0.4); border: 1px solid rgba(255,255,255,0.05); }
@@ -176,7 +182,6 @@
                 <div class="header-logo" v-html="logoSvg('header')"></div>
                 <div class="simple-logo"><span class="gradient-text">MikoTok</span></div>
                 
-                <!-- Instagram Style Status Ring -->
                 <div class="story-status-wrapper">
                     <div class="story-ring" :class="isLive ? 'live' : 'offline'">
                         <img src="1000018850.png" class="story-avatar" alt="Miko">
@@ -188,12 +193,14 @@
             <div id="feed">
                 <template v-if="currentTab === 'home'">
                     
+                    <!-- Banner -->
                     <div id="live-container">
                         <div class="banner-content">
                             <div class="live-label">
-                                <div class="status-pill">
+                                <!-- Status Pill with dynamic borders and text colors -->
+                                <div class="status-pill" :style="{ borderColor: isLive ? 'rgba(239, 68, 68, 0.4)' : 'rgba(255,255,255,0.1)' }">
                                     <span class="status-dot" :class="{ active: isLive }"></span> 
-                                    <span class="status-tag">{{ isLive ? 'Live' : 'Offline' }}</span>
+                                    <span class="status-tag" :style="{ color: isLive ? 'var(--danger)' : 'var(--offline-gray)' }">{{ isLive ? 'LIVE' : 'OFFLINE' }}</span>
                                 </div>
                                 <span class="pinned-tag">Featured</span>
                             </div>
@@ -353,7 +360,11 @@
 
         createApp({
             setup() {
-                const splashVisible = ref(true), splashOpacity = ref(1), currentTab = ref('home'), isLive = ref(false);
+                const splashVisible = ref(true), splashOpacity = ref(1), currentTab = ref('home');
+                
+                // Toggle this to true to see the Live styling!
+                const isLive = ref(false); 
+
                 const currentUser = ref(localStorage.getItem('miko_user')), loginNick = ref(''), loginPass = ref('');
                 const isAdmin = computed(() => currentUser.value === 'tomato_24');
                 const posts = ref([]), clips = ref([]), modals = ref({ profile: false }), activeClip = ref(null), isSyncing = ref(false), host = window.location.hostname || "localhost";
