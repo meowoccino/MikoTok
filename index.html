@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en" data-theme="dark">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
@@ -9,27 +9,20 @@
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="https://unpkg.com/vue@3/dist/vue.global.prod.js"></script>
     <style>
-        /* Light & Dark Theme Engine */
         :root { 
             --bg-color: #050505; --card-bg: #111113; --primary: #9146FF; --primary-light: #a970ff; 
             --text-main: #ffffff; --text-muted: #a1a1aa; --border-color: #27272a; 
             --danger: #ef4444; --offline-gray: #3f3f46; --discord: #5865F2; --success: #00ffa3; 
             --nav-bg: rgba(20, 20, 25, 0.7); --modal-bg: #0a0a0c;
         }
-        [data-theme="light"] {
-            --bg-color: #f4f4f5; --card-bg: #ffffff; 
-            --text-main: #000000; --text-muted: #52525b; --border-color: #d4d4d8; 
-            --nav-bg: rgba(255, 255, 255, 0.85); --modal-bg: #ffffff;
-            --offline-gray: #a1a1aa;
-        }
 
         * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; font-family: 'Inter', sans-serif; }
-        body, html { margin: 0; padding: 0; height: 100%; width: 100%; background: var(--bg-color); color: var(--text-main); overflow: hidden; display: flex; justify-content: center; align-items: center; transition: background 0.3s ease, color 0.3s ease; }
+        body, html { margin: 0; padding: 0; height: 100%; width: 100%; background: var(--bg-color); color: var(--text-main); overflow: hidden; display: flex; justify-content: center; align-items: center; }
         
-        #app-container { width: 100%; max-width: 540px; height: 100%; max-height: 100dvh; position: relative; background: var(--bg-color); overflow: hidden; display: flex; flex-direction: column; box-shadow: 0 0 50px rgba(0,0,0,0.8); transition: background 0.3s ease; }
+        /* Static Deep Purple Gradient Background */
+        #app-container { width: 100%; max-width: 540px; height: 100%; max-height: 100dvh; position: relative; background: radial-gradient(circle at 50% 30%, #160b24 0%, #050505 80%); overflow: hidden; display: flex; flex-direction: column; box-shadow: 0 0 50px rgba(0,0,0,0.8); }
         [v-cloak] { display: none !important; }
 
-        /* Hardware Accelerated Smooth Entrance Animations */
         @keyframes fadeInUp { from { opacity: 0; transform: translate3d(0, 10px, 0); } to { opacity: 1; transform: translate3d(0, 0, 0); } }
         .stagger-item { animation: fadeInUp 0.3s ease forwards; opacity: 0; will-change: transform, opacity; }
 
@@ -42,7 +35,6 @@
         .progress-fill { position: absolute; left: 0; top: 0; height: 100%; width: 50%; background: linear-gradient(90deg, transparent, var(--primary-light), var(--primary)); animation: load 1s infinite linear; will-change: transform; transform-origin: left; }
         @keyframes load { 0% { transform: translateX(-100%); } 100% { transform: translateX(200%); } }
         
-        /* Header - Forced White Text for contrast against dark video overlays */
         .gradient-text { display: inline-block; background: linear-gradient(135deg, #ffffff 30%, var(--primary) 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; font-family: 'Outfit', sans-serif; }
         .app-header { width: 100%; padding: 45px 20px 15px; display: flex; align-items: center; justify-content: space-between; z-index: 100; position: absolute; top: 0; left: 0; background: linear-gradient(to bottom, rgba(0,0,0,0.8) 0%, transparent 100%); pointer-events: none; }
         .app-header > * { pointer-events: auto; }
@@ -57,14 +49,11 @@
         .header-badge.offline { background: var(--offline-gray); color: #fff; }
 
         /* TikTok Style Full-Screen Snapping Feed */
-        .view-port { flex: 1; width: 100%; height: 100%; overflow: hidden; position: relative; background: #000; }
+        .view-port { flex: 1; width: 100%; height: 100%; overflow: hidden; position: relative; }
         #feed-scroll { height: 100%; width: 100%; overflow-y: scroll; scroll-snap-type: y mandatory; scroll-behavior: smooth; touch-action: pan-y; }
         #feed-scroll::-webkit-scrollbar { display: none; }
         
-        .feed-snap-item { height: 100%; width: 100%; scroll-snap-align: center; scroll-snap-stop: always; display: flex; flex-direction: column; justify-content: center; position: relative; background: #000; overflow: hidden; }
-        
-        /* Cinematic Blurred Background to kill black space */
-        .cinematic-blur { position: absolute; inset: -15%; background-size: cover; background-position: center; filter: blur(35px) brightness(0.35); z-index: 0; pointer-events: none; will-change: transform; transform: translateZ(0); }
+        .feed-snap-item { height: 100%; width: 100%; scroll-snap-align: center; scroll-snap-stop: always; display: flex; flex-direction: column; justify-content: center; position: relative; overflow: hidden; }
 
         /* Floating TikTok Metadata Overlay */
         .tiktok-metadata { position: absolute; bottom: 100px; left: 15px; z-index: 10; color: white; text-shadow: 0 2px 4px rgba(0,0,0,0.8); pointer-events: none; }
@@ -73,29 +62,27 @@
         .tiktok-metadata .author-name { font-weight: 900; font-size: 16px; letter-spacing: 0.5px; }
         .tiktok-metadata .clip-stats { font-size: 12px; font-weight: 600; opacity: 0.9; display: flex; align-items: center; gap: 6px; }
 
-        /* Pull to refresh */
         .ptr-container { position: absolute; top: 0; left: 0; width: 100%; display: flex; justify-content: center; align-items: center; color: var(--primary); overflow: hidden; z-index: 50; pointer-events: none; }
         .toast-popup { position: absolute; top: 50px; left: 50%; transform: translate3d(-50%, -10px, 0); background: var(--primary); color: white; padding: 12px 24px; border-radius: 50px; font-size: 13px; font-weight: 800; text-align: center; z-index: 2000; opacity: 0; transition: opacity 0.3s, transform 0.3s; pointer-events: none; box-shadow: 0 4px 15px rgba(145, 70, 255, 0.4); will-change: transform, opacity; }
         .toast-popup.show { opacity: 1; transform: translate3d(-50%, 0, 0); }
 
-        /* Skeletons */
         @keyframes shimmer { 0% { background-position: -200% 0; } 100% { background-position: 200% 0; } }
-        .skeleton { background: linear-gradient(90deg, #18181b 25%, #27272a 50%, #18181b 75%); background-size: 200% 100%; animation: shimmer 1.5s infinite; border-radius: 8px; width: 100%; height: 100%; position: absolute; inset: 0; }
+        .skeleton { background: linear-gradient(90deg, #18181b 25%, #27272a 50%, #18181b 75%); background-size: 200% 100%; animation: shimmer 1.5s infinite; border-radius: 8px; width: 100%; height: 100%; position: absolute; inset: 0; z-index: -1; }
 
         /* Premium Featured Badge */
-        .premium-badge { position: absolute; top: 110px; left: 15px; z-index: 10; background: rgba(0, 0, 0, 0.5); backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); border: 1px solid rgba(255, 255, 255, 0.2); padding: 6px 14px; border-radius: 30px; display: flex; align-items: center; gap: 8px; color: #fff; font-size: 11px; font-weight: 900; letter-spacing: 0.5px; text-transform: uppercase; box-shadow: 0 4px 15px rgba(0,0,0,0.5); pointer-events: none; }
+        .premium-badge { position: absolute; top: -45px; left: 0; z-index: 10; background: rgba(0, 0, 0, 0.5); backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); border: 1px solid rgba(255, 255, 255, 0.2); padding: 6px 14px; border-radius: 30px; display: flex; align-items: center; gap: 8px; color: #fff; font-size: 11px; font-weight: 900; letter-spacing: 0.5px; text-transform: uppercase; box-shadow: 0 4px 15px rgba(0,0,0,0.5); pointer-events: none; }
         .premium-badge .dot { width: 8px; height: 8px; border-radius: 50%; box-shadow: 0 0 8px currentColor; }
         .premium-badge.live .dot { background: var(--danger); color: var(--danger); animation: heartbeat 1.5s infinite; }
         .premium-badge.vod .dot { background: var(--primary); color: var(--primary); animation: heartbeat 1.5s infinite; }
 
         /* Edge-to-Edge Animated Video Border */
-        .animated-border-wrap { position: relative; width: 100%; aspect-ratio: 16/9; background: #000; overflow: hidden; display: flex; justify-content: center; align-items: center; z-index: 2; box-shadow: 0 10px 40px rgba(0,0,0,0.6); }
+        .animated-border-wrap { position: relative; width: 100%; aspect-ratio: 16/9; background: #000; overflow: visible; display: flex; justify-content: center; align-items: center; z-index: 2; box-shadow: 0 10px 40px rgba(0,0,0,0.6); margin-bottom: 80px; }
         .animated-border-wrap.active::before { content: ''; position: absolute; top: -50%; left: -50%; width: 200%; height: 200%; background: conic-gradient(from 0deg, transparent 60%, var(--primary) 80%, #ffffff 100%); animation: spin-border 4s linear infinite; z-index: 0; }
         .animated-border-inner { position: absolute; inset: 3px; background: #000; overflow: hidden; z-index: 1; }
         @keyframes spin-border { 100% { transform: rotate(360deg); } }
 
         /* Community Feed Specifics */
-        .community-feed { padding: 100px 12px 100px; height: 100%; overflow-y: auto; background: var(--bg-color); }
+        .community-feed { padding: 100px 12px 100px; height: 100%; overflow-y: auto; }
         .card { background: var(--card-bg); border-radius: 16px; padding: 16px; margin-bottom: 16px; border: 1px solid var(--border-color); box-shadow: 0 4px 20px rgba(0,0,0,0.2); }
 
         /* Floating Glassmorphism Navigation */
@@ -110,19 +97,17 @@
         .chat-container::-webkit-scrollbar { width: 6px; }
         .chat-container::-webkit-scrollbar-thumb { background-color: var(--primary); border-radius: 10px; }
         
-        /* Hardware Accelerated Modals & Smart Transitions */
-        .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.95); z-index: 1500; display: flex; flex-direction: column; justify-content: flex-end; align-items: center; opacity: 0; pointer-events: none; transition: opacity 0.3s ease; }
+        /* Admin Panel Modal */
+        .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.85); z-index: 1500; display: flex; flex-direction: column; justify-content: flex-end; align-items: center; opacity: 0; pointer-events: none; transition: opacity 0.3s ease; backdrop-filter: blur(5px); }
         .modal-overlay.open { opacity: 1; pointer-events: auto; }
-        
-        /* Compacted Modal Content to prevent double scrolling */
-        .modal-content { background: var(--modal-bg); border-radius: 32px 32px 0 0; padding: 25px 20px 30px; border-top: 1px solid var(--border-color); width: 100%; max-width: 540px; align-self: center; overflow-y: auto; max-height: 95vh; touch-action: pan-y; overscroll-behavior-y: contain; margin-top: auto; transform: translate3d(0, 100vh, 0); transition: transform 0.3s cubic-bezier(0.2, 0.8, 0.2, 1); will-change: transform; backface-visibility: hidden; }
+        .modal-content { background: var(--modal-bg); border-radius: 32px 32px 0 0; padding: 20px 20px 30px; border-top: 1px solid var(--border-color); width: 100%; max-width: 540px; align-self: center; overflow-y: auto; max-height: 95vh; touch-action: pan-y; overscroll-behavior-y: contain; margin-top: auto; transform: translate3d(0, 100vh, 0); transition: transform 0.3s cubic-bezier(0.2, 0.8, 0.2, 1); will-change: transform; backface-visibility: hidden; }
         .modal-overlay.open .modal-content { transform: translate3d(0, 0, 0); }
-        .drag-handle { width: 40px; height: 6px; background: var(--offline-gray); border-radius: 10px; margin: -10px auto 20px; opacity: 0.6; }
+        .drag-handle { width: 40px; height: 6px; background: var(--offline-gray); border-radius: 10px; margin: 0 auto 30px; opacity: 0.6; }
 
         .input-box { width: 100%; background: transparent; border: 2px solid var(--border-color); color: var(--text-main); padding: 14px; border-radius: 14px; margin-bottom: 12px; font-size: 14px; font-weight: 600; outline: none; transition: border-color 0.2s; }
         .input-box:focus { border-color: var(--primary); }
         
-        .sync-btn { width: 100%; background: linear-gradient(135deg, var(--primary), var(--primary-light)); border: none; color: white; padding: 16px; border-radius: 16px; font-weight: 800; font-size: 14px; margin-bottom: 12px; cursor: pointer; display: flex; justify-content: center; align-items: center; gap: 8px; transition: transform 0.2s, background 0.3s; box-shadow: 0 4px 15px rgba(145, 70, 255, 0.3); will-change: transform; }
+        .sync-btn { width: 100%; background: linear-gradient(135deg, var(--primary), var(--primary-light)); border: none; color: white; padding: 18px; border-radius: 16px; font-weight: 800; font-size: 14px; margin-bottom: 12px; cursor: pointer; display: flex; justify-content: center; align-items: center; gap: 8px; transition: transform 0.2s, background 0.3s; box-shadow: 0 4px 15px rgba(145, 70, 255, 0.3); will-change: transform; }
         .sync-btn:active { transform: scale(0.97); }
         .sync-btn.success { background: var(--success); color: #000; box-shadow: 0 4px 15px rgba(0, 255, 163, 0.3); }
         .spinner { width: 18px; height: 18px; border: 3px solid rgba(255,255,255,0.3); border-top-color: white; border-radius: 50%; animation: spin 1s linear infinite; }
@@ -134,7 +119,7 @@
         .status-node { display: flex; align-items: center; gap: 8px; font-size: 11px; font-weight: 800; color: var(--text-main); letter-spacing: 0.5px; }
         .pulse { width: 8px; height: 8px; border-radius: 50%; background: var(--success); box-shadow: 0 0 10px var(--success); animation: pulse-glow 2s infinite; }
         .pulse.error { background: var(--danger); box-shadow: 0 0 10px var(--danger); }
-        .metric-card-large { background: linear-gradient(145deg, var(--card-bg), var(--bg-color)); border: 1px solid var(--border-color); padding: 18px; border-radius: 16px; margin-bottom: 12px; display: flex; justify-content: space-between; align-items: center; text-align: left; }
+        .metric-card-large { background: linear-gradient(145deg, var(--card-bg), transparent); border: 1px solid var(--border-color); padding: 18px; border-radius: 16px; margin-bottom: 12px; display: flex; justify-content: space-between; align-items: center; text-align: left; }
         .stat-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 16px; }
         .stat-card { background: var(--card-bg); border: 1px solid var(--border-color); padding: 14px; border-radius: 14px; text-align: left; }
 
@@ -186,38 +171,23 @@
             <div class="view-port" :style="{ opacity: splashVisible ? 0 : 1 }">
                 
                 <!-- TikTok Home Feed -->
-                <div id="feed-scroll" v-show="currentTab === 'home'" @scroll="onFeedScroll" @touchstart="handleFeedTouchStart" @touchmove="handleFeedTouchMove" @touchend="handleFeedTouchEnd">
+                <div id="feed-scroll" v-show="currentTab === 'home'" @touchstart="handleFeedTouchStart" @touchmove="handleFeedTouchMove" @touchend="handleFeedTouchEnd">
                     <div class="ptr-container" :style="{ height: ptrHeight + 'px', transition: ptrHeight === 0 ? 'height 0.3s' : 'none' }">
                         <span class="material-symbols-rounded" :style="{ transform: 'rotate(' + (ptrHeight * 5) + 'deg)', opacity: ptrHeight / 60 }">refresh</span>
                     </div>
 
                     <!-- Featured Edge-to-Edge Player -->
-                    <div class="feed-snap-item" data-id="featured">
-                        <!-- Cinematic Blur Background for Featured (uses Miko's avatar to fill space) -->
-                        <div class="cinematic-blur" style="background-image: url('1000018850.png?v=2');"></div>
-                        
+                    <div class="feed-snap-item" data-id="featured" v-if="isLive || latestVodId">
                         <div style="width: 100%; position: relative; display: flex; align-items: center; justify-content: center; height: 100%; z-index: 2;">
-                            <div class="animated-border-wrap" :class="{ 'active': (isLive || latestVodId) && !activeClip }" style="width: 100%; aspect-ratio: 16/9; position: absolute;">
+                            <div class="animated-border-wrap" :class="{ 'active': isLive || latestVodId }">
+                                <div class="premium-badge live" v-if="isLive"><div class="dot"></div><span>LIVE NOW</span></div>
+                                <div class="premium-badge vod" v-else-if="latestVodId"><div class="dot"></div><span>LATEST VOD</span></div>
+
                                 <div class="animated-border-inner">
-                                    <!-- Direct interaction allowed for Featured Player (No Modal). Starts muted to obey browser policy, user taps to unmute/play -->
-                                    <iframe v-if="activeFeedVideo === 'featured' && isLive && !activeClip" :src="'https://player.twitch.tv/?channel=codemiko&parent=' + hostname + '&autoplay=true'" style="width:100%; height:100%; border:none; pointer-events:auto;" allow="autoplay; fullscreen" allowfullscreen></iframe>
-                                    <iframe v-else-if="activeFeedVideo === 'featured' && latestVodId && !activeClip" :src="'https://player.twitch.tv/?video=' + latestVodId + '&parent=' + hostname + '&autoplay=true'" style="width:100%; height:100%; border:none; pointer-events:auto;" allow="autoplay; fullscreen" allowfullscreen></iframe>
-                                    <div v-else style="width:100%; height:100%; display:flex; align-items:center; justify-content:center; color:white; font-size:14px; font-weight:800; background:#000;">STREAM OFFLINE</div>
-                                </div>
-                            </div>
-                            
-                            <div class="premium-badge live" v-if="isLive"><div class="dot"></div><span>LIVE NOW</span></div>
-                            <div class="premium-badge vod" v-else-if="latestVodId"><div class="dot"></div><span>LATEST VOD</span></div>
-                            <div class="premium-badge" v-else style="background: var(--offline-gray);"><span>OFFLINE</span></div>
-                            
-                            <div class="tiktok-metadata">
-                                <div class="author-info">
-                                    <img src="1000018850.png?v=2">
-                                    <span class="author-name">@CodeMiko</span>
-                                </div>
-                                <div class="clip-stats">
-                                    <span class="material-symbols-rounded" style="font-size:14px; color:var(--primary);">stars</span>
-                                    Featured Broadcast
+                                    <!-- Fully interactive inline player -->
+                                    <iframe v-if="activeFeedVideo === 'featured' && isLive" :src="'https://player.twitch.tv/?channel=codemiko&parent=' + hostname + '&autoplay=true&muted=false'" style="width:100%; height:100%; border:none; pointer-events:auto;" allow="autoplay; fullscreen" allowfullscreen></iframe>
+                                    <iframe v-else-if="activeFeedVideo === 'featured' && latestVodId" :src="'https://player.twitch.tv/?video=' + latestVodId + '&parent=' + hostname + '&autoplay=true&muted=false'" style="width:100%; height:100%; border:none; pointer-events:auto;" allow="autoplay; fullscreen" allowfullscreen></iframe>
+                                    <div class="skeleton" v-else></div>
                                 </div>
                             </div>
                         </div>
@@ -229,17 +199,12 @@
                     </div>
 
                     <div class="feed-snap-item" v-for="clip in clips" :key="clip.id" :data-id="clip.id">
-                        <!-- Cinematic Blur Background for Clips -->
-                        <div class="cinematic-blur" :style="{ backgroundImage: 'url(' + optimizeTwitchImg(clip.thumbnail_url) + ')' }"></div>
-
                         <div style="width: 100%; aspect-ratio: 16/9; position: relative; z-index: 2; box-shadow: 0 10px 30px rgba(0,0,0,0.6);">
-                            <img :src="optimizeTwitchImg(clip.thumbnail_url)" loading="lazy" style="width:100%; height:100%; object-fit:cover; position:absolute; inset:0;">
-                            <!-- Smart Mounter: Clip iframes cannot be muted on mobile, so we rely on the click overlay -->
-                            <iframe v-if="activeFeedVideo === clip.id && !activeClip" :src="'https://clips.twitch.tv/embed?clip=' + clip.id + '&parent=' + hostname" style="width:100%; height:100%; border:none; position:absolute; inset:0; pointer-events:none;" allow="fullscreen"></iframe>
-                            <!-- Touch capture overlay to open Modal for Clips -->
-                            <div class="swipe-overlay" @click="openClip(clip)" style="position:absolute; inset:0; z-index:5; display:flex; align-items:center; justify-content:center;">
-                                <span class="material-symbols-rounded" style="font-size:64px; color:white; opacity:0.8; filter: drop-shadow(0 4px 6px rgba(0,0,0,0.6));">play_circle</span>
-                            </div>
+                            <!-- Image sits behind iframe to prevent blank gaps before iframe loads -->
+                            <img :src="optimizeTwitchImg(clip.thumbnail_url)" loading="lazy" style="width:100%; height:100%; object-fit:cover; position:absolute; inset:0; z-index:-1;">
+                            <!-- Native Interactive Inline Iframe -->
+                            <iframe v-if="activeFeedVideo === clip.id" :src="'https://clips.twitch.tv/embed?clip=' + clip.id + '&parent=' + hostname + '&autoplay=true&muted=false'" style="width:100%; height:100%; border:none; position:absolute; inset:0; pointer-events:auto;" allow="autoplay; fullscreen" allowfullscreen></iframe>
+                            <div class="skeleton" v-else></div>
                         </div>
                         
                         <div class="tiktok-metadata">
@@ -271,7 +236,7 @@
                                 <div style="font-size:11px; color:var(--text-muted); font-weight:600;">{{ formatDateTime(post.created_at) }}</div>
                             </div>
                         </div>
-                        <div style="background:var(--bg-color); border-radius:12px; padding:16px; border: 1px solid var(--border-color);">
+                        <div style="background:transparent; border-radius:12px; padding:16px; border: 1px solid var(--border-color);">
                             <div style="font-size:14px; line-height: 1.6; white-space: pre-wrap;">{{ post.content }}</div>
                         </div>
                     </div>
@@ -286,32 +251,11 @@
                 <div class="nav-item" @click="openAdmin"><span class="material-symbols-rounded">account_circle</span>Profile</div>
             </nav>
 
-            <!-- Clip Player Modal (Only used for Clips now) -->
-            <div class="modal-overlay" :class="{ open: activeClip }" @click="closeVideoModal" style="background: rgba(0,0,0,0.98);">
-                <div style="width:100%; max-width:540px; margin: auto; aspect-ratio:16/9; background:#000; box-shadow: 0 10px 50px rgba(145, 70, 255, 0.2);" v-if="activeClip">
-                    <iframe :src="'https://clips.twitch.tv/embed?clip=' + activeClip.id + '&parent=' + hostname + '&autoplay=true&muted=false'" style="width:100%; height:100%; border:none;" allow="autoplay; fullscreen" allowfullscreen></iframe>
-                </div>
-                <div v-if="activeClip" style="position:absolute; bottom: 40px; color: white; opacity: 0.6; font-size: 12px; font-weight: 700; letter-spacing: 1px; text-transform: uppercase;">Tap anywhere outside video to close</div>
-            </div>
-
-            <!-- MikoOS Command Center (Compacted & Hardware Accelerated to eliminate swipe lag) -->
+            <!-- MikoOS Command Center (Cleaned Up & Restored Wipe) -->
             <div class="modal-overlay" :class="{ open: modals.profile }" @click.self="closeAdmin">
                 <div class="modal-content" ref="modalContentEl" @touchstart="handleModalTouchStart" @touchmove="handleModalTouchMove" @touchend="handleModalTouchEnd">
                     <div class="drag-handle"></div>
                     <div>
-                        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;">
-                            <div style="text-align: left;">
-                                <h1 style="font-family:'Outfit'; font-size:24px; margin:0;">MikoOS v4.1</h1>
-                                <p style="color:var(--primary); font-size:10px; font-weight:800; text-transform:uppercase;">Command Center</p>
-                            </div>
-                            <div style="display:flex; gap: 10px; align-items: center;">
-                                <button @click="toggleTheme" style="background:var(--bg-color); border:1px solid var(--border-color); width: 36px; height: 36px; border-radius: 50%; color:var(--text-main); cursor:pointer; display:flex; align-items:center; justify-content:center; transition: 0.2s;">
-                                    <span class="material-symbols-rounded" style="font-size: 18px;">{{ theme === 'dark' ? 'light_mode' : 'dark_mode' }}</span>
-                                </button>
-                                <button @click="closeAdmin" style="background:none; border:none; color:var(--text-muted); cursor:pointer;"><span class="material-symbols-rounded">close</span></button>
-                            </div>
-                        </div>
-
                         <div class="infra-bar">
                             <div class="status-node">
                                 <div class="pulse" :class="{ error: !apiHealthy }"></div> 
@@ -361,7 +305,7 @@
                             </button>
                         </div>
 
-                        <button class="logout-btn" @click="handleLogout">SIGN OUT FROM MIKO-OS</button>
+                        <button class="logout-btn" @click="handleLogout">SIGN OUT FROM ADMIN</button>
                     </div>
                 </div>
             </div>
@@ -374,16 +318,14 @@
 
         createApp({
             setup() {
-                const splashVisible = ref(true), splashOpacity = ref(1), currentTab = ref('home'), clips = ref([]), discordFeed = ref([]), activeClip = ref(null), activeFeatured = ref(false), modals = ref({profile: false}), isLive = ref(false), currentUser = ref(null), loginEmail = ref(''), loginPass = ref(''), toast = ref({visible: false, message: ''}), loadingClips = ref(true);
+                const splashVisible = ref(true), splashOpacity = ref(1), currentTab = ref('home'), clips = ref([]), discordFeed = ref([]), modals = ref({profile: false}), isLive = ref(false), currentUser = ref(null), loginEmail = ref(''), loginPass = ref(''), toast = ref({visible: false, message: ''}), loadingClips = ref(true);
                 const stats = ref({ visitors: 0 }), apiHealthy = ref(false), apiConfig = ref({ cid: localStorage.getItem('twitch_client_id') || '', tkn: localStorage.getItem('twitch_access_token') || '' });
                 const latestVodId = ref(null), hostname = window.location.hostname || 'meowoccino.github.io';
-                const ptrHeight = ref(0); let feedStartY = 0, isScrollingFeed = false, scrollTimer = null;
+                const ptrHeight = ref(0); let feedStartY = 0;
                 const modalContentEl = ref(null); let modalStartY = 0, currentDeltaY = 0;
                 let lastStatusCheck = 0;
                 
-                // Auth & Theme
                 const isAuthReady = ref(false);
-                const theme = ref(localStorage.getItem('miko_theme') || 'dark');
                 const syncState = ref('idle'); 
                 const activeFeedVideo = ref(null);
                 let intersectionObserver = null;
@@ -391,18 +333,6 @@
                 const logoSvg = (id) => `<svg viewBox="0 0 100 100"><defs><linearGradient id="grad-${id}" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stop-color="#ffffff"/><stop offset="100%" stop-color="#9146FF"/></linearGradient></defs><circle cx="50" cy="50" r="40" fill="none" stroke="url(#grad-${id})" stroke-width="8"/><path d="M 33 38 L 48 62 L 62 38 L 62 55 Q 62 65 69 64" fill="none" stroke="url(#grad-${id})" stroke-width="8" stroke-linecap="round" stroke-linejoin="round"/></svg>`;
                 const showToast = (msg) => { toast.value.message = msg; toast.value.visible = true; setTimeout(() => toast.value.visible = false, 3000); };
                 const optimizeTwitchImg = (url) => url.replace('%{width}', '480').replace('%{height}', '270');
-
-                const applyTheme = () => {
-                    document.documentElement.setAttribute('data-theme', theme.value);
-                    const metaTheme = document.querySelector('meta[name="theme-color"]');
-                    if(metaTheme) metaTheme.setAttribute('content', theme.value === 'light' ? '#f4f4f5' : '#050505');
-                };
-
-                const toggleTheme = () => {
-                    theme.value = theme.value === 'dark' ? 'light' : 'dark';
-                    localStorage.setItem('miko_theme', theme.value);
-                    applyTheme();
-                };
 
                 const initObserver = () => {
                     if (intersectionObserver) intersectionObserver.disconnect();
@@ -477,17 +407,11 @@
                     showToast("SIGNED OUT"); 
                 };
 
-                const onFeedScroll = () => { isScrollingFeed = true; clearTimeout(scrollTimer); scrollTimer = setTimeout(() => isScrollingFeed = false, 150); };
-                const openClip = (clip) => { if (!isScrollingFeed) activeClip.value = clip; };
-                const closeVideoModal = () => { activeClip.value = null; };
-
                 const handleFeedTouchStart = (e) => { const sc = document.getElementById('feed-scroll'); if (sc && sc.scrollTop <= 0) feedStartY = e.touches[0].clientY; else feedStartY = 0; };
                 const handleFeedTouchMove = (e) => { if (!feedStartY) return; const y = e.touches[0].clientY; if (y > feedStartY) { ptrHeight.value = Math.min((y - feedStartY) * 0.4, 80); if (ptrHeight.value > 10 && document.getElementById('feed-scroll').scrollTop === 0 && e.cancelable) e.preventDefault(); } };
                 const handleFeedTouchEnd = async () => { if (ptrHeight.value >= 50) { ptrHeight.value = 50; await loadData(); await checkLiveStatusPublic(true); } ptrHeight.value = 0; feedStartY = 0; };
                 
-                // Fully optimized hardware-accelerated drag logic
                 const handleModalTouchStart = (e) => { 
-                    // Only catch drag if we are at the very top of the modal scroll
                     if (e.currentTarget.scrollTop <= 0) { 
                         modalStartY = e.touches[0].clientY; 
                         currentDeltaY = 0; 
@@ -500,7 +424,7 @@
                     const y = e.touches[0].clientY; 
                     currentDeltaY = y - modalStartY; 
                     if (currentDeltaY > 0) { 
-                        if (e.cancelable) e.preventDefault(); // Prevents page from scrolling while dragging down
+                        if (e.cancelable) e.preventDefault(); 
                         if (modalContentEl.value) modalContentEl.value.style.transform = `translate3d(0, ${currentDeltaY}px, 0)`; 
                     } 
                 };
@@ -509,7 +433,6 @@
                     if (!modalStartY) return; 
                     if (modalContentEl.value) { 
                         modalContentEl.value.style.transition = ''; 
-                        // If pulled down more than 100px, close it
                         if (currentDeltaY > 100) closeAdmin(); 
                         else modalContentEl.value.style.transform = ''; 
                     } 
@@ -553,7 +476,6 @@
                 };
 
                 onMounted(async () => {
-                    applyTheme();
                     const { data: { session } } = await sbClient.auth.getSession();
                     currentUser.value = session?.user?.id || null;
                     isAuthReady.value = true;
@@ -563,7 +485,7 @@
                     }
                 });
 
-                return { hostname, splashVisible, splashOpacity, currentTab, clips, discordFeed, activeClip, modals, syncState, isLive, toast, logoSvg, runSync, currentUser, isAuthReady, loginEmail, loginPass, handleLogin, handleLogout, openAdmin, closeAdmin, apiHealthy, apiConfig, stats, saveKeys, wipeClips, modalContentEl, ptrHeight, handleFeedTouchStart, handleFeedTouchMove, handleFeedTouchEnd, handleModalTouchStart, handleModalTouchMove, handleModalTouchEnd, latestVodId, onFeedScroll, openClip, closeVideoModal, loadingClips, optimizeTwitchImg, theme, toggleTheme, activeFeedVideo, formatDate: (d) => new Date(d).toLocaleDateString([], {month:'short', day:'numeric'}), formatViews: (v) => v ? v.toLocaleString() : '0', formatDateTime: (d) => new Date(d).toLocaleString([], {month:'short', day:'numeric', hour:'2-digit', minute:'2-digit'}) };
+                return { hostname, splashVisible, splashOpacity, currentTab, clips, discordFeed, modals, syncState, isLive, toast, logoSvg, runSync, currentUser, isAuthReady, loginEmail, loginPass, handleLogin, handleLogout, openAdmin, closeAdmin, apiHealthy, apiConfig, stats, saveKeys, wipeClips, modalContentEl, ptrHeight, handleFeedTouchStart, handleFeedTouchMove, handleFeedTouchEnd, handleModalTouchStart, handleModalTouchMove, handleModalTouchEnd, latestVodId, loadingClips, optimizeTwitchImg, activeFeedVideo, formatDate: (d) => new Date(d).toLocaleDateString([], {month:'short', day:'numeric'}), formatViews: (v) => v ? v.toLocaleString() : '0', formatDateTime: (d) => new Date(d).toLocaleString([], {month:'short', day:'numeric', hour:'2-digit', minute:'2-digit'}) };
             }
         }).mount('#app-container');
     </script>
