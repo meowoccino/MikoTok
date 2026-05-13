@@ -13,6 +13,7 @@
             --bg-color: #050505; --card-bg: #111113; --primary: #9146FF; --primary-light: #a970ff; 
             --text-main: #ffffff; --text-muted: #a1a1aa; --border-color: #27272a; 
             --danger: #ef4444; --offline-gray: #3f3f46; --discord: #5865F2; --success: #00ffa3; 
+            --pinned: #ec4899; 
             --nav-bg: rgba(20, 20, 25, 0.7); --modal-bg: #0a0a0c;
         }
 
@@ -44,12 +45,13 @@
         .header-badge.offline { background: var(--offline-gray); color: #fff; }
 
         .view-port { flex: 1; width: 100%; height: 100%; overflow: hidden; position: relative; }
-        #feed-scroll { height: 100%; width: 100%; overflow-y: scroll; scroll-snap-type: y mandatory; scroll-behavior: smooth; touch-action: pan-y; }
+        #feed-scroll { height: 100%; width: 100%; overflow-y: scroll; scroll-snap-type: y mandatory; scroll-behavior: smooth; touch-action: pan-y; padding-bottom: 80px; }
         #feed-scroll::-webkit-scrollbar { display: none; }
         
-        .feed-snap-item { height: 100%; width: 100%; scroll-snap-align: center; scroll-snap-stop: always; display: flex; flex-direction: column; justify-content: center; position: relative; overflow: hidden; }
+        /* Removed height: 100% to pack videos properly without dead space */
+        .feed-snap-item { width: 100%; scroll-snap-align: center; scroll-snap-stop: always; display: flex; flex-direction: column; justify-content: flex-start; position: relative; padding: 0 15px 35px; }
 
-        .miko-metadata { display: flex; align-items: center; padding: 16px 20px; background: transparent; }
+        .miko-metadata { display: flex; align-items: center; padding: 12px 5px 0; background: transparent; }
         .miko-metadata img { width: 44px; height: 44px; border-radius: 50%; border: 2px solid var(--primary); margin-right: 14px; box-shadow: 0 2px 10px rgba(0,0,0,0.5); flex-shrink: 0; }
         .miko-metadata .author-name { font-weight: 800; font-size: 15px; letter-spacing: 0.2px; color: white; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; text-overflow: ellipsis; line-height: 1.3; }
         .miko-metadata .clip-stats { font-size: 11px; font-weight: 700; color: var(--text-muted); display: flex; align-items: center; gap: 6px; margin-top: 5px; text-transform: uppercase; letter-spacing: 0.5px; }
@@ -68,7 +70,8 @@
         .premium-badge.live .dot { background: var(--danger); color: var(--danger); animation: heartbeat 1.5s infinite; }
         .premium-badge.vod .dot { background: var(--primary); color: var(--primary); animation: heartbeat 1.5s infinite; }
 
-        .video-container { position: relative; width: 100%; aspect-ratio: 16/9; z-index: 2; box-shadow: 0 10px 40px rgba(0,0,0,0.6); background: #000; }
+        /* Unified Video Container to ensure all clips have perfect borders */
+        .video-container { position: relative; width: 100%; aspect-ratio: 16/9; z-index: 2; box-shadow: 0 10px 40px rgba(0,0,0,0.6); background: #000; border-radius: 12px; overflow: hidden; }
 
         .community-feed { padding: 100px 12px 100px; height: 100%; overflow-y: auto; }
         .card { background: var(--card-bg); border-radius: 16px; padding: 16px; margin-bottom: 16px; border: 1px solid var(--border-color); box-shadow: 0 4px 20px rgba(0,0,0,0.2); }
@@ -148,29 +151,27 @@
                     <span class="material-symbols-rounded" :style="{ transform: 'rotate(' + (ptrHeight * 5) + 'deg)', opacity: ptrHeight / 60 }">refresh</span>
                 </div>
 
-                <!-- Adjusted padding-top to center it better and remove dead space -->
-                <div class="feed-snap-item" data-id="featured" style="justify-content: center; padding-top: 60px;">
-                    <div style="width: 100%; padding: 0 15px;">
-                        
-                        <div style="display: flex; justify-content: flex-start; align-items: flex-end; width: 100%; padding-bottom: 12px;">
-                            <div>
-                                <div class="premium-badge live" v-if="isLive"><div class="dot"></div><span>LIVE NOW</span></div>
-                                <div class="premium-badge vod" v-else-if="latestVodId"><div class="dot"></div><span>LATEST VOD</span></div>
-                            </div>
+                <!-- Padding adjusted so it clears the header and pulls the next clip up tightly -->
+                <div class="feed-snap-item" data-id="featured" style="padding-top: 85px; padding-bottom: 25px; scroll-snap-align: start;">
+                    
+                    <div style="display: flex; justify-content: flex-start; align-items: flex-end; width: 100%; padding-bottom: 12px;">
+                        <div>
+                            <div class="premium-badge live" v-if="isLive"><div class="dot"></div><span>LIVE NOW</span></div>
+                            <div class="premium-badge vod" v-else-if="latestVodId"><div class="dot"></div><span>LATEST VOD</span></div>
                         </div>
-
-                        <template v-if="loadingLiveStatus">
-                            <div class="video-container" style="border-radius: 12px; box-shadow: 0 0 20px rgba(145, 70, 255, 0.4);"><div class="skeleton"></div></div>
-                        </template>
-                        
-                        <template v-else>
-                            <div class="video-container" style="border-radius: 12px; box-shadow: 0 0 20px rgba(145, 70, 255, 0.4), 0 0 40px rgba(255, 255, 255, 0.1); border-bottom: 2px solid var(--primary); overflow: hidden;">
-                                <iframe v-if="activeFeedVideo === 'featured' && isLive" :src="'https://player.twitch.tv/?channel=codemiko&parent=' + hostname + '&autoplay=true&muted=true'" style="width:100%; height:100%; border:none; pointer-events:auto;" allow="autoplay; fullscreen" allowfullscreen></iframe>
-                                <iframe v-else-if="activeFeedVideo === 'featured' && latestVodId" :src="'https://player.twitch.tv/?video=' + latestVodId + '&parent=' + hostname + '&autoplay=true&muted=true'" style="width:100%; height:100%; border:none; pointer-events:auto;" allow="autoplay; fullscreen" allowfullscreen></iframe>
-                                <div v-else style="width:100%; height:100%; display:flex; align-items:center; justify-content:center; color:white; font-size:14px; font-weight:800; background:rgba(0,0,0,0.3); border: 1px solid rgba(145, 70, 255, 0.3); border-radius: 12px; box-shadow: 0 4px 30px rgba(0,0,0,0.5);">STREAM OFFLINE</div>
-                            </div>
-                        </template>
                     </div>
+
+                    <template v-if="loadingLiveStatus">
+                        <div class="video-container"><div class="skeleton"></div></div>
+                    </template>
+                    
+                    <template v-else>
+                        <div class="video-container" style="box-shadow: 0 0 20px rgba(145, 70, 255, 0.4), 0 0 40px rgba(255, 255, 255, 0.1); border-bottom: 2px solid var(--primary);">
+                            <iframe v-if="activeFeedVideo === 'featured' && isLive" :src="'https://player.twitch.tv/?channel=codemiko&parent=' + hostname + '&autoplay=true&muted=true'" style="width:100%; height:100%; border:none; pointer-events:auto;" allow="autoplay; fullscreen" allowfullscreen></iframe>
+                            <iframe v-else-if="activeFeedVideo === 'featured' && latestVodId" :src="'https://player.twitch.tv/?video=' + latestVodId + '&parent=' + hostname + '&autoplay=true&muted=true'" style="width:100%; height:100%; border:none; pointer-events:auto;" allow="autoplay; fullscreen" allowfullscreen></iframe>
+                            <div v-else style="width:100%; height:100%; display:flex; align-items:center; justify-content:center; color:white; font-size:14px; font-weight:800; background:rgba(0,0,0,0.3); border: 1px solid rgba(145, 70, 255, 0.3); border-radius: 12px; box-shadow: 0 4px 30px rgba(0,0,0,0.5);">STREAM OFFLINE</div>
+                        </div>
+                    </template>
                 </div>
 
                 <div v-if="loadingClips && !clips.length" class="feed-snap-item">
@@ -247,7 +248,7 @@
                     <div class="infra-bar">
                         <div class="status-node">
                             <div class="pulse" :class="{ error: !apiHealthy }"></div> 
-                            TWITCH API: {{ apiHealthy ? 'READY' : 'KEY REQD' }}
+                            TWITCH API: {{ apiHealthy ? 'CONNECTED' : 'CREDENTIALS REQUIRED' }}
                         </div>
                     </div>
 
@@ -313,46 +314,44 @@
                 
                 const syncState = ref('idle'); 
                 const activeFeedVideo = ref('featured');
-                let intersectionObserver = null;
-                let visibleItems = new Map();
+                let scrollTimer = null;
 
                 const logoSvg = (id) => `<svg viewBox="0 0 100 100"><defs><linearGradient id="grad-${id}" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stop-color="#ffffff"/><stop offset="100%" stop-color="#9146FF"/></linearGradient></defs><circle cx="50" cy="50" r="40" fill="none" stroke="url(#grad-${id})" stroke-width="8"/><path d="M 33 38 L 48 62 L 62 38 L 62 55 Q 62 65 69 64" fill="none" stroke="url(#grad-${id})" stroke-width="8" stroke-linecap="round" stroke-linejoin="round"/></svg>`;
                 const showToast = (msg) => { toast.value.message = msg; toast.value.visible = true; setTimeout(() => toast.value.visible = false, 3000); };
                 const optimizeTwitchImg = (url) => url.replace('%{width}', '480').replace('%{height}', '270');
                 const cleanDiscordText = (txt) => txt ? txt.replace(/<a?:[^:]+:\d+>/g, '').trim() : '';
 
+                // Improved observer to precisely pick the video closest to the center of the screen
                 const initObserver = () => {
-                    if (intersectionObserver) intersectionObserver.disconnect();
-                    intersectionObserver = new IntersectionObserver((entries) => {
-                        entries.forEach(e => {
-                            if (e.isIntersecting) {
-                                visibleItems.set(e.target.dataset.id, e.intersectionRatio);
-                            } else {
-                                visibleItems.delete(e.target.dataset.id);
+                    const scroller = document.getElementById('feed-scroll');
+                    if(!scroller) return;
+                    const updateActive = () => {
+                        if (scroller.scrollTop < 50) {
+                            activeFeedVideo.value = 'featured';
+                            return;
+                        }
+                        const items = document.querySelectorAll('.feed-snap-item');
+                        let minDiff = Infinity;
+                        let bestId = null;
+                        const center = window.innerHeight / 2;
+                        items.forEach(el => {
+                            const rect = el.getBoundingClientRect();
+                            const elCenter = rect.top + rect.height / 2;
+                            const diff = Math.abs(center - elCenter);
+                            if (diff < minDiff) {
+                                minDiff = diff;
+                                bestId = el.dataset.id;
                             }
                         });
-                        
-                        let maxRatio = 0;
-                        let targetId = null;
-                        
-                        const scroller = document.getElementById('feed-scroll');
-                        if (scroller && scroller.scrollTop < 50) {
-                            targetId = 'featured';
-                        } else {
-                            for (const [id, ratio] of visibleItems.entries()) {
-                                if (ratio > maxRatio) {
-                                    maxRatio = ratio;
-                                    targetId = id;
-                                }
-                            }
+                        if (bestId && activeFeedVideo.value !== bestId) {
+                            activeFeedVideo.value = bestId;
                         }
-                        
-                        if (targetId) activeFeedVideo.value = targetId;
-                    }, { threshold: [0.3, 0.5, 0.7, 0.9] });
-                    
-                    setTimeout(() => {
-                        document.querySelectorAll('.feed-snap-item').forEach(el => intersectionObserver.observe(el));
-                    }, 500);
+                    };
+                    scroller.addEventListener('scroll', () => {
+                        clearTimeout(scrollTimer);
+                        scrollTimer = setTimeout(updateActive, 150);
+                    }, { passive: true });
+                    setTimeout(updateActive, 500);
                 };
 
                 const loadData = async () => {
@@ -390,13 +389,11 @@
                 };
 
                 const fetchLatestVod = async () => {
-                    if (!apiConfig.value.cid || !apiConfig.value.tkn) return;
                     try {
-                        const uR = await fetch('https://api.twitch.tv/helix/users?login=codemiko', { headers: { 'Client-Id': apiConfig.value.cid, 'Authorization': `Bearer ${apiConfig.value.tkn}` }});
-                        const uD = await uR.json();
-                        const vR = await fetch(`https://api.twitch.tv/helix/videos?user_id=${uD.data[0].id}&first=1&type=archive`, { headers: { 'Client-Id': apiConfig.value.cid, 'Authorization': `Bearer ${apiConfig.value.tkn}` }});
-                        const vD = await vR.json();
-                        if (vD.data?.length > 0) latestVodId.value = vD.data[0].id;
+                        const vRes = await fetch('https://decapi.me/twitch/videos/codemiko?limit=1');
+                        const vText = await vRes.text();
+                        const m = vText.match(/videos\/(\d+)/) || vText.match(/v(\d+)/);
+                        if (m) latestVodId.value = m[1];
                     } catch(e) {}
                 };
 
