@@ -10,25 +10,30 @@ jobs:
     steps:
       - name: Sync Messages
         run: |
-          # Fetch messages and catch errors
+          # 1. Fetch messages from Discord
           RESPONSE=$(curl -s -H "Authorization: Bot ${{ secrets.DISCORD_BOT_TOKEN }}" \
             "https://discord.com/api/v10/channels/${{ secrets.DISCORD_CHANNEL_ID }}/messages?limit=5")
 
-          # Check if the response is an array (good) or an object/string (error)
-          if [[ $(echo "$RESPONSE" | jq 'type == "array"') != "true" ]]; then
-            echo "Discord API Error: $RESPONSE"
+          # 2. Check if Discord actually returned an array (list) of messages
+          # If it didn't, it will print the error and stop instead of crashing with Code 5
+          IS_ARRAY=$(echo "$RESPONSE" | jq 'type == "array"')
+          
+          if [ "$IS_ARRAY" != "true" ]; then
+            echo "❌ DISCORD API ERROR: $RESPONSE"
             exit 1
           fi
 
+          # 3. If it is an array, proceed to sync with Supabase
           echo "$RESPONSE" | jq -c '.[]' | while read i; do
             CONTENT=$(echo $i | jq -r '.content')
             AUTHOR=$(echo $i | jq -r '.author.username')
             TIMESTAMP=$(echo $i | jq -r '.timestamp')
             
-            curl -X POST "${{ secrets.SUPABASE_URL }}/rest/v1/discord_feed" \
+            curl -s -X POST "${{ secrets.SUPABASE_URL }}/rest/v1/discord_feed" \
               -H "apikey: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}" \
               -H "Authorization: Bearer ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}" \
               -H "Content-Type: application/json" \
               -H "Prefer: resolution=merge-duplicates" \
               -d "{\"content\": \"$CONTENT\", \"author\": \"$AUTHOR\", \"created_at\": \"$TIMESTAMP\"}"
           done
+          echo "✅ Sync completed successfully."
