@@ -22,7 +22,7 @@
         .gradient-text { display: inline-block; background: linear-gradient(135deg, #ffffff 30%, var(--primary) 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; font-family: 'Outfit', sans-serif; }
 
         .app-header { width: 100%; padding: 50px 20px 15px; display: flex; align-items: center; justify-content: space-between; background: rgba(0, 0, 0, 0.90); backdrop-filter: blur(12px); z-index: 100; flex-shrink: 0; }
-        .header-status-wrapper { position: relative; width: 44px; height: 44px; display: flex; align-items: center; justify-content: center; cursor: pointer; }
+        .header-status-wrapper { position: relative; width: 44px; height: 44px; display: flex; align-items: center; justify-content: center; text-decoration: none; }
         .story-ring { width: 42px; height: 42px; border-radius: 50%; padding: 2px; display: flex; align-items: center; justify-content: center; position: relative; }
         .story-ring.live { background: linear-gradient(45deg, var(--danger), var(--primary), #ff4685, var(--danger)); background-size: 300% 300%; animation: storyGlow 3s ease infinite; }
         .story-ring.offline { border: 2px solid var(--offline-gray); filter: grayscale(1); opacity: 0.7; }
@@ -82,12 +82,13 @@
         <header class="app-header" :style="{ opacity: splashVisible ? 0 : 1 }">
             <div style="width:28px;height:28px;" v-html="logoSvg('header')"></div>
             <div style="flex-grow:1; text-align:center;"><span class="gradient-text" style="font-size:24px; font-weight:800;">MikoTok</span></div>
-            <div class="header-status-wrapper" @click="window.open('https://twitch.tv/codemiko', '_blank')">
+            <!-- FIXED LINK ON AVATAR -->
+            <a href="https://twitch.tv/codemiko" target="_blank" class="header-status-wrapper">
                 <div class="story-ring" :class="isLive ? 'live' : 'offline'">
                     <img src="1000018850.png?v=2" class="story-avatar">
                     <div class="header-badge" :class="isLive ? 'live' : 'offline'">{{ isLive ? 'Live' : 'Offline' }}</div>
                 </div>
-            </div>
+            </a>
         </header>
 
         <div class="view-port" :style="{ opacity: splashVisible ? 0 : 1 }">
@@ -162,6 +163,7 @@
                     <button class="sync-btn" @click="runSync" :disabled="isSyncing">
                         {{ isSyncing ? 'SYNCING ALL CLIPS...' : 'SYNC ALL CLIPS (6 MO)' }}
                     </button>
+                    <!-- FIXED LOGOUT BUTTON -->
                     <button class="logout-btn" @click="handleLogout">SIGN OUT</button>
                 </div>
             </div>
@@ -186,7 +188,19 @@
                     const email = loginEmail.value.includes('@') ? loginEmail.value : `${loginEmail.value}@mikotok.com`;
                     const { data, error } = await sbClient.auth.signInWithPassword({ email, password: loginPass.value });
                     if (error) showToast(error.message);
-                    else location.reload();
+                    else {
+                        currentUser.value = data.user.id;
+                        location.reload();
+                    }
+                };
+
+                const handleLogout = async () => {
+                    const { error } = await sbClient.auth.signOut();
+                    if (error) showToast(error.message);
+                    else {
+                        currentUser.value = null;
+                        location.reload();
+                    }
                 };
 
                 const runSync = async () => {
@@ -214,12 +228,12 @@
 
                 onMounted(async () => {
                     const { data: { session } } = await sbClient.auth.getSession();
-                    currentUser.value = session?.user.id || null;
+                    currentUser.value = session?.user?.id || null;
                     loadData();
                     setTimeout(() => { splashOpacity.value = 0; setTimeout(() => splashVisible.value = false, 600); }, 1500); 
                 });
 
-                return { splashVisible, splashOpacity, currentTab, clips, activeClip, modals, isSyncing, isLive, toast, logoSvg, runSync, currentUser, loginEmail, loginPass, handleLogin, handleLogout: () => { sbClient.auth.signOut(); location.reload(); }, formatDate: (d) => new Date(d).toLocaleDateString([], {month:'short', day:'numeric'}), formatViews: (v) => v ? v.toLocaleString() : '0' };
+                return { splashVisible, splashOpacity, currentTab, clips, activeClip, modals, isSyncing, isLive, toast, logoSvg, runSync, currentUser, loginEmail, loginPass, handleLogin, handleLogout, formatDate: (d) => new Date(d).toLocaleDateString([], {month:'short', day:'numeric'}), formatViews: (v) => v ? v.toLocaleString() : '0' };
             }
         }).mount('#app-container');
     </script>
