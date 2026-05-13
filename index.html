@@ -113,14 +113,14 @@
 <body>
     <div id="app-container" v-cloak>
         <div id="splash-screen" v-if="splashVisible" :style="{ opacity: splashOpacity }">
-            <div v-html="logoSvg('splash')" id="splash-icon"></div>
+            <div style="width:120px;height:120px;margin-bottom:20px;" v-html="logoSvg('splash')"></div>
             <div class="gradient-text" style="font-size: 40px;">MikoTok</div>
             <div class="progress-bar"><div class="progress-fill"></div></div>
         </div>
 
         <div class="app-content-wrapper" :style="{ opacity: splashVisible ? 0 : 1, transition: 'opacity 0.4s ease', pointerEvents: splashVisible ? 'none' : 'auto' }">
             <header class="app-header">
-                <div class="header-logo" v-html="logoSvg('header')"></div>
+                <div style="width:28px;height:28px;" v-html="logoSvg('header')"></div>
                 <div class="simple-logo"><span class="gradient-text">MikoTok</span></div>
                 <a href="https://www.twitch.tv/codemiko" target="_blank" class="header-status-wrapper" style="text-decoration:none;">
                     <div class="story-ring" :class="isLive ? 'live' : 'offline'">
@@ -245,7 +245,6 @@
                         <textarea v-model="newPostText" class="input-box" placeholder="Dispatch a card to feed..." style="height:80px; resize:none;"></textarea>
                         <button class="input-box" style="background:var(--discord); font-weight:700; text-align:center; margin-bottom: 15px;" @click="dispatchPost">Dispatch Post</button>
                         
-                        <!-- Restored Twitch Sync Button logic -->
                         <div v-if="showKeyInputs">
                             <input type="text" v-model="tempId" class="input-box" placeholder="Twitch Client ID">
                             <input type="text" v-model="tempTkn" class="input-box" placeholder="Twitch Access Token">
