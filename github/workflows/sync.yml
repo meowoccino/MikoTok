@@ -1,22 +1,29 @@
-name: MikoTok Auto Backend
+name: Discord Feed Sync
 on:
-  repository_dispatch:
-    types: [manual_post]
+  schedule:
+    - cron: '*/15 * * * *' # Runs every 15 minutes
+  workflow_dispatch: # Allows manual running for testing
 
 jobs:
   sync:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-      - name: Setup Node.js
-        uses: actions/setup-node@v3
-        with:
-          node-version: 20
-      - name: Install Dependencies
-        run: npm install @supabase/supabase-js
-      - name: Run Manual Sync
-        run: node sync_miko.js
-        env:
-          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
-          MANUAL_TEXT: ${{ github.event.client_payload.text }}
-          MANUAL_SOURCE: ${{ github.event.client_payload.source }}
+      - name: Sync Messages
+        run: |
+          # Fetch messages from Discord
+          MESSAGES=$(curl -H "Authorization: Bot ${{ secrets.DISCORD_BOT_TOKEN }}" \
+            "https://discord.com/api/v10/channels/${{ secrets.DISCORD_CHANNEL_ID }}/messages?limit=5")
+
+          # Loop through and send to Supabase
+          echo "$MESSAGES" | jq -c '.[]' | while read i; do
+            CONTENT=$(echo $i | jq -r '.content')
+            AUTHOR=$(echo $i | jq -r '.author.username')
+            TIMESTAMP=$(echo $i | jq -r '.timestamp')
+            
+            curl -X POST "${{ secrets.SUPABASE_URL }}/rest/v1/discord_feed" \
+              -H "apikey: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}" \
+              -H "Authorization: Bearer ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}" \
+              -H "Content-Type: application/json" \
+              -H "Prefer: resolution=merge-duplicates" \
+              -d "{\"content\": \"$CONTENT\", \"author\": \"$AUTHOR\", \"created_at\": \"$TIMESTAMP\"}"
+          done
