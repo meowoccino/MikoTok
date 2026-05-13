@@ -64,13 +64,8 @@
         .input-box { width: 100%; background: #000; border: 1px solid var(--border-color); color: white; padding: 14px; border-radius: 12px; margin-bottom: 12px; font-size: 14px; outline: none; }
         .sync-btn { width: 100%; background: linear-gradient(135deg, var(--primary), var(--primary-light)); border: none; color: white; padding: 16px; border-radius: 16px; font-weight: 800; font-size: 14px; margin-bottom: 12px; cursor: pointer; box-shadow: 0 4px 15px rgba(145, 70, 255, 0.3); }
         
-        /* Clean Dark Logout Button */
         .logout-btn { width: 100%; background: #1a1a1c; border: 1px solid var(--border-color); color: var(--text-muted); padding: 14px; border-radius: 16px; font-weight: 700; cursor: pointer; font-size: 13px; display: flex; align-items: center; justify-content: center; gap: 8px; transition: 0.2s; }
         .logout-btn:active { background: #27272a; color: white; }
-
-        /* Wipe Link Styling */
-        .wipe-link { display: inline-block; margin-top: 15px; font-size: 11px; color: var(--text-muted); font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; text-decoration: underline; cursor: pointer; opacity: 0.6; }
-        .wipe-link:active { color: var(--danger); opacity: 1; }
 
         /* Admin Layouts */
         .infra-bar { background: var(--card-bg); border: 1px solid var(--border-color); border-radius: 16px; padding: 16px 20px; display: flex; justify-content: center; margin-bottom: 20px; align-items: center; }
@@ -188,7 +183,7 @@
                     <div class="infra-bar">
                         <div class="status-node">
                             <div class="pulse" :class="{ error: !apiHealthy }"></div> 
-                            TWITCH API: {{ apiHealthy ? 'NOMINAL' : 'CREDENTIALS EXPIRED' }}
+                            TWITCH API: {{ apiHealthy ? 'NORMAL' : 'CREDENTIALS EXPIRED' }}
                         </div>
                     </div>
 
@@ -218,16 +213,23 @@
                         <button class="sync-btn" @click="saveKeys" style="font-size:12px; height:44px; background:#000; box-shadow: none;">SAVE API KEYS</button>
                     </div>
 
-                    <button class="sync-btn" @click="runSync" :disabled="isSyncing">
+                    <button class="sync-btn" @click="runSync" :disabled="isSyncing" style="margin-bottom: 20px;">
                         <span class="material-symbols-rounded" style="font-size: 18px; vertical-align: middle;">rocket_launch</span>
                         {{ isSyncing ? 'SYNCING DATA...' : 'FORCE GLOBAL SYNC' }}
                     </button>
                     
+                    <!-- DANGER ZONE -->
+                    <div style="margin-bottom:20px; padding:18px; background:rgba(239, 68, 68, 0.05); border-radius:18px; border:1px dashed var(--danger);">
+                        <div style="font-size:10px; color:var(--danger); margin-bottom:8px; font-weight:800; text-align: left;">DANGER ZONE</div>
+                        <p style="font-size:12px; color:var(--text-muted); text-align:left; margin:0 0 16px 0; line-height:1.4;">Permanently delete all clips from the database. This action cannot be undone.</p>
+                        <button class="logout-btn" @click="wipeClips" style="background:#000; border-color:var(--danger); color:var(--danger); font-size: 12px; padding: 12px;">
+                            <span class="material-symbols-rounded" style="font-size: 16px;">delete_forever</span> WIPE REPOSITORY
+                        </button>
+                    </div>
+
                     <button class="logout-btn" @click="handleLogout">
                         <span class="material-symbols-rounded" style="font-size: 18px;">logout</span> SIGN OUT
                     </button>
-
-                    <div class="wipe-link" @click="wipeClips">Wipe clip repository</div>
                 </div>
             </div>
         </div>
@@ -281,7 +283,6 @@
                     }
                 };
 
-                // UPDATED: State-driven Sign Out (no hard refresh)
                 const handleLogout = async () => {
                     const { error } = await sbClient.auth.signOut();
                     if (error) {
@@ -293,7 +294,7 @@
                 };
 
                 const wipeClips = async () => {
-                    if(!confirm("DANGEROUS: Permanentely clear all clips from the database?")) return;
+                    if(!confirm("DANGEROUS: Permanently clear all clips from the database?")) return;
                     try {
                         const { error } = await sbClient.from('clips').delete().neq('id', 'void');
                         if (error) throw error;
@@ -302,6 +303,7 @@
                     } catch (e) { showToast("WIPE FAILED"); }
                 };
 
+                // UPDATED: Syncing in chunks to prevent database payload limits
                 const runSync = async () => {
                     if(isSyncing.value) return;
                     if(!apiHealthy.value) { showToast("CHECK API KEYS"); return; }
@@ -312,18 +314,26 @@
                         const uR = await fetch('https://api.twitch.tv/helix/users?login=codemiko', { headers: {'Client-Id': cid, 'Authorization': `Bearer ${tkn}`} });
                         const uD = await uR.json();
                         const bId = uD.data[0].id;
-                        let allClips = [], cursor = '';
+                        
+                        let totalSynced = 0;
+                        let cursor = '';
+                        
                         do {
                             const cR = await fetch(`https://api.twitch.tv/helix/clips?broadcaster_id=${bId}&started_at=${sixMonthsAgo}&first=100${cursor ? '&after='+cursor : ''}`, { headers: {'Client-Id': cid, 'Authorization': `Bearer ${tkn}`} });
                             const cD = await cR.json();
-                            allClips = allClips.concat(cD.data);
+                            
+                            if (cD.data && cD.data.length > 0) {
+                                // Instantly chunk the payload to the database
+                                const ins = cD.data.map(x => ({ id: x.id, thumbnail_url: x.thumbnail_url, title: x.title, view_count: x.view_count, created_at: x.created_at, added_by: 'CodeMiko' }));
+                                await sbClient.from('clips').upsert(ins, { onConflict: 'id' });
+                                totalSynced += cD.data.length;
+                            }
                             cursor = cD.pagination?.cursor;
-                        } while (cursor && allClips.length < 1000);
-                        const ins = allClips.map(x => ({ id: x.id, thumbnail_url: x.thumbnail_url, title: x.title, view_count: x.view_count, created_at: x.created_at, added_by: 'CodeMiko' }));
-                        await sbClient.from('clips').upsert(ins, { onConflict: 'id' });
+                        } while (cursor && totalSynced < 1000); // hard cap to prevent infinite loops
+
                         await loadData();
-                        showToast(`SYNC SUCCESS! ${allClips.length} CLIPS.`);
-                    } catch (e) { showToast("SYNC ERROR"); } finally { isSyncing.value = false; }
+                        showToast(`SYNC SUCCESS! ${totalSynced} CLIPS.`);
+                    } catch (e) { console.error(e); showToast("SYNC ERROR"); } finally { isSyncing.value = false; }
                 };
 
                 onMounted(async () => {
