@@ -60,8 +60,7 @@
         .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.9); z-index: 1500; display: flex; flex-direction: column; justify-content: flex-end; opacity: 0; pointer-events: none; transition: opacity 0.3s; }
         .modal-overlay.open { opacity: 1; pointer-events: auto; }
         
-        /* Note: Added touch-action: pan-y to allow smooth dragging */
-        .modal-content { background: #0a0a0c; border-radius: 32px 32px 0 0; padding: 30px 24px 40px; border-top: 1px solid var(--border-color); width: 100%; max-width: 480px; align-self: center; overflow-y: auto; max-height: 90vh; touch-action: pan-y; }
+        .modal-content { background: #0a0a0c; border-radius: 32px 32px 0 0; padding: 30px 24px 40px; border-top: 1px solid var(--border-color); width: 100%; max-width: 480px; align-self: center; overflow-y: auto; max-height: 90vh; touch-action: pan-y; overscroll-behavior-y: contain; transform: translateY(0); }
         
         /* Drag Handle */
         .drag-handle { width: 36px; height: 5px; background: #3f3f46; border-radius: 10px; margin: -10px auto 25px; opacity: 0.8; }
@@ -70,8 +69,6 @@
         .sync-btn { width: 100%; background: linear-gradient(135deg, var(--primary), var(--primary-light)); border: none; color: white; padding: 16px; border-radius: 16px; font-weight: 800; font-size: 14px; margin-bottom: 12px; cursor: pointer; box-shadow: 0 4px 15px rgba(145, 70, 255, 0.3); }
         .logout-btn { width: 100%; background: #1a1a1c; border: 1px solid var(--border-color); color: var(--text-muted); padding: 14px; border-radius: 16px; font-weight: 700; cursor: pointer; font-size: 13px; display: flex; align-items: center; justify-content: center; gap: 8px; transition: 0.2s; }
         .logout-btn:active { background: #27272a; color: white; }
-        .wipe-link { display: inline-block; margin-top: 15px; font-size: 11px; color: var(--text-muted); font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; text-decoration: underline; cursor: pointer; opacity: 0.6; }
-        .wipe-link:active { color: var(--danger); opacity: 1; }
 
         /* Admin UI */
         .infra-bar { background: var(--card-bg); border: 1px solid var(--border-color); border-radius: 16px; padding: 16px 20px; display: flex; justify-content: center; margin-bottom: 20px; align-items: center; }
@@ -109,7 +106,7 @@
         </header>
 
         <div class="view-port" :style="{ opacity: splashVisible ? 0 : 1 }">
-            <div id="feed-scroll" v-if="currentTab === 'home'" @touchstart="handleTouchStart" @touchmove="handleTouchMove" @touchend="handleTouchEnd">
+            <div id="feed-scroll" v-if="currentTab === 'home'" @touchstart="handleFeedTouchStart" @touchmove="handleFeedTouchMove" @touchend="handleFeedTouchEnd">
                 <!-- Pull to Refresh Visual Indicator -->
                 <div class="ptr-container" :style="{ height: ptrHeight + 'px', transition: ptrHeight === 0 ? 'height 0.3s' : 'none' }">
                     <span class="material-symbols-rounded" :style="{ transform: 'rotate(' + (ptrHeight * 5) + 'deg)', opacity: ptrHeight / 60 }">refresh</span>
@@ -178,15 +175,13 @@
             </div>
         </div>
 
-        <!-- MikoOS Profile Modal with Swipe-to-close -->
+        <!-- MikoOS Profile Modal with Native DOM Swipe -->
         <div class="modal-overlay" :class="{ open: modals.profile }" @click.self="closeAdmin">
-            <div class="modal-content" 
-                 :style="{ transform: 'translateY(' + modalTransform + 'px)', transition: modalTransform === 0 ? 'transform 0.3s cubic-bezier(0.2, 0.8, 0.2, 1)' : 'none' }"
+            <div class="modal-content" ref="modalContentEl"
                  @touchstart="handleModalTouchStart"
                  @touchmove="handleModalTouchMove"
                  @touchend="handleModalTouchEnd">
                  
-                <!-- Drag handle for visual cue -->
                 <div class="drag-handle"></div>
 
                 <div v-if="!currentUser">
@@ -242,7 +237,6 @@
                         {{ isSyncing ? 'SYNCING DATA...' : 'FORCE GLOBAL SYNC' }}
                     </button>
                     
-                    <!-- DANGER ZONE -->
                     <div style="margin-bottom:20px; padding:18px; background:rgba(239, 68, 68, 0.05); border-radius:18px; border:1px dashed var(--danger);">
                         <div style="font-size:10px; color:var(--danger); margin-bottom:8px; font-weight:800; text-align: left;">DANGER ZONE</div>
                         <p style="font-size:12px; color:var(--text-muted); text-align:left; margin:0 0 16px 0; line-height:1.4;">Permanently delete all clips from the database. This action cannot be undone.</p>
@@ -268,12 +262,12 @@
                 const splashVisible = ref(true), splashOpacity = ref(1), currentTab = ref('home'), clips = ref([]), activeClip = ref(null), modals = ref({profile: false}), isSyncing = ref(false), isLive = ref(false), currentUser = ref(null), loginEmail = ref(''), loginPass = ref(''), toast = ref({visible: false, message: ''});
                 const stats = ref({ visitors: 0 }), apiHealthy = ref(false), apiConfig = ref({ cid: localStorage.getItem('twitch_client_id') || '', tkn: localStorage.getItem('twitch_access_token') || '' });
 
-                // Pull to refresh & swipe variables
                 const ptrHeight = ref(0);
-                let startY = 0;
+                let feedStartY = 0;
                 
-                const modalTransform = ref(0);
+                const modalContentEl = ref(null);
                 let modalStartY = 0;
+                let currentDeltaY = 0;
 
                 const logoSvg = (id) => `<svg viewBox="0 0 100 100"><defs><linearGradient id="grad-${id}" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stop-color="#ffffff"/><stop offset="100%" stop-color="#9146FF"/></linearGradient></defs><circle cx="50" cy="50" r="40" fill="none" stroke="url(#grad-${id})" stroke-width="8"/><path d="M 33 38 L 48 62 L 62 38 L 62 55 Q 62 65 69 64" fill="none" stroke="url(#grad-${id})" stroke-width="8" stroke-linecap="round" stroke-linejoin="round"/></svg>`;
                 const showToast = (msg) => { toast.value.message = msg; toast.value.visible = true; setTimeout(() => toast.value.visible = false, 3000); };
@@ -293,21 +287,18 @@
                     } catch(e) { console.error("Live check failed"); }
                 };
 
-                /* Pull to Refresh Logic */
-                const handleTouchStart = (e) => {
+                /* Feed Pull to Refresh */
+                const handleFeedTouchStart = (e) => {
                     const scrollContainer = document.getElementById('feed-scroll');
-                    if (scrollContainer && scrollContainer.scrollTop <= 0) {
-                        startY = e.touches[0].clientY;
-                    } else {
-                        startY = 0;
-                    }
+                    if (scrollContainer && scrollContainer.scrollTop <= 0) feedStartY = e.touches[0].clientY;
+                    else feedStartY = 0;
                 };
 
-                const handleTouchMove = (e) => {
-                    if (!startY) return;
+                const handleFeedTouchMove = (e) => {
+                    if (!feedStartY) return;
                     const y = e.touches[0].clientY;
-                    if (y > startY) {
-                        const distance = (y - startY) * 0.4;
+                    if (y > feedStartY) {
+                        const distance = (y - feedStartY) * 0.4;
                         ptrHeight.value = Math.min(distance, 80); 
                         if (ptrHeight.value > 10 && document.getElementById('feed-scroll').scrollTop === 0) {
                             if (e.cancelable) e.preventDefault(); 
@@ -315,20 +306,22 @@
                     }
                 };
 
-                const handleTouchEnd = async () => {
+                const handleFeedTouchEnd = async () => {
                     if (ptrHeight.value >= 50) {
                         ptrHeight.value = 50; 
                         await loadData(); 
                     }
                     ptrHeight.value = 0; 
-                    startY = 0;
+                    feedStartY = 0;
                 };
 
-                /* Swipe Down Modal Logic */
+                /* Native DOM Swipe Down (Lag-Free) */
                 const handleModalTouchStart = (e) => {
                     const modalEl = e.currentTarget;
                     if (modalEl.scrollTop <= 0) {
                         modalStartY = e.touches[0].clientY;
+                        currentDeltaY = 0;
+                        if(modalContentEl.value) modalContentEl.value.style.transition = 'none';
                     } else {
                         modalStartY = 0;
                     }
@@ -337,32 +330,44 @@
                 const handleModalTouchMove = (e) => {
                     if (!modalStartY) return;
                     const y = e.touches[0].clientY;
-                    const deltaY = y - modalStartY;
-                    if (deltaY > 0) {
-                        modalTransform.value = deltaY;
+                    currentDeltaY = y - modalStartY;
+                    if (currentDeltaY > 0) {
                         if (e.cancelable) e.preventDefault();
+                        if (modalContentEl.value) {
+                            modalContentEl.value.style.transform = `translateY(${currentDeltaY}px)`;
+                        }
                     }
                 };
 
                 const handleModalTouchEnd = () => {
-                    if (modalTransform.value > 150) {
-                        closeAdmin();
-                    } else {
-                        modalTransform.value = 0; 
+                    if (!modalStartY) return;
+                    if (modalContentEl.value) {
+                        modalContentEl.value.style.transition = 'transform 0.3s cubic-bezier(0.2, 0.8, 0.2, 1)';
+                        if (currentDeltaY > 150) {
+                            closeAdmin();
+                        } else {
+                            modalContentEl.value.style.transform = 'translateY(0px)';
+                        }
                     }
                     modalStartY = 0;
+                    currentDeltaY = 0;
                 };
 
                 const openAdmin = () => { 
                     loadData(); 
                     checkApi(); 
-                    modalTransform.value = 0;
+                    if(modalContentEl.value) {
+                        modalContentEl.value.style.transition = 'none';
+                        modalContentEl.value.style.transform = 'translateY(0px)';
+                    }
                     modals.value.profile = true; 
                 };
                 
                 const closeAdmin = () => {
                     modals.value.profile = false;
-                    setTimeout(() => modalTransform.value = 0, 300);
+                    if(modalContentEl.value) {
+                        modalContentEl.value.style.transform = 'translateY(0px)';
+                    }
                 };
 
                 const checkApi = async () => {
@@ -442,7 +447,6 @@
                                 totalSynced += cD.data.length;
                             }
                             cursor = cD.pagination?.cursor;
-                        // Increased limit to 2500 for a much deeper database query
                         } while (cursor && totalSynced < 2500); 
 
                         await loadData();
@@ -465,9 +469,9 @@
                 return { 
                     splashVisible, splashOpacity, currentTab, clips, activeClip, modals, isSyncing, isLive, toast, logoSvg, 
                     runSync, currentUser, loginEmail, loginPass, handleLogin, handleLogout, openAdmin, closeAdmin, apiHealthy, apiConfig, 
-                    stats, saveKeys, wipeClips, 
-                    ptrHeight, handleTouchStart, handleTouchMove, handleTouchEnd,
-                    modalTransform, handleModalTouchStart, handleModalTouchMove, handleModalTouchEnd,
+                    stats, saveKeys, wipeClips, modalContentEl,
+                    ptrHeight, handleFeedTouchStart, handleFeedTouchMove, handleFeedTouchEnd,
+                    handleModalTouchStart, handleModalTouchMove, handleModalTouchEnd,
                     formatDate: (d) => new Date(d).toLocaleDateString([], {month:'short', day:'numeric'}), 
                     formatViews: (v) => v ? v.toLocaleString() : '0' 
                 };
