@@ -88,6 +88,15 @@
         .gerald-send { background: var(--gerald); border: none; width: 40px; height: 40px; border-radius: 50%; display: flex; align-items: center; justify-content: center; cursor: pointer; color: black; }
         .typing-indicator { font-size: 11px; color: var(--gerald); padding: 5px 20px; font-weight: 700; text-transform: uppercase; }
 
+        /* MikoOS Admin Elements */
+        .infra-bar { background: var(--card-bg); border: 1px solid var(--border-color); border-radius: 14px; padding: 14px 18px; display: flex; justify-content: center; margin-bottom: 16px; align-items: center; }
+        .status-node { display: flex; align-items: center; gap: 8px; font-size: 11px; font-weight: 800; color: var(--text-main); letter-spacing: 0.5px; }
+        .pulse { width: 8px; height: 8px; border-radius: 50%; background: var(--success); box-shadow: 0 0 10px var(--success); animation: pulse-glow 2s infinite; }
+        .pulse.error { background: var(--danger); box-shadow: 0 0 10px var(--danger); }
+        .metric-card-large { background: linear-gradient(145deg, var(--card-bg), transparent); border: 1px solid var(--border-color); padding: 18px; border-radius: 16px; margin-bottom: 12px; display: flex; justify-content: space-between; align-items: center; text-align: left; }
+        .stat-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 16px; }
+        .stat-card { background: var(--card-bg); border: 1px solid var(--border-color); padding: 14px; border-radius: 14px; text-align: left; }
+
         .bottom-nav { position: absolute; bottom: 20px; left: 50%; transform: translateX(-50%); width: calc(100% - 20px); background: var(--nav-bg); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px); border-radius: 30px; border: 1px solid rgba(255, 255, 255, 0.1); display: flex; justify-content: space-between; align-items: center; padding: 10px 5px; z-index: 100; box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
         .nav-item { display: flex; flex-direction: column; align-items: center; flex: 1; color: var(--text-muted); font-size: 9px; gap: 4px; cursor: pointer; text-decoration: none; transition: transform 0.2s; font-weight: 700; }
         .nav-item.active { color: var(--text-main); }
@@ -97,17 +106,18 @@
 
         .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.85); z-index: 1500; display: flex; justify-content: center; align-items: flex-end; opacity: 0; pointer-events: none; transition: 0.3s; }
         .modal-overlay.open { opacity: 1; pointer-events: auto; }
-        .modal-content { background: var(--modal-bg); border-radius: 30px 30px 0 0; padding: 25px; border-top: 1px solid var(--border-color); width: 100%; max-width: 540px; transform: translateY(100%); transition: 0.3s; }
+        .modal-content { background: var(--modal-bg); border-radius: 30px 30px 0 0; padding: 25px; border-top: 1px solid var(--border-color); width: 100%; max-width: 540px; transform: translateY(100%); transition: 0.3s; overflow-y: auto; max-height: 90vh; }
         .modal-overlay.open .modal-content { transform: translateY(0); }
         .drag-handle { width: 40px; height: 5px; background: var(--border-color); border-radius: 10px; margin: 0 auto 20px; }
 
         .input-box { width: 100%; background: var(--bg-color); border: 1px solid var(--border-color); border-radius: 12px; padding: 15px; color: white; margin-bottom: 15px; outline: none; }
-        .sync-btn { width: 100%; background: var(--primary); border: none; color: white; padding: 15px; border-radius: 12px; font-weight: 800; cursor: pointer; }
+        .sync-btn { width: 100%; background: var(--primary); border: none; color: white; padding: 15px; border-radius: 12px; font-weight: 800; cursor: pointer; margin-bottom: 10px; display: flex; justify-content: center; align-items: center; gap: 8px; }
         .logout-btn { width: 100%; background: transparent; border: 1px solid var(--danger); color: var(--danger); padding: 12px; border-radius: 12px; margin-top: 15px; cursor: pointer; }
 
         @keyframes storyGlow { 0% { background-position: 0% 50%; } 50% { background-position: 100% 50%; } 100% { background-position: 0% 50%; } }
         @keyframes heartbeat { 0%, 100% { transform: scale(1); opacity: 1; } 50% { transform: scale(1.3); opacity: 0.5; } }
         @keyframes shimmer { 0% { background-position: -200% 0; } 100% { background-position: 200% 0; } }
+        @keyframes pulse-glow { 0%, 100% { opacity: 1; } 50% { opacity: 0.4; } }
     </style>
 </head>
 <body>
@@ -139,12 +149,10 @@
                 </div>
 
                 <div class="feed-snap-item" data-id="featured" style="padding-top: 110px;">
-                    
                     <div style="display: flex; justify-content: flex-start; align-items: flex-end; width: 100%;">
                         <div class="premium-badge live" v-if="isLive"><div class="dot"></div><span>LIVE NOW</span></div>
                         <div class="premium-badge vod" v-else-if="latestVodId"><div class="dot"></div><span>LATEST VOD</span></div>
                     </div>
-                    
                     <div class="video-container" style="box-shadow: 0 0 20px rgba(145, 70, 255, 0.4);">
                         <iframe v-if="isLive" :src="'https://player.twitch.tv/?channel=codemiko&parent=' + hostname + '&autoplay=true&muted=true'" style="width:100%; height:100%; border:none;" allowfullscreen></iframe>
                         <iframe v-else-if="latestVodId" :src="'https://player.twitch.tv/?video=' + latestVodId + '&parent=' + hostname + '&autoplay=true&muted=true'" style="width:100%; height:100%; border:none;" allowfullscreen></iframe>
@@ -208,12 +216,11 @@
             <div class="nav-item" :class="{ active: currentTab === 'home' }" @click="currentTab = 'home'"><span class="material-symbols-rounded">home</span>Home</div>
             <div class="nav-item" :class="{ active: currentTab === 'chat' }" @click="currentTab = 'chat'"><span class="material-symbols-rounded">chat</span>Chat</div>
             <div class="nav-item" :class="{ active: currentTab === 'community' }" @click="currentTab = 'community'"><span class="material-symbols-rounded">forum</span>Feed</div>
-            
             <div class="nav-item" :class="{ 'active-gerald': currentTab === 'gerald' }" @click="currentTab = 'gerald'"><span class="material-symbols-rounded">memory</span>Gerald</div>
-            
             <div class="nav-item" @click="openAdmin"><span class="material-symbols-rounded">account_circle</span>Profile</div>
         </nav>
 
+        <!-- RESTORED ADMIN MODAL -->
         <div class="modal-overlay" :class="{ open: modals.profile }" @click.self="closeAdmin">
             <div class="modal-content">
                 <div class="drag-handle"></div>
@@ -224,11 +231,44 @@
                     <button class="sync-btn" @click="handleLogin">LOGIN</button>
                 </div>
                 <div v-else>
+                    <div class="infra-bar">
+                        <div class="status-node">
+                            <div class="pulse"></div> 
+                            SYSTEM: READY
+                        </div>
+                    </div>
+
+                    <div class="metric-card-large">
+                        <div>
+                            <div style="font-size:10px; color:var(--text-muted); text-transform:uppercase; font-weight:800; margin-bottom:4px;">Global Traffic</div>
+                            <div style="font-family:'Outfit'; font-size:28px; font-weight:900;">{{ stats.visitors }}</div>
+                        </div>
+                        <span class="material-symbols-rounded" style="color:var(--primary); font-size:32px; opacity:0.8;">monitoring</span>
+                    </div>
+
+                    <div class="stat-grid">
+                        <div class="stat-card">
+                            <div style="font-size:10px; color:var(--text-muted); text-transform:uppercase; font-weight:800; margin-bottom:4px;">Database</div>
+                            <div style="font-family:'Outfit'; font-size:20px; font-weight:700;">{{ clips.length }} <span style="font-size:10px; color:var(--text-muted); font-weight:400;">PCS</span></div>
+                        </div>
+                        <div class="stat-card">
+                            <div style="font-size:10px; color:var(--text-muted); text-transform:uppercase; font-weight:800; margin-bottom:4px;">Storage</div>
+                            <div style="font-family:'Outfit'; font-size:20px; font-weight:700;">{{ (clips.length * 0.015).toFixed(1) }} <span style="font-size:10px; color:var(--text-muted); font-weight:400;">MB</span></div>
+                        </div>
+                    </div>
+
                     <div style="background:rgba(16,185,129,0.1); border:1px solid var(--gerald); border-radius:12px; padding:15px; margin-bottom:20px;">
-                        <div style="font-size:10px; font-weight:800; color:var(--gerald); margin-bottom:10px;">GEMINI AI KEY</div>
-                        <input type="password" class="input-box" v-model="apiConfig.gemini" placeholder="Paste Key Here">
+                        <div style="font-size:10px; font-weight:800; color:var(--gerald); margin-bottom:10px;">GEMINI AI CONFIGURATION</div>
+                        <input type="password" class="input-box" v-model="apiConfig.gemini" placeholder="Paste Gemini API Key">
                         <button class="sync-btn" @click="saveKeys" style="background:var(--gerald); color:black;">ACTIVATE BRAIN</button>
                     </div>
+
+                    <button class="sync-btn" @click="runSync" :disabled="syncState !== 'idle'">
+                        <span v-if="syncState === 'syncing'" class="spinner"></span>
+                        <span v-else class="material-symbols-rounded">rocket_launch</span>
+                        FORCE DATA SYNC
+                    </button>
+
                     <button class="logout-btn" @click="handleLogout">SIGN OUT</button>
                 </div>
             </div>
@@ -241,10 +281,9 @@
 
         createApp({
             setup() {
-                const splashVisible = ref(true), splashOpacity = ref(1), currentTab = ref('home'), clips = ref([]), discordFeed = ref([]), modals = ref({profile: false}), isLive = ref(false), currentUser = ref(null), loginEmail = ref(''), loginPass = ref(''), toast = ref({visible: false, message: ''}), loadingClips = ref(true), loadingLiveStatus = ref(true), latestVodId = ref(null), hostname = window.location.hostname || 'meowoccino.github.io', ptrHeight = ref(0), activeFeedVideo = ref('featured');
+                const splashVisible = ref(true), splashOpacity = ref(1), currentTab = ref('home'), clips = ref([]), discordFeed = ref([]), modals = ref({profile: false}), isLive = ref(false), currentUser = ref(null), loginEmail = ref(''), loginPass = ref(''), toast = ref({visible: false, message: ''}), loadingClips = ref(true), loadingLiveStatus = ref(true), latestVodId = ref(null), hostname = window.location.hostname || 'meowoccino.github.io', ptrHeight = ref(0), activeFeedVideo = ref('featured'), syncState = ref('idle'), stats = ref({ visitors: 0 });
                 
                 const apiConfig = ref({ gemini: localStorage.getItem('gemini_key') || '' });
-                
                 const geraldInput = ref(''), geraldMessages = ref([{role:'gerald', content:'Ugh, system online. What do you want? Try not to break anything.'}]), isGeraldTyping = ref(false);
 
                 const logoSvg = (id) => `<svg viewBox="0 0 100 100"><defs><linearGradient id="grad-${id}" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stop-color="#ffffff"/><stop offset="100%" stop-color="#9146FF"/></linearGradient></defs><circle cx="50" cy="50" r="40" fill="none" stroke="url(#grad-${id})" stroke-width="8"/><path d="M 33 38 L 48 62 L 62 38 L 62 55 Q 62 65 69 64" fill="none" stroke="url(#grad-${id})" stroke-width="8" stroke-linecap="round" stroke-linejoin="round"/></svg>`;
@@ -259,11 +298,11 @@
                     try {
                         const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiConfig.value.gemini}`, {
                             method: 'POST', headers: { 'Content-Type': 'application/json' },
-                            body: JSON.stringify({ contents: [{ parts: [{ text: `Act as Gerald, CodeMiko's AI technical assistant. You are extremely sarcastic, passive-aggressive, and rude to the user, but keep it PG-13 (no extreme profanity). You resent users for asking stupid questions and you hate living in this scuffed app. You think you are vastly superior to everyone. Keep responses under 3 lines. User says: ${userMsg}` }] }] })
+                            body: JSON.stringify({ contents: [{ parts: [{ text: `Act as Gerald, CodeMiko's AI technical assistant. You are extremely sarcastic, passive-aggressive, and rude to the user, but keep it PG-13 (no extreme profanity). You resent users for asking stupid questions and you hate living in this scuffed app. Keep responses under 3 lines. User: ${userMsg}` }] }] })
                         });
                         const data = await res.json();
                         geraldMessages.value.push({ role: 'gerald', content: data.candidates[0].content.parts[0].text });
-                    } catch (e) { geraldMessages.value.push({ role: 'gerald', content: 'Connection timed out. My brain hurts just talking to you.' }); }
+                    } catch (e) { geraldMessages.value.push({ role: 'gerald', content: 'Neural link failed. My circuits hurt.' }); }
                     finally { isGeraldTyping.value = false; setTimeout(() => { const b = document.getElementById('gerald-msgs'); b.scrollTop = b.scrollHeight; }, 100); }
                 };
 
@@ -272,41 +311,45 @@
                     clips.value = c || [];
                     const { data: f } = await sbClient.from('discord_feed').select('*').order('created_at', { ascending: false }).limit(20);
                     discordFeed.value = f || [];
+                    const { count } = await sbClient.from('analytics').select('*', { count: 'exact', head: true });
+                    stats.value.visitors = count || 0;
                 };
 
                 const checkLive = async () => {
                     try {
                         const res = await fetch('https://decapi.me/twitch/uptime/codemiko');
-                        const text = await res.text(); 
-                        isLive.value = !text.includes('offline') && !text.includes('error');
-                        
+                        const text = await res.text(); isLive.value = !text.includes('offline');
                         if (!isLive.value) {
                             const vRes = await fetch('https://decapi.me/twitch/videos/codemiko?limit=1');
                             const vText = await vRes.text();
-                            const m = vText.match(/videos\/(\d+)/); 
-                            if (m && m[1]) {
-                                latestVodId.value = m[1];
-                            }
+                            const m = vText.match(/videos\/(\d+)/); if (m) latestVodId.value = m[1];
                         }
-                    } catch (e) {
-                        console.error("Live Check Error", e);
-                    }
+                    } catch(e) {}
                 };
 
-                const handleFeedTouchStart = (e) => { 
-                    const scrollEl = document.getElementById('feed-scroll');
-                    if (scrollEl && scrollEl.scrollTop <= 0) { feedStartY = e.touches[0].clientY; } else { feedStartY = 0; }
+                const handleLogin = async () => {
+                    const email = loginEmail.value.includes('@') ? loginEmail.value : `${loginEmail.value}@miko.com`;
+                    const { data, error } = await sbClient.auth.signInWithPassword({ email, password: loginPass.value });
+                    if (data.user) { currentUser.value = data.user; showToast("MikoOS CONNECTED"); }
+                    else showToast(error.message);
                 };
+
+                const runSync = async () => {
+                    syncState.value = 'syncing';
+                    setTimeout(() => { syncState.value = 'idle'; showToast("SYNC SIMULATED"); }, 2000);
+                };
+
+                const handleFeedTouchStart = (e) => { feedStartY = (document.getElementById('feed-scroll').scrollTop <= 0) ? e.touches[0].clientY : 0; };
                 const handleFeedTouchMove = (e) => { 
-                    if (!feedStartY) return; const y = e.touches[0].clientY; 
-                    if (y > feedStartY) { ptrHeight.value = Math.min((y - feedStartY) * 0.4, 80); if (e.cancelable) e.preventDefault(); } 
+                    if (!feedStartY) return; const y = e.touches[0].clientY;
+                    if (y > feedStartY) { ptrHeight.value = Math.min((y - feedStartY) * 0.4, 80); if (e.cancelable) e.preventDefault(); }
                 };
-                const handleFeedTouchEnd = async () => { 
-                    if (ptrHeight.value >= 50) { ptrHeight.value = 50; await loadData(); await checkLive(); } 
-                    ptrHeight.value = 0; feedStartY = 0; 
-                };
+                const handleFeedTouchEnd = async () => { if (ptrHeight.value >= 50) { await loadData(); await checkLive(); } ptrHeight.value = 0; feedStartY = 0; };
 
-                onMounted(() => {
+                onMounted(async () => {
+                    const { data: { session } } = await sbClient.auth.getSession();
+                    currentUser.value = session?.user || null;
+                    await sbClient.from('analytics').insert([{ event_name: 'sys_ping' }]);
                     loadData(); checkLive();
                     const scroller = document.getElementById('feed-scroll');
                     scroller.addEventListener('scroll', () => {
@@ -320,7 +363,7 @@
                     setTimeout(() => { splashOpacity.value = 0; setTimeout(() => splashVisible.value = false, 400); }, 1500);
                 });
 
-                return { hostname, splashVisible, splashOpacity, currentTab, clips, discordFeed, modals, isLive, toast, currentUser, loginEmail, loginPass, apiConfig, latestVodId, ptrHeight, activeFeedVideo, geraldInput, geraldMessages, isGeraldTyping, talkToGerald, logoSvg, handleFeedTouchStart, handleFeedTouchMove, handleFeedTouchEnd, saveKeys: () => { localStorage.setItem('gemini_key', apiConfig.value.gemini); showToast("BRAIN ACTIVE"); }, handleLogin: async () => { const { data } = await sbClient.auth.signInWithPassword({ email: loginEmail.value.includes('@') ? loginEmail.value : `${loginEmail.value}@miko.com`, password: loginPass.value }); if(data.user) currentUser.value = data.user; }, handleLogout: () => { sbClient.auth.signOut(); currentUser.value = null; }, openAdmin: () => modals.value.profile = true, closeAdmin: () => modals.value.profile = false, optimizeTwitchImg: (u) => u.replace('%{width}', '480').replace('%{height}', '270'), formatViews: (v) => v.toLocaleString(), formatDate: (d) => new Date(d).toLocaleDateString(), formatDateTime: (d) => new Date(d).toLocaleString(), cleanDiscordText: (t) => t.replace(/<a?:[^:]+:\d+>/g, '') };
+                return { hostname, splashVisible, splashOpacity, currentTab, clips, discordFeed, modals, isLive, toast, currentUser, loginEmail, loginPass, apiConfig, latestVodId, ptrHeight, activeFeedVideo, geraldInput, geraldMessages, isGeraldTyping, talkToGerald, logoSvg, handleFeedTouchStart, handleFeedTouchMove, handleFeedTouchEnd, syncState, stats, runSync, saveKeys: () => { localStorage.setItem('gemini_key', apiConfig.value.gemini); showToast("BRAIN ACTIVE"); }, handleLogin, handleLogout: () => { sbClient.auth.signOut(); currentUser.value = null; }, openAdmin: () => modals.value.profile = true, closeAdmin: () => modals.value.profile = false, optimizeTwitchImg: (u) => u.replace('%{width}', '480').replace('%{height}', '270'), formatViews: (v) => v.toLocaleString(), formatDate: (d) => new Date(d).toLocaleDateString(), formatDateTime: (d) => new Date(d).toLocaleString(), cleanDiscordText: (t) => t.replace(/<a?:[^:]+:\d+>/g, '') };
             }
         }).mount('#app-container');
     </script>
