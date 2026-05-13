@@ -75,9 +75,12 @@
         .live-label { display: flex; align-items: center; justify-content: space-between; margin-bottom: 14px; }
         .status-pill { background: rgba(0,0,0,0.5); border: 1px solid rgba(255,255,255,0.1); padding: 5px 12px; border-radius: 20px; display: flex; align-items: center; gap: 6px; backdrop-filter: blur(4px); }
         .status-tag { font-size: 10px; font-weight: 800; letter-spacing: 0.5px; text-transform: uppercase; }
+        
+        /* Updated Dots Animation Logic */
         .status-dot { width: 6px; height: 6px; background: var(--offline-gray); border-radius: 50%; }
         .status-dot.active { background: var(--danger); box-shadow: 0 0 10px var(--danger); animation: heartbeatLive 1.8s infinite ease-in-out; }
-        .status-dot.vod { background: var(--primary); box-shadow: 0 0 8px var(--primary); }
+        .status-dot.vod { background: var(--offline-gray); box-shadow: 0 0 8px var(--offline-gray); animation: heartbeatLive 1.8s infinite ease-in-out; }
+        
         .pinned-tag { background: rgba(255,255,255,0.1); color: #fff; padding: 4px 10px; border-radius: 12px; font-size: 9px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; }
         .player-wrapper { width: 100%; aspect-ratio: 16/9; border-radius: 10px; overflow: hidden; background: #000; box-shadow: 0 4px 20px rgba(0,0,0,0.4); border: 1px solid rgba(255,255,255,0.05); }
 
@@ -118,12 +121,13 @@
             <header class="app-header">
                 <div class="header-logo" v-html="logoSvg('header')"></div>
                 <div class="simple-logo"><span class="gradient-text">MikoTok</span></div>
-                <div class="header-status-wrapper" @click="modals.profile = true">
+                <!-- Updated: Now links directly to Twitch -->
+                <a href="https://www.twitch.tv/codemiko" target="_blank" class="header-status-wrapper" style="text-decoration:none;">
                     <div class="story-ring" :class="isLive ? 'live' : 'offline'">
                         <img src="1000018850.png?v=2" class="story-avatar" alt="Miko">
                     </div>
                     <div class="status-badge" :class="isLive ? 'live' : 'offline'">{{ isLive ? 'LIVE' : 'OFFLINE' }}</div>
-                </div>
+                </a>
             </header>
 
             <!-- Home Tab -->
@@ -133,13 +137,13 @@
                         <div class="live-label">
                             <div class="status-pill" :style="{ borderColor: isLive ? 'rgba(239, 68, 68, 0.4)' : 'rgba(145, 70, 255, 0.2)' }">
                                 <span class="status-dot" :class="{ active: isLive, vod: !isLive }"></span> 
-                                <span class="status-tag" :style="{ color: isLive ? 'var(--danger)' : 'var(--primary)' }">{{ isLive ? 'ONLINE' : 'LATEST VOD' }}</span>
+                                <span class="status-tag" :style="{ color: isLive ? 'var(--danger)' : 'var(--offline-gray)' }">{{ isLive ? 'ONLINE' : 'OFFLINE' }}</span>
                             </div>
                             <span class="pinned-tag">Featured</span>
                         </div>
                         <div class="player-wrapper">
                             <iframe v-if="isLive" :src="'https://player.twitch.tv/?channel=codemiko&parent=' + host + '&parent=' + windowHost + '&autoplay=false&muted=true'" referrerpolicy="no-referrer" allowfullscreen="true" style="width:100%; height:100%; border:none;"></iframe>
-                            <iframe v-else :src="'https://player.twitch.tv/?video=2143719460&parent=' + host + '&parent=' + windowHost + '&autoplay=false&muted=true'" referrerpolicy="no-referrer" allowfullscreen="true" style="width:100%; height:100%; border:none;"></iframe>
+                            <iframe v-else :src="'https://player.twitch.tv/?channel=codemiko&parent=' + host + '&parent=' + windowHost + '&autoplay=false&muted=true'" referrerpolicy="no-referrer" allowfullscreen="true" style="width:100%; height:100%; border:none;"></iframe>
                         </div>
                     </div>
                 </div>
@@ -163,6 +167,18 @@
 
             <!-- Feed Tab -->
             <div id="feed" v-if="currentTab === 'community'">
+                <!-- New Chaotic Placeholder -->
+                <div class="card">
+                    <div style="display:flex; align-items:center; margin-bottom:12px;">
+                        <div class="avatar-ring-feed"><img src="1000018850.png?v=2" alt="CodeMiko"></div>
+                        <div>
+                            <div style="font-weight:700; font-size:14px; display: flex; align-items: center; gap: 6px;">CodeMiko <span style="background: rgba(88, 101, 242, 0.15); color: #5865F2; padding: 2px 6px; border-radius: 4px; font-size: 9px; font-weight: 800; text-transform: uppercase;">Discord</span></div>
+                            <div style="font-size:10px; color:var(--text-muted); margin-top: 3px;">Just now</div>
+                        </div>
+                    </div>
+                    <div style="font-size:14px; line-height: 1.5; color: var(--text-main);">I WANT CHAOS!!!</div>
+                </div>
+
                 <div class="card">
                     <div style="display:flex; align-items:center; margin-bottom:12px;">
                         <div class="avatar-ring-feed"><img src="1000018850.png?v=2" alt="CodeMiko"></div>
@@ -213,7 +229,6 @@
             <div class="modal-content">
                 <div class="swipe-handle"></div>
                 <div v-if="!currentUser">
-                    <h3 style="margin-bottom: 20px;">Owner Login</h3>
                     <input type="text" v-model="loginNick" class="input-box" placeholder="Username">
                     <input type="password" v-model="loginPass" class="input-box" placeholder="Password">
                     <button class="input-box" style="background:var(--primary); font-weight:700; text-align:center;" @click="handleLogin">Sign In</button>
@@ -244,6 +259,13 @@
                 </div>
             </div>
         </div>
+
+        <!-- Clip Player Pop-out Modal -->
+        <div class="modal-overlay" :class="{ open: activeClip }" @click.self="activeClip = null" style="align-items: center; justify-content: center; z-index: 2000;">
+            <div v-if="activeClip" class="player-wrapper" style="width: 95%; max-width: 460px; aspect-ratio: 16/9; background: #000; border-radius: 12px; border: 1px solid rgba(255,255,255,0.1); box-shadow: 0 10px 40px rgba(0,0,0,0.8);">
+                <iframe :src="'https://clips.twitch.tv/embed?clip=' + activeClip.id + '&parent=' + host + '&parent=' + windowHost + '&autoplay=true'" allowfullscreen="true" style="width:100%; height:100%; border:none;"></iframe>
+            </div>
+        </div>
     </div>
 
     <script>
@@ -255,7 +277,6 @@
                 const splashVisible = ref(true), splashOpacity = ref(1), currentTab = ref('home');
                 const isLive = ref(false), isSyncing = ref(false); 
                 const currentUser = ref(localStorage.getItem('miko_user')), loginNick = ref(''), loginPass = ref('');
-                const isAdmin = computed(() => currentUser.value === 'tomato_24');
                 const posts = ref([]), clips = ref([]), modals = ref({ profile: false }), activeClip = ref(null);
                 const host = window.location.hostname || "localhost";
                 const windowHost = window.location.host;
@@ -270,7 +291,7 @@
                 };
 
                 const handleLogin = () => { 
-                    if(loginNick.value === 'tomato_24' && loginPass.value === 'your_password') { 
+                    if(loginNick.value === 'tomato_24' && loginPass.value === 'codemiko') { 
                         localStorage.setItem('miko_user', 'tomato_24'); location.reload(); 
                     } else { alert("Access Denied."); }
                 };
@@ -305,7 +326,7 @@
                     setTimeout(() => { splashOpacity.value = 0; setTimeout(() => splashVisible.value = false, 600); }, 1500); 
                 });
 
-                return { splashVisible, splashOpacity, currentTab, isLive, currentUser, isAdmin, posts, clips, modals, activeClip, host, windowHost, logoSvg, loginNick, loginPass, handleLogin, logout, handleSyncClick, saveKeysAndSync, resetKeys, isSyncing, showKeyInputs, tempId, tempTkn };
+                return { splashVisible, splashOpacity, currentTab, isLive, currentUser, posts, clips, modals, activeClip, host, windowHost, logoSvg, loginNick, loginPass, handleLogin, logout, handleSyncClick, saveKeysAndSync, resetKeys, isSyncing, showKeyInputs, tempId, tempTkn };
             }
         }).mount('#app-container');
     </script>
