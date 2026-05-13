@@ -76,7 +76,6 @@
         .status-pill { background: rgba(0,0,0,0.5); border: 1px solid rgba(255,255,255,0.1); padding: 5px 12px; border-radius: 20px; display: flex; align-items: center; gap: 6px; backdrop-filter: blur(4px); }
         .status-tag { font-size: 10px; font-weight: 800; letter-spacing: 0.5px; text-transform: uppercase; }
         
-        /* Updated Dots Animation Logic */
         .status-dot { width: 6px; height: 6px; background: var(--offline-gray); border-radius: 50%; }
         .status-dot.active { background: var(--danger); box-shadow: 0 0 10px var(--danger); animation: heartbeatLive 1.8s infinite ease-in-out; }
         .status-dot.vod { background: var(--offline-gray); box-shadow: 0 0 8px var(--offline-gray); animation: heartbeatLive 1.8s infinite ease-in-out; }
@@ -258,10 +257,10 @@
             </div>
         </div>
 
-        <!-- Clip Player Pop-out Modal -->
+        <!-- Clip Player Pop-out Modal (Added allow="autoplay") -->
         <div class="modal-overlay" :class="{ open: activeClip }" @click.self="activeClip = null" style="align-items: center; justify-content: center; z-index: 2000;">
             <div v-if="activeClip" class="player-wrapper" style="width: 95%; max-width: 460px; aspect-ratio: 16/9; background: #000; border-radius: 12px; border: 1px solid rgba(255,255,255,0.1); box-shadow: 0 10px 40px rgba(0,0,0,0.8);">
-                <iframe :src="'https://clips.twitch.tv/embed?clip=' + activeClip.id + '&parent=' + host + '&parent=' + windowHost + '&autoplay=true&muted=false'" allowfullscreen="true" style="width:100%; height:100%; border:none;"></iframe>
+                <iframe :src="'https://clips.twitch.tv/embed?clip=' + activeClip.id + '&parent=' + host + '&parent=' + windowHost + '&autoplay=true&muted=false'" allow="autoplay" allowfullscreen="true" style="width:100%; height:100%; border:none;"></iframe>
             </div>
         </div>
     </div>
