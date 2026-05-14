@@ -167,6 +167,7 @@
         <div class="view-port">
             <div class="scroll-area" id="feed-scroll" v-show="currentTab === 'home'" @scroll="handleScroll">
                 
+                <!-- Featured Top Video wrapped in the animated border -->
                 <div class="feed-snap-item" data-id="featured" style="padding-top: 110px;">
                     <div style="display: flex; justify-content: flex-start; align-items: flex-end; width: 100%; margin-bottom: 8px;">
                         <div class="premium-badge live" v-if="isLive"><div class="dot"></div><span>LIVE NOW</span></div>
@@ -291,33 +292,14 @@
     </div>
 
     <script>
-        const { createApp, ref, onMounted, nextTick, watch } = Vue;
+        const { createApp, ref, onMounted, nextTick } = Vue;
         const sbClient = supabase.createClient('https://yhxcuayiwqpjvalyrcqv.supabase.co', 'sb_publishable_VyFcNARHblJg10qlC_O7Dg_coouXK92');
 
         createApp({
             setup() {
-                const initialHash = window.location.hash.replace('#', '');
-                const validTabs = ['home', 'chat', 'community', 'gerald'];
-                const currentTab = ref(validTabs.includes(initialHash) ? initialHash : 'home');
-                
-                const splashVisible = ref(true), splashOpacity = ref(1), clips = ref([]), discordFeed = ref([]), modals = ref({profile: false}), isLive = ref(false), currentUser = ref(null), loginEmail = ref(''), loginPass = ref(''), toast = ref({visible: false, message: ''}), latestVodId = ref(null), hostname = window.location.hostname || 'meowoccino.github.io', activeFeedVideo = ref('featured'), syncState = ref('idle');
+                const splashVisible = ref(true), splashOpacity = ref(1), currentTab = ref('home'), clips = ref([]), discordFeed = ref([]), modals = ref({profile: false}), isLive = ref(false), currentUser = ref(null), loginEmail = ref(''), loginPass = ref(''), toast = ref({visible: false, message: ''}), latestVodId = ref(null), hostname = window.location.hostname || 'meowoccino.github.io', activeFeedVideo = ref('featured'), syncState = ref('idle');
                 const apiConfig = ref({ cid: localStorage.getItem('twitch_cid') || '', tkn: localStorage.getItem('twitch_tkn') || '' });
                 const geraldInput = ref(''), geraldMessages = ref([{role:'gerald', content:'Synapses loaded. Try not to break anything.'}]), isGeraldTyping = ref(false);
-                
-                watch(currentTab, (newTab) => {
-                    if (window.location.hash !== `#${newTab}`) {
-                        window.history.pushState(null, '', `#${newTab}`);
-                    }
-                });
-
-                window.addEventListener('popstate', () => {
-                    const hash = window.location.hash.replace('#', '');
-                    if (validTabs.includes(hash)) {
-                        currentTab.value = hash;
-                    } else {
-                        currentTab.value = 'home';
-                    }
-                });
                 
                 const isHeaderVisible = ref(true);
                 let lastScrollY = 0;
