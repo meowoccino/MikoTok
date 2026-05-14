@@ -18,18 +18,11 @@ jobs:
         with:
           node-version: '24' # Upgraded to fix the deprecation warning
 
-      - name: Install Dependencies
-        run: |
-          if [ -f package.json ]; then
-            npm install
-          else
-            echo "No package.json found. Skipping npm install to prevent crashes."
-          fi
+      # The 'npm install' step has been completely removed because you do not use a package.json
 
       - name: Run Discord Sync Bot
-        # Ensure 'sync.js' matches the actual name of your bot file in the repository
-        run: node sync.js 
+        # Updated to perfectly match the file name in your screenshot
+        run: node sync_miko.js 
         env:
           SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
           SUPABASE_KEY: ${{ secrets.SUPABASE_KEY }}
-
