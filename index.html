@@ -167,7 +167,6 @@
         <div class="view-port">
             <div class="scroll-area" id="feed-scroll" v-show="currentTab === 'home'" @scroll="handleScroll">
                 
-                <!-- Featured Top Video wrapped in the animated border -->
                 <div class="feed-snap-item" data-id="featured" style="padding-top: 110px;">
                     <div style="display: flex; justify-content: flex-start; align-items: flex-end; width: 100%; margin-bottom: 8px;">
                         <div class="premium-badge live" v-if="isLive"><div class="dot"></div><span>LIVE NOW</span></div>
@@ -185,7 +184,6 @@
                     </div>
                 </div>
 
-                <!-- Auto-playing Database Clips -->
                 <div class="feed-snap-item" v-for="clip in clips" :key="clip.id" :data-id="clip.id">
                     <div class="video-container">
                         <img :src="optimizeTwitchImg(clip.thumbnail_url)">
@@ -298,7 +296,6 @@
 
         createApp({
             setup() {
-                // Initialize currentTab from the URL hash, default to 'home'
                 const initialHash = window.location.hash.replace('#', '');
                 const validTabs = ['home', 'chat', 'community', 'gerald'];
                 const currentTab = ref(validTabs.includes(initialHash) ? initialHash : 'home');
@@ -307,14 +304,12 @@
                 const apiConfig = ref({ cid: localStorage.getItem('twitch_cid') || '', tkn: localStorage.getItem('twitch_tkn') || '' });
                 const geraldInput = ref(''), geraldMessages = ref([{role:'gerald', content:'Synapses loaded. Try not to break anything.'}]), isGeraldTyping = ref(false);
                 
-                // Update the browser URL hash when the tab changes
                 watch(currentTab, (newTab) => {
                     if (window.location.hash !== `#${newTab}`) {
                         window.history.pushState(null, '', `#${newTab}`);
                     }
                 });
 
-                // Listen for physical back/forward browser buttons to update the tab
                 window.addEventListener('popstate', () => {
                     const hash = window.location.hash.replace('#', '');
                     if (validTabs.includes(hash)) {
