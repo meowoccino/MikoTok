@@ -59,21 +59,18 @@
 
         .view-port { flex: 1; width: 100%; height: 100%; overflow: hidden; position: relative; }
         
-        /* OVERFLOW-ANCHOR: NONE completely kills the browser's ability to force-scroll you when sorting */
         .scroll-area { height: 100%; width: 100%; overflow-y: auto; scroll-behavior: smooth; touch-action: pan-y; padding-bottom: 80px; overflow-anchor: none; }
         .scroll-area::-webkit-scrollbar { display: none; }
         
         #feed-scroll { padding-bottom: 0; scroll-snap-type: y mandatory; }
         
-        /* Refresh Animation */
-        .refreshing { animation: feedPulse 0.6s ease-in-out; }
+        .refreshing { animation: feedPulse 0.5s ease-in-out forwards; }
         @keyframes feedPulse { 
-            0% { opacity: 1; transform: scale(1); filter: blur(0px); } 
-            50% { opacity: 0.4; transform: scale(0.98); filter: blur(4px); } 
-            100% { opacity: 1; transform: scale(1); filter: blur(0px); } 
+            0% { opacity: 0; transform: scale(0.98); } 
+            100% { opacity: 1; transform: scale(1); } 
         }
 
-        .feed-snap-item { width: 100%; height: 100%; flex-shrink: 0; display: flex; flex-direction: column; justify-content: center; position: relative; padding: 0 15px 80px; scroll-snap-align: start; scroll-snap-stop: always; }
+        .feed-snap-item { width: 100%; height: 100%; flex-shrink: 0; display: flex; flex-direction: column; justify-content: center; position: relative; padding: 0 15px 80px; scroll-snap-align: start; scroll-snap-stop: always; overflow-anchor: none; }
 
         .header-controls { display: flex; justify-content: flex-start; align-items: center; width: 100%; margin-bottom: 12px; }
         
@@ -82,25 +79,29 @@
         .carousel-btn:active:not(.hidden-arrow) { transform: scale(0.9); background: rgba(145, 70, 255, 0.25); border-color: var(--primary); color: var(--primary); }
         .carousel-btn.hidden-arrow { opacity: 0; pointer-events: none; } 
 
-        /* Filter Button & Menu styling */
         .filter-btn-tiny { background: var(--card-bg); border: 1px solid var(--border-color); color: #a1a1aa; padding: 6px 12px; border-radius: 8px; font-size: 10px; font-weight: 800; text-transform: uppercase; display: flex; align-items: center; gap: 4px; cursor: pointer; transition: 0.1s; outline: none; -webkit-tap-highlight-color: transparent; }
         .filter-btn-tiny:active { transform: scale(0.95); border-color: var(--primary); color: #fff; }
-        
-        .filter-menu-tiny { position: absolute; top: 110%; right: 0; background: rgba(15, 15, 18, 0.98); backdrop-filter: blur(20px); border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 12px; padding: 8px; display: flex; flex-direction: column; gap: 4px; min-width: 130px; box-shadow: 0 10px 30px rgba(0,0,0,0.9); transform-origin: top right; opacity: 0; transform: scale(0.9); pointer-events: none; transition: 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275); z-index: 1000; }
-        .filter-menu-tiny.open { opacity: 1; transform: scale(1); pointer-events: auto; }
-        
-        .filter-option { background: transparent; color: #a1a1aa; border: none; padding: 10px 12px; border-radius: 8px; font-size: 11px; font-weight: 800; text-align: right; text-transform: uppercase; cursor: pointer; transition: 0.2s; font-family: 'Inter', sans-serif; letter-spacing: 0.5px; -webkit-tap-highlight-color: transparent; }
-        .filter-option:hover { color: #fff; }
-        .filter-option:active { transform: scale(0.95); }
-        .filter-option.active { color: #fff; background: var(--primary); }
 
-        .miko-metadata { display: flex; align-items: flex-start; padding: 12px 5px 0; background: transparent; width: 100%; }
-        .miko-metadata .author-info { display: flex; align-items: center; }
+        /* NATIVE BOTTOM SHEET DRAWER CLASSES */
+        .sheet-overlay { position: absolute; inset: 0; background: rgba(0,0,0,0.8); z-index: 2000; opacity: 0; pointer-events: none; transition: opacity 0.3s; display: flex; flex-direction: column; justify-content: flex-end; align-items: center; }
+        .sheet-overlay.open { opacity: 1; pointer-events: auto; }
+        
+        .bottom-sheet { width: 100%; background: #0a0a0c; border-top: 1px solid #27272a; border-radius: 24px 24px 0 0; padding: 20px 20px 40px; transform: translateY(100%); transition: transform 0.3s cubic-bezier(0.2, 0.8, 0.2, 1); box-sizing: border-box; display: flex; flex-direction: column; gap: 8px; }
+        .sheet-overlay.open .bottom-sheet { transform: translateY(0); }
+        
+        .drag-handle { width: 40px; height: 5px; background: #27272a; border-radius: 10px; margin: 0 auto 15px; }
+        
+        .sheet-option { width: 100%; background: transparent; border: none; color: #a1a1aa; padding: 16px; border-radius: 12px; font-size: 13px; font-weight: 800; text-transform: uppercase; cursor: pointer; transition: 0.2s; font-family: 'Inter', sans-serif; -webkit-tap-highlight-color: transparent; letter-spacing: 0.5px; }
+        .sheet-option.active { background: rgba(145, 70, 255, 0.15); color: #9146FF; border: 1px solid rgba(145, 70, 255, 0.3); }
+
+        .miko-metadata { display: flex; align-items: flex-start; justify-content: space-between; padding: 12px 5px 0; background: transparent; width: 100%; gap: 10px; }
+        .miko-metadata .author-info { display: flex; align-items: center; min-width: 0; flex: 1; }
         .miko-metadata img { width: 44px; height: 44px; border-radius: 50%; border: 2px solid var(--primary); margin-right: 12px; box-shadow: 0 2px 10px rgba(0,0,0,0.5); flex-shrink: 0; }
-        .miko-metadata .author-name { font-weight: 800; font-size: 15px; color: white; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; line-height: 1.3; }
+        .miko-metadata .author-text-block { min-width: 0; flex: 1; }
+        .miko-metadata .author-name { font-weight: 800; font-size: 14px; color: white; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; line-height: 1.3; }
         .miko-metadata .clip-stats { font-size: 11px; font-weight: 700; color: var(--text-muted); display: flex; align-items: center; gap: 6px; margin-top: 5px; text-transform: uppercase; }
 
-        .toast-popup { position: absolute; top: 50px; left: 50%; transform: translate3d(-50%, -10px, 0); background: var(--danger); color: white; padding: 12px 24px; border-radius: 50px; font-size: 13px; font-weight: 800; text-align: center; z-index: 2000; opacity: 0; transition: opacity 0.3s; pointer-events: none; }
+        .toast-popup { position: absolute; top: 50px; left: 50%; transform: translate3d(-50%, -10px, 0); background: var(--danger); color: white; padding: 12px 24px; border-radius: 50px; font-size: 13px; font-weight: 800; text-align: center; z-index: 2500; opacity: 0; transition: opacity 0.3s; pointer-events: none; }
         .toast-popup.show { opacity: 1; transform: translate3d(-50%, 0, 0); }
 
         .premium-badge { display: inline-flex; align-items: center; justify-content: center; gap: 8px; background: rgba(0, 0, 0, 0.7); backdrop-filter: blur(10px); border: 1px solid rgba(255, 255, 255, 0.15); padding: 6px 14px; border-radius: 30px; color: #fff; font-size: 10px; font-weight: 900; text-transform: uppercase; }
@@ -172,7 +173,7 @@
         .gradient-text { display: inline-block; background: linear-gradient(135deg, #ffffff 30%, var(--primary) 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; font-family: 'Outfit', sans-serif; }
     </style>
 </head>
-<body @click="closeFilterMenu">
+<body>
     <div id="app-container" v-cloak>
         <div class="toast-popup" :class="{ show: toast.visible }">{{ toast.message }}</div>
 
@@ -229,23 +230,11 @@
 
                 <div class="feed-snap-item" v-for="(clip, index) in clips" :key="clip.id" :data-id="clip.id">
                     
-                    <div v-if="index === 0" style="width: 100%; display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; position: relative; z-index: 50;">
-                        <span style="font-size: 14px; font-weight: 900; color: white; text-transform: uppercase; letter-spacing: 0.5px;">Trending Clips</span>
-                        
-                        <div style="position: relative;" @click.stop>
-                            <button class="filter-btn-tiny" @click="isFilterMenuOpen = !isFilterMenuOpen" ontouchstart="">
-                                <span class="material-symbols-rounded" style="font-size: 14px;">sort</span>
-                                <span>{{ activeFilterLabel }}</span>
-                            </button>
-                            
-                            <div class="filter-menu-tiny" :class="{ open: isFilterMenuOpen }">
-                                <button class="filter-option" :class="{ active: currentFilter === 'latest' }" @click="applyFilter('latest', 'Latest')" ontouchstart="">Latest</button>
-                                <button class="filter-option" :class="{ active: currentFilter === 'weekly' }" @click="applyFilter('weekly', 'Weekly')" ontouchstart="">Weekly</button>
-                                <button class="filter-option" :class="{ active: currentFilter === 'month' }" @click="applyFilter('month', 'Month')" ontouchstart="">Month</button>
-                                <button class="filter-option" :class="{ active: currentFilter === '6months' }" @click="applyFilter('6months', '6 Months')" ontouchstart="">6 Months</button>
-                                <button class="filter-option" :class="{ active: currentFilter === 'alltime' }" @click="applyFilter('alltime', 'All Time')" ontouchstart="">All Time</button>
-                            </div>
-                        </div>
+                    <div v-if="index === 0" style="width: 100%; display: flex; justify-content: flex-end; margin-bottom: 12px; position: relative; z-index: 50;">
+                        <button class="filter-btn-tiny" @click="isFilterMenuOpen = true" ontouchstart="">
+                            <span class="material-symbols-rounded" style="font-size: 14px;">sort</span>
+                            <span>{{ activeFilterLabel }}</span>
+                        </button>
                     </div>
 
                     <div class="video-container">
@@ -256,7 +245,7 @@
                     <div class="miko-metadata">
                         <div class="author-info">
                             <img src="1000018850.png?v=2">
-                            <div>
+                            <div class="author-text-block">
                                 <span class="author-name">{{ clip.title }}</span>
                                 <div class="clip-stats">{{ formatViews(clip.view_count) }} views • {{ formatDate(clip.created_at) }}</div>
                             </div>
@@ -299,6 +288,17 @@
                     <input type="text" class="gerald-input" placeholder="Query the system..." v-model="geraldInput" @keyup.enter="talkToGerald">
                     <button class="gerald-send" @click="talkToGerald" ontouchstart=""><span class="material-symbols-rounded">bolt</span></button>
                 </div>
+            </div>
+        </div>
+
+        <div class="sheet-overlay" :class="{ open: isFilterMenuOpen }" @click.self="isFilterMenuOpen = false">
+            <div class="bottom-sheet" @click.stop>
+                <div class="drag-handle"></div>
+                <button class="sheet-option" :class="{ active: currentFilter === 'latest' }" @click="applyFilter('latest', 'Latest')" ontouchstart="">Latest</button>
+                <button class="sheet-option" :class="{ active: currentFilter === 'weekly' }" @click="applyFilter('weekly', 'Weekly')" ontouchstart="">Weekly</button>
+                <button class="sheet-option" :class="{ active: currentFilter === 'month' }" @click="applyFilter('month', 'Monthly')" ontouchstart="">Monthly</button>
+                <button class="sheet-option" :class="{ active: currentFilter === '6months' }" @click="applyFilter('6months', '6 Months')" ontouchstart="">6 Months</button>
+                <button class="sheet-option" :class="{ active: currentFilter === 'alltime' }" @click="applyFilter('alltime', 'All Time')" ontouchstart="">All Time</button>
             </div>
         </div>
 
@@ -420,24 +420,22 @@
                     activeFilterLabel.value = label;
                     isFilterMenuOpen.value = false;
 
-                    // Immediately re-sort the data so Vue renders the new order
-                    clips.value = sortData(filterKey);
-
-                    // Wait a tick for the DOM to update, then force an instant scroll snap
-                    nextTick(() => {
-                        const feedContainer = document.getElementById('feed-scroll');
-                        const allItems = document.querySelectorAll('.feed-snap-item');
+                    const feedContainer = document.getElementById('feed-scroll');
+                    
+                    if(feedContainer) {
+                        clips.value = sortData(filterKey);
                         
-                        if(feedContainer && allItems.length > 1) {
-                            // allItems[1] is the first clip. We use behavior 'auto' to teleport instantly.
-                            feedContainer.scrollTo({ top: allItems[1].offsetTop, behavior: 'auto' });
+                        nextTick(() => {
+                            const firstClipElement = document.querySelectorAll('.feed-snap-item')[1];
+                            if(firstClipElement) {
+                                firstClipElement.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                            }
                             
-                            // Trigger the visual pulse effect
                             feedContainer.classList.remove('refreshing');
                             void feedContainer.offsetWidth; 
                             feedContainer.classList.add('refreshing');
-                        }
-                    });
+                        });
+                    }
                 };
 
                 watch(currentTab, (newTab) => {
