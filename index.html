@@ -396,6 +396,18 @@
                 const currentFilter = ref('latest');
                 const activeFilterLabel = ref('Latest');
                 const isFilterMenuOpen = ref(false);
+                
+                const customEmotes = ref({
+                    "mikoSusge": { id: "1273724925743595540", animated: false },
+                    "KEKW": { id: "456296327964262453", animated: false },
+                    "mkoNOTED": { id: "1369891690898391070", animated: false },
+                    "mkoHype": { id: "870761283035734086", animated: false },
+                    "mkoMania": { id: "1503598179751432212", animated: false },
+                    "mkoLove": { id: "1150505635721519115", animated: false },
+                    "WOWERS": { id: "780097274939965490", animated: false },
+                    "Shruge": { id: "456297412875518078", animated: false },
+                    "PAUSERS": { id: "802261333403762740", animated: false }
+                });
 
                 const recentVods = ref([]);
                 const currentVodIndex = ref(0);
@@ -512,16 +524,28 @@
                     html = html.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>'); 
                     html = html.replace(/\*(.*?)\*/g, '<em>$1</em>'); 
                     html = html.replace(/\[(.*?)\]\((.*?)\)/g, '<a href="$2" target="_blank" style="color: var(--gerald); text-decoration: underline;">$1</a>'); 
+                    
+                    html = html.replace(/:([^:\s]+):/g, (match, name) => {
+                        const emote = customEmotes.value[name];
+                        if (emote) {
+                            const ext = emote.animated ? 'gif' : 'png';
+                            return `<img src="https://cdn.discordapp.com/emojis/${emote.id}.${ext}?size=44" alt=":${name}:" style="height: 1.5em; vertical-align: middle; display: inline-block;">`;
+                        }
+                        return match;
+                    });
+                    
                     return html;
                 };
                 
                 const parseDiscordText = (t) => {
                     let safeText = t.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+                    // 1. Linkify URLs FIRST
+                    safeText = safeText.replace(/(https?:\/\/[^\s&<]+)/g, '<a href="$1" target="_blank" style="color: var(--primary); text-decoration: underline;">$1</a>');
+                    // 2. Inject Image tags SECOND
                     safeText = safeText.replace(/&lt;(a?):([^:]+):(\d+)&gt;/g, (match, animated, name, id) => {
                         const ext = animated ? 'gif' : 'png';
                         return `<img src="https://cdn.discordapp.com/emojis/${id}.${ext}?size=44" alt=":${name}:" style="height: 1.5em; vertical-align: middle; display: inline-block;">`;
                     });
-                    safeText = safeText.replace(/(https?:\/\/[^\s]+)/g, '<a href="$1" target="_blank" style="color: var(--primary); text-decoration: underline;">$1</a>');
                     return safeText;
                 };
 
@@ -552,6 +576,14 @@
                         role: m.role === 'gerald' ? 'model' : 'user',
                         parts: [{ text: m.content }]
                     }));
+                    
+                    const emoteNames = Object.keys(customEmotes.value).map(n => `:${n}:`).join(', ');
+                    if (emoteNames && geminiHistory.length > 0) {
+                        const lastMsg = geminiHistory[geminiHistory.length - 1];
+                        if (lastMsg.role === 'user') {
+                            lastMsg.parts[0].text += `\n\n[SYSTEM NOTE: You can use these custom emotes in your response to express emotion: ${emoteNames}]`;
+                        }
+                    }
                     
                     try {
                         const { data, error } = await sbClient.functions.invoke('gerald-chat', {
@@ -619,11 +651,18 @@
                     if (f) {
                         const uniqueFeed = [];
                         const seen = new Set();
+                        const emoteRegex = /<(a?):([^:]+):(\d+)>/g;
+                        
                         f.forEach(item => {
                             const hash = item.content.trim();
                             if (!seen.has(hash)) {
                                 seen.add(hash);
                                 uniqueFeed.push(item);
+                                
+                                let match;
+                                while ((match = emoteRegex.exec(hash)) !== null) {
+                                    customEmotes.value[match[2]] = { id: match[3], animated: match[1] === 'a' };
+                                }
                             }
                         });
                         discordFeed.value = uniqueFeed;
