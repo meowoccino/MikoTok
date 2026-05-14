@@ -19,14 +19,16 @@ jobs:
           node-version: '24' 
 
       - name: Install Dependencies
-        run: npm install @supabase/supabase-js discord.js
+        run: npm install @supabase/supabase-js discord.js dotenv
 
       - name: Run Discord Sync Bot
         run: node sync_miko.js 
         env:
+          # Shotgunning the secrets to cover all common variable names
           SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
-          # Mapping your actual secrets to what the script likely expects
           SUPABASE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }} 
+          SUPABASE_ANON_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
           SUPABASE_SERVICE_KEY: ${{ secrets.SUPABASE_SERVICE_KEY }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
           DISCORD_BOT_TOKEN: ${{ secrets.DISCORD_BOT_TOKEN }}
           DISCORD_CHANNEL_ID: ${{ secrets.DISCORD_CHANNEL_ID }}
