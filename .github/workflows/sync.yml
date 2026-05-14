@@ -1,45 +1,32 @@
-name: Discord Feed Sync
+name: Discord Announcement Sync
+
 on:
   schedule:
-    - cron: '*/15 * * * *'
-  workflow_dispatch:
+    # This runs the sync every 5 minutes. Adjust the cron timing as needed.
+    - cron: '*/5 * * * *'
+  workflow_dispatch: # This allows you to manually click a button to run the sync in GitHub
 
 jobs:
-  sync:
+  sync-to-supabase:
     runs-on: ubuntu-latest
+
     steps:
-      - name: Sync Messages
+      - name: Checkout Code
+        uses: actions/checkout@v4
+      
+      - name: Setup Node.js (or Python, depending on your bot)
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20' # Change this if your bot uses Python or a different language
+
+      - name: Install Dependencies
+        run: npm install # Or 'pip install -r requirements.txt' if using Python
+
+      - name: Run Discord Sync Bot
+        env:
+          # This pulls your database URL and the secret key safely from GitHub!
+          SUPABASE_URL: "https://yhxcuayiwqpjvalyrcqv.supabase.co"
+          SUPABASE_KEY: ${{ secrets.SUPABASE_SERVICE_KEY }} 
         run: |
-          # 1. Fetch the latest 10 messages from Discord
-          RESPONSE=$(curl -s -H "Authorization: Bot ${{ secrets.DISCORD_BOT_TOKEN }}" \
-            "https://discord.com/api/v10/channels/${{ secrets.DISCORD_CHANNEL_ID }}/messages?limit=10")
-
-          # 2. Check for API errors
-          IS_ARRAY=$(echo "$RESPONSE" | jq 'type == "array"')
-          if [ "$IS_ARRAY" != "true" ]; then
-            echo "❌ DISCORD API ERROR: $RESPONSE"
-            exit 1
-          fi
-
-          # 3. Process each message safely
-          echo "$RESPONSE" | jq -c '.[]' | while read i; do
-            
-            # Use jq to safely package quotes, newlines, and check for Embeds. 
-            # It also hardcodes the author to "CodeMiko"
-            PAYLOAD=$(echo "$i" | jq -c '{
-              content: (if .content != null and .content != "" then .content else .embeds[0].description // "" end),
-              author: "CodeMiko",
-              created_at: .timestamp
-            }')
-            
-            # Only push if content is not completely empty
-            if [ "$PAYLOAD" != '{"content":"","author":"CodeMiko","created_at":null}' ]; then
-              curl -s -X POST "${{ secrets.SUPABASE_URL }}/rest/v1/discord_feed" \
-                -H "apikey: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}" \
-                -H "Authorization: Bearer ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}" \
-                -H "Content-Type: application/json" \
-                -d "$PAYLOAD"
-            fi
-          done
-          
-          echo "✅ Sync completed safely."
+          # Replace this line with the command that actually starts your bot
+          node sync.js 
