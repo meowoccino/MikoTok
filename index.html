@@ -90,7 +90,12 @@
         .status-node { display: flex; align-items: center; gap: 8px; font-size: 11px; font-weight: 800; letter-spacing: 0.5px; text-transform: uppercase; }
         .pulse { width: 8px; height: 8px; border-radius: 50%; background: var(--success); box-shadow: 0 0 10px var(--success); animation: pulse-glow 2s infinite; }
         .stat-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 16px; }
-        .stat-card { background: var(--card-bg); border: 1px solid var(--border-color); padding: 14px; border-radius: 14px; }
+        
+        /* New External Link Buttons */
+        .external-link-btn { background: var(--card-bg); border: 1px solid var(--border-color); padding: 15px; border-radius: 14px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 8px; color: var(--text-main); text-decoration: none; font-weight: 800; font-size: 11px; text-transform: uppercase; letter-spacing: 0.5px; transition: transform 0.2s, border-color 0.2s; }
+        .external-link-btn:active { transform: scale(0.95); border-color: var(--primary); }
+        .external-link-btn .material-symbols-rounded { font-size: 26px; color: var(--text-muted); transition: 0.2s; }
+        .external-link-btn:active .material-symbols-rounded { color: var(--primary); }
         
         .spinner { width: 18px; height: 18px; border: 3px solid rgba(255,255,255,0.3); border-top-color: currentColor; border-radius: 50%; animation: spin 1s linear infinite; }
         @keyframes spin { 100% { transform: rotate(360deg); } }
@@ -234,14 +239,14 @@
                     </div>
                     
                     <div class="stat-grid">
-                        <div class="stat-card">
-                            <div style="font-size:10px; color:var(--text-muted); text-transform:uppercase; font-weight:800; margin-bottom:4px;">DB HEALTH</div>
-                            <div style="font-family:'Outfit'; font-size:20px; font-weight:900; color:var(--success);">OPTIMAL</div>
-                        </div>
-                        <div class="stat-card">
-                            <div style="font-size:10px; color:var(--text-muted); text-transform:uppercase; font-weight:800; margin-bottom:4px;">CLIPS SYNCED</div>
-                            <div style="font-family:'Outfit'; font-size:20px; font-weight:700;">{{ clips.length }}</div>
-                        </div>
+                        <a href="https://github.com" target="_blank" class="external-link-btn">
+                            <span class="material-symbols-rounded">code</span>
+                            GitHub Repo
+                        </a>
+                        <a href="https://supabase.com/dashboard" target="_blank" class="external-link-btn">
+                            <span class="material-symbols-rounded">database</span>
+                            Supabase DB
+                        </a>
                     </div>
 
                     <div style="background:rgba(255,255,255,0.03); border:1px solid var(--border-color); border-radius:12px; padding:15px; margin-bottom:15px;">
