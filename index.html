@@ -20,7 +20,7 @@
         * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; font-family: 'Inter', sans-serif; }
         body, html { margin: 0; padding: 0; height: 100%; width: 100%; background: var(--bg-color); color: var(--text-main); overflow: hidden; display: flex; justify-content: center; align-items: center; }
         
-        #app-container { width: 100%; max-width: 540px; height: 100%; max-height: 100dvh; position: relative; background: radial-gradient(circle at 50% 30%, #2a1147 0%, #050505 80%); overflow: hidden; display: flex; flex-direction: column; box-shadow: 0 0 50px rgba(0,0,0,0.8); }
+        #app-container { width: 100%; max-width: 540px; height: 100%; max-height: 100dvh; position: relative; background: radial-gradient(circle at 50% 30%, #2a1147 0%, #050505 80%); overflow: hidden; display: flex; flex-direction: column; box-shadow: 0 0 50px rgba(0,0,0,0.8); transition: 0.3s; }
         [v-cloak] { display: none !important; }
 
         @keyframes fadeInUp { from { opacity: 0; transform: translate3d(0, 10px, 0); } to { opacity: 1; transform: translate3d(0, 0, 0); } }
@@ -104,8 +104,20 @@
         .miko-metadata .author-name { font-weight: 800; font-size: 14px; color: white; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; line-height: 1.3; }
         .miko-metadata .clip-stats { font-size: 11px; font-weight: 700; color: var(--text-muted); display: flex; align-items: center; gap: 6px; margin-top: 5px; text-transform: uppercase; }
 
-        .share-btn { background: transparent; border: none; color: #a1a1aa; padding: 8px; border-radius: 50%; display: flex; align-items: center; justify-content: center; cursor: pointer; transition: 0.2s; outline: none; -webkit-tap-highlight-color: transparent; }
-        .share-btn:active { color: var(--primary); transform: scale(0.9); background: rgba(145, 70, 255, 0.15); }
+        /* FIXED: Minimalist Share Button with Neon Gradient Icon ONLY */
+        .share-btn { 
+            background: transparent; border: none; 
+            display: flex; align-items: center; justify-content: center;
+            cursor: pointer; transition: 0.2s; outline: none; -webkit-tap-highlight-color: transparent; flex-shrink: 0; 
+            padding: 8px; width: 40px; height: 40px;
+        }
+        .share-btn .gradient-icon {
+            background: linear-gradient(135deg, var(--primary), #ff4685);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            display: inline-block;
+        }
+        .share-btn:active { transform: scale(0.9); opacity: 0.7; }
 
         .toast-popup { position: absolute; top: 50px; left: 50%; transform: translate3d(-50%, -10px, 0); background: var(--danger); color: white; padding: 12px 24px; border-radius: 50px; font-size: 13px; font-weight: 800; text-align: center; z-index: 2500; opacity: 0; transition: opacity 0.3s; pointer-events: none; }
         .toast-popup.show { opacity: 1; transform: translate3d(-50%, 0, 0); }
@@ -177,6 +189,17 @@
         @keyframes pulse-glow { 0%, 100% { opacity: 1; } 50% { opacity: 0.4; } }
         
         .gradient-text { display: inline-block; background: linear-gradient(135deg, #ffffff 30%, var(--primary) 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; font-family: 'Outfit', sans-serif; }
+
+        /* DESKTOP & TABLET MEDIA QUERY RESPONSIVENESS */
+        @media (min-width: 768px) {
+            body { padding: 2vh 2vw; }
+            #app-container { flex-direction: row; max-width: 1000px; height: 95vh; border-radius: 24px; box-shadow: 0 20px 60px rgba(0,0,0,0.9); }
+            .view-port { border-radius: 24px 0 0 24px; }
+            .bottom-nav { position: relative; bottom: 0; left: 0; transform: none; width: 90px; height: 100%; border-radius: 0 24px 24px 0; flex-direction: column; justify-content: center; gap: 40px; background: rgba(20, 20, 25, 0.9); border: none; border-left: 1px solid rgba(255, 255, 255, 0.05); }
+            .nav-item { width: 100%; padding: 10px 0; }
+            .scroll-area { padding-bottom: 0; }
+            .feed-snap-item, .community-feed, .gerald-container { padding-bottom: 40px; } 
+        }
     </style>
 </head>
 <body @click="closeFilterMenu">
@@ -264,9 +287,11 @@
                                 <div class="clip-stats">{{ formatViews(clip.view_count) }} views • {{ formatDate(clip.created_at) }}</div>
                             </div>
                         </div>
+                        
                         <button class="share-btn" @click.stop="shareClip(clip)" ontouchstart="">
-                            <span class="material-symbols-rounded">share</span>
+                            <span class="material-symbols-rounded gradient-icon" style="font-size: 22px;">send</span>
                         </button>
+                        
                     </div>
 
                 </div>
@@ -399,14 +424,15 @@
                 
                 const customEmotes = ref({
                     "mikoSusge": { id: "1273724925743595540", animated: false },
-                    "KEKW": { id: "456296327964262453", animated: false },
+                    "KEKW": { id: "1456296327964262453", animated: false },
                     "mkoNOTED": { id: "1369891690898391070", animated: false },
                     "mkoHype": { id: "870761283035734086", animated: false },
                     "mkoMania": { id: "1503598179751432212", animated: false },
                     "mkoLove": { id: "1150505635721519115", animated: false },
                     "WOWERS": { id: "780097274939965490", animated: false },
-                    "Shruge": { id: "456297412875518078", animated: false },
-                    "PAUSERS": { id: "802261333403762740", animated: false }
+                    "Shruge": { id: "1456297412875518078", animated: false },
+                    "PAUSERS": { id: "802261333403762740", animated: false },
+                    "slayyy": { id: "1456297602910916760", animated: false }
                 });
 
                 const recentVods = ref([]);
@@ -539,13 +565,13 @@
                 
                 const parseDiscordText = (t) => {
                     let safeText = t.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
-                    // 1. Linkify URLs FIRST
-                    safeText = safeText.replace(/(https?:\/\/[^\s&<]+)/g, '<a href="$1" target="_blank" style="color: var(--primary); text-decoration: underline;">$1</a>');
-                    // 2. Inject Image tags SECOND
+                    // 1. Inject Image tags FIRST
                     safeText = safeText.replace(/&lt;(a?):([^:]+):(\d+)&gt;/g, (match, animated, name, id) => {
                         const ext = animated ? 'gif' : 'png';
                         return `<img src="https://cdn.discordapp.com/emojis/${id}.${ext}?size=44" alt=":${name}:" style="height: 1.5em; vertical-align: middle; display: inline-block;">`;
                     });
+                    // 2. Linkify URLs SECOND (now safe)
+                    safeText = safeText.replace(/(https?:\/\/[^\s]+)/g, '<a href="$1" target="_blank" style="color: var(--primary); text-decoration: underline;">$1</a>');
                     return safeText;
                 };
 
