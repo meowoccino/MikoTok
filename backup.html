@@ -64,14 +64,13 @@
         
         #feed-scroll { padding-bottom: 0; scroll-snap-type: y mandatory; }
         
-        .refreshing { animation: feedPulse 0.6s ease-in-out; }
+        .refreshing { animation: feedPulse 0.5s ease-in-out forwards; }
         @keyframes feedPulse { 
-            0% { opacity: 1; transform: scale(1); filter: blur(0px); } 
-            50% { opacity: 0.4; transform: scale(0.98); filter: blur(4px); } 
-            100% { opacity: 1; transform: scale(1); filter: blur(0px); } 
+            0% { opacity: 0; transform: scale(0.98); } 
+            100% { opacity: 1; transform: scale(1); } 
         }
 
-        .feed-snap-item { width: 100%; height: 100%; flex-shrink: 0; display: flex; flex-direction: column; justify-content: center; position: relative; padding: 0 15px 80px; scroll-snap-align: start; scroll-snap-stop: always; }
+        .feed-snap-item { width: 100%; height: 100%; flex-shrink: 0; display: flex; flex-direction: column; justify-content: center; position: relative; padding: 0 15px 80px; scroll-snap-align: start; scroll-snap-stop: always; overflow-anchor: none; }
 
         .header-controls { display: flex; justify-content: flex-start; align-items: center; width: 100%; margin-bottom: 12px; }
         
@@ -79,6 +78,10 @@
         .carousel-btn { background: #111113; border: 1px solid var(--border-color); color: white; width: 50px; height: 50px; border-radius: 50%; display: flex; align-items: center; justify-content: center; cursor: pointer; transition: background 0.1s, transform 0.1s, border-color 0.1s, color 0.1s; outline: none; -webkit-tap-highlight-color: transparent; }
         .carousel-btn:active:not(.hidden-arrow) { transform: scale(0.9); background: rgba(145, 70, 255, 0.25); border-color: var(--primary); color: var(--primary); }
         .carousel-btn.hidden-arrow { opacity: 0; pointer-events: none; } 
+
+        .clips-header { width: 100%; display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; z-index: 50; position: relative; padding: 0 5px; }
+        .clips-title { font-size: 15px; font-weight: 900; color: white; text-transform: uppercase; letter-spacing: 0.5px; }
+        .filter-wrapper { position: relative; }
 
         .filter-btn-tiny { background: var(--card-bg); border: 1px solid var(--border-color); color: #a1a1aa; padding: 6px 12px; border-radius: 8px; font-size: 10px; font-weight: 800; text-transform: uppercase; display: flex; align-items: center; gap: 4px; cursor: pointer; transition: 0.1s; outline: none; -webkit-tap-highlight-color: transparent; }
         .filter-btn-tiny:active { transform: scale(0.95); border-color: var(--primary); color: #fff; }
@@ -100,6 +103,9 @@
         .miko-metadata .author-text-block { min-width: 0; flex: 1; }
         .miko-metadata .author-name { font-weight: 800; font-size: 14px; color: white; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; line-height: 1.3; }
         .miko-metadata .clip-stats { font-size: 11px; font-weight: 700; color: var(--text-muted); display: flex; align-items: center; gap: 6px; margin-top: 5px; text-transform: uppercase; }
+
+        .share-btn { background: transparent; border: none; color: #a1a1aa; padding: 8px; border-radius: 50%; display: flex; align-items: center; justify-content: center; cursor: pointer; transition: 0.2s; outline: none; -webkit-tap-highlight-color: transparent; }
+        .share-btn:active { color: var(--primary); transform: scale(0.9); background: rgba(145, 70, 255, 0.15); }
 
         .toast-popup { position: absolute; top: 50px; left: 50%; transform: translate3d(-50%, -10px, 0); background: var(--danger); color: white; padding: 12px 24px; border-radius: 50px; font-size: 13px; font-weight: 800; text-align: center; z-index: 2500; opacity: 0; transition: opacity 0.3s; pointer-events: none; }
         .toast-popup.show { opacity: 1; transform: translate3d(-50%, 0, 0); }
@@ -173,7 +179,7 @@
         .gradient-text { display: inline-block; background: linear-gradient(135deg, #ffffff 30%, var(--primary) 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; font-family: 'Outfit', sans-serif; }
     </style>
 </head>
-<body>
+<body @click="closeFilterMenu">
     <div id="app-container" v-cloak>
         <div class="toast-popup" :class="{ show: toast.visible }">{{ toast.message }}</div>
 
@@ -184,8 +190,8 @@
         </div>
 
         <header class="app-header" :class="{ hidden: !isHeaderVisible }" v-if="currentTab === 'home' || currentTab === 'feed'">
-            <div style="width:28px;height:28px;" v-html="logoSvg('header')"></div>
-            <span class="gradient-text" style="font-size:20px; font-weight:900;">MikoTok</span>
+            <div style="width:28px;height:28px; cursor:pointer;" v-html="logoSvg('header')" @click="modals.profile = true"></div>
+            <span class="gradient-text" style="font-size:20px; font-weight:900; cursor:pointer;" @click="modals.profile = true">MikoTok</span>
             <a href="https://twitch.tv/codemiko" target="_blank" class="header-status-wrapper">
                 <div class="story-ring" :class="isLive ? 'live' : 'offline'">
                     <img src="1000018850.png?v=2" class="story-avatar">
@@ -229,11 +235,10 @@
                 </div>
 
                 <div class="feed-snap-item" v-for="(clip, index) in clips" :key="clip.id" :data-id="clip.id">
-                    
-                    <div v-if="index === 0" style="width: 100%; display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; position: relative; z-index: 50;">
-                        <span style="font-size: 14px; font-weight: 900; color: white; text-transform: uppercase; letter-spacing: 0.5px;">Trending Clips</span>
-                        
-                        <div style="position: relative;" @click.stop>
+
+                    <div v-if="index === 0" class="clips-header">
+                        <span class="clips-title">Trending Clips</span>
+                        <div class="filter-wrapper" @click.stop>
                             <button class="filter-btn-tiny" @click="isFilterMenuOpen = true" ontouchstart="">
                                 <span class="material-symbols-rounded" style="font-size: 14px;">sort</span>
                                 <span>{{ activeFilterLabel }}</span>
@@ -243,7 +248,12 @@
 
                     <div class="video-container">
                         <img :src="optimizeTwitchImg(clip.thumbnail_url)">
-                        <iframe v-if="activeFeedVideo === clip.id" :src="'https://clips.twitch.tv/embed?clip=' + clip.id + '&parent=' + hostname + '&autoplay=true&muted=false'" allow="autoplay" allowfullscreen></iframe>
+                        <iframe
+                            v-if="activeFeedVideo === clip.id && currentTab === 'home'"
+                            :src="'https://clips.twitch.tv/embed?clip=' + clip.id + '&parent=' + hostname + '&autoplay=true&muted=false'"
+                            allow="autoplay"
+                            allowfullscreen>
+                        </iframe>
                     </div>
 
                     <div class="miko-metadata">
@@ -254,12 +264,16 @@
                                 <div class="clip-stats">{{ formatViews(clip.view_count) }} views • {{ formatDate(clip.created_at) }}</div>
                             </div>
                         </div>
+                        <button class="share-btn" @click.stop="shareClip(clip)" ontouchstart="">
+                            <span class="material-symbols-rounded">share</span>
+                        </button>
                     </div>
+
                 </div>
             </div>
 
             <div class="chat-container" style="height:100%; padding-bottom: 80px;" v-if="currentTab === 'chat'">
-                <iframe :src="'https://www.twitch.tv/embed/codemiko/chat?parent=' + hostname + '&darkpopout'" height="100%" width="100%" frameborder="0"></iframe>
+                <iframe v-if="currentTab === 'chat'" :src="'https://www.twitch.tv/embed/codemiko/chat?parent=' + hostname + '&darkpopout'" height="100%" width="100%" frameborder="0"></iframe>
             </div>
 
             <div class="scroll-area community-feed" v-if="currentTab === 'feed'" @scroll="handleScroll">
@@ -271,7 +285,7 @@
                             <div style="font-size:11px; color:var(--text-muted);">{{ formatDateTime(post.created_at) }}</div>
                         </div>
                     </div>
-                    <div style="font-size:14px; line-height:1.5; white-space:pre-wrap;">{{ cleanDiscordText(post.content) }}</div>
+                    <div style="font-size:14px; line-height:1.5; white-space:pre-wrap;" v-html="parseDiscordText(post.content)"></div>
                 </div>
             </div>
 
@@ -285,11 +299,11 @@
                     </div>
                 </div>
                 <div class="gerald-messages" id="gerald-msgs">
-                    <div v-for="(m, i) in geraldMessages" :key="i" class="chat-bubble" :class="m.role">{{ m.content }}</div>
+                    <div v-for="(m, i) in geraldMessages" :key="i" class="chat-bubble" :class="m.role" v-html="parseMarkdown(m.content)"></div>
                     <div v-if="isGeraldTyping" class="typing-indicator">Gerald is computing...</div>
                 </div>
                 <div class="gerald-input-area">
-                    <input type="text" class="gerald-input" placeholder="Query the system..." v-model="geraldInput" @keyup.enter="talkToGerald">
+                    <input type="text" class="gerald-input" placeholder="Query the system..." v-model.lazy="geraldInput" @keyup.enter="talkToGerald">
                     <button class="gerald-send" @click="talkToGerald" ontouchstart=""><span class="material-symbols-rounded">bolt</span></button>
                 </div>
             </div>
@@ -310,8 +324,13 @@
             <div class="nav-item" :class="{ active: currentTab === 'home' }" @click="currentTab = 'home'; isHeaderVisible = true" ontouchstart=""><span class="material-symbols-rounded">home</span>Home</div>
             <div class="nav-item" :class="{ active: currentTab === 'chat' }" @click="currentTab = 'chat'; isHeaderVisible = true" ontouchstart=""><span class="material-symbols-rounded">chat</span>Chat</div>
             <div class="nav-item" :class="{ active: currentTab === 'feed' }" @click="currentTab = 'feed'; isHeaderVisible = true" ontouchstart=""><span class="material-symbols-rounded">forum</span>Feed</div>
+            
+            <a href="https://discord.com/invite/codemiko" target="_blank" class="nav-item" ontouchstart="" style="text-decoration: none;">
+                <svg viewBox="0 0 24 24" width="24" height="24" fill="currentColor" style="margin-bottom:4px"><path d="M20.317 4.3698a19.7913 19.7913 0 00-4.8851-1.5152.0741.0741 0 00-.0785.0371c-.211.3753-.4447.8648-.6083 1.2495-1.8447-.2762-3.68-.2762-5.4868 0-.1636-.3933-.4058-.8742-.6177-1.2495a.077.077 0 00-.0785-.037 19.7363 19.7363 0 00-4.8852 1.515.0699.0699 0 00-.0321.0277C.5334 9.0458-.319 13.5799.0992 18.0578a.0824.0824 0 00.0312.0561c2.0528 1.5076 4.0413 2.4228 5.9929 3.0294a.0777.0777 0 00.0842-.0276c.4616-.6304.8731-1.2952 1.226-1.9942a.076.076 0 00-.0416-.1057c-.6528-.2476-1.2743-.5495-1.8722-.8923a.077.077 0 01-.0076-.1277c.1258-.0943.2517-.1923.3718-.2914a.0743.0743 0 01.0776-.0105c3.9278 1.7933 8.18 1.7933 12.0614 0a.0739.0739 0 01.0785.0095c.1202.099.246.1981.3728.2924a.077.077 0 01-.0066.1276 12.2986 12.2986 0 01-1.873.8914.0766.0766 0 00-.0407.1067c.3604.698.7719 1.3628 1.225 1.9932a.076.076 0 00.0842.0286c1.961-.6067 3.9495-1.5219 6.0023-3.0314a.077.077 0 00.0313-.0552c.5004-5.177-.8382-9.6739-3.5485-13.6604a.061.061 0 00-.0312-.0286zM8.02 15.3312c-1.1825 0-2.1569-1.0857-2.1569-2.419 0-1.3332.9555-2.4189 2.157-2.4189 1.2108 0 2.1757 1.0952 2.1568 2.419 0 1.3332-.9555 2.4189-2.1569 2.4189zm7.9748 0c-1.1825 0-2.1569-1.0857-2.1569-2.419 0-1.3332.9554-2.4189 2.1569-2.4189 1.2108 0 2.1757 1.0952 2.1568 2.419 0 1.3332-.946 2.4189-2.1568 2.4189Z"/></svg>
+                Discord
+            </a>
+            
             <div class="nav-item" :class="{ 'active-gerald': currentTab === 'gerald' }" @click="currentTab = 'gerald'; isHeaderVisible = true" ontouchstart=""><span class="material-symbols-rounded">robot_2</span>Gerald</div>
-            <div class="nav-item" @click="modals.profile = true" ontouchstart=""><span class="material-symbols-rounded">account_circle</span>Profile</div>
         </nav>
 
         <div class="modal-overlay" :class="{ open: modals.profile }" @click.self="modals.profile = false">
@@ -377,6 +396,18 @@
                 const currentFilter = ref('latest');
                 const activeFilterLabel = ref('Latest');
                 const isFilterMenuOpen = ref(false);
+                
+                const customEmotes = ref({
+                    "mikoSusge": { id: "1273724925743595540", animated: false },
+                    "KEKW": { id: "456296327964262453", animated: false },
+                    "mkoNOTED": { id: "1369891690898391070", animated: false },
+                    "mkoHype": { id: "870761283035734086", animated: false },
+                    "mkoMania": { id: "1503598179751432212", animated: false },
+                    "mkoLove": { id: "1150505635721519115", animated: false },
+                    "WOWERS": { id: "780097274939965490", animated: false },
+                    "Shruge": { id: "456297412875518078", animated: false },
+                    "PAUSERS": { id: "802261333403762740", animated: false }
+                });
 
                 const recentVods = ref([]);
                 const currentVodIndex = ref(0);
@@ -432,7 +463,6 @@
                         nextTick(() => {
                             const firstClipElement = document.querySelectorAll('.feed-snap-item')[1];
                             if(firstClipElement) {
-                                // Turn off snap, force teleport to first clip, then restore snap
                                 feedContainer.style.scrollSnapType = 'none';
                                 feedContainer.scrollTop = firstClipElement.offsetTop;
                                 
@@ -489,17 +519,71 @@
                 const logoSvg = (id) => `<svg viewBox="0 0 100 100"><defs><linearGradient id="grad-${id}" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stop-color="#ffffff"/><stop offset="100%" stop-color="#9146FF"/></linearGradient></defs><circle cx="50" cy="50" r="40" fill="none" stroke="url(#grad-${id})" stroke-width="8"/><path d="M 33 38 L 48 62 L 62 38 L 62 55 Q 62 65 69 64" fill="none" stroke="url(#grad-${id})" stroke-width="8" stroke-linecap="round" stroke-linejoin="round"/></svg>`;
                 const showToast = (msg) => { toast.value.message = msg; toast.value.visible = true; setTimeout(() => toast.value.visible = false, 3000); };
                 
+                const parseMarkdown = (text) => {
+                    let html = text;
+                    html = html.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>'); 
+                    html = html.replace(/\*(.*?)\*/g, '<em>$1</em>'); 
+                    html = html.replace(/\[(.*?)\]\((.*?)\)/g, '<a href="$2" target="_blank" style="color: var(--gerald); text-decoration: underline;">$1</a>'); 
+                    
+                    html = html.replace(/:([^:\s]+):/g, (match, name) => {
+                        const emote = customEmotes.value[name];
+                        if (emote) {
+                            const ext = emote.animated ? 'gif' : 'png';
+                            return `<img src="https://cdn.discordapp.com/emojis/${emote.id}.${ext}?size=44" alt=":${name}:" style="height: 1.5em; vertical-align: middle; display: inline-block;">`;
+                        }
+                        return match;
+                    });
+                    
+                    return html;
+                };
+                
+                const parseDiscordText = (t) => {
+                    let safeText = t.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+                    // 1. Linkify URLs FIRST
+                    safeText = safeText.replace(/(https?:\/\/[^\s&<]+)/g, '<a href="$1" target="_blank" style="color: var(--primary); text-decoration: underline;">$1</a>');
+                    // 2. Inject Image tags SECOND
+                    safeText = safeText.replace(/&lt;(a?):([^:]+):(\d+)&gt;/g, (match, animated, name, id) => {
+                        const ext = animated ? 'gif' : 'png';
+                        return `<img src="https://cdn.discordapp.com/emojis/${id}.${ext}?size=44" alt=":${name}:" style="height: 1.5em; vertical-align: middle; display: inline-block;">`;
+                    });
+                    return safeText;
+                };
+
+                const shareClip = async (clip) => {
+                    const url = `https://clips.twitch.tv/${clip.id}`;
+                    if (navigator.share) {
+                        try {
+                            await navigator.share({
+                                title: clip.title,
+                                url: url
+                            });
+                        } catch (err) {
+                            console.log('Share canceled or failed.');
+                        }
+                    } else {
+                        navigator.clipboard.writeText(url);
+                        showToast("Link copied to clipboard!");
+                    }
+                };
+
                 const talkToGerald = async () => {
                     if (!geraldInput.value.trim() || isGeraldTyping.value) return;
                     const userMsg = geraldInput.value;
                     geraldMessages.value.push({ role: 'user', content: userMsg });
                     geraldInput.value = ''; isGeraldTyping.value = true;
                     
-                    // Format history precisely for Gemini
                     const geminiHistory = geraldMessages.value.slice(1).map(m => ({
                         role: m.role === 'gerald' ? 'model' : 'user',
                         parts: [{ text: m.content }]
                     }));
+                    
+                    const emoteNames = Object.keys(customEmotes.value).map(n => `:${n}:`).join(', ');
+                    if (emoteNames && geminiHistory.length > 0) {
+                        const lastMsg = geminiHistory[geminiHistory.length - 1];
+                        if (lastMsg.role === 'user') {
+                            lastMsg.parts[0].text += `\n\n[SYSTEM NOTE: You can use these custom emotes in your response to express emotion: ${emoteNames}]`;
+                        }
+                    }
                     
                     try {
                         const { data, error } = await sbClient.functions.invoke('gerald-chat', {
@@ -567,11 +651,18 @@
                     if (f) {
                         const uniqueFeed = [];
                         const seen = new Set();
+                        const emoteRegex = /<(a?):([^:]+):(\d+)>/g;
+                        
                         f.forEach(item => {
                             const hash = item.content.trim();
                             if (!seen.has(hash)) {
                                 seen.add(hash);
                                 uniqueFeed.push(item);
+                                
+                                let match;
+                                while ((match = emoteRegex.exec(hash)) !== null) {
+                                    customEmotes.value[match[2]] = { id: match[3], animated: match[1] === 'a' };
+                                }
                             }
                         });
                         discordFeed.value = uniqueFeed;
@@ -663,7 +754,7 @@
                     setTimeout(() => { splashOpacity.value = 0; setTimeout(() => splashVisible.value = false, 400); }, 1500);
                 });
 
-                return { hostname, splashVisible, splashOpacity, currentTab, clips, discordFeed, modals, isLive, toast, currentUser, loginEmail, loginPass, apiConfig, latestVodId, activeFeedVideo, geraldInput, geraldMessages, isGeraldTyping, talkToGerald, logoSvg, syncState, runSync, isHeaderVisible, handleScroll, handleModalTouchStart, handleModalTouchMove, handleModalTouchEnd, currentFilter, activeFilterLabel, isFilterMenuOpen, closeFilterMenu, applyFilter, recentVods, currentVodIndex, getVodLabel, nextVod, prevVod, handleLogin: async () => { const email = loginEmail.value.includes('@') ? loginEmail.value : `${loginEmail.value}@miko.com`; const { data, error } = await sbClient.auth.signInWithPassword({ email, password: loginPass.value }); if(data.user) { currentUser.value = data.user; } else showToast("INVALID LOGIN"); }, handleLogout: () => { sbClient.auth.signOut(); currentUser.value = null; }, optimizeTwitchImg: (u) => u.replace('%{width}', '480').replace('%{height}', '270'), formatViews: (v) => v ? v.toLocaleString() : '0', formatDate: (d) => new Date(d).toLocaleDateString([], {month:'short', day:'numeric'}), formatDateTime: (d) => new Date(d).toLocaleString(), cleanDiscordText: (t) => t.replace(/<a?:[^:]+:\d+>/g, '') };
+                return { hostname, splashVisible, splashOpacity, currentTab, clips, discordFeed, modals, isLive, toast, currentUser, loginEmail, loginPass, apiConfig, latestVodId, activeFeedVideo, geraldInput, geraldMessages, isGeraldTyping, talkToGerald, logoSvg, syncState, runSync, isHeaderVisible, handleScroll, handleModalTouchStart, handleModalTouchMove, handleModalTouchEnd, currentFilter, activeFilterLabel, isFilterMenuOpen, closeFilterMenu, applyFilter, parseMarkdown, parseDiscordText, shareClip, recentVods, currentVodIndex, getVodLabel, nextVod, prevVod, handleLogin: async () => { const email = loginEmail.value.includes('@') ? loginEmail.value : `${loginEmail.value}@miko.com`; const { data, error } = await sbClient.auth.signInWithPassword({ email, password: loginPass.value }); if(data.user) { currentUser.value = data.user; } else showToast("INVALID LOGIN"); }, handleLogout: () => { sbClient.auth.signOut(); currentUser.value = null; }, optimizeTwitchImg: (u) => u.replace('%{width}', '480').replace('%{height}', '270'), formatViews: (v) => v ? v.toLocaleString() : '0', formatDate: (d) => new Date(d).toLocaleDateString([], {month:'short', day:'numeric'}), formatDateTime: (d) => new Date(d).toLocaleString() };
             }
         }).mount('#app-container');
     </script>
