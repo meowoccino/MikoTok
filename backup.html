@@ -47,10 +47,15 @@
         .header-badge.offline { background: var(--offline-gray); color: #fff; }
 
         .view-port { flex: 1; width: 100%; height: 100%; overflow: hidden; position: relative; }
+        
         .scroll-area { height: 100%; width: 100%; overflow-y: auto; scroll-behavior: smooth; touch-action: pan-y; padding-bottom: 80px; }
         .scroll-area::-webkit-scrollbar { display: none; }
         
-        .feed-snap-item { width: 100%; display: flex; flex-direction: column; justify-content: flex-start; position: relative; padding: 0 15px 35px; }
+        /* TikTok-Style Snapping Container */
+        #feed-scroll { padding-bottom: 0; scroll-snap-type: y mandatory; }
+        
+        /* Full Screen Feed Items */
+        .feed-snap-item { width: 100%; height: 100%; flex-shrink: 0; display: flex; flex-direction: column; justify-content: center; position: relative; padding: 0 15px 80px; scroll-snap-align: start; scroll-snap-stop: always; }
 
         .miko-metadata { display: flex; align-items: center; padding: 12px 5px 0; background: transparent; }
         .miko-metadata img { width: 44px; height: 44px; border-radius: 50%; border: 2px solid var(--primary); margin-right: 14px; box-shadow: 0 2px 10px rgba(0,0,0,0.5); flex-shrink: 0; }
@@ -66,7 +71,8 @@
         .premium-badge.vod .dot { background: var(--primary); color: var(--primary); animation: heartbeat 1.5s infinite; }
 
         .video-container { position: relative; width: 100%; aspect-ratio: 16/9; z-index: 2; box-shadow: 0 10px 40px rgba(0,0,0,0.6); background: #000; border-radius: 12px; overflow: hidden; }
-        .video-container iframe, .video-container img { position: absolute; top: 0; left: 0; width: 100%; height: 100%; border: none; object-fit: cover; }
+        .video-container iframe { position: absolute; top: 0; left: 0; width: 100%; height: 100%; border: none; z-index: 2; }
+        .video-container img { position: absolute; top: 0; left: 0; width: 100%; height: 100%; border: none; object-fit: cover; z-index: 1; opacity: 0.5; }
 
         .community-feed { padding: 100px 12px 100px; height: 100%; overflow-y: auto; display: flex; flex-direction: column; gap: 15px; }
         .card { background: var(--card-bg); border-radius: 16px; padding: 16px; border: 1px solid var(--border-color); }
@@ -91,7 +97,6 @@
         .pulse { width: 8px; height: 8px; border-radius: 50%; background: var(--success); box-shadow: 0 0 10px var(--success); animation: pulse-glow 2s infinite; }
         .stat-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 16px; }
         
-        /* New External Link Buttons */
         .external-link-btn { background: var(--card-bg); border: 1px solid var(--border-color); padding: 15px; border-radius: 14px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 8px; color: var(--text-main); text-decoration: none; font-weight: 800; font-size: 11px; text-transform: uppercase; letter-spacing: 0.5px; transition: transform 0.2s, border-color 0.2s; }
         .external-link-btn:active { transform: scale(0.95); border-color: var(--primary); }
         .external-link-btn .material-symbols-rounded { font-size: 26px; color: var(--text-muted); transition: 0.2s; }
@@ -150,22 +155,27 @@
 
         <div class="view-port">
             <div class="scroll-area" id="feed-scroll" v-show="currentTab === 'home'" @scroll="handleScroll">
-                <div class="feed-snap-item" data-id="featured" style="padding-top: 110px;">
+                
+                <!-- Featured Top Video -->
+                <div class="feed-snap-item" data-id="featured">
                     <div style="display: flex; justify-content: flex-start; align-items: flex-end; width: 100%;">
                         <div class="premium-badge live" v-if="isLive"><div class="dot"></div><span>LIVE NOW</span></div>
                         <div class="premium-badge vod" v-else-if="latestVodId"><div class="dot"></div><span>LATEST VOD</span></div>
                     </div>
                     <div class="video-container">
-                        <iframe v-if="isLive" :src="'https://player.twitch.tv/?channel=codemiko&parent=' + hostname + '&autoplay=true&muted=true'" allowfullscreen></iframe>
-                        <iframe v-else-if="latestVodId" :src="'https://player.twitch.tv/?video=' + latestVodId + '&parent=' + hostname + '&autoplay=true&muted=true'" allowfullscreen></iframe>
-                        <div v-else style="width:100%; height:100%; display:flex; align-items:center; justify-content:center; color:white; font-size:14px; font-weight:800;">OFFLINE</div>
+                        <template v-if="activeFeedVideo === 'featured'">
+                            <iframe v-if="isLive" :src="'https://player.twitch.tv/?channel=codemiko&parent=' + hostname + '&autoplay=true&muted=false'" allow="autoplay" allowfullscreen></iframe>
+                            <iframe v-else-if="latestVodId" :src="'https://player.twitch.tv/?video=' + latestVodId + '&parent=' + hostname + '&autoplay=true&muted=false'" allow="autoplay" allowfullscreen></iframe>
+                        </template>
+                        <div v-if="!isLive && !latestVodId" style="width:100%; height:100%; display:flex; align-items:center; justify-content:center; color:white; font-size:14px; font-weight:800; z-index: 1;">OFFLINE</div>
                     </div>
                 </div>
 
+                <!-- Auto-playing Database Clips -->
                 <div class="feed-snap-item" v-for="clip in clips" :key="clip.id" :data-id="clip.id">
                     <div class="video-container">
-                        <iframe v-if="activeFeedVideo === clip.id" :src="'https://clips.twitch.tv/embed?clip=' + clip.id + '&parent=' + hostname + '&autoplay=true'" allow="autoplay" allowfullscreen></iframe>
-                        <img v-else :src="optimizeTwitchImg(clip.thumbnail_url)">
+                        <img :src="optimizeTwitchImg(clip.thumbnail_url)">
+                        <iframe v-if="activeFeedVideo === clip.id" :src="'https://clips.twitch.tv/embed?clip=' + clip.id + '&parent=' + hostname + '&autoplay=true&muted=false'" allow="autoplay" allowfullscreen></iframe>
                     </div>
                     <div class="miko-metadata">
                         <img src="1000018850.png?v=2">
@@ -239,11 +249,11 @@
                     </div>
                     
                     <div class="stat-grid">
-                        <a href="https://github.com" target="_blank" class="external-link-btn">
+                        <a href="https://github.com/meowoccino/MikoTok" target="_blank" class="external-link-btn">
                             <span class="material-symbols-rounded">code</span>
                             GitHub Repo
                         </a>
-                        <a href="https://supabase.com/dashboard" target="_blank" class="external-link-btn">
+                        <a href="https://supabase.com/dashboard/project/yhxcuayiwqpjvalyrcqv" target="_blank" class="external-link-btn">
                             <span class="material-symbols-rounded">database</span>
                             Supabase DB
                         </a>
@@ -323,9 +333,33 @@
                     finally { isGeraldTyping.value = false; nextTick(() => { const b = document.getElementById('gerald-msgs'); if(b) b.scrollTop = b.scrollHeight; }); }
                 };
 
+                const setupObserver = () => {
+                    if (window.feedObserver) window.feedObserver.disconnect();
+                    
+                    const scrollContainer = document.getElementById('feed-scroll');
+                    
+                    window.feedObserver = new IntersectionObserver((entries) => {
+                        entries.forEach(entry => {
+                            if (entry.isIntersecting) {
+                                activeFeedVideo.value = entry.target.getAttribute('data-id');
+                            }
+                        });
+                    }, { 
+                        root: scrollContainer,
+                        threshold: 0.5
+                    });
+
+                    nextTick(() => {
+                        const items = document.querySelectorAll('.feed-snap-item');
+                        items.forEach(el => window.feedObserver.observe(el));
+                    });
+                };
+
                 const loadData = async () => {
                     const { data: c } = await sbClient.from('clips').select('*').order('created_at', { ascending: false }).limit(3000);
                     clips.value = c || [];
+                    
+                    setupObserver();
                     
                     const { data: f } = await sbClient.from('discord_feed').select('*').order('created_at', { ascending: false }).limit(100);
                     if (f) {
