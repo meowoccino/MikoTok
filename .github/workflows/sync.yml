@@ -1,10 +1,9 @@
-name: Discord Announcement Sync
+name: Announcement Sync
 
 on:
   schedule:
-    # This runs the sync every 5 minutes. Adjust the cron timing as needed.
-    - cron: '*/5 * * * *'
-  workflow_dispatch: # This allows you to manually click a button to run the sync in GitHub
+    - cron: '*/15 * * * *' # Runs every 15 minutes (adjust as needed)
+  workflow_dispatch: # Allows you to run it manually from the Actions tab
 
 jobs:
   sync-to-supabase:
@@ -13,20 +12,24 @@ jobs:
     steps:
       - name: Checkout Code
         uses: actions/checkout@v4
-      
-      - name: Setup Node.js (or Python, depending on your bot)
+
+      - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: '20' # Change this if your bot uses Python or a different language
+          node-version: '24' # Upgraded to fix the deprecation warning
 
       - name: Install Dependencies
-        run: npm install # Or 'pip install -r requirements.txt' if using Python
+        run: |
+          if [ -f package.json ]; then
+            npm install
+          else
+            echo "No package.json found. Skipping npm install to prevent crashes."
+          fi
 
       - name: Run Discord Sync Bot
+        # Ensure 'sync.js' matches the actual name of your bot file in the repository
+        run: node sync.js 
         env:
-          # This pulls your database URL and the secret key safely from GitHub!
-          SUPABASE_URL: "https://yhxcuayiwqpjvalyrcqv.supabase.co"
-          SUPABASE_KEY: ${{ secrets.SUPABASE_SERVICE_KEY }} 
-        run: |
-          # Replace this line with the command that actually starts your bot
-          node sync.js 
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_KEY: ${{ secrets.SUPABASE_KEY }}
+
