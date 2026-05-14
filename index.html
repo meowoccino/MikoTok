@@ -64,17 +64,45 @@
         
         #feed-scroll { padding-bottom: 0; scroll-snap-type: y mandatory; }
         
+        /* Refresh Animation */
+        .refreshing { animation: feedPulse 0.6s ease-in-out; }
+        @keyframes feedPulse { 
+            0% { opacity: 1; transform: scale(1); filter: blur(0px); } 
+            50% { opacity: 0.4; transform: scale(0.98); filter: blur(4px); } 
+            100% { opacity: 1; transform: scale(1); filter: blur(0px); } 
+        }
+
         .feed-snap-item { width: 100%; height: 100%; flex-shrink: 0; display: flex; flex-direction: column; justify-content: center; position: relative; padding: 0 15px 80px; scroll-snap-align: start; scroll-snap-stop: always; }
 
-        .miko-metadata { display: flex; align-items: center; padding: 12px 5px 0; background: transparent; }
-        .miko-metadata img { width: 44px; height: 44px; border-radius: 50%; border: 2px solid var(--primary); margin-right: 14px; box-shadow: 0 2px 10px rgba(0,0,0,0.5); flex-shrink: 0; }
+        .header-controls { display: flex; justify-content: flex-start; align-items: center; width: 100%; margin-bottom: 12px; }
+        
+        /* Carousel Controls: Increased touch area & smoother transition */
+        .carousel-controls { display: flex; justify-content: space-between; align-items: center; width: 100%; margin-top: 15px; position: relative; z-index: 40; padding: 0 10px; box-sizing: border-box; }
+        .carousel-btn { background: #111113; border: 1px solid var(--border-color); color: white; width: 50px; height: 50px; border-radius: 50%; display: flex; align-items: center; justify-content: center; cursor: pointer; transition: background 0.1s, transform 0.1s, border-color 0.1s, color 0.1s; outline: none; -webkit-tap-highlight-color: transparent; }
+        .carousel-btn:active:not(.hidden-arrow) { transform: scale(0.9); background: rgba(145, 70, 255, 0.25); border-color: var(--primary); color: var(--primary); }
+        .carousel-btn.hidden-arrow { opacity: 0; pointer-events: none; } 
+
+        .miko-metadata { display: flex; align-items: flex-start; padding: 12px 5px 0; background: transparent; width: 100%; }
+        .miko-metadata img { width: 44px; height: 44px; border-radius: 50%; border: 2px solid var(--primary); margin-right: 12px; box-shadow: 0 2px 10px rgba(0,0,0,0.5); flex-shrink: 0; }
         .miko-metadata .author-name { font-weight: 800; font-size: 15px; color: white; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; line-height: 1.3; }
         .miko-metadata .clip-stats { font-size: 11px; font-weight: 700; color: var(--text-muted); display: flex; align-items: center; gap: 6px; margin-top: 5px; text-transform: uppercase; }
+
+        /* Tiny Filter Button right inside the metadata row */
+        .filter-btn-tiny { background: var(--card-bg); border: 1px solid var(--border-color); color: #a1a1aa; padding: 6px 10px; border-radius: 8px; font-size: 10px; font-weight: 800; text-transform: uppercase; display: flex; align-items: center; gap: 4px; cursor: pointer; transition: 0.1s; outline: none; -webkit-tap-highlight-color: transparent; margin-left: auto; flex-shrink: 0; }
+        .filter-btn-tiny:active { transform: scale(0.95); border-color: var(--primary); color: #fff; }
+        
+        .filter-menu-tiny { position: absolute; top: 110%; right: 0; background: rgba(15, 15, 18, 0.98); backdrop-filter: blur(20px); border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 12px; padding: 8px; display: flex; flex-direction: column; gap: 4px; min-width: 130px; box-shadow: 0 10px 30px rgba(0,0,0,0.9); transform-origin: top right; opacity: 0; transform: scale(0.9); pointer-events: none; transition: 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275); z-index: 1000; }
+        .filter-menu-tiny.open { opacity: 1; transform: scale(1); pointer-events: auto; }
+        
+        .filter-option { background: transparent; color: #a1a1aa; border: none; padding: 10px 12px; border-radius: 8px; font-size: 11px; font-weight: 800; text-align: right; text-transform: uppercase; cursor: pointer; transition: 0.2s; font-family: 'Inter', sans-serif; letter-spacing: 0.5px; -webkit-tap-highlight-color: transparent; }
+        .filter-option:hover { color: #fff; }
+        .filter-option:active { transform: scale(0.95); }
+        .filter-option.active { color: #fff; background: var(--primary); }
 
         .toast-popup { position: absolute; top: 50px; left: 50%; transform: translate3d(-50%, -10px, 0); background: var(--danger); color: white; padding: 12px 24px; border-radius: 50px; font-size: 13px; font-weight: 800; text-align: center; z-index: 2000; opacity: 0; transition: opacity 0.3s; pointer-events: none; }
         .toast-popup.show { opacity: 1; transform: translate3d(-50%, 0, 0); }
 
-        .premium-badge { display: inline-flex; align-items: center; justify-content: center; gap: 8px; background: rgba(0, 0, 0, 0.7); backdrop-filter: blur(10px); border: 1px solid rgba(255, 255, 255, 0.15); padding: 6px 14px; border-radius: 30px; color: #fff; font-size: 10px; font-weight: 900; text-transform: uppercase; margin-bottom: 12px; }
+        .premium-badge { display: inline-flex; align-items: center; justify-content: center; gap: 8px; background: rgba(0, 0, 0, 0.7); backdrop-filter: blur(10px); border: 1px solid rgba(255, 255, 255, 0.15); padding: 6px 14px; border-radius: 30px; color: #fff; font-size: 10px; font-weight: 900; text-transform: uppercase; }
         .premium-badge .dot { width: 6px; height: 6px; border-radius: 50%; box-shadow: 0 0 8px currentColor; }
         .premium-badge.live .dot { background: var(--danger); color: var(--danger); animation: heartbeat 1.5s infinite; }
         .premium-badge.vod .dot { background: var(--primary); color: var(--primary); animation: heartbeat 1.5s infinite; }
@@ -90,14 +118,14 @@
         .gerald-header { padding: 60px 20px 20px; text-align: center; background: transparent; display: flex; flex-direction: column; align-items: center; }
         .gerald-messages { flex: 1; overflow-y: auto; padding: 20px; display: flex; flex-direction: column; gap: 12px; }
         
-        .chat-bubble { max-width: 85%; padding: 12px 18px; font-size: 13px; line-height: 1.5; font-weight: 600; word-wrap: break-word; font-family: 'Inter', sans-serif; backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px); border-radius: 20px; transform: translateZ(0); }
-        .chat-bubble.gerald { background: rgba(20, 20, 25, 0.7); border: 1px solid rgba(255, 255, 255, 0.1); color: var(--text-main); align-self: flex-start; border-bottom-left-radius: 4px; }
-        .chat-bubble.user { background: rgba(145, 70, 255, 0.15); border: 1px solid rgba(145, 70, 255, 0.4); color: #fff; align-self: flex-end; border-bottom-right-radius: 4px; }
+        .chat-bubble { max-width: 85%; padding: 12px 18px; font-size: 13px; font-weight: 600; font-family: 'Inter', sans-serif; background: var(--card-bg); border: 1px solid var(--border-color); border-radius: 25px; color: white; word-wrap: break-word; transform: translateZ(0); }
+        .chat-bubble.gerald { border-color: var(--gerald); align-self: flex-start; }
+        .chat-bubble.user { align-self: flex-end; }
         
         .gerald-input-area { padding: 15px; display: flex; gap: 10px; border-top: 1px solid var(--border-color); background: var(--bg-color); }
         .gerald-input { flex: 1; background: var(--card-bg); border: 1px solid var(--border-color); border-radius: 25px; padding: 10px 18px; color: white; outline: none; font-size: 13px; font-weight: 600; }
         .gerald-input:focus { border-color: var(--gerald); }
-        .gerald-send { background: var(--gerald); border: none; width: 40px; height: 40px; border-radius: 50%; display: flex; align-items: center; justify-content: center; cursor: pointer; color: white; transition: transform 0.1s; }
+        .gerald-send { background: var(--gerald); border: none; width: 40px; height: 40px; border-radius: 50%; display: flex; align-items: center; justify-content: center; cursor: pointer; color: white; transition: transform 0.1s; outline: none; -webkit-tap-highlight-color: transparent; }
         .gerald-send:active { transform: scale(0.9); }
         .typing-indicator { font-size: 11px; color: var(--gerald); padding: 5px 20px; font-weight: 700; text-transform: uppercase; }
 
@@ -106,7 +134,7 @@
         .pulse { width: 8px; height: 8px; border-radius: 50%; background: var(--success); box-shadow: 0 0 10px var(--success); animation: pulse-glow 2s infinite; }
         .stat-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 16px; }
         
-        .external-link-btn { background: var(--card-bg); border: 1px solid var(--border-color); padding: 15px; border-radius: 14px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 8px; color: var(--text-main); text-decoration: none; font-weight: 800; font-size: 11px; text-transform: uppercase; letter-spacing: 0.5px; transition: transform 0.2s, border-color 0.2s; }
+        .external-link-btn { background: var(--card-bg); border: 1px solid var(--border-color); padding: 15px; border-radius: 14px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 8px; color: var(--text-main); text-decoration: none; font-weight: 800; font-size: 11px; text-transform: uppercase; letter-spacing: 0.5px; transition: transform 0.2s, border-color 0.2s; outline: none; -webkit-tap-highlight-color: transparent; }
         .external-link-btn:active { transform: scale(0.95); border-color: var(--primary); }
         .external-link-btn .material-symbols-rounded { font-size: 26px; color: var(--text-muted); transition: 0.2s; }
         .external-link-btn:active .material-symbols-rounded { color: var(--primary); }
@@ -115,7 +143,7 @@
         @keyframes spin { 100% { transform: rotate(360deg); } }
 
         .bottom-nav { position: absolute; bottom: 20px; left: 50%; transform: translateX(-50%) translateZ(0); will-change: transform; width: calc(100% - 20px); background: var(--nav-bg); backdrop-filter: blur(20px); border-radius: 30px; border: 1px solid rgba(255, 255, 255, 0.1); display: flex; justify-content: space-between; align-items: center; padding: 10px 5px; z-index: 100; box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
-        .nav-item { display: flex; flex-direction: column; align-items: center; flex: 1; color: var(--text-muted); font-size: 9px; gap: 4px; cursor: pointer; text-decoration: none; transition: 0.2s; font-weight: 700; }
+        .nav-item { display: flex; flex-direction: column; align-items: center; flex: 1; color: var(--text-muted); font-size: 9px; gap: 4px; cursor: pointer; text-decoration: none; transition: 0.2s; font-weight: 700; outline: none; -webkit-tap-highlight-color: transparent; }
         .nav-item.active { color: var(--text-main); }
         .nav-item.active .material-symbols-rounded { font-variation-settings: 'FILL' 1; color: var(--primary); }
         .nav-item.active-gerald { color: var(--gerald); }
@@ -129,11 +157,11 @@
 
         .input-box { width: 100%; background: var(--bg-color); border: 1px solid var(--border-color); border-radius: 12px; padding: 15px; color: white; margin-bottom: 15px; outline: none; font-size: 13px; font-weight: 600; }
         
-        .sync-btn { width: 100%; background: var(--primary); border: none; color: white; padding: 15px; border-radius: 12px; font-weight: 800; cursor: pointer; margin-bottom: 10px; display: flex; justify-content: center; align-items: center; gap: 8px; transition: 0.2s; }
+        .sync-btn { width: 100%; background: var(--primary); border: none; color: white; padding: 15px; border-radius: 12px; font-weight: 800; cursor: pointer; margin-bottom: 10px; display: flex; justify-content: center; align-items: center; gap: 8px; transition: 0.2s; outline: none; -webkit-tap-highlight-color: transparent; }
         .sync-btn:active { transform: scale(0.97); }
         .sync-btn.success { background: var(--success); color: #000; pointer-events: none; }
         
-        .logout-btn { width: 100%; background: transparent; border: 1px solid var(--danger); color: var(--danger); padding: 12px; border-radius: 12px; margin-top: 15px; cursor: pointer; font-weight: 800; transition: 0.2s; }
+        .logout-btn { width: 100%; background: transparent; border: 1px solid var(--danger); color: var(--danger); padding: 12px; border-radius: 12px; margin-top: 15px; cursor: pointer; font-weight: 800; transition: 0.2s; outline: none; -webkit-tap-highlight-color: transparent; }
         .logout-btn:active { background: var(--danger); color: white; }
 
         @keyframes storyGlow { 0% { background-position: 0% 50%; } 50% { background-position: 100% 50%; } 100% { background-position: 0% 50%; } }
@@ -143,7 +171,7 @@
         .gradient-text { display: inline-block; background: linear-gradient(135deg, #ffffff 30%, var(--primary) 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; font-family: 'Outfit', sans-serif; }
     </style>
 </head>
-<body>
+<body @click="closeFilterMenu">
     <div id="app-container" v-cloak>
         <div class="toast-popup" :class="{ show: toast.visible }">{{ toast.message }}</div>
 
@@ -168,32 +196,64 @@
             <div class="scroll-area" id="feed-scroll" v-show="currentTab === 'home'" @scroll="handleScroll">
                 
                 <div class="feed-snap-item" data-id="featured" style="padding-top: 110px;">
-                    <div style="display: flex; justify-content: flex-start; align-items: flex-end; width: 100%; margin-bottom: 8px;">
-                        <div class="premium-badge live" v-if="isLive"><div class="dot"></div><span>LIVE NOW</span></div>
-                        <div class="premium-badge vod" v-else-if="latestVodId"><div class="dot"></div><span>LATEST VOD</span></div>
-                    </div>
                     
+                    <div class="header-controls">
+                        <div class="premium-badge live" v-if="currentVodIndex === -1">
+                            <div class="dot"></div><span>LIVE NOW</span>
+                        </div>
+                        <div class="premium-badge vod" v-else-if="recentVods.length > 0">
+                            <div class="dot"></div><span>{{ getVodLabel(currentVodIndex) }}</span>
+                        </div>
+                    </div>
+
                     <div class="vod-animated-border">
                         <div class="video-container" style="box-shadow: none;">
                             <template v-if="activeFeedVideo === 'featured'">
-                                <iframe v-if="isLive" :src="'https://player.twitch.tv/?channel=codemiko&parent=' + hostname + '&autoplay=true&muted=false'" allow="autoplay" allowfullscreen></iframe>
-                                <iframe v-else-if="latestVodId" :src="'https://player.twitch.tv/?video=' + latestVodId + '&parent=' + hostname + '&autoplay=true&muted=false'" allow="autoplay" allowfullscreen></iframe>
+                                <iframe v-if="currentVodIndex === -1" :src="'https://player.twitch.tv/?channel=codemiko&parent=' + hostname + '&autoplay=true&muted=false'" allow="autoplay" allowfullscreen></iframe>
+                                <iframe v-else-if="recentVods[currentVodIndex]" :src="'https://player.twitch.tv/?video=' + recentVods[currentVodIndex].id + '&parent=' + hostname + '&autoplay=true&muted=false'" allow="autoplay" allowfullscreen></iframe>
                             </template>
-                            <div v-if="!isLive && !latestVodId" style="width:100%; height:100%; display:flex; align-items:center; justify-content:center; color:white; font-size:14px; font-weight:800; z-index: 1;">OFFLINE</div>
+                            <div v-if="!isLive && recentVods.length === 0" style="width:100%; height:100%; display:flex; align-items:center; justify-content:center; color:white; font-size:14px; font-weight:800; z-index: 1;">OFFLINE</div>
                         </div>
+                    </div>
+
+                    <div class="carousel-controls" v-if="recentVods.length > 0 || isLive">
+                        <button class="carousel-btn" :class="{ 'hidden-arrow': currentVodIndex <= (isLive ? -1 : 0) }" @click.stop="prevVod" ontouchstart="">
+                            <span class="material-symbols-rounded">chevron_left</span>
+                        </button>
+                        <button class="carousel-btn" :class="{ 'hidden-arrow': currentVodIndex >= recentVods.length - 1 }" @click.stop="nextVod" ontouchstart="">
+                            <span class="material-symbols-rounded">chevron_right</span>
+                        </button>
                     </div>
                 </div>
 
-                <div class="feed-snap-item" v-for="clip in clips" :key="clip.id" :data-id="clip.id">
+                <div class="feed-snap-item" v-for="(clip, index) in clips" :key="clip.id" :data-id="clip.id">
                     <div class="video-container">
                         <img :src="optimizeTwitchImg(clip.thumbnail_url)">
                         <iframe v-if="activeFeedVideo === clip.id" :src="'https://clips.twitch.tv/embed?clip=' + clip.id + '&parent=' + hostname + '&autoplay=true&muted=false'" allow="autoplay" allowfullscreen></iframe>
                     </div>
+
                     <div class="miko-metadata">
-                        <img src="1000018850.png?v=2">
-                        <div>
-                            <span class="author-name">{{ clip.title }}</span>
-                            <div class="clip-stats">{{ formatViews(clip.view_count) }} views • {{ formatDate(clip.created_at) }}</div>
+                        <div class="author-info">
+                            <img src="1000018850.png?v=2">
+                            <div>
+                                <span class="author-name">{{ clip.title }}</span>
+                                <div class="clip-stats">{{ formatViews(clip.view_count) }} views • {{ formatDate(clip.created_at) }}</div>
+                            </div>
+                        </div>
+
+                        <div v-if="index === 0" style="position: relative;" @click.stop>
+                            <button class="filter-btn-tiny" @click="isFilterMenuOpen = !isFilterMenuOpen" ontouchstart="">
+                                <span class="material-symbols-rounded" style="font-size: 14px;">sort</span>
+                                <span>{{ activeFilterLabel }}</span>
+                            </button>
+                            
+                            <div class="filter-menu-tiny" :class="{ open: isFilterMenuOpen }">
+                                <button class="filter-option" :class="{ active: currentFilter === 'latest' }" @click="applyFilter('latest', 'Latest')">Latest</button>
+                                <button class="filter-option" :class="{ active: currentFilter === 'weekly' }" @click="applyFilter('weekly', 'Weekly')">Weekly</button>
+                                <button class="filter-option" :class="{ active: currentFilter === 'month' }" @click="applyFilter('month', 'Month')">Month</button>
+                                <button class="filter-option" :class="{ active: currentFilter === '6months' }" @click="applyFilter('6months', '6 Months')">6 Months</button>
+                                <button class="filter-option" :class="{ active: currentFilter === 'alltime' }" @click="applyFilter('alltime', 'All Time')">All Time</button>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -231,17 +291,17 @@
                 </div>
                 <div class="gerald-input-area">
                     <input type="text" class="gerald-input" placeholder="Query the system..." v-model="geraldInput" @keyup.enter="talkToGerald">
-                    <button class="gerald-send" @click="talkToGerald"><span class="material-symbols-rounded">bolt</span></button>
+                    <button class="gerald-send" @click="talkToGerald" ontouchstart=""><span class="material-symbols-rounded">bolt</span></button>
                 </div>
             </div>
         </div>
 
         <nav class="bottom-nav">
-            <div class="nav-item" :class="{ active: currentTab === 'home' }" @click="currentTab = 'home'; isHeaderVisible = true"><span class="material-symbols-rounded">home</span>Home</div>
-            <div class="nav-item" :class="{ active: currentTab === 'chat' }" @click="currentTab = 'chat'; isHeaderVisible = true"><span class="material-symbols-rounded">chat</span>Chat</div>
-            <div class="nav-item" :class="{ active: currentTab === 'feed' }" @click="currentTab = 'feed'; isHeaderVisible = true"><span class="material-symbols-rounded">forum</span>Feed</div>
-            <div class="nav-item" :class="{ 'active-gerald': currentTab === 'gerald' }" @click="currentTab = 'gerald'; isHeaderVisible = true"><span class="material-symbols-rounded">robot_2</span>Gerald</div>
-            <div class="nav-item" @click="modals.profile = true"><span class="material-symbols-rounded">account_circle</span>Profile</div>
+            <div class="nav-item" :class="{ active: currentTab === 'home' }" @click="currentTab = 'home'; isHeaderVisible = true" ontouchstart=""><span class="material-symbols-rounded">home</span>Home</div>
+            <div class="nav-item" :class="{ active: currentTab === 'chat' }" @click="currentTab = 'chat'; isHeaderVisible = true" ontouchstart=""><span class="material-symbols-rounded">chat</span>Chat</div>
+            <div class="nav-item" :class="{ active: currentTab === 'feed' }" @click="currentTab = 'feed'; isHeaderVisible = true" ontouchstart=""><span class="material-symbols-rounded">forum</span>Feed</div>
+            <div class="nav-item" :class="{ 'active-gerald': currentTab === 'gerald' }" @click="currentTab = 'gerald'; isHeaderVisible = true" ontouchstart=""><span class="material-symbols-rounded">robot_2</span>Gerald</div>
+            <div class="nav-item" @click="modals.profile = true" ontouchstart=""><span class="material-symbols-rounded">account_circle</span>Profile</div>
         </nav>
 
         <div class="modal-overlay" :class="{ open: modals.profile }" @click.self="modals.profile = false">
@@ -252,7 +312,7 @@
                     <h1 style="font-family:'Outfit'; font-size:16px; margin-bottom:20px; text-transform:uppercase; color:var(--text-muted); letter-spacing:1px; text-align:center;">Admin Access</h1>
                     <input type="text" v-model="loginEmail" class="input-box" placeholder="Email">
                     <input type="password" v-model="loginPass" class="input-box" placeholder="Password" @keyup.enter="handleLogin">
-                    <button class="sync-btn" @click="handleLogin">LOGIN</button>
+                    <button class="sync-btn" @click="handleLogin" ontouchstart="">LOGIN</button>
                 </div>
 
                 <div v-else>
@@ -261,11 +321,11 @@
                     </div>
                     
                     <div class="stat-grid">
-                        <a href="https://github.com/meowoccino/MikoTok" target="_blank" class="external-link-btn">
+                        <a href="https://github.com/meowoccino/MikoTok" target="_blank" class="external-link-btn" ontouchstart="">
                             <span class="material-symbols-rounded">code</span>
                             GitHub Repo
                         </a>
-                        <a href="https://supabase.com/dashboard/project/yhxcuayiwqpjvalyrcqv" target="_blank" class="external-link-btn">
+                        <a href="https://supabase.com/dashboard/project/yhxcuayiwqpjvalyrcqv" target="_blank" class="external-link-btn" ontouchstart="">
                             <span class="material-symbols-rounded">database</span>
                             Supabase DB
                         </a>
@@ -277,14 +337,14 @@
                         <input type="password" class="input-box" v-model="apiConfig.tkn" placeholder="Bearer Token">
                     </div>
 
-                    <button class="sync-btn" :class="{ success: syncState === 'sync-success' }" @click="runSync" :disabled="syncState === 'syncing'">
+                    <button class="sync-btn" :class="{ success: syncState === 'sync-success' }" @click="runSync" :disabled="syncState === 'syncing'" ontouchstart="">
                         <span v-if="syncState === 'syncing'" class="spinner"></span>
                         <span v-else-if="syncState === 'sync-success'" class="material-symbols-rounded">check</span>
                         <span v-else class="material-symbols-rounded">rocket_launch</span>
                         {{ syncState === 'syncing' ? 'SYNCING...' : (syncState === 'sync-success' ? 'SUCCESS' : 'FORCE DATA SYNC') }}
                     </button>
 
-                    <button class="logout-btn" @click="handleLogout">SIGN OUT</button>
+                    <button class="logout-btn" @click="handleLogout" ontouchstart="">SIGN OUT</button>
                 </div>
             </div>
         </div>
@@ -300,10 +360,81 @@
                 const validTabs = ['home', 'chat', 'feed', 'gerald'];
                 const currentTab = ref(validTabs.includes(initialHash) ? initialHash : 'home');
                 
-                const splashVisible = ref(true), splashOpacity = ref(1), clips = ref([]), discordFeed = ref([]), modals = ref({profile: false}), isLive = ref(false), currentUser = ref(null), loginEmail = ref(''), loginPass = ref(''), toast = ref({visible: false, message: ''}), latestVodId = ref(null), hostname = window.location.hostname || 'meowoccino.github.io', activeFeedVideo = ref('featured'), syncState = ref('idle');
+                const splashVisible = ref(true), splashOpacity = ref(1), clips = ref([]), allClips = ref([]), discordFeed = ref([]), modals = ref({profile: false}), isLive = ref(false), currentUser = ref(null), loginEmail = ref(''), loginPass = ref(''), toast = ref({visible: false, message: ''}), latestVodId = ref(null), hostname = window.location.hostname || 'meowoccino.github.io', activeFeedVideo = ref('featured'), syncState = ref('idle');
                 const apiConfig = ref({ cid: localStorage.getItem('twitch_cid') || '', tkn: localStorage.getItem('twitch_tkn') || '' });
                 const geraldInput = ref(''), geraldMessages = ref([{role:'gerald', content:'Synapses loaded. Try not to break anything.'}]), isGeraldTyping = ref(false);
                 
+                // Filter State
+                const currentFilter = ref('latest');
+                const activeFilterLabel = ref('Latest');
+                const isFilterMenuOpen = ref(false);
+
+                // VOD Carousel State - Now holds an array of Objects containing {id, date}
+                const recentVods = ref([]);
+                const currentVodIndex = ref(0);
+
+                const getVodLabel = (index) => {
+                    if (index === -1) return 'LIVE NOW';
+                    if (index === 0) return 'LATEST VOD';
+                    if (recentVods.value[index]) return recentVods.value[index].date;
+                    return 'PAST BROADCAST';
+                };
+
+                const nextVod = () => {
+                    if (currentVodIndex.value < recentVods.value.length - 1) currentVodIndex.value++;
+                };
+                const prevVod = () => {
+                    const minIndex = isLive.value ? -1 : 0;
+                    if (currentVodIndex.value > minIndex) currentVodIndex.value--;
+                };
+
+                const closeFilterMenu = () => { isFilterMenuOpen.value = false; };
+
+                const sortData = (filterKey) => {
+                    let sorted = [...allClips.value];
+                    const now = new Date();
+                    if (filterKey === 'latest') {
+                        sorted.sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
+                    } else {
+                        if (filterKey === 'weekly') {
+                            const weekAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
+                            sorted = sorted.filter(c => new Date(c.created_at) >= weekAgo);
+                        } else if (filterKey === 'month') {
+                            const monthAgo = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
+                            sorted = sorted.filter(c => new Date(c.created_at) >= monthAgo);
+                        } else if (filterKey === '6months') {
+                            const sixMonthsAgo = new Date(now.getTime() - 180 * 24 * 60 * 60 * 1000);
+                            sorted = sorted.filter(c => new Date(c.created_at) >= sixMonthsAgo);
+                        }
+                        sorted.sort((a, b) => b.view_count - a.view_count);
+                    }
+                    return sorted;
+                };
+
+                const applyFilter = (filterKey, label) => {
+                    currentFilter.value = filterKey;
+                    activeFilterLabel.value = label;
+                    isFilterMenuOpen.value = false;
+
+                    const feedContainer = document.getElementById('feed-scroll');
+                    
+                    // FIX: This specifically targets the first clip to auto-scroll directly to it!
+                    const firstClipElement = document.querySelector('.feed-snap-item:nth-child(2)');
+
+                    if(feedContainer) {
+                        if(firstClipElement) {
+                            firstClipElement.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                        }
+                        feedContainer.classList.remove('refreshing');
+                        void feedContainer.offsetWidth; 
+                        feedContainer.classList.add('refreshing');
+                    }
+
+                    setTimeout(() => {
+                        clips.value = sortData(filterKey);
+                    }, 300);
+                };
+
                 watch(currentTab, (newTab) => {
                     if (window.location.hash !== `#${newTab}`) {
                         window.history.pushState(null, '', `#${newTab}`);
@@ -399,7 +530,8 @@
 
                 const loadData = async () => {
                     const { data: c } = await sbClient.from('clips').select('*').order('created_at', { ascending: false }).limit(3000);
-                    clips.value = c || [];
+                    allClips.value = c || [];
+                    clips.value = sortData(currentFilter.value);
                     
                     setupObserver();
                     
@@ -424,12 +556,46 @@
                     try {
                         const res = await fetch('https://decapi.me/twitch/uptime/codemiko');
                         const text = await res.text(); isLive.value = !text.includes('offline');
-                        if (!isLive.value) {
-                            const vRes = await fetch('https://decapi.me/twitch/videos/codemiko?limit=1');
+                        
+                        try {
+                            const gqlRes = await fetch('https://gql.twitch.tv/gql', {
+                                method: 'POST',
+                                headers: { 'Client-ID': 'kimne78kx3ncx6brgo4mv6wki5h1ko' }, 
+                                body: JSON.stringify([{
+                                    operationName: "FilterableVideoTower_Videos",
+                                    variables: { limit: 15, channelOwnerLogin: "codemiko", broadcastType: "ARCHIVE", videoSort: "TIME" },
+                                    extensions: { persistedQuery: { version: 1, sha256Hash: "a937f1d22e269e39a03b509f65a7490f9fc247d7f83d6ac1421523e3b68042cb" } }
+                                }])
+                            });
+                            const data = await gqlRes.json();
+                            const edges = data[0].data.user.videos.edges;
+                            
+                            recentVods.value = edges.map(e => ({
+                                id: e.node.id,
+                                date: new Date(e.node.publishedAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric' }).toUpperCase()
+                            }));
+                            
+                            if (!isLive.value && recentVods.value.length > 0) {
+                                latestVodId.value = recentVods.value[0].id;
+                            }
+                        } catch(gqlError) {
+                            console.log("Falling back to decapi");
+                            const vRes = await fetch('https://decapi.me/twitch/videos/codemiko?limit=15');
                             const vText = await vRes.text();
-                            const m = vText.match(/\d{10,}/); if (m) latestVodId.value = m[0];
+                            const matches = vText.match(/\d{10,}/g); 
+                            if (matches) {
+                                recentVods.value = matches.map(id => ({ id: id, date: "PAST BROADCAST" }));
+                                if (!isLive.value) latestVodId.value = matches[0];
+                            }
                         }
-                    } catch(e) {}
+                        
+                        if (currentVodIndex.value === 0 || currentVodIndex.value === -1) {
+                            currentVodIndex.value = isLive.value ? -1 : 0;
+                        }
+                        
+                    } catch(e) {
+                        console.error("Failed to check live status.");
+                    }
                 };
 
                 const runSync = async () => {
@@ -460,11 +626,15 @@
                 onMounted(async () => {
                     const { data: { session } } = await sbClient.auth.getSession();
                     currentUser.value = session?.user || null;
-                    loadData(); checkLive();
+                    loadData(); 
+                    
+                    checkLive();
+                    setInterval(checkLive, 60000); 
+
                     setTimeout(() => { splashOpacity.value = 0; setTimeout(() => splashVisible.value = false, 400); }, 1500);
                 });
 
-                return { hostname, splashVisible, splashOpacity, currentTab, clips, discordFeed, modals, isLive, toast, currentUser, loginEmail, loginPass, apiConfig, latestVodId, activeFeedVideo, geraldInput, geraldMessages, isGeraldTyping, talkToGerald, logoSvg, syncState, runSync, isHeaderVisible, handleScroll, handleModalTouchStart, handleModalTouchMove, handleModalTouchEnd, handleLogin: async () => { const email = loginEmail.value.includes('@') ? loginEmail.value : `${loginEmail.value}@miko.com`; const { data, error } = await sbClient.auth.signInWithPassword({ email, password: loginPass.value }); if(data.user) { currentUser.value = data.user; } else showToast("INVALID LOGIN"); }, handleLogout: () => { sbClient.auth.signOut(); currentUser.value = null; }, optimizeTwitchImg: (u) => u.replace('%{width}', '480').replace('%{height}', '270'), formatViews: (v) => v ? v.toLocaleString() : '0', formatDate: (d) => new Date(d).toLocaleDateString([], {month:'short', day:'numeric'}), formatDateTime: (d) => new Date(d).toLocaleString(), cleanDiscordText: (t) => t.replace(/<a?:[^:]+:\d+>/g, '') };
+                return { hostname, splashVisible, splashOpacity, currentTab, clips, discordFeed, modals, isLive, toast, currentUser, loginEmail, loginPass, apiConfig, latestVodId, activeFeedVideo, geraldInput, geraldMessages, isGeraldTyping, talkToGerald, logoSvg, syncState, runSync, isHeaderVisible, handleScroll, handleModalTouchStart, handleModalTouchMove, handleModalTouchEnd, currentFilter, activeFilterLabel, isFilterMenuOpen, closeFilterMenu, applyFilter, recentVods, currentVodIndex, getVodLabel, nextVod, prevVod, handleLogin: async () => { const email = loginEmail.value.includes('@') ? loginEmail.value : `${loginEmail.value}@miko.com`; const { data, error } = await sbClient.auth.signInWithPassword({ email, password: loginPass.value }); if(data.user) { currentUser.value = data.user; } else showToast("INVALID LOGIN"); }, handleLogout: () => { sbClient.auth.signOut(); currentUser.value = null; }, optimizeTwitchImg: (u) => u.replace('%{width}', '480').replace('%{height}', '270'), formatViews: (v) => v ? v.toLocaleString() : '0', formatDate: (d) => new Date(d).toLocaleDateString([], {month:'short', day:'numeric'}), formatDateTime: (d) => new Date(d).toLocaleString(), cleanDiscordText: (t) => t.replace(/<a?:[^:]+:\d+>/g, '') };
             }
         }).mount('#app-container');
     </script>
