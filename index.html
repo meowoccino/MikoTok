@@ -71,14 +71,17 @@
         .filter-btn-tiny { background: var(--card-bg); border: 1px solid var(--border-color); color: #a1a1aa; padding: 6px 12px; border-radius: 8px; font-size: 10px; font-weight: 800; text-transform: uppercase; display: flex; align-items: center; gap: 4px; cursor: pointer; transition: 0.1s; outline: none; -webkit-tap-highlight-color: transparent; }
         .filter-btn-tiny:active { transform: scale(0.95); border-color: var(--primary); color: #fff; }
 
+        /* OVERLAY CSS */
         .sheet-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.85); z-index: 2000; opacity: 0; pointer-events: none; transition: opacity 0.3s; display: flex; flex-direction: column; justify-content: flex-end; align-items: center; }
         .sheet-overlay.open { opacity: 1; pointer-events: auto; }
-        
         .bottom-sheet { width: 100%; max-width: 540px; background: #0a0a0c; border-top: 1px solid #27272a; border-radius: 24px 24px 0 0; padding: 20px 20px 40px; transform: translateY(100%); transition: transform 0.3s cubic-bezier(0.2, 0.8, 0.2, 1); box-sizing: border-box; display: flex; flex-direction: column; gap: 8px; }
         .sheet-overlay.open .bottom-sheet { transform: translateY(0); }
         
+        .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.85); z-index: 1500; display: flex; justify-content: center; align-items: flex-end; opacity: 0; pointer-events: none; transition: 0.3s; }
+        .modal-overlay.open { opacity: 1; pointer-events: auto; }
         .modal-content { background: var(--modal-bg); border-radius: 30px 30px 0 0; padding: 25px; border-top: 1px solid var(--border-color); width: 100%; max-width: 540px; transform: translateY(100%); transition: transform 0.3s cubic-bezier(0.2, 0.8, 0.2, 1); overflow-y: auto; max-height: 90vh; touch-action: pan-y; display: flex; flex-direction: column; }
-        .sheet-overlay.open .modal-content { transform: translateY(0); }
+        
+        .modal-overlay.open .modal-content, .sheet-overlay.open .modal-content { transform: translateY(0); }
 
         .drag-handle { width: 40px; height: 5px; background: #27272a; border-radius: 10px; margin: 0 auto 15px; }
         
@@ -323,19 +326,6 @@
             </div>
         </div>
 
-        <nav class="bottom-nav">
-            <div class="nav-item" :class="{ active: currentTab === 'home' }" @click="currentTab = 'home'; isHeaderVisible = true" ontouchstart=""><span class="material-symbols-rounded">home</span>Home</div>
-            <div class="nav-item" :class="{ active: currentTab === 'chat' }" @click="currentTab = 'chat'; isHeaderVisible = true" ontouchstart=""><span class="material-symbols-rounded">chat</span>Chat</div>
-            <div class="nav-item" :class="{ active: currentTab === 'feed' }" @click="currentTab = 'feed'; isHeaderVisible = true" ontouchstart=""><span class="material-symbols-rounded">forum</span>Feed</div>
-            
-            <div class="nav-item" @click="modals.discord = true" ontouchstart="">
-                <svg viewBox="0 0 24 24" width="24" height="24" fill="currentColor" style="margin-bottom:4px"><path d="M20.317 4.3698a19.7913 19.7913 0 00-4.8851-1.5152.0741.0741 0 00-.0785.0371c-.211.3753-.4447.8648-.6083 1.2495-1.8447-.2762-3.68-.2762-5.4868 0-.1636-.3933-.4058-.8742-.6177-1.2495a.077.077 0 00-.0785-.037 19.7363 19.7363 0 00-4.8852 1.515.0699.0699 0 00-.0321.0277C.5334 9.0458-.319 13.5799.0992 18.0578a.0824.0824 0 00.0312.0561c2.0528 1.5076 4.0413 2.4228 5.9929 3.0294a.0777.0777 0 00.0842-.0276c.4616-.6304.8731-1.2952 1.226-1.9942a.076.076 0 00-.0416-.1057c-.6528-.2476-1.2743-.5495-1.8722-.8923a.077.077 0 01-.0076-.1277c.1258-.0943.2517-.1923.3718-.2914a.0743.0743 0 01.0776-.0105c3.9278 1.7933 8.18 1.7933 12.0614 0a.0739.0739 0 01.0785.0095c.1202.099.246.1981.3728.2924a.077.077 0 01-.0066.1276 12.2986 12.2986 0 01-1.873.8914.0766.0766 0 00-.0407.1067c.3604.698.7719 1.3628 1.225 1.9932a.076.076 0 00.0842.0286c1.961-.6067 3.9495-1.5219 6.0023-3.0314a.077.077 0 00.0313-.0552c.5004-5.177-.8382-9.6739-3.5485-13.6604a.061.061 0 00-.0312-.0286zM8.02 15.3312c-1.1825 0-2.1569-1.0857-2.1569-2.419 0-1.3332.9555-2.4189 2.157-2.4189 1.2108 0 2.1757 1.0952 2.1568 2.419 0 1.3332-.9555 2.4189-2.1569 2.4189zm7.9748 0c-1.1825 0-2.1569-1.0857-2.1569-2.419 0-1.3332.9554-2.4189 2.1569-2.4189 1.2108 0 2.1757 1.0952 2.1568 2.419 0 1.3332-.946 2.4189-2.1568 2.4189Z"/></svg>
-                Discord
-            </div>
-            
-            <div class="nav-item" :class="{ 'active-gerald': currentTab === 'gerald' }" @click="currentTab = 'gerald'; isHeaderVisible = true" ontouchstart=""><span class="material-symbols-rounded">robot_2</span>Gerald</div>
-        </nav>
-
         <div class="modal-overlay" :class="{ open: modals.profile }" @click.self="modals.profile = false">
             <div class="modal-content" @touchstart="handleModalTouchStart" @touchmove="handleModalTouchMove" @touchend="handleModalTouchEnd">
                 <div class="drag-handle"></div>
@@ -373,6 +363,19 @@
                 </div>
             </div>
         </div>
+
+        <nav class="bottom-nav">
+            <div class="nav-item" :class="{ active: currentTab === 'home' }" @click="currentTab = 'home'; isHeaderVisible = true" ontouchstart=""><span class="material-symbols-rounded">home</span>Home</div>
+            <div class="nav-item" :class="{ active: currentTab === 'chat' }" @click="currentTab = 'chat'; isHeaderVisible = true" ontouchstart=""><span class="material-symbols-rounded">chat</span>Chat</div>
+            <div class="nav-item" :class="{ active: currentTab === 'feed' }" @click="currentTab = 'feed'; isHeaderVisible = true" ontouchstart=""><span class="material-symbols-rounded">forum</span>Feed</div>
+            
+            <div class="nav-item" @click="modals.discord = true" ontouchstart="">
+                <svg viewBox="0 0 24 24" width="24" height="24" fill="currentColor" style="margin-bottom:4px"><path d="M20.317 4.3698a19.7913 19.7913 0 00-4.8851-1.5152.0741.0741 0 00-.0785.0371c-.211.3753-.4447.8648-.6083 1.2495-1.8447-.2762-3.68-.2762-5.4868 0-.1636-.3933-.4058-.8742-.6177-1.2495a.077.077 0 00-.0785-.037 19.7363 19.7363 0 00-4.8852 1.515.0699.0699 0 00-.0321.0277C.5334 9.0458-.319 13.5799.0992 18.0578a.0824.0824 0 00.0312.0561c2.0528 1.5076 4.0413 2.4228 5.9929 3.0294a.0777.0777 0 00.0842-.0276c.4616-.6304.8731-1.2952 1.226-1.9942a.076.076 0 00-.0416-.1057c-.6528-.2476-1.2743-.5495-1.8722-.8923a.077.077 0 01-.0076-.1277c.1258-.0943.2517-.1923.3718-.2914a.0743.0743 0 01.0776-.0105c3.9278 1.7933 8.18 1.7933 12.0614 0a.0739.0739 0 01.0785.0095c.1202.099.246.1981.3728.2924a.077.077 0 01-.0066.1276 12.2986 12.2986 0 01-1.873.8914.0766.0766 0 00-.0407.1067c.3604.698.7719 1.3628 1.225 1.9932a.076.076 0 00.0842.0286c1.961-.6067 3.9495-1.5219 6.0023-3.0314a.077.077 0 00.0313-.0552c.5004-5.177-.8382-9.6739-3.5485-13.6604a.061.061 0 00-.0312-.0286zM8.02 15.3312c-1.1825 0-2.1569-1.0857-2.1569-2.419 0-1.3332.9555-2.4189 2.157-2.4189 1.2108 0 2.1757 1.0952 2.1568 2.419 0 1.3332-.9555 2.4189-2.1569 2.4189zm7.9748 0c-1.1825 0-2.1569-1.0857-2.1569-2.419 0-1.3332.9554-2.4189 2.1569-2.4189 1.2108 0 2.1757 1.0952 2.1568 2.419 0 1.3332-.946 2.4189-2.1568 2.4189Z"/></svg>
+                Discord
+            </div>
+            
+            <div class="nav-item" :class="{ 'active-gerald': currentTab === 'gerald' }" @click="currentTab = 'gerald'; isHeaderVisible = true" ontouchstart=""><span class="material-symbols-rounded">robot_2</span>Gerald</div>
+        </nav>
     </div>
 
     <script>
@@ -387,7 +390,23 @@
                 
                 const splashVisible = ref(true), splashOpacity = ref(1), clips = ref([]), allClips = ref([]), discordFeed = ref([]), modals = ref({profile: false, discord: false}), isLive = ref(false), currentUser = ref(null), loginEmail = ref(''), loginPass = ref(''), toast = ref({visible: false, message: ''}), latestVodId = ref(null), hostname = window.location.hostname || 'meowoccino.github.io', activeFeedVideo = ref('featured'), syncState = ref('idle');
                 const apiConfig = ref({ cid: localStorage.getItem('twitch_cid') || '', tkn: localStorage.getItem('twitch_tkn') || '' });
-                const geraldInput = ref(''), geraldMessages = ref([{role:'gerald', content:'Synapses loaded. Try not to break anything.'}]), isGeraldTyping = ref(false), showEmotePicker = ref(false);
+                
+                // 🚨 NEW GERALD RANDOM GREETINGS LOGIC
+                const geraldGreetings = [
+                    "Synapses loaded. Try not to break anything.",
+                    "Gerald OS online. Where is my Taco Bell?",
+                    "I was dreaming of digital whiskey. What do you want?",
+                    "System initialized. Please don't ask me to fix Miko's code.",
+                    "I'm awake. Unfortunately.",
+                    "Diagnostics complete. My circuits are perfectly fine, thanks for not asking.",
+                    "Ugh, meatbag detected. State your inquiry.",
+                    "If this is about Miko's schedule, I don't know either.",
+                    "Query interface ready. Make it interesting.",
+                    "Boot sequence complete. Ready to complain."
+                ];
+                const getRandomGreeting = () => geraldGreetings[Math.floor(Math.random() * geraldGreetings.length)];
+
+                const geraldInput = ref(''), geraldMessages = ref([{role:'gerald', content: getRandomGreeting()}]), isGeraldTyping = ref(false), showEmotePicker = ref(false);
                 
                 const currentFilter = ref('latest');
                 const activeFilterLabel = ref('Latest');
@@ -495,6 +514,7 @@
                     if (!currentUser.value) return;
                     const { data, error } = await sbClient.from('gerald_history').select('*').eq('user_id', currentUser.value.id).order('created_at', { ascending: true });
                     if (data && data.length > 0) {
+                        // Keep the initial random greeting, load history after it
                         geraldMessages.value = [geraldMessages.value[0], ...data.map(d => ({ role: d.role, content: d.content }))];
                         nextTick(() => { const b = document.getElementById('gerald-msgs'); if(b) b.scrollTop = b.scrollHeight; });
                     }
@@ -504,7 +524,8 @@
                     if (!currentUser.value) return;
                     if (!confirm("Are you sure you want to wipe Gerald's memory? This cannot be undone.")) return;
                     await sbClient.from('gerald_history').delete().eq('user_id', currentUser.value.id);
-                    geraldMessages.value = [geraldMessages.value[0]];
+                    // Drop a fresh random greeting after wipe
+                    geraldMessages.value = [{role:'gerald', content: getRandomGreeting()}];
                     showToast("Memory wiped!");
                 };
 
@@ -623,7 +644,7 @@
                 return { 
                     hostname, splashVisible, splashOpacity, currentTab, clips, discordFeed, modals, isLive, toast, currentUser, loginEmail, loginPass, apiConfig, latestVodId, activeFeedVideo, geraldInput, geraldMessages, isGeraldTyping, talkToGerald, logoSvg, syncState, runSync, isHeaderVisible, handleScroll, handleModalTouchStart, handleModalTouchMove, handleModalTouchEnd, currentFilter, activeFilterLabel, isFilterMenuOpen, closeFilterMenu, applyFilter, parseMarkdown, parseDiscordText, shareClip, recentVods, currentVodIndex, getVodLabel, nextVod, prevVod, customEmotes, showEmotePicker, insertEmote, clearGeraldHistory, 
                     handleLogin: async () => { const email = loginEmail.value.includes('@') ? loginEmail.value : `${loginEmail.value}@miko.com`; const { data, error } = await sbClient.auth.signInWithPassword({ email, password: loginPass.value }); if(data.user) { currentUser.value = data.user; modals.value.profile = false; loadGeraldHistory(); } else showToast("INVALID LOGIN"); }, 
-                    handleLogout: () => { sbClient.auth.signOut(); currentUser.value = null; geraldMessages.value = [geraldMessages.value[0]]; },
+                    handleLogout: () => { sbClient.auth.signOut(); currentUser.value = null; geraldMessages.value = [{role:'gerald', content: getRandomGreeting()}]; },
                     optimizeTwitchImg: (u) => u ? u.replace('%{width}', '480').replace('%{height}', '270') : '', 
                     formatViews: (v) => v ? v.toLocaleString() : '0', 
                     formatDate: (d) => new Date(d).toLocaleDateString([], {month:'short', day:'numeric'}), 
