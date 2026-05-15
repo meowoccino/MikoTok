@@ -104,7 +104,6 @@
         .miko-metadata .author-name { font-weight: 800; font-size: 14px; color: white; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; line-height: 1.3; }
         .miko-metadata .clip-stats { font-size: 11px; font-weight: 700; color: var(--text-muted); display: flex; align-items: center; gap: 6px; margin-top: 5px; text-transform: uppercase; }
 
-        /* FIXED: Minimalist Share Button with Neon Gradient Icon ONLY */
         .share-btn { 
             background: transparent; border: none; 
             display: flex; align-items: center; justify-content: center;
@@ -564,14 +563,24 @@
                 };
                 
                 const parseDiscordText = (t) => {
+                    if (!t) return ''; 
+                    
                     let safeText = t.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
-                    // 1. Inject Image tags FIRST
+                    
+                    // 1. Linkify normal URLs FIRST (so it doesn't break our image code later)
+                    safeText = safeText.replace(/(https?:\/\/[^\s<]+)/g, '<a href="$1" target="_blank" style="color: var(--primary); text-decoration: underline;">$1</a>');
+
+                    // 2. Inject Image tags SECOND
                     safeText = safeText.replace(/&lt;(a?):([^:]+):(\d+)&gt;/g, (match, animated, name, id) => {
                         const ext = animated ? 'gif' : 'png';
                         return `<img src="https://cdn.discordapp.com/emojis/${id}.${ext}?size=44" alt=":${name}:" style="height: 1.5em; vertical-align: middle; display: inline-block;">`;
                     });
-                    // 2. Linkify URLs SECOND (now safe)
-                    safeText = safeText.replace(/(https?:\/\/[^\s]+)/g, '<a href="$1" target="_blank" style="color: var(--primary); text-decoration: underline;">$1</a>');
+                    
+                    // 3. Simple Discord Markdown (Bold and Italics)
+                    safeText = safeText.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
+                    safeText = safeText.replace(/\b_(.*?)_\b/g, '<em>$1</em>');
+                    safeText = safeText.replace(/\*(.*?)\*/g, '<em>$1</em>');
+
                     return safeText;
                 };
 
@@ -680,6 +689,7 @@
                         const emoteRegex = /<(a?):([^:]+):(\d+)>/g;
                         
                         f.forEach(item => {
+                            if (!item.content) return; // Added failsafe here!
                             const hash = item.content.trim();
                             if (!seen.has(hash)) {
                                 seen.add(hash);
