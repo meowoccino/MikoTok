@@ -63,6 +63,8 @@
         .scroll-area { height: 100%; width: 100%; overflow-y: auto; scroll-behavior: smooth; padding-bottom: 80px; }
         .scroll-area::-webkit-scrollbar { display: none; }
         
+        .community-feed { padding: 110px 15px 100px; display: flex; flex-direction: column; gap: 15px; }
+        
         #feed-scroll { padding-bottom: 0; scroll-snap-type: y mandatory; }
         .feed-snap-item { width: 100%; height: 100%; flex-shrink: 0; display: flex; flex-direction: column; justify-content: center; position: relative; padding: 0 15px 80px; scroll-snap-align: start; scroll-snap-stop: always; }
         
@@ -77,8 +79,7 @@
 
         .card { background: var(--card-bg); border-radius: 16px; padding: 16px; border: 1px solid var(--border-color); }
 
-        .clips-header { width: 100%; display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; z-index: 50; position: relative; padding: 0 5px; }
-        .clips-title { font-size: 15px; font-weight: 900; color: white; text-transform: uppercase; letter-spacing: 0.5px; }
+        .clips-header { width: 100%; display: flex; justify-content: flex-end; align-items: center; margin-bottom: 15px; z-index: 50; position: relative; padding: 0 5px; }
         .filter-wrapper { position: relative; }
         .filter-btn-tiny { background: var(--card-bg); border: 1px solid var(--border-color); color: #a1a1aa; padding: 6px 12px; border-radius: 8px; font-size: 10px; font-weight: 800; text-transform: uppercase; display: flex; align-items: center; gap: 4px; cursor: pointer; transition: 0.1s; outline: none; }
         .filter-btn-tiny:active { transform: scale(0.95); border-color: var(--primary); color: #fff; }
@@ -107,7 +108,7 @@
         .emote-picker-tray::-webkit-scrollbar { display: none; }
         .emote-picker-img { height: 32px; cursor: pointer; }
 
-        .gerald-send { background: var(--gerald); border: none; width: 44px; height: 44px; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white; cursor: pointer; flex-shrink: 0; }
+        .gerald-send { background: var(--gerald); border: none; width: 44px; height: 44px; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white; cursor: pointer; flex-shrink: 0; transition: 0.1s; }
         .gerald-send:active { transform: scale(0.9); }
         .typing-indicator { font-size: 11px; color: var(--gerald); padding: 5px 20px; font-weight: 700; text-transform: uppercase; }
 
@@ -157,8 +158,6 @@
         .premium-badge.live .dot { background: var(--danger); color: var(--danger); animation: heartbeat 1.5s infinite; }
         .premium-badge.vod .dot { background: var(--primary); color: var(--primary); animation: heartbeat 1.5s infinite; }
 
-        .community-feed { padding: 110px 15px 100px; display: flex; flex-direction: column; gap: 15px; }
-
         @keyframes storyGlow { 0% { background-position: 0% 50%; } 50% { background-position: 100% 50%; } 100% { background-position: 0% 50%; } }
         @keyframes pulse-glow { 0%, 100% { opacity: 1; } 50% { opacity: 0.4; } }
         @keyframes heartbeat { 0%, 100% { transform: scale(1); opacity: 1; } 50% { transform: scale(1.3); opacity: 0.5; } }
@@ -207,15 +206,15 @@
             <div class="scroll-area content-shimmer" :class="{ active: isRefreshing }" id="feed-scroll" v-show="currentTab === 'home'" @scroll="handleScroll">
                 <div class="feed-snap-item" data-id="featured" style="padding-top: 110px;">
                     <div class="header-controls" style="margin-bottom: 20px; min-height: 28px; display: flex; justify-content: flex-start;">
-                        <div class="premium-badge live" v-if="isLive"><div class="dot"></div><span>LIVE NOW</span></div>
+                        <div class="premium-badge live" v-if="currentVodIndex === -1"><div class="dot"></div><span>LIVE NOW</span></div>
                         <div class="premium-badge vod" v-else-if="recentVods.length > 0"><div class="dot"></div><span>{{ getVodLabel(currentVodIndex) }}</span></div>
                     </div>
                     
                     <div class="vod-animated-border">
                         <div class="video-container">
                             <template v-if="activeFeedVideo === 'featured'">
-                                <iframe v-if="isLive" :src="'https://player.twitch.tv/?channel=codemiko&parent=' + hostname + '&autoplay=true&muted=false'" allow="autoplay; fullscreen" allowfullscreen></iframe>
-                                <iframe v-else-if="recentVods[currentVodIndex]" :src="'https://player.twitch.tv/?video=' + recentVods[currentVodIndex].id + '&parent=' + hostname + '&autoplay=true&muted=false'" allow="autoplay; fullscreen" allowfullscreen></iframe>
+                                <iframe v-if="currentVodIndex === -1" :src="'https://player.twitch.tv/?channel=codemiko&parent=' + hostname + '&autoplay=true&muted=false'" allow="autoplay; fullscreen" allowfullscreen loading="lazy"></iframe>
+                                <iframe v-else-if="recentVods[currentVodIndex]" :src="'https://player.twitch.tv/?video=' + recentVods[currentVodIndex].id + '&parent=' + hostname + '&autoplay=true&muted=false'" allow="autoplay; fullscreen" allowfullscreen loading="lazy"></iframe>
                             </template>
                         </div>
                     </div>
@@ -228,7 +227,6 @@
                 
                 <div class="feed-snap-item" v-for="(clip, index) in clips" :key="clip.id" :data-id="clip.id">
                     <div v-if="index === 0" class="clips-header">
-                        <span class="clips-title">Trending Clips</span>
                         <div class="filter-wrapper" @click.stop>
                             <button class="filter-btn-tiny" @click="isFilterMenuOpen = true"><span class="material-symbols-rounded" style="font-size: 14px;">sort</span><span>{{ activeFilterLabel }}</span></button>
                         </div>
@@ -239,25 +237,25 @@
                     </div>
                     <div class="miko-metadata">
                         <div class="author-info">
-                            <img src="1000018850.png?v=2">
+                            <img src="1000018850.png?v=2" loading="lazy">
                             <div class="author-text-block">
                                 <span class="author-name">{{ clip.title }}</span>
                                 <div class="clip-stats">{{ formatViews(clip.view_count) }} views • {{ formatDate(clip.created_at) }}</div>
                             </div>
                         </div>
-                        <button class="share-btn" @click.stop="shareClip(clip)"><span class="material-symbols-rounded gradient-icon">send</span></button>
+                        <button class="share-btn" @click.stop="shareClip(clip)"><span class="material-symbols-rounded gradient-icon" style="font-size: 22px;">send</span></button>
                     </div>
                 </div>
             </div>
 
             <div class="chat-container" style="height:100%; padding-bottom: 80px;" v-if="currentTab === 'chat'">
-                <iframe :src="'https://www.twitch.tv/embed/codemiko/chat?parent=' + hostname + '&darkpopout'" height="100%" width="100%" frameborder="0"></iframe>
+                <iframe :src="'https://www.twitch.tv/embed/codemiko/chat?parent=' + hostname + '&darkpopout'" height="100%" width="100%" frameborder="0" loading="lazy"></iframe>
             </div>
 
             <div class="scroll-area community-feed content-shimmer" :class="{ active: isRefreshing }" id="discord-scroll" v-show="currentTab === 'feed'" @scroll="handleScroll">
                 <div v-for="(post, index) in discordFeed" :key="post.id || index" class="card stagger-item">
                     <div style="display:flex;align-items:center;margin-bottom:12px;">
-                        <img src="1000018850.png?v=2" style="width:40px; height:40px; border-radius:50%; border:2px solid var(--primary); object-fit:cover;">
+                        <img src="1000018850.png?v=2" style="width:40px; height:40px; border-radius:50%; border:2px solid var(--primary); object-fit:cover;" loading="lazy">
                         <div style="margin-left:12px;">
                             <div style="font-weight:900; font-size:15px; display:flex; align-items:center; gap:4px;">CodeMiko <span class="material-symbols-rounded" style="font-size: 16px; color: var(--primary);">verified</span></div>
                             <div style="font-size:11px; color:var(--text-muted);">{{ formatDateTime(post.created_at) }}</div>
@@ -432,7 +430,11 @@
 
                 const sortData = (filterKey) => {
                     let sorted = [...allClips.value]; const now = new Date();
-                    if (filterKey === 'latest') { sorted.sort((a, b) => new Date(b.created_at) - new Date(a.created_at)); } else {
+                    if (filterKey === 'latest') { 
+                        // STRICT DATE SORTING FOR DEFAULT
+                        sorted.sort((a, b) => new Date(b.created_at) - new Date(a.created_at)); 
+                    } else {
+                        // STRICT VIEW SORTING FOR FILTERS
                         if (filterKey === 'weekly') { sorted = sorted.filter(c => new Date(c.created_at) >= new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000)); } 
                         else if (filterKey === 'month') { sorted = sorted.filter(c => new Date(c.created_at) >= new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000)); } 
                         else if (filterKey === '6months') { sorted = sorted.filter(c => new Date(c.created_at) >= new Date(now.getTime() - 180 * 24 * 60 * 60 * 1000)); }
@@ -582,12 +584,13 @@
                     const { data: c } = await sbClient.from('clips').select('*').order('created_at', { ascending: false }).limit(3000);
                     allClips.value = c || []; clips.value = sortData(currentFilter.value);
                     setupObserver();
+                    
                     const { data: f } = await sbClient.from('discord_feed').select('*').order('created_at', { ascending: false }).limit(200);
                     if (f) {
                         const uniqueFeed = []; const seen = new Set(); const emoteRegex = /<(a?):([^:]+):(\d+)>/g;
                         f.forEach(item => {
-                            if (!item.content) return;
-                            uniqueFeed.push(item); let match; while ((match = emoteRegex.exec(item.content)) !== null) { customEmotes.value[match[2]] = { id: match[3], animated: match[1] === 'a' }; }
+                            if (!item.content) return; const hash = item.content.trim();
+                            if (!seen.has(hash)) { seen.add(hash); uniqueFeed.push(item); let match; while ((match = emoteRegex.exec(hash)) !== null) { customEmotes.value[match[2]] = { id: match[3], animated: match[1] === 'a' }; } }
                         });
                         discordFeed.value = uniqueFeed;
                     } else { discordFeed.value = []; }
@@ -616,16 +619,24 @@
                     syncState.value = 'syncing'; localStorage.setItem('twitch_cid', apiConfig.value.cid); localStorage.setItem('twitch_tkn', apiConfig.value.tkn);
                     try {
                         const uR = await fetch('https://api.twitch.tv/helix/users?login=codemiko', { headers: {'Client-Id': apiConfig.value.cid, 'Authorization': `Bearer ${apiConfig.value.tkn}`} });
-                        const uD = await uR.json(); let totalSynced = 0, cursor = '';
+                        const uD = await uR.json(); 
+                        
+                        // 🚨 30-DAY ROLLING WINDOW: Guaranteed to catch low-view clips from today!
+                        const now = new Date();
+                        const endDate = new Date(now.getTime() + 24 * 60 * 60 * 1000).toISOString(); // +1 day buffer to prevent timezone cuts
+                        const startDate = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000).toISOString(); // 30 days ago
+                        let totalSynced = 0, cursor = '';
+                        
                         do {
-                            const cR = await fetch(`https://api.twitch.tv/helix/clips?broadcaster_id=${uD.data[0].id}&first=100${cursor ? '&after='+cursor : ''}`, { headers: {'Client-Id': apiConfig.value.cid, 'Authorization': `Bearer ${apiConfig.value.tkn}`} });
+                            const cR = await fetch(`https://api.twitch.tv/helix/clips?broadcaster_id=${uD.data[0].id}&started_at=${startDate}&ended_at=${endDate}&first=100${cursor ? '&after='+cursor : ''}`, { headers: {'Client-Id': apiConfig.value.cid, 'Authorization': `Bearer ${apiConfig.value.tkn}`} });
                             const cD = await cR.json();
                             if (cD.data?.length > 0) {
                                 const ins = cD.data.map(x => ({ id: x.id, thumbnail_url: x.thumbnail_url, title: x.title, view_count: x.view_count, created_at: x.created_at, added_by: 'CodeMiko' }));
                                 await sbClient.from('clips').upsert(ins, { onConflict: 'id' }); totalSynced += cD.data.length;
                             }
                             cursor = cD.pagination?.cursor;
-                        } while (cursor && totalSynced < 3000); 
+                        } while (cursor && totalSynced < 1000); 
+                        
                         await loadData(); syncState.value = 'sync-success'; setTimeout(() => syncState.value = 'idle', 2000);
                     } catch (e) { syncState.value = 'idle'; showToast("SYNC FAILED"); }
                 };
