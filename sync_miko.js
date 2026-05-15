@@ -15,8 +15,8 @@ async function runSync() {
     const channel = await discord.channels.fetch(process.env.DISCORD_CHANNEL_ID);
     if (!channel) throw new Error("Could not find channel.");
 
-    // Fetch the last 5 messages to ensure we get something
-    const messages = await channel.messages.fetch({ limit: 5 });
+    // Fetch the last 100 messages to ensure we get something
+    const messages = await channel.messages.fetch({ limit: 100 });
     
     // Filter to get messages actually sent by a person (ignoring bots)
     const recentMessages = messages.map(m => ({
