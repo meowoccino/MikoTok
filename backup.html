@@ -14,16 +14,16 @@
             --text-main: #ffffff; --text-muted: #a1a1aa; --border-color: #27272a; 
             --danger: #ef4444; --offline-gray: #3f3f46; --success: #00ffa3; 
             --gerald: #0ea5e9; --discord: #5865F2;
-            --nav-bg: rgba(20, 20, 25, 0.75); --modal-bg: #0a0a0c;
+            --nav-bg: rgba(15, 15, 18, 0.85); --modal-bg: #0a0a0c;
         }
 
         * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; font-family: 'Inter', sans-serif; }
-        body, html { margin: 0; padding: 0; height: 100%; width: 100%; background: var(--bg-color); color: var(--text-main); overflow: hidden; display: flex; justify-content: center; align-items: center; }
+        body, html { margin: 0; padding: 0; height: 100%; width: 100%; background: var(--bg-color); color: var(--text-main); overflow: hidden; display: flex; justify-content: center; align-items: center; overscroll-behavior-y: none; }
         
         #app-container { width: 100%; max-width: 540px; height: 100%; max-height: 100dvh; position: relative; background: radial-gradient(circle at 50% 30%, #2a1147 0%, #050505 80%); overflow: hidden; display: flex; flex-direction: column; box-shadow: 0 0 50px rgba(0,0,0,0.8); transition: 0.3s; }
         [v-cloak] { display: none !important; }
 
-        .gradient-text { background: linear-gradient(135deg, #ffffff 30%, var(--primary) 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; font-family: 'Outfit', sans-serif; display: inline-block; }
+        .gradient-text { background: linear-gradient(135deg, #ffffff 30%, var(--primary) 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; font-family: 'Outfit', sans-serif; display: inline-block; font-weight: 900; }
 
         @keyframes fadeInUp { from { opacity: 0; transform: translate3d(0, 10px, 0); } to { opacity: 1; transform: translate3d(0, 0, 0); } }
         .stagger-item { animation: fadeInUp 0.3s ease forwards; opacity: 0; }
@@ -49,6 +49,16 @@
         .header-badge.live { background: var(--danger); color: white; }
         .header-badge.offline { background: var(--offline-gray); color: #fff; }
 
+        .pull-refresh-indicator { position: absolute; top: 0; left: 0; width: 100%; height: 60px; display: flex; justify-content: center; align-items: center; z-index: 45; transform: translateY(-100%); transition: transform 0.2s; }
+        .pull-refresh-indicator.pulling { transition: none; }
+        .pull-refresh-indicator .material-symbols-rounded { font-size: 28px; color: var(--primary); background: rgba(0,0,0,0.5); padding: 8px; border-radius: 50%; box-shadow: 0 0 15px rgba(145, 70, 255, 0.5); }
+        .refresh-spinning { animation: spin 1s linear infinite; }
+        
+        .content-shimmer { position: relative; }
+        .content-shimmer.active { opacity: 0.5; filter: grayscale(0.5); }
+        .content-shimmer.active::after { content: ''; position: absolute; inset: 0; background: linear-gradient(to bottom, transparent, rgba(145, 70, 255, 0.4), transparent); animation: scanline 0.8s ease-in-out forwards; z-index: 100; pointer-events: none; }
+        @keyframes scanline { 0% { transform: translateY(-10%); opacity: 0; } 50% { opacity: 1; } 100% { transform: translateY(110%); opacity: 0; } }
+
         .view-port { flex: 1; width: 100%; height: 100%; overflow: hidden; position: relative; }
         .scroll-area { height: 100%; width: 100%; overflow-y: auto; scroll-behavior: smooth; padding-bottom: 80px; }
         .scroll-area::-webkit-scrollbar { display: none; }
@@ -67,6 +77,12 @@
 
         .card { background: var(--card-bg); border-radius: 16px; padding: 16px; border: 1px solid var(--border-color); }
 
+        .clips-header { width: 100%; display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; z-index: 50; position: relative; padding: 0 5px; }
+        .clips-title { font-size: 15px; font-weight: 900; color: white; text-transform: uppercase; letter-spacing: 0.5px; }
+        .filter-wrapper { position: relative; }
+        .filter-btn-tiny { background: var(--card-bg); border: 1px solid var(--border-color); color: #a1a1aa; padding: 6px 12px; border-radius: 8px; font-size: 10px; font-weight: 800; text-transform: uppercase; display: flex; align-items: center; gap: 4px; cursor: pointer; transition: 0.1s; outline: none; }
+        .filter-btn-tiny:active { transform: scale(0.95); border-color: var(--primary); color: #fff; }
+
         .gerald-container { display: flex; flex-direction: column; height: 100%; padding-bottom: 80px; }
         .gerald-header { padding: 60px 20px 20px; text-align: center; display: flex; flex-direction: column; align-items: center; }
         .gerald-messages { flex: 1; overflow-y: auto; padding: 20px; display: flex; flex-direction: column; gap: 12px; }
@@ -76,7 +92,6 @@
         .chat-bubble.gerald { border-color: var(--gerald); align-self: flex-start; }
         .chat-bubble.user { align-self: flex-end; background: #1a1a1c; }
 
-        /* 🚨 TERMINAL INTRO STYLE */
         .terminal-intro { background: rgba(14, 165, 233, 0.05); border: 1px solid rgba(14, 165, 233, 0.2); border-radius: 16px; padding: 16px; margin-bottom: 10px; width: 100%; display: flex; flex-direction: column; gap: 8px; }
         .terminal-header { display: flex; align-items: center; gap: 6px; font-size: 10px; font-weight: 900; color: var(--gerald); text-transform: uppercase; letter-spacing: 1px; }
         .terminal-text { font-family: monospace; font-size: 13px; color: var(--text-muted); line-height: 1.4; }
@@ -142,11 +157,14 @@
         .premium-badge.live .dot { background: var(--danger); color: var(--danger); animation: heartbeat 1.5s infinite; }
         .premium-badge.vod .dot { background: var(--primary); color: var(--primary); animation: heartbeat 1.5s infinite; }
 
+        .community-feed { padding: 110px 15px 100px; display: flex; flex-direction: column; gap: 15px; }
+
         @keyframes storyGlow { 0% { background-position: 0% 50%; } 50% { background-position: 100% 50%; } 100% { background-position: 0% 50%; } }
         @keyframes pulse-glow { 0%, 100% { opacity: 1; } 50% { opacity: 0.4; } }
         @keyframes heartbeat { 0%, 100% { transform: scale(1); opacity: 1; } 50% { transform: scale(1.3); opacity: 0.5; } }
+        @keyframes spin { 100% { transform: rotate(360deg); } }
 
-        /* 🚨 PC FLOATING DOCK STYLES */
+        /* PC FLOATING DOCK STYLES */
         @media (min-width: 768px) {
             body { padding: 2vh; }
             #app-container { flex-direction: column; max-width: 1000px; height: 95vh; border-radius: 24px; }
@@ -155,7 +173,8 @@
             .nav-item { flex: initial; width: auto; padding: 0; }
             .nav-item .material-symbols-rounded { font-size: 28px; }
             .scroll-area { padding-bottom: 120px; }
-            .feed-snap-item, .community-feed, .gerald-container { padding-bottom: 100px; } 
+            .feed-snap-item, .community-feed { padding-bottom: 100px; } 
+            .gerald-input-area { padding-bottom: 110px; }
         }
     </style>
 </head>
@@ -169,6 +188,10 @@
             <div class="progress-bar"><div class="progress-fill"></div></div>
         </div>
 
+        <div class="pull-refresh-indicator" :class="{ pulling: isPulling }" :style="{ transform: refreshTransform }">
+            <span class="material-symbols-rounded" :class="{ 'refresh-spinning': isRefreshing }">sync</span>
+        </div>
+
         <header class="app-header" :class="{ hidden: !isHeaderVisible }" v-if="currentTab === 'home' || currentTab === 'feed'">
             <div style="width:28px;height:28px; cursor:pointer;" v-html="logoSvg('header')" @click="modals.profile = true"></div>
             <span class="gradient-text" style="font-size:20px; font-weight:900; cursor:pointer;" @click="modals.profile = true">MikoTok</span>
@@ -180,23 +203,25 @@
             </a>
         </header>
 
-        <div class="view-port">
-            <div class="scroll-area" id="feed-scroll" v-show="currentTab === 'home'" @scroll="handleScroll">
+        <div class="view-port" @touchstart="handlePullStart" @touchmove="handlePullMove" @touchend="handlePullEnd">
+            <div class="scroll-area content-shimmer" :class="{ active: isRefreshing }" id="feed-scroll" v-show="currentTab === 'home'" @scroll="handleScroll">
                 <div class="feed-snap-item" data-id="featured" style="padding-top: 110px;">
-                    <div class="header-controls">
-                        <div class="premium-badge live" v-if="currentVodIndex === -1"><div class="dot"></div><span>LIVE NOW</span></div>
+                    <div class="header-controls" style="margin-bottom: 20px; min-height: 28px; display: flex; justify-content: flex-start;">
+                        <div class="premium-badge live" v-if="isLive"><div class="dot"></div><span>LIVE NOW</span></div>
                         <div class="premium-badge vod" v-else-if="recentVods.length > 0"><div class="dot"></div><span>{{ getVodLabel(currentVodIndex) }}</span></div>
                     </div>
+                    
                     <div class="vod-animated-border">
                         <div class="video-container">
                             <template v-if="activeFeedVideo === 'featured'">
-                                <iframe v-if="currentVodIndex === -1" :src="'https://player.twitch.tv/?channel=codemiko&parent=' + hostname + '&autoplay=true&muted=false'" allowfullscreen></iframe>
-                                <iframe v-else-if="recentVods[currentVodIndex]" :src="'https://player.twitch.tv/?video=' + recentVods[currentVodIndex].id + '&parent=' + hostname + '&autoplay=true&muted=false'" allowfullscreen></iframe>
+                                <iframe v-if="isLive" :src="'https://player.twitch.tv/?channel=codemiko&parent=' + hostname + '&autoplay=true&muted=false'" allow="autoplay; fullscreen" allowfullscreen></iframe>
+                                <iframe v-else-if="recentVods[currentVodIndex]" :src="'https://player.twitch.tv/?video=' + recentVods[currentVodIndex].id + '&parent=' + hostname + '&autoplay=true&muted=false'" allow="autoplay; fullscreen" allowfullscreen></iframe>
                             </template>
                         </div>
                     </div>
-                    <div class="carousel-controls" v-if="recentVods.length > 0 || isLive">
-                        <button class="carousel-btn" :class="{ 'hidden-arrow': currentVodIndex <= (isLive ? -1 : 0) }" @click.stop="prevVod"><span class="material-symbols-rounded">chevron_left</span></button>
+                    
+                    <div class="carousel-controls" v-if="recentVods.length > 0 && !isLive">
+                        <button class="carousel-btn" :class="{ 'hidden-arrow': currentVodIndex <= 0 }" @click.stop="prevVod"><span class="material-symbols-rounded">chevron_left</span></button>
                         <button class="carousel-btn" :class="{ 'hidden-arrow': currentVodIndex >= recentVods.length - 1 }" @click.stop="nextVod"><span class="material-symbols-rounded">chevron_right</span></button>
                     </div>
                 </div>
@@ -209,8 +234,8 @@
                         </div>
                     </div>
                     <div class="video-container">
-                        <img :src="optimizeTwitchImg(clip.thumbnail_url)">
-                        <iframe v-if="activeFeedVideo === clip.id" :src="'https://clips.twitch.tv/embed?clip=' + clip.id + '&parent=' + hostname + '&autoplay=true&muted=false'" allowfullscreen></iframe>
+                        <img :src="clip.thumbnail_url ? optimizeTwitchImg(clip.thumbnail_url) : ''" loading="lazy">
+                        <iframe v-if="activeFeedVideo === clip.id" :src="'https://clips.twitch.tv/embed?clip=' + clip.id + '&parent=' + hostname + '&autoplay=true&muted=false'" allow="autoplay; fullscreen" allowfullscreen loading="lazy"></iframe>
                     </div>
                     <div class="miko-metadata">
                         <div class="author-info">
@@ -220,7 +245,7 @@
                                 <div class="clip-stats">{{ formatViews(clip.view_count) }} views • {{ formatDate(clip.created_at) }}</div>
                             </div>
                         </div>
-                        <button class="share-btn" @click.stop="shareClip(clip)"><span class="material-symbols-rounded gradient-icon" style="font-size: 22px;">send</span></button>
+                        <button class="share-btn" @click.stop="shareClip(clip)"><span class="material-symbols-rounded gradient-icon">send</span></button>
                     </div>
                 </div>
             </div>
@@ -229,7 +254,7 @@
                 <iframe :src="'https://www.twitch.tv/embed/codemiko/chat?parent=' + hostname + '&darkpopout'" height="100%" width="100%" frameborder="0"></iframe>
             </div>
 
-            <div class="scroll-area community-feed" v-if="currentTab === 'feed'" @scroll="handleScroll">
+            <div class="scroll-area community-feed content-shimmer" :class="{ active: isRefreshing }" id="discord-scroll" v-show="currentTab === 'feed'" @scroll="handleScroll">
                 <div v-for="(post, index) in discordFeed" :key="post.id || index" class="card stagger-item">
                     <div style="display:flex;align-items:center;margin-bottom:12px;">
                         <img src="1000018850.png?v=2" style="width:40px; height:40px; border-radius:50%; border:2px solid var(--primary); object-fit:cover;">
@@ -252,7 +277,7 @@
                     </div>
                 </div>
                 
-                <div class="gerald-messages" id="gerald-msgs">
+                <div class="gerald-messages" id="gerald-msgs" ref="geraldMsgsRef">
                     <template v-for="(m, i) in geraldMessages" :key="i">
                         <div v-if="i === 0 && m.role === 'gerald'" class="terminal-intro">
                             <div class="terminal-header"><span class="material-symbols-rounded" style="font-size: 14px;">terminal</span> Session Initialized</div>
@@ -272,7 +297,7 @@
                             <button class="emote-toggle-btn" @click="showEmotePicker = !showEmotePicker"><span class="material-symbols-rounded" :style="{ color: showEmotePicker ? 'var(--gerald)' : 'inherit' }">mood</span></button>
                             <input type="text" class="gerald-input" placeholder="Query the system..." v-model.lazy="geraldInput" @keyup.enter="talkToGerald" id="gerald-txt-input">
                         </div>
-                        <button class="gerald-send" @click="talkToGerald"><span class="material-symbols-rounded">bolt</span></button>
+                        <button class="gerald-send" @click="talkToGerald"><span class="material-symbols-rounded">send</span></button>
                     </div>
                 </div>
             </div>
@@ -315,8 +340,8 @@
                 <div v-else>
                     <div class="infra-bar"><div class="status-node"><div class="pulse"></div> SYSTEM: READY</div></div>
                     <div class="stat-grid">
-                        <a href="https://github.com/meowoccino/MikoTok" target="_blank" class="external-link-btn"><span class="material-symbols-rounded">code</span>Repo</a>
-                        <a href="https://supabase.com/dashboard/project/yhxcuayiwqpjvalyrcqv" target="_blank" class="external-link-btn"><span class="material-symbols-rounded">database</span>DB</a>
+                        <a href="https://github.com/meowoccino/MikoTok" target="_blank" class="external-link-btn"><span class="material-symbols-rounded">code</span>GitHub Repo</a>
+                        <a href="https://supabase.com/dashboard/project/yhxcuayiwqpjvalyrcqv" target="_blank" class="external-link-btn"><span class="material-symbols-rounded">database</span>Supabase DB</a>
                     </div>
                     <div style="background:rgba(255,255,255,0.03); border:1px solid var(--border-color); border-radius:12px; padding:15px; margin-bottom:15px;">
                         <div style="font-size:10px; font-weight:800; color:var(--text-muted); margin-bottom:10px;">TWITCH API</div>
@@ -365,18 +390,45 @@
                 const geraldInput = ref(''), geraldMessages = ref([{role:'gerald', content: getRandomGreeting()}]), isGeraldTyping = ref(false), showEmotePicker = ref(false);
                 
                 const currentFilter = ref('latest'), activeFilterLabel = ref('Latest'), isFilterMenuOpen = ref(false);
-                
+                const isPulling = ref(false), refreshTransform = ref('translateY(-100%)'), isRefreshing = ref(false);
+                let touchStartY = 0, pullDistance = 0;
+
                 const customEmotes = ref({
                     "mikoSusge": { id: "1273724925743595540", animated: false }, "KEKW": { id: "1456296327964262453", animated: false }, "mkoNOTED": { id: "1369891690898391070", animated: false }, "mkoHype": { id: "870761283035734086", animated: false }, "mkoMania": { id: "1503598179751432212", animated: false }, "mkoLove": { id: "1150505635721519115", animated: false }, "WOWERS": { id: "780097274939965490", animated: false }, "Shruge": { id: "1456297412875518078", animated: false }, "PAUSERS": { id: "802261333403762740", animated: false }, "slayyy": { id: "1456297602910916760", animated: false }
                 });
 
-                const recentVods = ref([]), currentVodIndex = ref(0);
+                const recentVods = ref([]), currentVodIndex = ref(0), geraldMsgsRef = ref(null);
+
                 const getVodLabel = (index) => { if (index === -1) return 'LIVE NOW'; if (index === 0) return 'LATEST VOD'; if (recentVods.value[index]) return `VOD • ${recentVods.value[index].date}`; return 'PAST BROADCAST'; };
                 const nextVod = () => { if (currentVodIndex.value < recentVods.value.length - 1) currentVodIndex.value++; };
                 const prevVod = () => { const minIndex = isLive.value ? -1 : 0; if (currentVodIndex.value > minIndex) currentVodIndex.value--; };
                 
                 const closeFilterMenu = () => { isFilterMenuOpen.value = false; };
                 const insertEmote = (name) => { const inputEl = document.getElementById('gerald-txt-input'); if (inputEl) { inputEl.value += `:${name}: `; geraldInput.value = inputEl.value; } else { geraldInput.value += `:${name}: `; } };
+
+                const scrollToBottom = () => {
+                    nextTick(() => {
+                        const b = geraldMsgsRef.value;
+                        if (b) {
+                            b.scrollTop = b.scrollHeight;
+                            setTimeout(() => { b.scrollTop = b.scrollHeight; }, 150);
+                        }
+                    });
+                };
+
+                let scrollTimeout;
+                onMounted(() => {
+                    const obs = new ResizeObserver(() => { 
+                        clearTimeout(scrollTimeout);
+                        scrollTimeout = setTimeout(() => { if(currentTab.value === 'gerald') scrollToBottom(); }, 150);
+                    });
+                    if(geraldMsgsRef.value) obs.observe(geraldMsgsRef.value);
+                });
+
+                const runNeonAnimation = () => {
+                    isRefreshing.value = true;
+                    setTimeout(() => { isRefreshing.value = false; }, 800);
+                };
 
                 const sortData = (filterKey) => {
                     let sorted = [...allClips.value]; const now = new Date();
@@ -391,6 +443,7 @@
 
                 const applyFilter = (filterKey, label) => {
                     currentFilter.value = filterKey; activeFilterLabel.value = label; isFilterMenuOpen.value = false;
+                    runNeonAnimation();
                     const feedContainer = document.getElementById('feed-scroll');
                     if(feedContainer) {
                         clips.value = sortData(filterKey);
@@ -400,6 +453,32 @@
                             feedContainer.classList.remove('refreshing'); void feedContainer.offsetWidth; feedContainer.classList.add('refreshing');
                         });
                     }
+                };
+
+                const handlePullStart = (e) => {
+                    if (currentTab.value === 'home' || currentTab.value === 'feed') {
+                        const activeScroll = currentTab.value === 'home' ? document.getElementById('feed-scroll') : document.querySelector('.community-feed');
+                        if (activeScroll && typeof activeScroll.scrollTop !== 'undefined' && activeScroll.scrollTop <= 0 && !isRefreshing.value) {
+                            touchStartY = e.touches[0].clientY; isPulling.value = true;
+                        }
+                    }
+                };
+                const handlePullMove = (e) => {
+                    if (!isPulling.value) return;
+                    pullDistance = e.touches[0].clientY - touchStartY;
+                    if (pullDistance > 0) {
+                        const activeScroll = currentTab.value === 'home' ? document.getElementById('feed-scroll') : document.querySelector('.community-feed');
+                        if (activeScroll && typeof activeScroll.scrollTop !== 'undefined' && activeScroll.scrollTop <= 0) {
+                            refreshTransform.value = `translateY(${Math.min(pullDistance - 60, 20)}px)`;
+                        } else { isPulling.value = false; }
+                    }
+                };
+                const handlePullEnd = () => {
+                    if (isPulling.value && pullDistance > 80) {
+                        runNeonAnimation(); 
+                        if (currentTab.value === 'feed') loadData();
+                    }
+                    isPulling.value = false; pullDistance = 0; refreshTransform.value = 'translateY(-100%)';
                 };
 
                 watch(currentTab, (newTab) => { if (window.location.hash !== `#${newTab}`) { window.history.pushState(null, '', `#${newTab}`); }});
@@ -417,6 +496,7 @@
                 const showToast = (msg) => { toast.value.message = msg; toast.value.visible = true; setTimeout(() => toast.value.visible = false, 3000); };
                 
                 const parseMarkdown = (text) => {
+                    if (!text) return '';
                     let html = text.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>').replace(/\*(.*?)\*/g, '<em>$1</em>').replace(/\[(.*?)\]\((.*?)\)/g, '<a href="$2" target="_blank" style="color: var(--gerald); text-decoration: underline;">$1</a>'); 
                     html = html.replace(/:([^:\s]+):/g, (match, name) => {
                         const emote = customEmotes.value[name];
@@ -443,11 +523,10 @@
                     const { data } = await sbClient.from('gerald_history').select('*').eq('user_id', currentUser.value.id).order('created_at', { ascending: true });
                     if (data && data.length > 0) {
                         let history = data.map(d => ({ role: d.role, content: d.content }));
-                        // If the first message isn't Gerald, inject a fake intro so the Terminal UI still works!
                         if (history[0].role !== 'gerald') { history.unshift({role: 'gerald', content: "Synapses loaded. Try not to break anything."}); }
                         geraldMessages.value = history;
                     }
-                    nextTick(() => { const b = document.getElementById('gerald-msgs'); if(b) b.scrollTop = b.scrollHeight; });
+                    scrollToBottom();
                 };
 
                 const clearGeraldHistory = async () => {
@@ -468,6 +547,7 @@
                     
                     geraldInput.value = ''; if (inputEl) inputEl.value = ''; 
                     isGeraldTyping.value = true; showEmotePicker.value = false;
+                    scrollToBottom();
                     
                     const geminiHistory = geraldMessages.value.map(m => ({ role: m.role === 'gerald' ? 'model' : 'user', parts: [{ text: m.content }] }));
                     const emoteNames = Object.keys(customEmotes.value).map(n => `:${n}:`).join(', ');
@@ -484,7 +564,7 @@
                             if (currentUser.value) { sbClient.from('gerald_history').insert({ role: 'gerald', content: cleanReply, user_id: currentUser.value.id }).then(); }
                         } else if (data && data.error) { throw new Error(data.error); }
                     } catch (e) { geraldMessages.value.push({ role: 'gerald', content: 'SYSTEM ERROR: Edge Function offline or Gemini API missing.' }); 
-                    } finally { isGeraldTyping.value = false; nextTick(() => { const b = document.getElementById('gerald-msgs'); if(b) b.scrollTop = b.scrollHeight; }); }
+                    } finally { isGeraldTyping.value = false; scrollToBottom(); }
                 };
 
                 const setupObserver = () => {
@@ -502,12 +582,12 @@
                     const { data: c } = await sbClient.from('clips').select('*').order('created_at', { ascending: false }).limit(3000);
                     allClips.value = c || []; clips.value = sortData(currentFilter.value);
                     setupObserver();
-                    const { data: f } = await sbClient.from('discord_feed').select('*').order('created_at', { ascending: false }).limit(100);
+                    const { data: f } = await sbClient.from('discord_feed').select('*').order('created_at', { ascending: false }).limit(200);
                     if (f) {
                         const uniqueFeed = []; const seen = new Set(); const emoteRegex = /<(a?):([^:]+):(\d+)>/g;
                         f.forEach(item => {
-                            if (!item.content) return; const hash = item.content.trim();
-                            if (!seen.has(hash)) { seen.add(hash); uniqueFeed.push(item); let match; while ((match = emoteRegex.exec(hash)) !== null) { customEmotes.value[match[2]] = { id: match[3], animated: match[1] === 'a' }; } }
+                            if (!item.content) return;
+                            uniqueFeed.push(item); let match; while ((match = emoteRegex.exec(item.content)) !== null) { customEmotes.value[match[2]] = { id: match[3], animated: match[1] === 'a' }; }
                         });
                         discordFeed.value = uniqueFeed;
                     } else { discordFeed.value = []; }
@@ -558,7 +638,7 @@
                 });
 
                 return { 
-                    hostname, splashVisible, splashOpacity, currentTab, clips, discordFeed, modals, isLive, toast, currentUser, loginEmail, loginPass, apiConfig, latestVodId, activeFeedVideo, geraldInput, geraldMessages, isGeraldTyping, talkToGerald, logoSvg, syncState, runSync, isHeaderVisible, handleScroll, handleModalTouchStart, handleModalTouchMove, handleModalTouchEnd, currentFilter, activeFilterLabel, isFilterMenuOpen, closeFilterMenu, applyFilter, parseMarkdown, parseDiscordText, shareClip, recentVods, currentVodIndex, getVodLabel, nextVod, prevVod, customEmotes, showEmotePicker, insertEmote, clearGeraldHistory, 
+                    hostname, splashVisible, splashOpacity, currentTab, clips, discordFeed, modals, isLive, toast, currentUser, loginEmail, loginPass, apiConfig, latestVodId, activeFeedVideo, geraldInput, geraldMessages, isGeraldTyping, talkToGerald, logoSvg, syncState, runSync, isHeaderVisible, handleScroll, handleModalTouchStart, handleModalTouchMove, handleModalTouchEnd, currentFilter, activeFilterLabel, isFilterMenuOpen, closeFilterMenu, applyFilter, parseMarkdown, parseDiscordText, shareClip, recentVods, currentVodIndex, getVodLabel, nextVod, prevVod, customEmotes, showEmotePicker, insertEmote, clearGeraldHistory, isPulling, refreshTransform, isRefreshing, handlePullStart, handlePullMove, handlePullEnd, geraldMsgsRef,
                     handleLogin: async () => { const email = loginEmail.value.includes('@') ? loginEmail.value : `${loginEmail.value}@miko.com`; const { data, error } = await sbClient.auth.signInWithPassword({ email, password: loginPass.value }); if(data.user) { currentUser.value = data.user; modals.value.profile = false; loadGeraldHistory(); } else showToast("INVALID LOGIN"); }, 
                     handleLogout: () => { sbClient.auth.signOut(); currentUser.value = null; geraldMessages.value = [{role:'gerald', content: getRandomGreeting()}]; },
                     optimizeTwitchImg: (u) => u ? u.replace('%{width}', '480').replace('%{height}', '270') : '', 
