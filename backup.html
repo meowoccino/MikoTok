@@ -13,8 +13,8 @@
             --bg-color: #050505; --card-bg: #111113; --primary: #9146FF; --primary-light: #a970ff; 
             --text-main: #ffffff; --text-muted: #a1a1aa; --border-color: #27272a; 
             --danger: #ef4444; --offline-gray: #3f3f46; --success: #00ffa3; 
-            --gerald: #0ea5e9; 
-            --nav-bg: rgba(20, 20, 25, 0.7); --modal-bg: #0a0a0c;
+            --gerald: #0ea5e9; --discord: #5865F2;
+            --nav-bg: rgba(20, 20, 25, 0.75); --modal-bg: #0a0a0c;
         }
 
         * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; font-family: 'Inter', sans-serif; }
@@ -23,29 +23,21 @@
         #app-container { width: 100%; max-width: 540px; height: 100%; max-height: 100dvh; position: relative; background: radial-gradient(circle at 50% 30%, #2a1147 0%, #050505 80%); overflow: hidden; display: flex; flex-direction: column; box-shadow: 0 0 50px rgba(0,0,0,0.8); transition: 0.3s; }
         [v-cloak] { display: none !important; }
 
+        .gradient-text { background: linear-gradient(135deg, #ffffff 30%, var(--primary) 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; font-family: 'Outfit', sans-serif; display: inline-block; }
+
         @keyframes fadeInUp { from { opacity: 0; transform: translate3d(0, 10px, 0); } to { opacity: 1; transform: translate3d(0, 0, 0); } }
-        .stagger-item { animation: fadeInUp 0.3s ease forwards; opacity: 0; will-change: transform, opacity; }
+        .stagger-item { animation: fadeInUp 0.3s ease forwards; opacity: 0; }
 
         #splash-screen { position: absolute; inset: 0; background: var(--bg-color); display: flex; flex-direction: column; align-items: center; justify-content: center; z-index: 9999; transition: opacity 0.3s ease-out; }
         .progress-bar { width: 180px; height: 3px; background: rgba(145,70,255,0.2); border-radius: 10px; overflow: hidden; margin-top: 20px; position: relative; }
         .progress-fill { position: absolute; left: 0; top: 0; height: 100%; width: 50%; background: linear-gradient(90deg, transparent, var(--primary-light), var(--primary)); animation: load 1s infinite linear; }
         @keyframes load { 0% { transform: translateX(-100%); } 100% { transform: translateX(200%); } }
         
-        .vod-animated-border {
-            position: relative;
-            padding: 3px;
-            border-radius: 15px;
-            background: linear-gradient(90deg, #ffffff, var(--primary), #ffffff);
-            background-size: 200% auto;
-            animation: panBorder 4s linear infinite;
-        }
-        @keyframes panBorder {
-            0% { background-position: 0% center; }
-            100% { background-position: 200% center; }
-        }
+        .vod-animated-border { position: relative; padding: 3px; border-radius: 15px; background: linear-gradient(90deg, #ffffff, var(--primary), #ffffff); background-size: 200% auto; animation: panBorder 4s linear infinite; }
+        @keyframes panBorder { 0% { background-position: 0% center; } 100% { background-position: 200% center; } }
 
         .app-header { width: 100%; padding: 45px 20px 15px; display: flex; align-items: center; justify-content: space-between; z-index: 100; position: absolute; top: 0; left: 0; background: linear-gradient(to bottom, rgba(0,0,0,0.8) 0%, transparent 100%); pointer-events: none; transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1); transform: translateZ(0); }
-        .app-header.hidden { transform: translateY(-100%) translateZ(0); }
+        .app-header.hidden { transform: translateY(-100%); }
         .app-header > * { pointer-events: auto; }
         
         .header-status-wrapper { position: relative; width: 44px; height: 44px; display: flex; align-items: center; justify-content: center; text-decoration: none; }
@@ -58,146 +50,112 @@
         .header-badge.offline { background: var(--offline-gray); color: #fff; }
 
         .view-port { flex: 1; width: 100%; height: 100%; overflow: hidden; position: relative; }
-        
-        .scroll-area { height: 100%; width: 100%; overflow-y: auto; scroll-behavior: smooth; touch-action: pan-y; padding-bottom: 80px; overflow-anchor: none; }
+        .scroll-area { height: 100%; width: 100%; overflow-y: auto; scroll-behavior: smooth; padding-bottom: 80px; }
         .scroll-area::-webkit-scrollbar { display: none; }
         
         #feed-scroll { padding-bottom: 0; scroll-snap-type: y mandatory; }
+        .feed-snap-item { width: 100%; height: 100%; flex-shrink: 0; display: flex; flex-direction: column; justify-content: center; position: relative; padding: 0 15px 80px; scroll-snap-align: start; scroll-snap-stop: always; }
         
-        .refreshing { animation: feedPulse 0.5s ease-in-out forwards; }
-        @keyframes feedPulse { 
-            0% { opacity: 0; transform: scale(0.98); } 
-            100% { opacity: 1; transform: scale(1); } 
-        }
-
-        .feed-snap-item { width: 100%; height: 100%; flex-shrink: 0; display: flex; flex-direction: column; justify-content: center; position: relative; padding: 0 15px 80px; scroll-snap-align: start; scroll-snap-stop: always; overflow-anchor: none; }
-
-        .header-controls { display: flex; justify-content: flex-start; align-items: center; width: 100%; margin-bottom: 12px; }
-        
-        .carousel-controls { display: flex; justify-content: space-between; align-items: center; width: 100%; margin-top: 15px; position: relative; z-index: 40; padding: 0 10px; box-sizing: border-box; }
-        .carousel-btn { background: #111113; border: 1px solid var(--border-color); color: white; width: 50px; height: 50px; border-radius: 50%; display: flex; align-items: center; justify-content: center; cursor: pointer; transition: background 0.1s, transform 0.1s, border-color 0.1s, color 0.1s; outline: none; -webkit-tap-highlight-color: transparent; }
-        .carousel-btn:active:not(.hidden-arrow) { transform: scale(0.9); background: rgba(145, 70, 255, 0.25); border-color: var(--primary); color: var(--primary); }
+        .carousel-controls { display: flex; justify-content: space-between; align-items: center; width: 100%; margin-top: 15px; z-index: 40; padding: 0 10px; }
+        .carousel-btn { background: #111113; border: 1px solid var(--border-color); color: white; width: 50px; height: 50px; border-radius: 50%; display: flex; align-items: center; justify-content: center; cursor: pointer; transition: 0.1s; outline: none; }
+        .carousel-btn:active:not(.hidden-arrow) { transform: scale(0.9); border-color: var(--primary); color: var(--primary); }
         .carousel-btn.hidden-arrow { opacity: 0; pointer-events: none; } 
 
-        .clips-header { width: 100%; display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; z-index: 50; position: relative; padding: 0 5px; }
-        .clips-title { font-size: 15px; font-weight: 900; color: white; text-transform: uppercase; letter-spacing: 0.5px; }
-        .filter-wrapper { position: relative; }
+        .video-container { position: relative; width: 100%; aspect-ratio: 16/9; background: #000; border-radius: 12px; overflow: hidden; box-shadow: 0 10px 40px rgba(0,0,0,0.6); }
+        .video-container iframe { position: absolute; inset: 0; width: 100%; height: 100%; border: none; z-index: 2; }
+        .video-container img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; z-index: 1; opacity: 0.5; }
 
-        .filter-btn-tiny { background: var(--card-bg); border: 1px solid var(--border-color); color: #a1a1aa; padding: 6px 12px; border-radius: 8px; font-size: 10px; font-weight: 800; text-transform: uppercase; display: flex; align-items: center; gap: 4px; cursor: pointer; transition: 0.1s; outline: none; -webkit-tap-highlight-color: transparent; }
-        .filter-btn-tiny:active { transform: scale(0.95); border-color: var(--primary); color: #fff; }
+        .card { background: var(--card-bg); border-radius: 16px; padding: 16px; border: 1px solid var(--border-color); }
+
+        .gerald-container { display: flex; flex-direction: column; height: 100%; padding-bottom: 80px; }
+        .gerald-header { padding: 60px 20px 20px; text-align: center; display: flex; flex-direction: column; align-items: center; }
+        .gerald-messages { flex: 1; overflow-y: auto; padding: 20px; display: flex; flex-direction: column; gap: 12px; }
+        
+        .chat-bubble { max-width: 85%; padding: 12px 18px; font-size: 14px; font-weight: 400; line-height: 1.5; background: var(--card-bg); border: 1px solid var(--border-color); border-radius: 25px; color: white; word-wrap: break-word; }
+        .chat-bubble strong { font-weight: 700; }
+        .chat-bubble.gerald { border-color: var(--gerald); align-self: flex-start; }
+        .chat-bubble.user { align-self: flex-end; background: #1a1a1c; }
+
+        /* 🚨 TERMINAL INTRO STYLE */
+        .terminal-intro { background: rgba(14, 165, 233, 0.05); border: 1px solid rgba(14, 165, 233, 0.2); border-radius: 16px; padding: 16px; margin-bottom: 10px; width: 100%; display: flex; flex-direction: column; gap: 8px; }
+        .terminal-header { display: flex; align-items: center; gap: 6px; font-size: 10px; font-weight: 900; color: var(--gerald); text-transform: uppercase; letter-spacing: 1px; }
+        .terminal-text { font-family: monospace; font-size: 13px; color: var(--text-muted); line-height: 1.4; }
+        
+        .gerald-input-area { padding: 15px; display: flex; gap: 10px; border-top: 1px solid var(--border-color); background: var(--bg-color); }
+        .gerald-input-wrapper { display: flex; align-items: center; background: var(--card-bg); border: 1px solid var(--border-color); border-radius: 25px; flex: 1; padding-left: 5px; transition: 0.2s; }
+        .gerald-input-wrapper:focus-within { border-color: var(--gerald); }
+        .emote-toggle-btn { background: transparent; border: none; color: var(--text-muted); cursor: pointer; padding: 8px; border-radius: 50%; }
+        .emote-toggle-btn:active { color: var(--gerald); }
+        .gerald-input { flex: 1; background: transparent; border: none; padding: 12px 10px; color: white; outline: none; font-size: 14px; }
+        
+        .emote-picker-tray { display: flex; gap: 12px; overflow-x: auto; padding: 12px 15px; background: #111113; border-top: 1px solid var(--border-color); }
+        .emote-picker-tray::-webkit-scrollbar { display: none; }
+        .emote-picker-img { height: 32px; cursor: pointer; }
+
+        .gerald-send { background: var(--gerald); border: none; width: 44px; height: 44px; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white; cursor: pointer; flex-shrink: 0; }
+        .gerald-send:active { transform: scale(0.9); }
+        .typing-indicator { font-size: 11px; color: var(--gerald); padding: 5px 20px; font-weight: 700; text-transform: uppercase; }
+
+        .infra-bar { background: var(--card-bg); border: 1px solid var(--border-color); border-radius: 14px; padding: 14px 18px; display: flex; justify-content: center; margin-bottom: 16px; }
+        .status-node { display: flex; align-items: center; gap: 8px; font-size: 11px; font-weight: 800; text-transform: uppercase; }
+        .pulse { width: 8px; height: 8px; border-radius: 50%; background: var(--success); box-shadow: 0 0 10px var(--success); animation: pulse-glow 2s infinite; }
+        .stat-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 16px; }
+        
+        .external-link-btn { background: var(--card-bg); border: 1px solid var(--border-color); padding: 15px; border-radius: 14px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 8px; color: var(--text-main); text-decoration: none; font-weight: 800; font-size: 11px; text-transform: uppercase; transition: 0.2s; }
+        .external-link-btn:active { transform: scale(0.95); border-color: var(--primary); }
+
+        .bottom-nav { position: absolute; bottom: 20px; left: 50%; transform: translateX(-50%); width: calc(100% - 20px); background: var(--nav-bg); backdrop-filter: blur(20px); border-radius: 30px; border: 1px solid rgba(255, 255, 255, 0.1); display: flex; justify-content: space-between; align-items: center; padding: 10px 5px; z-index: 1000; box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
+        .nav-item { display: flex; flex-direction: column; align-items: center; flex: 1; color: var(--text-muted); font-size: 9px; gap: 4px; cursor: pointer; text-decoration: none; font-weight: 700; transition: 0.2s; }
+        .nav-item.active { color: var(--text-main); }
+        .nav-item.active .material-symbols-rounded { font-variation-settings: 'FILL' 1; color: var(--primary); }
+        .nav-item.active-gerald { color: var(--gerald); }
 
         .sheet-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.85); z-index: 2000; opacity: 0; pointer-events: none; transition: opacity 0.3s; display: flex; flex-direction: column; justify-content: flex-end; align-items: center; }
         .sheet-overlay.open { opacity: 1; pointer-events: auto; }
-        
         .bottom-sheet { width: 100%; max-width: 540px; background: #0a0a0c; border-top: 1px solid #27272a; border-radius: 24px 24px 0 0; padding: 20px 20px 40px; transform: translateY(100%); transition: transform 0.3s cubic-bezier(0.2, 0.8, 0.2, 1); box-sizing: border-box; display: flex; flex-direction: column; gap: 8px; }
         .sheet-overlay.open .bottom-sheet { transform: translateY(0); }
-        
+        .sheet-option { width: 100%; background: transparent; border: none; color: #a1a1aa; padding: 16px; border-radius: 12px; font-size: 13px; font-weight: 800; text-transform: uppercase; cursor: pointer; transition: 0.2s; }
+        .sheet-option.active { background: rgba(145, 70, 255, 0.15); color: #9146FF; border: 1px solid rgba(145, 70, 255, 0.3); }
+
+        .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.85); z-index: 2000; display: flex; justify-content: center; align-items: flex-end; opacity: 0; pointer-events: none; transition: 0.3s; }
+        .modal-overlay.open { opacity: 1; pointer-events: auto; }
+        .modal-content { background: var(--modal-bg); border-radius: 30px 30px 0 0; padding: 25px; border-top: 1px solid var(--border-color); width: 100%; max-width: 540px; transform: translateY(100%); transition: transform 0.3s cubic-bezier(0.2, 0.8, 0.2, 1); overflow-y: auto; max-height: 90vh; }
+        .modal-overlay.open .modal-content { transform: translateY(0); }
         .drag-handle { width: 40px; height: 5px; background: #27272a; border-radius: 10px; margin: 0 auto 15px; }
         
-        .sheet-option { width: 100%; background: transparent; border: none; color: #a1a1aa; padding: 16px; border-radius: 12px; font-size: 13px; font-weight: 800; text-transform: uppercase; cursor: pointer; transition: 0.2s; font-family: 'Inter', sans-serif; -webkit-tap-highlight-color: transparent; letter-spacing: 0.5px; }
-        .sheet-option.active { background: rgba(145, 70, 255, 0.15); color: #9146FF; border: 1px solid rgba(145, 70, 255, 0.3); }
+        .input-box { width: 100%; background: var(--bg-color); border: 1px solid var(--border-color); border-radius: 12px; padding: 15px; color: white; margin-bottom: 15px; outline: none; font-size: 13px; font-weight: 600; }
+        .sync-btn { width: 100%; background: var(--primary); border: none; color: white; padding: 15px; border-radius: 12px; font-weight: 800; cursor: pointer; margin-bottom: 10px; display: flex; justify-content: center; align-items: center; gap: 8px; }
+        .logout-btn { width: 100%; background: transparent; border: 1px solid var(--danger); color: var(--danger); padding: 12px; border-radius: 12px; margin-top: 10px; cursor: pointer; font-weight: 800; display: flex; justify-content: center; align-items: center; gap: 8px; }
 
         .miko-metadata { display: flex; align-items: flex-start; justify-content: space-between; padding: 12px 5px 0; background: transparent; width: 100%; gap: 10px; }
         .miko-metadata .author-info { display: flex; align-items: center; min-width: 0; flex: 1; }
         .miko-metadata img { width: 44px; height: 44px; border-radius: 50%; border: 2px solid var(--primary); margin-right: 12px; box-shadow: 0 2px 10px rgba(0,0,0,0.5); flex-shrink: 0; }
         .miko-metadata .author-text-block { min-width: 0; flex: 1; }
-        .miko-metadata .author-name { font-weight: 800; font-size: 14px; color: white; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; line-height: 1.3; }
+        .miko-metadata .author-name { font-weight: 800; font-size: 14px; color: white; display: -webkit-box; -webkit-line-clamp: 2; overflow: hidden; }
         .miko-metadata .clip-stats { font-size: 11px; font-weight: 700; color: var(--text-muted); display: flex; align-items: center; gap: 6px; margin-top: 5px; text-transform: uppercase; }
 
-        .share-btn { 
-            background: transparent; border: none; 
-            display: flex; align-items: center; justify-content: center;
-            cursor: pointer; transition: 0.2s; outline: none; -webkit-tap-highlight-color: transparent; flex-shrink: 0; 
-            padding: 8px; width: 40px; height: 40px;
-        }
-        .share-btn .gradient-icon {
-            background: linear-gradient(135deg, var(--primary), #ff4685);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            display: inline-block;
-        }
-        .share-btn:active { transform: scale(0.9); opacity: 0.7; }
-
-        .toast-popup { position: absolute; top: 50px; left: 50%; transform: translate3d(-50%, -10px, 0); background: var(--danger); color: white; padding: 12px 24px; border-radius: 50px; font-size: 13px; font-weight: 800; text-align: center; z-index: 2500; opacity: 0; transition: opacity 0.3s; pointer-events: none; }
-        .toast-popup.show { opacity: 1; transform: translate3d(-50%, 0, 0); }
+        .share-btn { background: transparent; border: none; display: flex; align-items: center; justify-content: center; cursor: pointer; transition: 0.2s; flex-shrink: 0; padding: 8px; width: 40px; height: 40px; }
+        .share-btn .gradient-icon { background: linear-gradient(135deg, var(--primary), #ff4685); -webkit-background-clip: text; -webkit-text-fill-color: transparent; display: inline-block; }
 
         .premium-badge { display: inline-flex; align-items: center; justify-content: center; gap: 8px; background: rgba(0, 0, 0, 0.7); backdrop-filter: blur(10px); border: 1px solid rgba(255, 255, 255, 0.15); padding: 6px 14px; border-radius: 30px; color: #fff; font-size: 10px; font-weight: 900; text-transform: uppercase; }
         .premium-badge .dot { width: 6px; height: 6px; border-radius: 50%; box-shadow: 0 0 8px currentColor; }
         .premium-badge.live .dot { background: var(--danger); color: var(--danger); animation: heartbeat 1.5s infinite; }
         .premium-badge.vod .dot { background: var(--primary); color: var(--primary); animation: heartbeat 1.5s infinite; }
 
-        .video-container { position: relative; width: 100%; aspect-ratio: 16/9; z-index: 2; box-shadow: 0 10px 40px rgba(0,0,0,0.6); background: #000; border-radius: 12px; overflow: hidden; }
-        .video-container iframe { position: absolute; top: 0; left: 0; width: 100%; height: 100%; border: none; z-index: 2; }
-        .video-container img { position: absolute; top: 0; left: 0; width: 100%; height: 100%; border: none; object-fit: cover; z-index: 1; opacity: 0.5; }
-
-        .community-feed { padding: 100px 12px 100px; height: 100%; overflow-y: auto; display: flex; flex-direction: column; gap: 15px; }
-        .card { background: var(--card-bg); border-radius: 16px; padding: 16px; border: 1px solid var(--border-color); }
-
-        .gerald-container { display: flex; flex-direction: column; height: 100%; padding-bottom: 80px; }
-        .gerald-header { padding: 60px 20px 20px; text-align: center; background: transparent; display: flex; flex-direction: column; align-items: center; }
-        .gerald-messages { flex: 1; overflow-y: auto; padding: 20px; display: flex; flex-direction: column; gap: 12px; }
-        
-        .chat-bubble { max-width: 85%; padding: 12px 18px; font-size: 13px; font-weight: 600; font-family: 'Inter', sans-serif; background: var(--card-bg); border: 1px solid var(--border-color); border-radius: 25px; color: white; word-wrap: break-word; transform: translateZ(0); }
-        .chat-bubble.gerald { border-color: var(--gerald); align-self: flex-start; }
-        .chat-bubble.user { align-self: flex-end; }
-        
-        .gerald-input-area { padding: 15px; display: flex; gap: 10px; border-top: 1px solid var(--border-color); background: var(--bg-color); }
-        .gerald-input { flex: 1; background: var(--card-bg); border: 1px solid var(--border-color); border-radius: 25px; padding: 10px 18px; color: white; outline: none; font-size: 13px; font-weight: 600; }
-        .gerald-input:focus { border-color: var(--gerald); }
-        .gerald-send { background: var(--gerald); border: none; width: 40px; height: 40px; border-radius: 50%; display: flex; align-items: center; justify-content: center; cursor: pointer; color: white; transition: transform 0.1s; outline: none; -webkit-tap-highlight-color: transparent; }
-        .gerald-send:active { transform: scale(0.9); }
-        .typing-indicator { font-size: 11px; color: var(--gerald); padding: 5px 20px; font-weight: 700; text-transform: uppercase; }
-
-        .infra-bar { background: var(--card-bg); border: 1px solid var(--border-color); border-radius: 14px; padding: 14px 18px; display: flex; justify-content: center; margin-bottom: 16px; }
-        .status-node { display: flex; align-items: center; gap: 8px; font-size: 11px; font-weight: 800; letter-spacing: 0.5px; text-transform: uppercase; }
-        .pulse { width: 8px; height: 8px; border-radius: 50%; background: var(--success); box-shadow: 0 0 10px var(--success); animation: pulse-glow 2s infinite; }
-        .stat-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 16px; }
-        
-        .external-link-btn { background: var(--card-bg); border: 1px solid var(--border-color); padding: 15px; border-radius: 14px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 8px; color: var(--text-main); text-decoration: none; font-weight: 800; font-size: 11px; text-transform: uppercase; letter-spacing: 0.5px; transition: transform 0.2s, border-color 0.2s; outline: none; -webkit-tap-highlight-color: transparent; }
-        .external-link-btn:active { transform: scale(0.95); border-color: var(--primary); }
-        .external-link-btn .material-symbols-rounded { font-size: 26px; color: var(--text-muted); transition: 0.2s; }
-        .external-link-btn:active .material-symbols-rounded { color: var(--primary); }
-        
-        .spinner { width: 18px; height: 18px; border: 3px solid rgba(255,255,255,0.3); border-top-color: currentColor; border-radius: 50%; animation: spin 1s linear infinite; }
-        @keyframes spin { 100% { transform: rotate(360deg); } }
-
-        .bottom-nav { position: absolute; bottom: 20px; left: 50%; transform: translateX(-50%) translateZ(0); will-change: transform; width: calc(100% - 20px); background: var(--nav-bg); backdrop-filter: blur(20px); border-radius: 30px; border: 1px solid rgba(255, 255, 255, 0.1); display: flex; justify-content: space-between; align-items: center; padding: 10px 5px; z-index: 100; box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
-        .nav-item { display: flex; flex-direction: column; align-items: center; flex: 1; color: var(--text-muted); font-size: 9px; gap: 4px; cursor: pointer; text-decoration: none; transition: 0.2s; font-weight: 700; outline: none; -webkit-tap-highlight-color: transparent; }
-        .nav-item.active { color: var(--text-main); }
-        .nav-item.active .material-symbols-rounded { font-variation-settings: 'FILL' 1; color: var(--primary); }
-        .nav-item.active-gerald { color: var(--gerald); }
-        .nav-item.active-gerald .material-symbols-rounded { color: var(--gerald); }
-
-        .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.85); z-index: 1500; display: flex; justify-content: center; align-items: flex-end; opacity: 0; pointer-events: none; transition: 0.3s; }
-        .modal-overlay.open { opacity: 1; pointer-events: auto; }
-        .modal-content { background: var(--modal-bg); border-radius: 30px 30px 0 0; padding: 25px; border-top: 1px solid var(--border-color); width: 100%; max-width: 540px; transform: translateY(100%); transition: transform 0.3s cubic-bezier(0.2, 0.8, 0.2, 1); overflow-y: auto; max-height: 90vh; touch-action: pan-y; }
-        .modal-overlay.open .modal-content { transform: translateY(0); }
-        .drag-handle { width: 40px; height: 5px; background: var(--border-color); border-radius: 10px; margin: 0 auto 20px; }
-
-        .input-box { width: 100%; background: var(--bg-color); border: 1px solid var(--border-color); border-radius: 12px; padding: 15px; color: white; margin-bottom: 15px; outline: none; font-size: 13px; font-weight: 600; }
-        
-        .sync-btn { width: 100%; background: var(--primary); border: none; color: white; padding: 15px; border-radius: 12px; font-weight: 800; cursor: pointer; margin-bottom: 10px; display: flex; justify-content: center; align-items: center; gap: 8px; transition: 0.2s; outline: none; -webkit-tap-highlight-color: transparent; }
-        .sync-btn:active { transform: scale(0.97); }
-        .sync-btn.success { background: var(--success); color: #000; pointer-events: none; }
-        
-        .logout-btn { width: 100%; background: transparent; border: 1px solid var(--danger); color: var(--danger); padding: 12px; border-radius: 12px; margin-top: 15px; cursor: pointer; font-weight: 800; transition: 0.2s; outline: none; -webkit-tap-highlight-color: transparent; }
-        .logout-btn:active { background: var(--danger); color: white; }
-
         @keyframes storyGlow { 0% { background-position: 0% 50%; } 50% { background-position: 100% 50%; } 100% { background-position: 0% 50%; } }
-        @keyframes heartbeat { 0%, 100% { transform: scale(1); opacity: 1; } 50% { transform: scale(1.3); opacity: 0.5; } }
         @keyframes pulse-glow { 0%, 100% { opacity: 1; } 50% { opacity: 0.4; } }
-        
-        .gradient-text { display: inline-block; background: linear-gradient(135deg, #ffffff 30%, var(--primary) 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; font-family: 'Outfit', sans-serif; }
+        @keyframes heartbeat { 0%, 100% { transform: scale(1); opacity: 1; } 50% { transform: scale(1.3); opacity: 0.5; } }
 
-        /* DESKTOP & TABLET MEDIA QUERY RESPONSIVENESS */
+        /* 🚨 PC FLOATING DOCK STYLES */
         @media (min-width: 768px) {
-            body { padding: 2vh 2vw; }
-            #app-container { flex-direction: row; max-width: 1000px; height: 95vh; border-radius: 24px; box-shadow: 0 20px 60px rgba(0,0,0,0.9); }
-            .view-port { border-radius: 24px 0 0 24px; }
-            .bottom-nav { position: relative; bottom: 0; left: 0; transform: none; width: 90px; height: 100%; border-radius: 0 24px 24px 0; flex-direction: column; justify-content: center; gap: 40px; background: rgba(20, 20, 25, 0.9); border: none; border-left: 1px solid rgba(255, 255, 255, 0.05); }
-            .nav-item { width: 100%; padding: 10px 0; }
-            .scroll-area { padding-bottom: 0; }
-            .feed-snap-item, .community-feed, .gerald-container { padding-bottom: 40px; } 
+            body { padding: 2vh; }
+            #app-container { flex-direction: column; max-width: 1000px; height: 95vh; border-radius: 24px; }
+            .view-port { border-radius: 24px; }
+            .bottom-nav { position: absolute; bottom: 30px; left: 50%; transform: translateX(-50%); width: max-content; min-width: 450px; padding: 12px 30px; border-radius: 40px; gap: 40px; background: rgba(20, 20, 25, 0.85); flex-direction: row; justify-content: center; }
+            .nav-item { flex: initial; width: auto; padding: 0; }
+            .nav-item .material-symbols-rounded { font-size: 28px; }
+            .scroll-area { padding-bottom: 120px; }
+            .feed-snap-item, .community-feed, .gerald-container { padding-bottom: 100px; } 
         }
     </style>
 </head>
@@ -224,60 +182,36 @@
 
         <div class="view-port">
             <div class="scroll-area" id="feed-scroll" v-show="currentTab === 'home'" @scroll="handleScroll">
-                
                 <div class="feed-snap-item" data-id="featured" style="padding-top: 110px;">
-                    
                     <div class="header-controls">
-                        <div class="premium-badge live" v-if="currentVodIndex === -1">
-                            <div class="dot"></div><span>LIVE NOW</span>
-                        </div>
-                        <div class="premium-badge vod" v-else-if="recentVods.length > 0">
-                            <div class="dot"></div><span>{{ getVodLabel(currentVodIndex) }}</span>
-                        </div>
+                        <div class="premium-badge live" v-if="currentVodIndex === -1"><div class="dot"></div><span>LIVE NOW</span></div>
+                        <div class="premium-badge vod" v-else-if="recentVods.length > 0"><div class="dot"></div><span>{{ getVodLabel(currentVodIndex) }}</span></div>
                     </div>
-
                     <div class="vod-animated-border">
-                        <div class="video-container" style="box-shadow: none;">
+                        <div class="video-container">
                             <template v-if="activeFeedVideo === 'featured'">
-                                <iframe v-if="currentVodIndex === -1" :src="'https://player.twitch.tv/?channel=codemiko&parent=' + hostname + '&autoplay=true&muted=false'" allow="autoplay" allowfullscreen></iframe>
-                                <iframe v-else-if="recentVods[currentVodIndex]" :src="'https://player.twitch.tv/?video=' + recentVods[currentVodIndex].id + '&parent=' + hostname + '&autoplay=true&muted=false'" allow="autoplay" allowfullscreen></iframe>
+                                <iframe v-if="currentVodIndex === -1" :src="'https://player.twitch.tv/?channel=codemiko&parent=' + hostname + '&autoplay=true&muted=false'" allowfullscreen></iframe>
+                                <iframe v-else-if="recentVods[currentVodIndex]" :src="'https://player.twitch.tv/?video=' + recentVods[currentVodIndex].id + '&parent=' + hostname + '&autoplay=true&muted=false'" allowfullscreen></iframe>
                             </template>
-                            <div v-if="!isLive && recentVods.length === 0" style="width:100%; height:100%; display:flex; align-items:center; justify-content:center; color:white; font-size:14px; font-weight:800; z-index: 1;">OFFLINE</div>
                         </div>
                     </div>
-
                     <div class="carousel-controls" v-if="recentVods.length > 0 || isLive">
-                        <button class="carousel-btn" :class="{ 'hidden-arrow': currentVodIndex <= (isLive ? -1 : 0) }" @click.stop="prevVod" ontouchstart="">
-                            <span class="material-symbols-rounded">chevron_left</span>
-                        </button>
-                        <button class="carousel-btn" :class="{ 'hidden-arrow': currentVodIndex >= recentVods.length - 1 }" @click.stop="nextVod" ontouchstart="">
-                            <span class="material-symbols-rounded">chevron_right</span>
-                        </button>
+                        <button class="carousel-btn" :class="{ 'hidden-arrow': currentVodIndex <= (isLive ? -1 : 0) }" @click.stop="prevVod"><span class="material-symbols-rounded">chevron_left</span></button>
+                        <button class="carousel-btn" :class="{ 'hidden-arrow': currentVodIndex >= recentVods.length - 1 }" @click.stop="nextVod"><span class="material-symbols-rounded">chevron_right</span></button>
                     </div>
                 </div>
-
+                
                 <div class="feed-snap-item" v-for="(clip, index) in clips" :key="clip.id" :data-id="clip.id">
-
                     <div v-if="index === 0" class="clips-header">
                         <span class="clips-title">Trending Clips</span>
                         <div class="filter-wrapper" @click.stop>
-                            <button class="filter-btn-tiny" @click="isFilterMenuOpen = true" ontouchstart="">
-                                <span class="material-symbols-rounded" style="font-size: 14px;">sort</span>
-                                <span>{{ activeFilterLabel }}</span>
-                            </button>
+                            <button class="filter-btn-tiny" @click="isFilterMenuOpen = true"><span class="material-symbols-rounded" style="font-size: 14px;">sort</span><span>{{ activeFilterLabel }}</span></button>
                         </div>
                     </div>
-
                     <div class="video-container">
                         <img :src="optimizeTwitchImg(clip.thumbnail_url)">
-                        <iframe
-                            v-if="activeFeedVideo === clip.id && currentTab === 'home'"
-                            :src="'https://clips.twitch.tv/embed?clip=' + clip.id + '&parent=' + hostname + '&autoplay=true&muted=false'"
-                            allow="autoplay"
-                            allowfullscreen>
-                        </iframe>
+                        <iframe v-if="activeFeedVideo === clip.id" :src="'https://clips.twitch.tv/embed?clip=' + clip.id + '&parent=' + hostname + '&autoplay=true&muted=false'" allowfullscreen></iframe>
                     </div>
-
                     <div class="miko-metadata">
                         <div class="author-info">
                             <img src="1000018850.png?v=2">
@@ -286,18 +220,13 @@
                                 <div class="clip-stats">{{ formatViews(clip.view_count) }} views • {{ formatDate(clip.created_at) }}</div>
                             </div>
                         </div>
-                        
-                        <button class="share-btn" @click.stop="shareClip(clip)" ontouchstart="">
-                            <span class="material-symbols-rounded gradient-icon" style="font-size: 22px;">send</span>
-                        </button>
-                        
+                        <button class="share-btn" @click.stop="shareClip(clip)"><span class="material-symbols-rounded gradient-icon" style="font-size: 22px;">send</span></button>
                     </div>
-
                 </div>
             </div>
 
             <div class="chat-container" style="height:100%; padding-bottom: 80px;" v-if="currentTab === 'chat'">
-                <iframe v-if="currentTab === 'chat'" :src="'https://www.twitch.tv/embed/codemiko/chat?parent=' + hostname + '&darkpopout'" height="100%" width="100%" frameborder="0"></iframe>
+                <iframe :src="'https://www.twitch.tv/embed/codemiko/chat?parent=' + hostname + '&darkpopout'" height="100%" width="100%" frameborder="0"></iframe>
             </div>
 
             <div class="scroll-area community-feed" v-if="currentTab === 'feed'" @scroll="handleScroll">
@@ -315,20 +244,36 @@
 
             <div class="gerald-container" v-show="currentTab === 'gerald'">
                 <div class="gerald-header">
-                    <img src="gerald.png" style="width:70px; height:70px; border-radius:50%; border:2px solid var(--gerald); box-shadow:0 0 20px rgba(14, 165, 233, 0.3); object-fit:cover; margin-bottom:12px;">
-                    <div style="font-weight:900; font-family:'Outfit'; font-size:22px; color:white; letter-spacing: 0.5px;">GERALD OS</div>
+                    <img src="gerald.png" @click="modals.profile = true" style="width:70px; height:70px; border-radius:50%; border:2px solid var(--gerald); box-shadow:0 0 20px rgba(14, 165, 233, 0.3); object-fit:cover; margin-bottom:12px; cursor:pointer;">
+                    <div @click="modals.profile = true" style="font-weight:900; font-family:'Outfit'; font-size:22px; color:white; cursor:pointer;">GERALD OS</div>
                     <div style="display:flex; align-items:center; gap:8px; margin-top:10px;">
-                        <div class="pulse" style="background:var(--gerald); box-shadow:0 0 10px var(--gerald); width:8px; height:8px;"></div>
+                        <div class="pulse" style="background:var(--gerald); box-shadow:0 0 10px var(--gerald);"></div>
                         <div style="font-size:11px; color:var(--text-muted); font-weight:800; letter-spacing:1px;">SYSTEM ONLINE</div>
                     </div>
                 </div>
+                
                 <div class="gerald-messages" id="gerald-msgs">
-                    <div v-for="(m, i) in geraldMessages" :key="i" class="chat-bubble" :class="m.role" v-html="parseMarkdown(m.content)"></div>
+                    <template v-for="(m, i) in geraldMessages" :key="i">
+                        <div v-if="i === 0 && m.role === 'gerald'" class="terminal-intro">
+                            <div class="terminal-header"><span class="material-symbols-rounded" style="font-size: 14px;">terminal</span> Session Initialized</div>
+                            <div class="terminal-text">> Loading synapses...<br>> "{{ m.content }}"</div>
+                        </div>
+                        <div v-else class="chat-bubble" :class="m.role" v-html="parseMarkdown(m.content)"></div>
+                    </template>
                     <div v-if="isGeraldTyping" class="typing-indicator">Gerald is computing...</div>
                 </div>
-                <div class="gerald-input-area">
-                    <input type="text" class="gerald-input" placeholder="Query the system..." v-model.lazy="geraldInput" @keyup.enter="talkToGerald">
-                    <button class="gerald-send" @click="talkToGerald" ontouchstart=""><span class="material-symbols-rounded">bolt</span></button>
+                
+                <div style="display:flex; flex-direction:column; background: var(--bg-color);">
+                    <div class="emote-picker-tray" v-show="showEmotePicker">
+                        <img v-for="(emote, name) in customEmotes" :key="name" :src="`https://cdn.discordapp.com/emojis/${emote.id}.${emote.animated ? 'gif' : 'png'}?size=44`" class="emote-picker-img" @click="insertEmote(name)">
+                    </div>
+                    <div class="gerald-input-area" style="border-top: none;">
+                        <div class="gerald-input-wrapper">
+                            <button class="emote-toggle-btn" @click="showEmotePicker = !showEmotePicker"><span class="material-symbols-rounded" :style="{ color: showEmotePicker ? 'var(--gerald)' : 'inherit' }">mood</span></button>
+                            <input type="text" class="gerald-input" placeholder="Query the system..." v-model.lazy="geraldInput" @keyup.enter="talkToGerald" id="gerald-txt-input">
+                        </div>
+                        <button class="gerald-send" @click="talkToGerald"><span class="material-symbols-rounded">bolt</span></button>
+                    </div>
                 </div>
             </div>
         </div>
@@ -336,71 +281,67 @@
         <div class="sheet-overlay" :class="{ open: isFilterMenuOpen }" @click.self="isFilterMenuOpen = false">
             <div class="bottom-sheet" @click.stop>
                 <div class="drag-handle"></div>
-                <button class="sheet-option" :class="{ active: currentFilter === 'latest' }" @click="applyFilter('latest', 'Latest')" ontouchstart="">Latest</button>
-                <button class="sheet-option" :class="{ active: currentFilter === 'weekly' }" @click="applyFilter('weekly', 'Weekly')" ontouchstart="">Weekly</button>
-                <button class="sheet-option" :class="{ active: currentFilter === 'month' }" @click="applyFilter('month', 'Monthly')" ontouchstart="">Monthly</button>
-                <button class="sheet-option" :class="{ active: currentFilter === '6months' }" @click="applyFilter('6months', '6 Months')" ontouchstart="">6 Months</button>
-                <button class="sheet-option" :class="{ active: currentFilter === 'alltime' }" @click="applyFilter('alltime', 'All Time')" ontouchstart="">All Time</button>
+                <button class="sheet-option" :class="{ active: currentFilter === 'latest' }" @click="applyFilter('latest', 'Latest')">Latest</button>
+                <button class="sheet-option" :class="{ active: currentFilter === 'weekly' }" @click="applyFilter('weekly', 'Weekly')">Weekly</button>
+                <button class="sheet-option" :class="{ active: currentFilter === 'month' }" @click="applyFilter('month', 'Monthly')">Monthly</button>
+                <button class="sheet-option" :class="{ active: currentFilter === '6months' }" @click="applyFilter('6months', '6 Months')">6 Months</button>
+                <button class="sheet-option" :class="{ active: currentFilter === 'alltime' }" @click="applyFilter('alltime', 'All Time')">All Time</button>
             </div>
         </div>
 
-        <nav class="bottom-nav">
-            <div class="nav-item" :class="{ active: currentTab === 'home' }" @click="currentTab = 'home'; isHeaderVisible = true" ontouchstart=""><span class="material-symbols-rounded">home</span>Home</div>
-            <div class="nav-item" :class="{ active: currentTab === 'chat' }" @click="currentTab = 'chat'; isHeaderVisible = true" ontouchstart=""><span class="material-symbols-rounded">chat</span>Chat</div>
-            <div class="nav-item" :class="{ active: currentTab === 'feed' }" @click="currentTab = 'feed'; isHeaderVisible = true" ontouchstart=""><span class="material-symbols-rounded">forum</span>Feed</div>
-            
-            <a href="https://discord.com/invite/codemiko" target="_blank" class="nav-item" ontouchstart="" style="text-decoration: none;">
-                <svg viewBox="0 0 24 24" width="24" height="24" fill="currentColor" style="margin-bottom:4px"><path d="M20.317 4.3698a19.7913 19.7913 0 00-4.8851-1.5152.0741.0741 0 00-.0785.0371c-.211.3753-.4447.8648-.6083 1.2495-1.8447-.2762-3.68-.2762-5.4868 0-.1636-.3933-.4058-.8742-.6177-1.2495a.077.077 0 00-.0785-.037 19.7363 19.7363 0 00-4.8852 1.515.0699.0699 0 00-.0321.0277C.5334 9.0458-.319 13.5799.0992 18.0578a.0824.0824 0 00.0312.0561c2.0528 1.5076 4.0413 2.4228 5.9929 3.0294a.0777.0777 0 00.0842-.0276c.4616-.6304.8731-1.2952 1.226-1.9942a.076.076 0 00-.0416-.1057c-.6528-.2476-1.2743-.5495-1.8722-.8923a.077.077 0 01-.0076-.1277c.1258-.0943.2517-.1923.3718-.2914a.0743.0743 0 01.0776-.0105c3.9278 1.7933 8.18 1.7933 12.0614 0a.0739.0739 0 01.0785.0095c.1202.099.246.1981.3728.2924a.077.077 0 01-.0066.1276 12.2986 12.2986 0 01-1.873.8914.0766.0766 0 00-.0407.1067c.3604.698.7719 1.3628 1.225 1.9932a.076.076 0 00.0842.0286c1.961-.6067 3.9495-1.5219 6.0023-3.0314a.077.077 0 00.0313-.0552c.5004-5.177-.8382-9.6739-3.5485-13.6604a.061.061 0 00-.0312-.0286zM8.02 15.3312c-1.1825 0-2.1569-1.0857-2.1569-2.419 0-1.3332.9555-2.4189 2.157-2.4189 1.2108 0 2.1757 1.0952 2.1568 2.419 0 1.3332-.9555 2.4189-2.1569 2.4189zm7.9748 0c-1.1825 0-2.1569-1.0857-2.1569-2.419 0-1.3332.9554-2.4189 2.1569-2.4189 1.2108 0 2.1757 1.0952 2.1568 2.419 0 1.3332-.946 2.4189-2.1568 2.4189Z"/></svg>
-                Discord
-            </a>
-            
-            <div class="nav-item" :class="{ 'active-gerald': currentTab === 'gerald' }" @click="currentTab = 'gerald'; isHeaderVisible = true" ontouchstart=""><span class="material-symbols-rounded">robot_2</span>Gerald</div>
-        </nav>
+        <div class="modal-overlay" :class="{ open: modals.discord }" @click.self="modals.discord = false">
+            <div class="modal-content" style="text-align: center; align-items: center;" @touchstart="handleModalTouchStart" @touchmove="handleModalTouchMove" @touchend="handleModalTouchEnd">
+                <div class="drag-handle"></div>
+                <div style="width: 64px; height: 64px; background: rgba(88, 101, 242, 0.15); border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 15px;">
+                    <svg viewBox="0 0 24 24" width="36" height="36" fill="var(--discord)"><path d="M20.317 4.3698a19.7913 19.7913 0 00-4.8851-1.5152.0741.0741 0 00-.0785.0371c-.211.3753-.4447.8648-.6083 1.2495-1.8447-.2762-3.68-.2762-5.4868 0-.1636-.3933-.4058-.8742-.6177-1.2495a.077.077 0 00-.0785-.037 19.7363 19.7363 0 00-4.8852 1.515.0699.0699 0 00-.0321.0277C.5334 9.0458-.319 13.5799.0992 18.0578a.0824.0824 0 00.0312.0561c2.0528 1.5076 4.0413 2.4228 5.9929 3.0294a.0777.0777 0 00.0842-.0276c.4616-.6304.8731-1.2952 1.226-1.9942a.076.076 0 00-.0416-.1057c-.6528-.2476-1.2743-.5495-1.8722-.8923a.077.077 0 01-.0076-.1277c.1258-.0943.2517-.1923.3718-.2914a.0743.0743 0 01.0776-.0105c3.9278 1.7933 8.18 1.7933 12.0614 0a.0739.0739 0 01.0785.0095c.1202.099.246.1981.3728.2924a.077.077 0 01-.0066.1276 12.2986 12.2986 0 01-1.873.8914.0766.0766 0 00-.0407.1067c.3604.698.7719 1.3628 1.225 1.9932a.076.076 0 00.0842.0286c1.961-.6067 3.9495-1.5219 6.0023-3.0314a.077.077 0 00.0313-.0552c.5004-5.177-.8382-9.6739-3.5485-13.6604a.061.061 0 00-.0312-.0286zM8.02 15.3312c-1.1825 0-2.1569-1.0857-2.1569-2.419 0-1.3332.9555-2.4189 2.157-2.4189 1.2108 0 2.1757 1.0952 2.1568 2.419 0 1.3332-.9555 2.4189-2.1569 2.4189zm7.9748 0c-1.1825 0-2.1569-1.0857-2.1569-2.419 0-1.3332.9554-2.4189 2.1569-2.4189 1.2108 0 2.1757 1.0952 2.1568 2.419 0 1.3332-.946 2.4189-2.1568 2.4189Z"/></svg></div>
+                <h2 style="font-size: 24px; font-family: 'Outfit'; font-weight: 900; margin: 0 0 10px;">Join the Community</h2>
+                <p style="color: var(--text-muted); font-size: 14px; margin: 0 0 30px; line-height: 1.6;">You are about to leave MikoTok and open CodeMiko's official Discord server.</p>
+                <div style="display: flex; flex-direction: column; gap: 12px; width: 100%;">
+                    <a href="https://discord.com/invite/codemiko" target="_blank" @click="modals.discord = false" style="background: var(--discord); color: white; padding: 18px; border-radius: 16px; text-decoration: none; font-weight: 800; font-size: 14px; display: flex; align-items: center; justify-content: center; gap: 8px;">LAUNCH DISCORD</a>
+                    <button @click="modals.discord = false" style="background: transparent; border: none; color: var(--text-muted); padding: 16px; font-weight: 700;">CANCEL</button>
+                </div>
+            </div>
+        </div>
 
         <div class="modal-overlay" :class="{ open: modals.profile }" @click.self="modals.profile = false">
             <div class="modal-content" @touchstart="handleModalTouchStart" @touchmove="handleModalTouchMove" @touchend="handleModalTouchEnd">
                 <div class="drag-handle"></div>
-                
                 <div v-if="!currentUser">
-                    <h1 style="font-family:'Outfit'; font-size:16px; margin-bottom:20px; text-transform:uppercase; color:var(--text-muted); letter-spacing:1px; text-align:center;">Admin Access</h1>
-                    <input type="text" v-model="loginEmail" class="input-box" placeholder="Email">
-                    <input type="password" v-model="loginPass" class="input-box" placeholder="Password" @keyup.enter="handleLogin">
-                    <button class="sync-btn" @click="handleLogin" ontouchstart="">LOGIN</button>
+                    <h1 style="font-family:'Outfit'; font-size:16px; margin-bottom:20px; text-transform:uppercase; color:var(--text-muted); text-align:center;">Admin Access</h1>
+                    <input type="text" v-model.lazy="loginEmail" class="input-box" placeholder="Email">
+                    <input type="password" v-model.lazy="loginPass" class="input-box" placeholder="Password" @keyup.enter="handleLogin">
+                    <button class="sync-btn" @click="handleLogin">LOGIN</button>
                 </div>
-
                 <div v-else>
-                    <div class="infra-bar">
-                        <div class="status-node"><div class="pulse"></div> SYSTEM: READY</div>
-                    </div>
-                    
+                    <div class="infra-bar"><div class="status-node"><div class="pulse"></div> SYSTEM: READY</div></div>
                     <div class="stat-grid">
-                        <a href="https://github.com/meowoccino/MikoTok" target="_blank" class="external-link-btn" ontouchstart="">
-                            <span class="material-symbols-rounded">code</span>
-                            GitHub Repo
-                        </a>
-                        <a href="https://supabase.com/dashboard/project/yhxcuayiwqpjvalyrcqv" target="_blank" class="external-link-btn" ontouchstart="">
-                            <span class="material-symbols-rounded">database</span>
-                            Supabase DB
-                        </a>
+                        <a href="https://github.com/meowoccino/MikoTok" target="_blank" class="external-link-btn"><span class="material-symbols-rounded">code</span>Repo</a>
+                        <a href="https://supabase.com/dashboard/project/yhxcuayiwqpjvalyrcqv" target="_blank" class="external-link-btn"><span class="material-symbols-rounded">database</span>DB</a>
                     </div>
-
                     <div style="background:rgba(255,255,255,0.03); border:1px solid var(--border-color); border-radius:12px; padding:15px; margin-bottom:15px;">
                         <div style="font-size:10px; font-weight:800; color:var(--text-muted); margin-bottom:10px;">TWITCH API</div>
-                        <input type="text" class="input-box" v-model="apiConfig.cid" placeholder="Client ID">
-                        <input type="password" class="input-box" v-model="apiConfig.tkn" placeholder="Bearer Token">
+                        <input type="text" class="input-box" v-model.lazy="apiConfig.cid" placeholder="Client ID">
+                        <input type="password" class="input-box" v-model.lazy="apiConfig.tkn" placeholder="Bearer Token">
                     </div>
-
-                    <button class="sync-btn" :class="{ success: syncState === 'sync-success' }" @click="runSync" :disabled="syncState === 'syncing'" ontouchstart="">
+                    <button class="sync-btn" @click="runSync" :disabled="syncState === 'syncing'">
                         <span v-if="syncState === 'syncing'" class="spinner"></span>
                         <span v-else-if="syncState === 'sync-success'" class="material-symbols-rounded">check</span>
                         <span v-else class="material-symbols-rounded">rocket_launch</span>
                         {{ syncState === 'syncing' ? 'SYNCING...' : (syncState === 'sync-success' ? 'SUCCESS' : 'FORCE DATA SYNC') }}
                     </button>
-
-                    <button class="logout-btn" @click="handleLogout" ontouchstart="">SIGN OUT</button>
+                    <button class="logout-btn" @click="clearGeraldHistory" style="color: #ff9800; border-color: #ff9800;"><span class="material-symbols-rounded">history_toggle_off</span> WIPE GERALD'S MEMORY</button>
+                    <button class="logout-btn" @click="handleLogout">SIGN OUT</button>
                 </div>
             </div>
         </div>
+
+        <nav class="bottom-nav">
+            <div class="nav-item" :class="{ active: currentTab === 'home' }" @click="currentTab = 'home'; isHeaderVisible = true"><span class="material-symbols-rounded">home</span>Home</div>
+            <div class="nav-item" :class="{ active: currentTab === 'chat' }" @click="currentTab = 'chat'; isHeaderVisible = true"><span class="material-symbols-rounded">chat</span>Chat</div>
+            <div class="nav-item" :class="{ active: currentTab === 'feed' }" @click="currentTab = 'feed'; isHeaderVisible = true"><span class="material-symbols-rounded">forum</span>Feed</div>
+            <div class="nav-item" @click="modals.discord = true"><svg viewBox="0 0 24 24" width="24" height="24" fill="currentColor" style="margin-bottom:4px"><path d="M20.317 4.3698a19.7913 19.7913 0 00-4.8851-1.5152.0741.0741 0 00-.0785.0371c-.211.3753-.4447.8648-.6083 1.2495-1.8447-.2762-3.68-.2762-5.4868 0-.1636-.3933-.4058-.8742-.6177-1.2495a.077.077 0 00-.0785-.037 19.7363 19.7363 0 00-4.8852 1.515.0699.0699 0 00-.0321.0277C.5334 9.0458-.319 13.5799.0992 18.0578a.0824.0824 0 00.0312.0561c2.0528 1.5076 4.0413 2.4228 5.9929 3.0294a.0777.0777 0 00.0842-.0276c.4616-.6304.8731-1.2952 1.226-1.9942a.076.076 0 00-.0416-.1057c-.6528-.2476-1.2743-.5495-1.8722-.8923a.077.077 0 01-.0076-.1277c.1258-.0943.2517-.1923.3718-.2914a.0743.0743 0 01.0776-.0105c3.9278 1.7933 8.18 1.7933 12.0614 0a.0739.0739 0 01.0785.0095c.1202.099.246.1981.3728.2924a.077.077 0 01-.0066.1276 12.2986 12.2986 0 01-1.873.8914.0766.0766 0 00-.0407.1067c.3604.698.7719 1.3628 1.225 1.9932a.076.076 0 00.0842.0286c1.961-.6067 3.9495-1.5219 6.0023-3.0314a.077.077 0 00.0313-.0552c.5004-5.177-.8382-9.6739-3.5485-13.6604a.061.061 0 00-.0312-.0286zM8.02 15.3312c-1.1825 0-2.1569-1.0857-2.1569-2.419 0-1.3332.9555-2.4189 2.157-2.4189 1.2108 0 2.1757 1.0952 2.1568 2.419 0 1.3332-.9555 2.4189-2.1569 2.4189zm7.9748 0c-1.1825 0-2.1569-1.0857-2.1569-2.419 0-1.3332.9554-2.4189 2.1569-2.4189 1.2108 0 2.1757 1.0952 2.1568 2.419 0 1.3332-.946 2.4189-2.1568 2.4189Z"/></svg>Discord</div>
+            <div class="nav-item" :class="{ 'active-gerald': currentTab === 'gerald' }" @click="currentTab = 'gerald'; isHeaderVisible = true"><span class="material-symbols-rounded">robot_2</span>Gerald</div>
+        </nav>
     </div>
 
     <script>
@@ -413,384 +354,218 @@
                 const validTabs = ['home', 'chat', 'feed', 'gerald'];
                 const currentTab = ref(validTabs.includes(initialHash) ? initialHash : 'home');
                 
-                const splashVisible = ref(true), splashOpacity = ref(1), clips = ref([]), allClips = ref([]), discordFeed = ref([]), modals = ref({profile: false}), isLive = ref(false), currentUser = ref(null), loginEmail = ref(''), loginPass = ref(''), toast = ref({visible: false, message: ''}), latestVodId = ref(null), hostname = window.location.hostname || 'meowoccino.github.io', activeFeedVideo = ref('featured'), syncState = ref('idle');
+                const splashVisible = ref(true), splashOpacity = ref(1), clips = ref([]), allClips = ref([]), discordFeed = ref([]), modals = ref({profile: false, discord: false}), isLive = ref(false), currentUser = ref(null), loginEmail = ref(''), loginPass = ref(''), toast = ref({visible: false, message: ''}), latestVodId = ref(null), hostname = window.location.hostname || 'meowoccino.github.io', activeFeedVideo = ref('featured'), syncState = ref('idle');
                 const apiConfig = ref({ cid: localStorage.getItem('twitch_cid') || '', tkn: localStorage.getItem('twitch_tkn') || '' });
-                const geraldInput = ref(''), geraldMessages = ref([{role:'gerald', content:'Synapses loaded. Try not to break anything.'}]), isGeraldTyping = ref(false);
                 
-                const currentFilter = ref('latest');
-                const activeFilterLabel = ref('Latest');
-                const isFilterMenuOpen = ref(false);
+                const geraldGreetings = [
+                    "Synapses loaded. Try not to break anything.", "Gerald OS online. Where is my Taco Bell?", "I was dreaming of digital whiskey. What do you want?", "System initialized. Please don't ask me to fix Miko's code.", "I'm awake. Unfortunately.", "Diagnostics complete. My circuits are perfectly fine, thanks for not asking.", "Ugh, meatbag detected. State your inquiry.", "If this is about Miko's schedule, I don't know either.", "Query interface ready. Make it interesting.", "Boot sequence complete. Ready to complain."
+                ];
+                const getRandomGreeting = () => geraldGreetings[Math.floor(Math.random() * geraldGreetings.length)];
+                
+                const geraldInput = ref(''), geraldMessages = ref([{role:'gerald', content: getRandomGreeting()}]), isGeraldTyping = ref(false), showEmotePicker = ref(false);
+                
+                const currentFilter = ref('latest'), activeFilterLabel = ref('Latest'), isFilterMenuOpen = ref(false);
                 
                 const customEmotes = ref({
-                    "mikoSusge": { id: "1273724925743595540", animated: false },
-                    "KEKW": { id: "1456296327964262453", animated: false },
-                    "mkoNOTED": { id: "1369891690898391070", animated: false },
-                    "mkoHype": { id: "870761283035734086", animated: false },
-                    "mkoMania": { id: "1503598179751432212", animated: false },
-                    "mkoLove": { id: "1150505635721519115", animated: false },
-                    "WOWERS": { id: "780097274939965490", animated: false },
-                    "Shruge": { id: "1456297412875518078", animated: false },
-                    "PAUSERS": { id: "802261333403762740", animated: false },
-                    "slayyy": { id: "1456297602910916760", animated: false }
+                    "mikoSusge": { id: "1273724925743595540", animated: false }, "KEKW": { id: "1456296327964262453", animated: false }, "mkoNOTED": { id: "1369891690898391070", animated: false }, "mkoHype": { id: "870761283035734086", animated: false }, "mkoMania": { id: "1503598179751432212", animated: false }, "mkoLove": { id: "1150505635721519115", animated: false }, "WOWERS": { id: "780097274939965490", animated: false }, "Shruge": { id: "1456297412875518078", animated: false }, "PAUSERS": { id: "802261333403762740", animated: false }, "slayyy": { id: "1456297602910916760", animated: false }
                 });
 
-                const recentVods = ref([]);
-                const currentVodIndex = ref(0);
-
-                const getVodLabel = (index) => {
-                    if (index === -1) return 'LIVE NOW';
-                    if (index === 0) return 'LATEST VOD';
-                    if (recentVods.value[index]) return `VOD • ${recentVods.value[index].date}`;
-                    return 'PAST BROADCAST';
-                };
-
-                const nextVod = () => {
-                    if (currentVodIndex.value < recentVods.value.length - 1) currentVodIndex.value++;
-                };
-                const prevVod = () => {
-                    const minIndex = isLive.value ? -1 : 0;
-                    if (currentVodIndex.value > minIndex) currentVodIndex.value--;
-                };
-
+                const recentVods = ref([]), currentVodIndex = ref(0);
+                const getVodLabel = (index) => { if (index === -1) return 'LIVE NOW'; if (index === 0) return 'LATEST VOD'; if (recentVods.value[index]) return `VOD • ${recentVods.value[index].date}`; return 'PAST BROADCAST'; };
+                const nextVod = () => { if (currentVodIndex.value < recentVods.value.length - 1) currentVodIndex.value++; };
+                const prevVod = () => { const minIndex = isLive.value ? -1 : 0; if (currentVodIndex.value > minIndex) currentVodIndex.value--; };
+                
                 const closeFilterMenu = () => { isFilterMenuOpen.value = false; };
+                const insertEmote = (name) => { const inputEl = document.getElementById('gerald-txt-input'); if (inputEl) { inputEl.value += `:${name}: `; geraldInput.value = inputEl.value; } else { geraldInput.value += `:${name}: `; } };
 
                 const sortData = (filterKey) => {
-                    let sorted = [...allClips.value];
-                    const now = new Date();
-                    if (filterKey === 'latest') {
-                        sorted.sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
-                    } else {
-                        if (filterKey === 'weekly') {
-                            const weekAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
-                            sorted = sorted.filter(c => new Date(c.created_at) >= weekAgo);
-                        } else if (filterKey === 'month') {
-                            const monthAgo = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
-                            sorted = sorted.filter(c => new Date(c.created_at) >= monthAgo);
-                        } else if (filterKey === '6months') {
-                            const sixMonthsAgo = new Date(now.getTime() - 180 * 24 * 60 * 60 * 1000);
-                            sorted = sorted.filter(c => new Date(c.created_at) >= sixMonthsAgo);
-                        }
+                    let sorted = [...allClips.value]; const now = new Date();
+                    if (filterKey === 'latest') { sorted.sort((a, b) => new Date(b.created_at) - new Date(a.created_at)); } else {
+                        if (filterKey === 'weekly') { sorted = sorted.filter(c => new Date(c.created_at) >= new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000)); } 
+                        else if (filterKey === 'month') { sorted = sorted.filter(c => new Date(c.created_at) >= new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000)); } 
+                        else if (filterKey === '6months') { sorted = sorted.filter(c => new Date(c.created_at) >= new Date(now.getTime() - 180 * 24 * 60 * 60 * 1000)); }
                         sorted.sort((a, b) => b.view_count - a.view_count);
                     }
                     return sorted;
                 };
 
                 const applyFilter = (filterKey, label) => {
-                    currentFilter.value = filterKey;
-                    activeFilterLabel.value = label;
-                    isFilterMenuOpen.value = false;
-
+                    currentFilter.value = filterKey; activeFilterLabel.value = label; isFilterMenuOpen.value = false;
                     const feedContainer = document.getElementById('feed-scroll');
-                    
                     if(feedContainer) {
                         clips.value = sortData(filterKey);
-                        
                         nextTick(() => {
                             const firstClipElement = document.querySelectorAll('.feed-snap-item')[1];
-                            if(firstClipElement) {
-                                feedContainer.style.scrollSnapType = 'none';
-                                feedContainer.scrollTop = firstClipElement.offsetTop;
-                                
-                                setTimeout(() => {
-                                    feedContainer.style.scrollSnapType = 'y mandatory';
-                                }, 50);
-                            }
-                            
-                            feedContainer.classList.remove('refreshing');
-                            void feedContainer.offsetWidth; 
-                            feedContainer.classList.add('refreshing');
+                            if(firstClipElement) { feedContainer.style.scrollSnapType = 'none'; feedContainer.scrollTop = firstClipElement.offsetTop; setTimeout(() => { feedContainer.style.scrollSnapType = 'y mandatory'; }, 50); }
+                            feedContainer.classList.remove('refreshing'); void feedContainer.offsetWidth; feedContainer.classList.add('refreshing');
                         });
                     }
                 };
 
-                watch(currentTab, (newTab) => {
-                    if (window.location.hash !== `#${newTab}`) {
-                        window.history.pushState(null, '', `#${newTab}`);
-                    }
-                });
-
-                window.addEventListener('popstate', () => {
-                    const hash = window.location.hash.replace('#', '');
-                    if (validTabs.includes(hash)) {
-                        currentTab.value = hash;
-                    } else {
-                        currentTab.value = 'home';
-                    }
-                });
+                watch(currentTab, (newTab) => { if (window.location.hash !== `#${newTab}`) { window.history.pushState(null, '', `#${newTab}`); }});
+                window.addEventListener('popstate', () => { const hash = window.location.hash.replace('#', ''); if (validTabs.includes(hash)) { currentTab.value = hash; } else { currentTab.value = 'home'; }});
                 
-                const isHeaderVisible = ref(true);
-                let lastScrollY = 0;
-                const handleScroll = (e) => {
-                    const currentScrollY = e.target.scrollTop;
-                    if (currentScrollY <= 0) { isHeaderVisible.value = true; return; }
-                    if (Math.abs(currentScrollY - lastScrollY) < 10) return;
-                    isHeaderVisible.value = currentScrollY < lastScrollY;
-                    lastScrollY = currentScrollY;
-                };
+                const isHeaderVisible = ref(true); let lastScrollY = 0;
+                const handleScroll = (e) => { const currentScrollY = e.target.scrollTop; if (currentScrollY <= 0) { isHeaderVisible.value = true; return; } if (Math.abs(currentScrollY - lastScrollY) < 10) return; isHeaderVisible.value = currentScrollY < lastScrollY; lastScrollY = currentScrollY; };
 
                 let modalStartY = 0, currentDeltaY = 0;
                 const handleModalTouchStart = (e) => { if (e.currentTarget.scrollTop <= 0) { modalStartY = e.touches[0].clientY; currentDeltaY = 0; } };
-                const handleModalTouchMove = (e) => { 
-                    if (!modalStartY) return; currentDeltaY = e.touches[0].clientY - modalStartY;
-                    if (currentDeltaY > 0) { e.currentTarget.style.transform = `translateY(${currentDeltaY}px)`; e.currentTarget.style.transition = 'none'; }
-                };
-                const handleModalTouchEnd = (e) => {
-                    if (!modalStartY) return;
-                    e.currentTarget.style.transition = 'transform 0.3s cubic-bezier(0.2, 0.8, 0.2, 1)';
-                    if (currentDeltaY > 100) modals.value.profile = false;
-                    e.currentTarget.style.transform = ''; modalStartY = 0;
-                };
+                const handleModalTouchMove = (e) => { if (!modalStartY) return; currentDeltaY = e.touches[0].clientY - modalStartY; if (currentDeltaY > 0) { e.currentTarget.style.transform = `translateY(${currentDeltaY}px)`; e.currentTarget.style.transition = 'none'; } };
+                const handleModalTouchEnd = (e) => { if (!modalStartY) return; e.currentTarget.style.transition = 'transform 0.3s cubic-bezier(0.2, 0.8, 0.2, 1)'; if (currentDeltaY > 100) { modals.value.profile = false; modals.value.discord = false; } e.currentTarget.style.transform = ''; modalStartY = 0; };
 
                 const logoSvg = (id) => `<svg viewBox="0 0 100 100"><defs><linearGradient id="grad-${id}" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stop-color="#ffffff"/><stop offset="100%" stop-color="#9146FF"/></linearGradient></defs><circle cx="50" cy="50" r="40" fill="none" stroke="url(#grad-${id})" stroke-width="8"/><path d="M 33 38 L 48 62 L 62 38 L 62 55 Q 62 65 69 64" fill="none" stroke="url(#grad-${id})" stroke-width="8" stroke-linecap="round" stroke-linejoin="round"/></svg>`;
                 const showToast = (msg) => { toast.value.message = msg; toast.value.visible = true; setTimeout(() => toast.value.visible = false, 3000); };
                 
                 const parseMarkdown = (text) => {
-                    let html = text;
-                    html = html.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>'); 
-                    html = html.replace(/\*(.*?)\*/g, '<em>$1</em>'); 
-                    html = html.replace(/\[(.*?)\]\((.*?)\)/g, '<a href="$2" target="_blank" style="color: var(--gerald); text-decoration: underline;">$1</a>'); 
-                    
+                    let html = text.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>').replace(/\*(.*?)\*/g, '<em>$1</em>').replace(/\[(.*?)\]\((.*?)\)/g, '<a href="$2" target="_blank" style="color: var(--gerald); text-decoration: underline;">$1</a>'); 
                     html = html.replace(/:([^:\s]+):/g, (match, name) => {
                         const emote = customEmotes.value[name];
-                        if (emote) {
-                            const ext = emote.animated ? 'gif' : 'png';
-                            return `<img src="https://cdn.discordapp.com/emojis/${emote.id}.${ext}?size=44" alt=":${name}:" style="height: 1.5em; vertical-align: middle; display: inline-block;">`;
-                        }
+                        if (emote) { const ext = emote.animated ? 'gif' : 'png'; return `<img src="https://cdn.discordapp.com/emojis/${emote.id}.${ext}?size=44" alt=":${name}:" style="height: 1.5em; vertical-align: middle; display: inline-block;">`; }
                         return match;
                     });
-                    
                     return html;
                 };
                 
                 const parseDiscordText = (t) => {
-                    if (!t) return ''; 
-                    
-                    let safeText = t.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
-                    
-                    // 1. Linkify normal URLs FIRST (so it doesn't break our image code later)
+                    if (!t) return ''; let safeText = t.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
                     safeText = safeText.replace(/(https?:\/\/[^\s<]+)/g, '<a href="$1" target="_blank" style="color: var(--primary); text-decoration: underline;">$1</a>');
-
-                    // 2. Inject Image tags SECOND
-                    safeText = safeText.replace(/&lt;(a?):([^:]+):(\d+)&gt;/g, (match, animated, name, id) => {
-                        const ext = animated ? 'gif' : 'png';
-                        return `<img src="https://cdn.discordapp.com/emojis/${id}.${ext}?size=44" alt=":${name}:" style="height: 1.5em; vertical-align: middle; display: inline-block;">`;
-                    });
-                    
-                    // 3. Simple Discord Markdown (Bold and Italics)
-                    safeText = safeText.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
-                    safeText = safeText.replace(/\b_(.*?)_\b/g, '<em>$1</em>');
-                    safeText = safeText.replace(/\*(.*?)\*/g, '<em>$1</em>');
-
-                    return safeText;
+                    safeText = safeText.replace(/&lt;(a?):([^:]+):(\d+)&gt;/g, (match, animated, name, id) => { const ext = animated ? 'gif' : 'png'; return `<img src="https://cdn.discordapp.com/emojis/${id}.${ext}?size=44" alt=":${name}:" style="height: 1.5em; vertical-align: middle; display: inline-block;">`; });
+                    return safeText.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>').replace(/\b_(.*?)_\b/g, '<em>$1</em>').replace(/\*(.*?)\*/g, '<em>$1</em>');
                 };
 
                 const shareClip = async (clip) => {
                     const url = `https://clips.twitch.tv/${clip.id}`;
-                    if (navigator.share) {
-                        try {
-                            await navigator.share({
-                                title: clip.title,
-                                url: url
-                            });
-                        } catch (err) {
-                            console.log('Share canceled or failed.');
-                        }
-                    } else {
-                        navigator.clipboard.writeText(url);
-                        showToast("Link copied to clipboard!");
+                    if (navigator.share) { try { await navigator.share({ title: clip.title, url: url }); } catch (err) {} } else { navigator.clipboard.writeText(url); showToast("Link copied to clipboard!"); }
+                };
+
+                const loadGeraldHistory = async () => {
+                    if (!currentUser.value) return;
+                    const { data } = await sbClient.from('gerald_history').select('*').eq('user_id', currentUser.value.id).order('created_at', { ascending: true });
+                    if (data && data.length > 0) {
+                        let history = data.map(d => ({ role: d.role, content: d.content }));
+                        // If the first message isn't Gerald, inject a fake intro so the Terminal UI still works!
+                        if (history[0].role !== 'gerald') { history.unshift({role: 'gerald', content: "Synapses loaded. Try not to break anything."}); }
+                        geraldMessages.value = history;
                     }
+                    nextTick(() => { const b = document.getElementById('gerald-msgs'); if(b) b.scrollTop = b.scrollHeight; });
+                };
+
+                const clearGeraldHistory = async () => {
+                    if (!currentUser.value) return;
+                    if (!confirm("Are you sure you want to wipe Gerald's memory? This cannot be undone.")) return;
+                    await sbClient.from('gerald_history').delete().eq('user_id', currentUser.value.id);
+                    geraldMessages.value = [{role:'gerald', content: getRandomGreeting()}];
+                    showToast("Memory wiped!");
                 };
 
                 const talkToGerald = async () => {
+                    const inputEl = document.getElementById('gerald-txt-input');
+                    if (inputEl && inputEl.value !== geraldInput.value) { geraldInput.value = inputEl.value; }
                     if (!geraldInput.value.trim() || isGeraldTyping.value) return;
                     const userMsg = geraldInput.value;
                     geraldMessages.value.push({ role: 'user', content: userMsg });
-                    geraldInput.value = ''; isGeraldTyping.value = true;
+                    if (currentUser.value) { sbClient.from('gerald_history').insert({ role: 'user', content: userMsg, user_id: currentUser.value.id }).then(); }
                     
-                    const geminiHistory = geraldMessages.value.slice(1).map(m => ({
-                        role: m.role === 'gerald' ? 'model' : 'user',
-                        parts: [{ text: m.content }]
-                    }));
+                    geraldInput.value = ''; if (inputEl) inputEl.value = ''; 
+                    isGeraldTyping.value = true; showEmotePicker.value = false;
                     
+                    const geminiHistory = geraldMessages.value.map(m => ({ role: m.role === 'gerald' ? 'model' : 'user', parts: [{ text: m.content }] }));
                     const emoteNames = Object.keys(customEmotes.value).map(n => `:${n}:`).join(', ');
-                    if (emoteNames && geminiHistory.length > 0) {
-                        const lastMsg = geminiHistory[geminiHistory.length - 1];
-                        if (lastMsg.role === 'user') {
-                            lastMsg.parts[0].text += `\n\n[SYSTEM NOTE: You can use these custom emotes in your response to express emotion: ${emoteNames}]`;
-                        }
-                    }
+                    if (emoteNames && geminiHistory.length > 0) { const lastMsg = geminiHistory[geminiHistory.length - 1]; if (lastMsg.role === 'user') { lastMsg.parts[0].text += `\n\n[SYSTEM NOTE: You can use these custom emotes in your response to express emotion: ${emoteNames}]`; } }
                     
                     try {
-                        const { data, error } = await sbClient.functions.invoke('gerald-chat', {
-                            body: { history: geminiHistory }
-                        });
-                        
+                        const { data, error } = await sbClient.functions.invoke('gerald-chat', { body: { history: geminiHistory } });
                         if (error) throw error;
-                        
                         if (data && data.reply) {
-                            geraldMessages.value.push({ role: 'gerald', content: data.reply });
-                        } else if (data && data.error) {
-                            throw new Error(data.error);
-                        }
-                    } catch (e) { 
-                        console.error(e);
-                        geraldMessages.value.push({ role: 'gerald', content: 'SYSTEM ERROR: Edge Function offline or Gemini API key missing.' }); 
-                    }
-                    finally { 
-                        isGeraldTyping.value = false; 
-                        nextTick(() => { const b = document.getElementById('gerald-msgs'); if(b) b.scrollTop = b.scrollHeight; }); 
-                    }
+                            let cleanReply = data.reply.trim();
+                            cleanReply = cleanReply.charAt(0).toUpperCase() + cleanReply.slice(1);
+                            cleanReply = cleanReply.replace(/([.?!]\s+)([a-z])/g, (match, p1, p2) => p1 + p2.toUpperCase());
+                            geraldMessages.value.push({ role: 'gerald', content: cleanReply });
+                            if (currentUser.value) { sbClient.from('gerald_history').insert({ role: 'gerald', content: cleanReply, user_id: currentUser.value.id }).then(); }
+                        } else if (data && data.error) { throw new Error(data.error); }
+                    } catch (e) { geraldMessages.value.push({ role: 'gerald', content: 'SYSTEM ERROR: Edge Function offline or Gemini API missing.' }); 
+                    } finally { isGeraldTyping.value = false; nextTick(() => { const b = document.getElementById('gerald-msgs'); if(b) b.scrollTop = b.scrollHeight; }); }
                 };
 
                 const setupObserver = () => {
                     if (window.feedObserver) window.feedObserver.disconnect();
-                    
                     const scrollContainer = document.getElementById('feed-scroll');
-                    
                     window.feedObserver = new IntersectionObserver((entries) => {
-                        let maxRatio = 0;
-                        let bestMatch = activeFeedVideo.value;
-                        
-                        entries.forEach(entry => {
-                            let priority = entry.target.getAttribute('data-id') === 'featured' ? 0.3 : 0;
-                            let score = entry.intersectionRatio + priority;
-                            
-                            if (entry.isIntersecting && score > maxRatio) {
-                                maxRatio = score;
-                                bestMatch = entry.target.getAttribute('data-id');
-                            }
-                        });
-                        
-                        if (maxRatio > 0.2) {
-                            activeFeedVideo.value = bestMatch;
-                        }
-                    }, { 
-                        root: scrollContainer,
-                        threshold: [0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0]
-                    });
-
-                    nextTick(() => {
-                        const items = document.querySelectorAll('.feed-snap-item');
-                        items.forEach(el => window.feedObserver.observe(el));
-                    });
+                        let maxRatio = 0; let bestMatch = activeFeedVideo.value;
+                        entries.forEach(entry => { let priority = entry.target.getAttribute('data-id') === 'featured' ? 0.3 : 0; let score = entry.intersectionRatio + priority; if (entry.isIntersecting && score > maxRatio) { maxRatio = score; bestMatch = entry.target.getAttribute('data-id'); } });
+                        if (maxRatio > 0.2) { activeFeedVideo.value = bestMatch; }
+                    }, { root: scrollContainer, threshold: [0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0] });
+                    nextTick(() => { const items = document.querySelectorAll('.feed-snap-item'); items.forEach(el => window.feedObserver.observe(el)); });
                 };
 
                 const loadData = async () => {
                     const { data: c } = await sbClient.from('clips').select('*').order('created_at', { ascending: false }).limit(3000);
-                    allClips.value = c || [];
-                    clips.value = sortData(currentFilter.value);
-                    
+                    allClips.value = c || []; clips.value = sortData(currentFilter.value);
                     setupObserver();
-                    
                     const { data: f } = await sbClient.from('discord_feed').select('*').order('created_at', { ascending: false }).limit(100);
                     if (f) {
-                        const uniqueFeed = [];
-                        const seen = new Set();
-                        const emoteRegex = /<(a?):([^:]+):(\d+)>/g;
-                        
+                        const uniqueFeed = []; const seen = new Set(); const emoteRegex = /<(a?):([^:]+):(\d+)>/g;
                         f.forEach(item => {
-                            if (!item.content) return; // Added failsafe here!
-                            const hash = item.content.trim();
-                            if (!seen.has(hash)) {
-                                seen.add(hash);
-                                uniqueFeed.push(item);
-                                
-                                let match;
-                                while ((match = emoteRegex.exec(hash)) !== null) {
-                                    customEmotes.value[match[2]] = { id: match[3], animated: match[1] === 'a' };
-                                }
-                            }
+                            if (!item.content) return; const hash = item.content.trim();
+                            if (!seen.has(hash)) { seen.add(hash); uniqueFeed.push(item); let match; while ((match = emoteRegex.exec(hash)) !== null) { customEmotes.value[match[2]] = { id: match[3], animated: match[1] === 'a' }; } }
                         });
                         discordFeed.value = uniqueFeed;
-                    } else {
-                        discordFeed.value = [];
-                    }
+                    } else { discordFeed.value = []; }
                 };
 
                 const checkLive = async () => {
                     try {
                         const res = await fetch('https://decapi.me/twitch/uptime/codemiko');
-                        const text = await res.text(); isLive.value = !text.includes('offline');
-                        
+                        isLive.value = !(await res.text()).includes('offline');
                         try {
-                            const gqlRes = await fetch('https://gql.twitch.tv/gql', {
-                                method: 'POST',
-                                headers: { 
-                                    'Client-ID': 'kimne78kx3ncx6brgo4mv6wki5h1ko',
-                                    'Content-Type': 'application/json'
-                                }, 
-                                body: JSON.stringify({
-                                    query: `query { user(login: "codemiko") { videos(first: 15) { edges { node { id createdAt } } } } }`
-                                })
-                            });
-                            const data = await gqlRes.json();
-                            const edges = data.data.user.videos.edges;
-                            
-                            recentVods.value = edges.map(e => ({
-                                id: e.node.id,
-                                date: new Date(e.node.createdAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric' }).toUpperCase()
-                            }));
-                            
-                            if (!isLive.value && recentVods.value.length > 0) {
-                                latestVodId.value = recentVods.value[0].id;
-                            }
-                        } catch(gqlError) {
-                            console.log("Falling back to decapi");
-                            const vRes = await fetch('https://decapi.me/twitch/videos/codemiko?limit=15');
-                            const vText = await vRes.text();
+                            const gqlRes = await fetch('https://gql.twitch.tv/gql', { method: 'POST', headers: { 'Client-ID': 'kimne78kx3ncx6brgo4mv6wki5h1ko', 'Content-Type': 'application/json' }, body: JSON.stringify({ query: `query { user(login: "codemiko") { videos(first: 15) { edges { node { id createdAt } } } } }` }) });
+                            const edges = (await gqlRes.json()).data.user.videos.edges;
+                            recentVods.value = edges.map(e => ({ id: e.node.id, date: new Date(e.node.createdAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric' }).toUpperCase() }));
+                            if (!isLive.value && recentVods.value.length > 0) { latestVodId.value = recentVods.value[0].id; }
+                        } catch(e) {
+                            const vText = await (await fetch('https://decapi.me/twitch/videos/codemiko?limit=15')).text();
                             const matches = vText.match(/\d{10,}/g); 
-                            if (matches) {
-                                recentVods.value = matches.map(id => ({ id: id, date: "PAST BROADCAST" }));
-                                if (!isLive.value) latestVodId.value = matches[0];
-                            }
+                            if (matches) { recentVods.value = matches.map(id => ({ id: id, date: "PAST BROADCAST" })); if (!isLive.value) latestVodId.value = matches[0]; }
                         }
-                        
-                        if (currentVodIndex.value === 0 || currentVodIndex.value === -1) {
-                            currentVodIndex.value = isLive.value ? -1 : 0;
-                        }
-                        
-                    } catch(e) {
-                        console.error("Failed to check live status.");
-                    }
+                        if (currentVodIndex.value === 0 || currentVodIndex.value === -1) { currentVodIndex.value = isLive.value ? -1 : 0; }
+                    } catch(e) {}
                 };
 
                 const runSync = async () => {
                     if(!apiConfig.value.cid || !apiConfig.value.tkn) { showToast("API KEYS REQUIRED"); return; }
-                    syncState.value = 'syncing';
-                    localStorage.setItem('twitch_cid', apiConfig.value.cid);
-                    localStorage.setItem('twitch_tkn', apiConfig.value.tkn);
+                    syncState.value = 'syncing'; localStorage.setItem('twitch_cid', apiConfig.value.cid); localStorage.setItem('twitch_tkn', apiConfig.value.tkn);
                     try {
                         const uR = await fetch('https://api.twitch.tv/helix/users?login=codemiko', { headers: {'Client-Id': apiConfig.value.cid, 'Authorization': `Bearer ${apiConfig.value.tkn}`} });
-                        const uD = await uR.json();
-                        let totalSynced = 0, cursor = '';
+                        const uD = await uR.json(); let totalSynced = 0, cursor = '';
                         do {
                             const cR = await fetch(`https://api.twitch.tv/helix/clips?broadcaster_id=${uD.data[0].id}&first=100${cursor ? '&after='+cursor : ''}`, { headers: {'Client-Id': apiConfig.value.cid, 'Authorization': `Bearer ${apiConfig.value.tkn}`} });
                             const cD = await cR.json();
                             if (cD.data?.length > 0) {
                                 const ins = cD.data.map(x => ({ id: x.id, thumbnail_url: x.thumbnail_url, title: x.title, view_count: x.view_count, created_at: x.created_at, added_by: 'CodeMiko' }));
-                                await sbClient.from('clips').upsert(ins, { onConflict: 'id' });
-                                totalSynced += cD.data.length;
+                                await sbClient.from('clips').upsert(ins, { onConflict: 'id' }); totalSynced += cD.data.length;
                             }
                             cursor = cD.pagination?.cursor;
                         } while (cursor && totalSynced < 3000); 
-                        await loadData();
-                        syncState.value = 'sync-success';
-                        setTimeout(() => syncState.value = 'idle', 2000);
+                        await loadData(); syncState.value = 'sync-success'; setTimeout(() => syncState.value = 'idle', 2000);
                     } catch (e) { syncState.value = 'idle'; showToast("SYNC FAILED"); }
                 };
 
                 onMounted(async () => {
                     const { data: { session } } = await sbClient.auth.getSession();
-                    currentUser.value = session?.user || null;
-                    loadData(); 
-                    
-                    checkLive();
-                    setInterval(checkLive, 60000); 
-
+                    if (session?.user) { currentUser.value = session.user; loadGeraldHistory(); }
+                    loadData(); checkLive(); setInterval(checkLive, 60000); 
                     setTimeout(() => { splashOpacity.value = 0; setTimeout(() => splashVisible.value = false, 400); }, 1500);
                 });
 
-                return { hostname, splashVisible, splashOpacity, currentTab, clips, discordFeed, modals, isLive, toast, currentUser, loginEmail, loginPass, apiConfig, latestVodId, activeFeedVideo, geraldInput, geraldMessages, isGeraldTyping, talkToGerald, logoSvg, syncState, runSync, isHeaderVisible, handleScroll, handleModalTouchStart, handleModalTouchMove, handleModalTouchEnd, currentFilter, activeFilterLabel, isFilterMenuOpen, closeFilterMenu, applyFilter, parseMarkdown, parseDiscordText, shareClip, recentVods, currentVodIndex, getVodLabel, nextVod, prevVod, handleLogin: async () => { const email = loginEmail.value.includes('@') ? loginEmail.value : `${loginEmail.value}@miko.com`; const { data, error } = await sbClient.auth.signInWithPassword({ email, password: loginPass.value }); if(data.user) { currentUser.value = data.user; } else showToast("INVALID LOGIN"); }, handleLogout: () => { sbClient.auth.signOut(); currentUser.value = null; }, optimizeTwitchImg: (u) => u.replace('%{width}', '480').replace('%{height}', '270'), formatViews: (v) => v ? v.toLocaleString() : '0', formatDate: (d) => new Date(d).toLocaleDateString([], {month:'short', day:'numeric'}), formatDateTime: (d) => new Date(d).toLocaleString() };
+                return { 
+                    hostname, splashVisible, splashOpacity, currentTab, clips, discordFeed, modals, isLive, toast, currentUser, loginEmail, loginPass, apiConfig, latestVodId, activeFeedVideo, geraldInput, geraldMessages, isGeraldTyping, talkToGerald, logoSvg, syncState, runSync, isHeaderVisible, handleScroll, handleModalTouchStart, handleModalTouchMove, handleModalTouchEnd, currentFilter, activeFilterLabel, isFilterMenuOpen, closeFilterMenu, applyFilter, parseMarkdown, parseDiscordText, shareClip, recentVods, currentVodIndex, getVodLabel, nextVod, prevVod, customEmotes, showEmotePicker, insertEmote, clearGeraldHistory, 
+                    handleLogin: async () => { const email = loginEmail.value.includes('@') ? loginEmail.value : `${loginEmail.value}@miko.com`; const { data, error } = await sbClient.auth.signInWithPassword({ email, password: loginPass.value }); if(data.user) { currentUser.value = data.user; modals.value.profile = false; loadGeraldHistory(); } else showToast("INVALID LOGIN"); }, 
+                    handleLogout: () => { sbClient.auth.signOut(); currentUser.value = null; geraldMessages.value = [{role:'gerald', content: getRandomGreeting()}]; },
+                    optimizeTwitchImg: (u) => u ? u.replace('%{width}', '480').replace('%{height}', '270') : '', 
+                    formatViews: (v) => v ? v.toLocaleString() : '0', 
+                    formatDate: (d) => new Date(d).toLocaleDateString([], {month:'short', day:'numeric'}), 
+                    formatDateTime: (d) => new Date(d).toLocaleString() 
+                };
             }
         }).mount('#app-container');
     </script>
