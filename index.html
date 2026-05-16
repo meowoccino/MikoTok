@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
     <meta name="theme-color" content="#050505">
     <title>MikoTok</title>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&family=Outfit:wght@800;900&family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@24,400,1,0" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&family=Outfit:wght@800;900&family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@24,400,1,0" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="https://unpkg.com/vue@3/dist/vue.global.prod.js"></script>
     <style>
@@ -140,8 +140,36 @@
         .drag-handle { width: 40px; height: 5px; background: #27272a; border-radius: 10px; margin: 0 auto 15px; }
         
         .input-box { width: 100%; background: var(--bg-color); border: 1px solid var(--border-color); border-radius: 12px; padding: 15px; color: white; margin-bottom: 15px; outline: none; font-size: 13px; font-weight: 600; }
-        .sync-btn { width: 100%; background: var(--primary); border: none; color: white; padding: 15px; border-radius: 12px; font-weight: 800; cursor: pointer; margin-bottom: 10px; display: flex; justify-content: center; align-items: center; gap: 8px; }
-        .logout-btn { width: 100%; background: transparent; border: 1px solid var(--danger); color: var(--danger); padding: 12px; border-radius: 12px; margin-top: 10px; cursor: pointer; font-weight: 800; display: flex; justify-content: center; align-items: center; gap: 8px; }
+        .sync-btn { width: 100%; background: var(--primary); border: none; color: white; padding: 15px; border-radius: 12px; font-weight: 800; cursor: pointer; margin-bottom: 10px; display: flex; justify-content: center; align-items: center; gap: 8px; transition: 0.2s; }
+        .sync-btn:active { transform: scale(0.97); }
+
+        /* --- NEW SLEEK ADMIN PANEL STYLES --- */
+        .settings-block { background: var(--card-bg); border: 1px solid var(--border-color); border-radius: 16px; padding: 16px; margin-bottom: 20px; text-align: left; }
+        .block-title { font-size: 10px; font-weight: 800; color: var(--text-muted); margin-bottom: 12px; letter-spacing: 0.5px; }
+        .sleek-input { width: 100%; box-sizing: border-box; background: #050505; border: 1px solid #27272a; border-radius: 10px; padding: 12px 14px; color: white; font-size: 12px; font-weight: 600; outline: none; margin-bottom: 8px; transition: 0.2s; }
+        .sleek-input:last-child { margin-bottom: 0; }
+        .sleek-input:focus { border-color: var(--primary); }
+
+        .action-menu { background: var(--card-bg); border: 1px solid var(--border-color); border-radius: 16px; overflow: hidden; text-align: left; }
+        .menu-btn { width: 100%; padding: 14px 16px; display: flex; align-items: center; justify-content: space-between; background: transparent; border: none; border-bottom: 1px solid var(--border-color); cursor: pointer; font-size: 11px; font-weight: 800; text-transform: uppercase; transition: 0.3s; }
+        .menu-btn:last-child { border-bottom: none; }
+        .menu-btn:active:not(:disabled) { background: rgba(255,255,255,0.05); }
+        .menu-btn:disabled { opacity: 0.8; cursor: default; }
+        
+        .btn-content { display: flex; align-items: center; gap: 12px; }
+        .icon-wrap { width: 30px; height: 30px; border-radius: 8px; display: flex; align-items: center; justify-content: center; transition: 0.3s; }
+        
+        .sync-row { color: var(--primary); }
+        .sync-row .icon-wrap { background: rgba(145, 70, 255, 0.15); }
+        .wipe-row { color: #ff9800; }
+        .wipe-row .icon-wrap { background: rgba(255, 152, 0, 0.15); }
+        .logout-row { color: var(--danger); }
+        .logout-row .icon-wrap { background: rgba(239, 68, 68, 0.15); }
+
+        .spin-anim { animation: spin 1s linear infinite; }
+        @keyframes shake { 0%, 100% { transform: rotate(0deg); } 25% { transform: rotate(-10deg); } 50% { transform: rotate(10deg); } 75% { transform: rotate(-10deg); } }
+        .shake-anim { animation: shake 0.4s ease-in-out infinite; }
+        /* ------------------------------------ */
 
         .miko-metadata { display: flex; align-items: flex-start; justify-content: space-between; padding: 12px 5px 0; background: transparent; width: 100%; gap: 10px; }
         .miko-metadata .author-info { display: flex; align-items: center; min-width: 0; flex: 1; }
@@ -266,16 +294,16 @@
             </div>
 
             <div class="gerald-container" v-show="currentTab === 'gerald'">
-                <div class="gerald-header">
-                    <img src="gerald.png" @click="modals.profile = true" style="width:70px; height:70px; border-radius:50%; border:2px solid var(--gerald); box-shadow:0 0 20px rgba(14, 165, 233, 0.3); object-fit:cover; margin-bottom:12px; cursor:pointer;">
-                    <div @click="modals.profile = true" style="font-weight:900; font-family:'Outfit'; font-size:22px; color:white; cursor:pointer;">GERALD OS</div>
+                <div class="gerald-header" @click="showEmotePicker = false">
+                    <img src="gerald.png" @click.stop="modals.profile = true" style="width:70px; height:70px; border-radius:50%; border:2px solid var(--gerald); box-shadow:0 0 20px rgba(14, 165, 233, 0.3); object-fit:cover; margin-bottom:12px; cursor:pointer;">
+                    <div @click.stop="modals.profile = true" style="font-weight:900; font-family:'Outfit'; font-size:22px; color:white; cursor:pointer;">GERALD OS</div>
                     <div style="display:flex; align-items:center; gap:8px; margin-top:10px;">
                         <div class="pulse" style="background:var(--gerald); box-shadow:0 0 10px var(--gerald);"></div>
                         <div style="font-size:11px; color:var(--text-muted); font-weight:800; letter-spacing:1px;">SYSTEM ONLINE</div>
                     </div>
                 </div>
                 
-                <div class="gerald-messages" id="gerald-msgs" ref="geraldMsgsRef">
+                <div class="gerald-messages" id="gerald-msgs" ref="geraldMsgsRef" @click="showEmotePicker = false">
                     <template v-for="(m, i) in geraldMessages" :key="i">
                         <div v-if="i === 0 && m.role === 'gerald'" class="terminal-intro">
                             <div class="terminal-header"><span class="material-symbols-rounded" style="font-size: 14px;">terminal</span> Session Initialized</div>
@@ -330,8 +358,7 @@
             <div class="modal-content" @touchstart="handleModalTouchStart" @touchmove="handleModalTouchMove" @touchend="handleModalTouchEnd">
                 <div class="drag-handle"></div>
                 <div v-if="!currentUser">
-                    <h1 style="font-family:'Outfit'; font-size:16px; margin-bottom:20px; text-transform:uppercase; color:var(--text-muted); text-align:center;">Admin Access</h1>
-                    <input type="text" v-model.lazy="loginEmail" class="input-box" placeholder="Email">
+                    <input type="text" v-model.lazy="loginEmail" class="input-box" placeholder="Email" style="margin-top: 10px;">
                     <input type="password" v-model.lazy="loginPass" class="input-box" placeholder="Password" @keyup.enter="handleLogin">
                     <button class="sync-btn" @click="handleLogin">LOGIN</button>
                 </div>
@@ -341,19 +368,48 @@
                         <a href="https://github.com/meowoccino/MikoTok" target="_blank" class="external-link-btn"><span class="material-symbols-rounded">code</span>GitHub Repo</a>
                         <a href="https://supabase.com/dashboard/project/yhxcuayiwqpjvalyrcqv" target="_blank" class="external-link-btn"><span class="material-symbols-rounded">database</span>Supabase DB</a>
                     </div>
-                    <div style="background:rgba(255,255,255,0.03); border:1px solid var(--border-color); border-radius:12px; padding:15px; margin-bottom:15px;">
-                        <div style="font-size:10px; font-weight:800; color:var(--text-muted); margin-bottom:10px;">TWITCH API</div>
-                        <input type="text" class="input-box" v-model.lazy="apiConfig.cid" placeholder="Client ID">
-                        <input type="password" class="input-box" v-model.lazy="apiConfig.tkn" placeholder="Bearer Token">
+                    
+                    <div class="settings-block">
+                        <div class="block-title">TWITCH API CONFIG</div>
+                        <input type="text" class="sleek-input" v-model.lazy="apiConfig.cid" placeholder="Client ID">
+                        <input type="password" class="sleek-input" v-model.lazy="apiConfig.tkn" placeholder="Access Token">
                     </div>
-                    <button class="sync-btn" @click="runSync" :disabled="syncState === 'syncing'">
-                        <span v-if="syncState === 'syncing'" class="spinner"></span>
-                        <span v-else-if="syncState === 'sync-success'" class="material-symbols-rounded">check</span>
-                        <span v-else class="material-symbols-rounded">rocket_launch</span>
-                        {{ syncState === 'syncing' ? 'SYNCING...' : (syncState === 'sync-success' ? 'SUCCESS' : 'FORCE DATA SYNC') }}
-                    </button>
-                    <button class="logout-btn" @click="clearGeraldHistory" style="color: #ff9800; border-color: #ff9800;"><span class="material-symbols-rounded">history_toggle_off</span> WIPE GERALD'S MEMORY</button>
-                    <button class="logout-btn" @click="handleLogout">SIGN OUT</button>
+
+                    <div class="action-menu">
+                        <button class="menu-btn sync-row" :style="syncState === 'sync-success' ? 'color: var(--success);' : ''" @click="runSync" :disabled="syncState !== 'idle'">
+                            <div class="btn-content">
+                                <div class="icon-wrap" :style="syncState === 'sync-success' ? 'background: rgba(0, 255, 163, 0.15);' : ''">
+                                    <span class="material-symbols-rounded" :class="{'spin-anim': syncState === 'syncing'}" style="font-size: 18px;">
+                                        {{ syncState === 'sync-success' ? 'check' : 'sync' }}
+                                    </span>
+                                </div>
+                                <span>{{ syncState === 'syncing' ? 'SYNCING...' : (syncState === 'sync-success' ? 'SUCCESS' : 'Force Data Sync') }}</span>
+                            </div>
+                        </button>
+                        
+                        <button class="menu-btn wipe-row" :style="wipeState === 'success' ? 'color: var(--success);' : ''" @click="clearGeraldHistory" :disabled="wipeState !== 'idle'">
+                            <div class="btn-content">
+                                <div class="icon-wrap" :style="wipeState === 'success' ? 'background: rgba(0, 255, 163, 0.15);' : ''">
+                                    <span class="material-symbols-rounded" :class="{'shake-anim': wipeState === 'wiping'}" style="font-size: 18px;">
+                                        {{ wipeState === 'success' ? 'check' : 'delete' }}
+                                    </span>
+                                </div>
+                                <span>{{ wipeState === 'wiping' ? 'WIPING...' : (wipeState === 'success' ? 'MEMORY WIPED!' : 'Wipe Gerald\'s Memory') }}</span>
+                            </div>
+                        </button>
+                        
+                        <button class="menu-btn logout-row" @click="handleLogout" :disabled="logoutState !== 'idle'">
+                            <div class="btn-content">
+                                <div class="icon-wrap">
+                                    <span class="material-symbols-rounded" :class="{'spin-anim': logoutState === 'logging_out'}" style="font-size: 18px;">
+                                        {{ logoutState === 'logging_out' ? 'hourglass_empty' : 'logout' }}
+                                    </span>
+                                </div>
+                                <span>{{ logoutState === 'logging_out' ? 'SIGNING OUT...' : 'Sign Out' }}</span>
+                            </div>
+                        </button>
+                    </div>
+
                 </div>
             </div>
         </div>
@@ -363,7 +419,7 @@
             <div class="nav-item" :class="{ active: currentTab === 'chat' }" @click="currentTab = 'chat'; isHeaderVisible = true"><span class="material-symbols-rounded">chat</span>Chat</div>
             <div class="nav-item" :class="{ active: currentTab === 'feed' }" @click="currentTab = 'feed'; isHeaderVisible = true"><span class="material-symbols-rounded">forum</span>Feed</div>
             <div class="nav-item" @click="modals.discord = true"><svg viewBox="0 0 24 24" width="24" height="24" fill="currentColor" style="margin-bottom:4px"><path d="M20.317 4.3698a19.7913 19.7913 0 00-4.8851-1.5152.0741.0741 0 00-.0785.0371c-.211.3753-.4447.8648-.6083 1.2495-1.8447-.2762-3.68-.2762-5.4868 0-.1636-.3933-.4058-.8742-.6177-1.2495a.077.077 0 00-.0785-.037 19.7363 19.7363 0 00-4.8852 1.515.0699.0699 0 00-.0321.0277C.5334 9.0458-.319 13.5799.0992 18.0578a.0824.0824 0 00.0312.0561c2.0528 1.5076 4.0413 2.4228 5.9929 3.0294a.0777.0777 0 00.0842-.0276c.4616-.6304.8731-1.2952 1.226-1.9942a.076.076 0 00-.0416-.1057c-.6528-.2476-1.2743-.5495-1.8722-.8923a.077.077 0 01-.0076-.1277c.1258-.0943.2517-.1923.3718-.2914a.0743.0743 0 01.0776-.0105c3.9278 1.7933 8.18 1.7933 12.0614 0a.0739.0739 0 01.0785.0095c.1202.099.246.1981.3728.2924a.077.077 0 01-.0066.1276 12.2986 12.2986 0 01-1.873.8914.0766.0766 0 00-.0407.1067c.3604.698.7719 1.3628 1.225 1.9932a.076.076 0 00.0842.0286c1.961-.6067 3.9495-1.5219 6.0023-3.0314a.077.077 0 00.0313-.0552c.5004-5.177-.8382-9.6739-3.5485-13.6604a.061.061 0 00-.0312-.0286zM8.02 15.3312c-1.1825 0-2.1569-1.0857-2.1569-2.419 0-1.3332.9555-2.4189 2.157-2.4189 1.2108 0 2.1757 1.0952 2.1568 2.419 0 1.3332-.9555 2.4189-2.1569 2.4189zm7.9748 0c-1.1825 0-2.1569-1.0857-2.1569-2.419 0-1.3332.9554-2.4189 2.1569-2.4189 1.2108 0 2.1757 1.0952 2.1568 2.419 0 1.3332-.946 2.4189-2.1568 2.4189Z"/></svg>Discord</div>
-            <div class="nav-item" :class="{ 'active-gerald': currentTab === 'gerald' }" @click="currentTab = 'gerald'; isHeaderVisible = true"><span class="material-symbols-rounded">robot_2</span>Gerald</div>
+            <div class="nav-item" :class="{ 'active-gerald': currentTab === 'gerald' }" @click="currentTab = 'gerald'; isHeaderVisible = true"><span class="material-symbols-rounded">smart_toy</span>Gerald</div>
         </nav>
     </div>
 
@@ -377,7 +433,12 @@
                 const validTabs = ['home', 'chat', 'feed', 'gerald'];
                 const currentTab = ref(validTabs.includes(initialHash) ? initialHash : 'home');
                 
-                const splashVisible = ref(true), splashOpacity = ref(1), clips = ref([]), allClips = ref([]), discordFeed = ref([]), modals = ref({profile: false, discord: false}), isLive = ref(false), currentUser = ref(null), loginEmail = ref(''), loginPass = ref(''), toast = ref({visible: false, message: ''}), latestVodId = ref(null), hostname = window.location.hostname || 'meowoccino.github.io', activeFeedVideo = ref('featured'), syncState = ref('idle');
+                const splashVisible = ref(true), splashOpacity = ref(1), clips = ref([]), allClips = ref([]), discordFeed = ref([]), modals = ref({profile: false, discord: false}), isLive = ref(false), currentUser = ref(null), loginEmail = ref(''), loginPass = ref(''), toast = ref({visible: false, message: ''}), latestVodId = ref(null), hostname = window.location.hostname || 'meowoccino.github.io', activeFeedVideo = ref('featured');
+                
+                const syncState = ref('idle');
+                const wipeState = ref('idle');
+                const logoutState = ref('idle');
+
                 const apiConfig = ref({ cid: localStorage.getItem('twitch_cid') || '', tkn: localStorage.getItem('twitch_tkn') || '' });
                 
                 const geraldGreetings = [
@@ -431,10 +492,8 @@
                 const sortData = (filterKey) => {
                     let sorted = [...allClips.value]; const now = new Date();
                     if (filterKey === 'latest') { 
-                        // STRICT DATE SORTING FOR DEFAULT
                         sorted.sort((a, b) => new Date(b.created_at) - new Date(a.created_at)); 
                     } else {
-                        // STRICT VIEW SORTING FOR FILTERS
                         if (filterKey === 'weekly') { sorted = sorted.filter(c => new Date(c.created_at) >= new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000)); } 
                         else if (filterKey === 'month') { sorted = sorted.filter(c => new Date(c.created_at) >= new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000)); } 
                         else if (filterKey === '6months') { sorted = sorted.filter(c => new Date(c.created_at) >= new Date(now.getTime() - 180 * 24 * 60 * 60 * 1000)); }
@@ -531,12 +590,16 @@
                     scrollToBottom();
                 };
 
+                // Stripped out browser confirm alert pop-up! Runs animation smoothly instantly.
                 const clearGeraldHistory = async () => {
-                    if (!currentUser.value) return;
-                    if (!confirm("Are you sure you want to wipe Gerald's memory? This cannot be undone.")) return;
+                    if (!currentUser.value || wipeState.value !== 'idle') return;
+                    
+                    wipeState.value = 'wiping';
                     await sbClient.from('gerald_history').delete().eq('user_id', currentUser.value.id);
                     geraldMessages.value = [{role:'gerald', content: getRandomGreeting()}];
-                    showToast("Memory wiped!");
+                    
+                    wipeState.value = 'success';
+                    setTimeout(() => { wipeState.value = 'idle'; }, 2000);
                 };
 
                 const talkToGerald = async () => {
@@ -621,10 +684,9 @@
                         const uR = await fetch('https://api.twitch.tv/helix/users?login=codemiko', { headers: {'Client-Id': apiConfig.value.cid, 'Authorization': `Bearer ${apiConfig.value.tkn}`} });
                         const uD = await uR.json(); 
                         
-                        // 🚨 30-DAY ROLLING WINDOW: Guaranteed to catch low-view clips from today!
                         const now = new Date();
-                        const endDate = new Date(now.getTime() + 24 * 60 * 60 * 1000).toISOString(); // +1 day buffer to prevent timezone cuts
-                        const startDate = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000).toISOString(); // 30 days ago
+                        const endDate = new Date(now.getTime() + 24 * 60 * 60 * 1000).toISOString(); 
+                        const startDate = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000).toISOString(); 
                         let totalSynced = 0, cursor = '';
                         
                         do {
@@ -649,9 +711,19 @@
                 });
 
                 return { 
-                    hostname, splashVisible, splashOpacity, currentTab, clips, discordFeed, modals, isLive, toast, currentUser, loginEmail, loginPass, apiConfig, latestVodId, activeFeedVideo, geraldInput, geraldMessages, isGeraldTyping, talkToGerald, logoSvg, syncState, runSync, isHeaderVisible, handleScroll, handleModalTouchStart, handleModalTouchMove, handleModalTouchEnd, currentFilter, activeFilterLabel, isFilterMenuOpen, closeFilterMenu, applyFilter, parseMarkdown, parseDiscordText, shareClip, recentVods, currentVodIndex, getVodLabel, nextVod, prevVod, customEmotes, showEmotePicker, insertEmote, clearGeraldHistory, isPulling, refreshTransform, isRefreshing, handlePullStart, handlePullMove, handlePullEnd, geraldMsgsRef,
+                    hostname, splashVisible, splashOpacity, currentTab, clips, discordFeed, modals, isLive, toast, currentUser, loginEmail, loginPass, apiConfig, latestVodId, activeFeedVideo, geraldInput, geraldMessages, isGeraldTyping, talkToGerald, logoSvg, syncState, wipeState, logoutState, runSync, isHeaderVisible, handleScroll, handleModalTouchStart, handleModalTouchMove, handleModalTouchEnd, currentFilter, activeFilterLabel, isFilterMenuOpen, closeFilterMenu, applyFilter, parseMarkdown, parseDiscordText, shareClip, recentVods, currentVodIndex, getVodLabel, nextVod, prevVod, customEmotes, showEmotePicker, insertEmote, clearGeraldHistory, isPulling, refreshTransform, isRefreshing, handlePullStart, handlePullMove, handlePullEnd, geraldMsgsRef,
                     handleLogin: async () => { const email = loginEmail.value.includes('@') ? loginEmail.value : `${loginEmail.value}@miko.com`; const { data, error } = await sbClient.auth.signInWithPassword({ email, password: loginPass.value }); if(data.user) { currentUser.value = data.user; modals.value.profile = false; loadGeraldHistory(); } else showToast("INVALID LOGIN"); }, 
-                    handleLogout: () => { sbClient.auth.signOut(); currentUser.value = null; geraldMessages.value = [{role:'gerald', content: getRandomGreeting()}]; },
+                    handleLogout: () => { 
+                        if (logoutState.value !== 'idle') return;
+                        logoutState.value = 'logging_out';
+                        setTimeout(() => {
+                            sbClient.auth.signOut(); 
+                            currentUser.value = null; 
+                            geraldMessages.value = [{role:'gerald', content: getRandomGreeting()}]; 
+                            modals.value.profile = false; 
+                            logoutState.value = 'idle'; 
+                        }, 1500);
+                    },
                     optimizeTwitchImg: (u) => u ? u.replace('%{width}', '480').replace('%{height}', '270') : '', 
                     formatViews: (v) => v ? v.toLocaleString() : '0', 
                     formatDate: (d) => new Date(d).toLocaleDateString([], {month:'short', day:'numeric'}), 
