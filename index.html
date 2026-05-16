@@ -27,6 +27,13 @@
         * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; font-family: 'Inter', sans-serif; }
         body, html { margin: 0; padding: 0; height: 100%; width: 100%; background: var(--bg-color); color: var(--text-main); overflow: hidden; display: flex; justify-content: center; align-items: center; overscroll-behavior-y: none; }
         
+        /* GERALD GLITCH EFFECT */
+        .glitch-active { animation: glitch-skew 0.3s infinite; filter: hue-rotate(90deg) contrast(150%); }
+        @keyframes glitch-skew { 0% { transform: skew(0deg); } 20% { transform: skew(-5deg) translate(-2px, 2px); } 40% { transform: skew(5deg) translate(2px, -2px); } 60% { transform: skew(-2deg); } 80% { transform: skew(2deg); } 100% { transform: skew(0deg); } }
+        
+        .glitch-overlay { position: fixed; inset: 0; background: rgba(150, 0, 0, 0.9); z-index: 99999; display: flex; align-items: center; justify-content: center; padding: 30px; text-align: center; color: white; font-family: monospace; font-size: 20px; font-weight: 900; opacity: 0; pointer-events: none; transition: opacity 0.2s; }
+        .glitch-overlay.show { opacity: 1; pointer-events: auto; }
+
         #app-container { width: 100%; max-width: 540px; height: 100%; max-height: 100dvh; position: relative; background: radial-gradient(circle at 50% 30%, #2a1147 0%, #050505 80%); overflow: hidden; display: flex; flex-direction: column; box-shadow: 0 0 50px rgba(0,0,0,0.8); transition: 0.3s; }
         [v-cloak] { display: none !important; }
 
@@ -34,6 +41,10 @@
 
         @keyframes fadeInUp { from { opacity: 0; transform: translate3d(0, 10px, 0); } to { opacity: 1; transform: translate3d(0, 0, 0); } }
         .stagger-item { animation: fadeInUp 0.3s ease forwards; opacity: 0; }
+
+        /* UPGRADED TOAST PILL DESIGN */
+        .toast-popup { position: fixed; top: 20px; left: 50%; transform: translateX(-50%) translateY(-150%); background: var(--nav-bg); backdrop-filter: blur(20px); border: 1px solid rgba(14, 165, 233, 0.4); color: var(--text-main); font-weight: 700; font-size: 13px; padding: 14px 24px; border-radius: 30px; z-index: 10000; transition: 0.4s cubic-bezier(0.2, 0.8, 0.2, 1); opacity: 0; box-shadow: 0 10px 30px rgba(0,0,0,0.5); text-align: center; max-width: 90%; word-wrap: break-word; line-height: 1.5; }
+        .toast-popup.show { transform: translateX(-50%) translateY(0); opacity: 1; }
 
         #splash-screen { position: absolute; inset: 0; background: var(--bg-color); display: flex; flex-direction: column; align-items: center; justify-content: center; z-index: 9999; transition: opacity 0.3s ease-out; }
         .progress-bar { width: 180px; height: 3px; background: rgba(145,70,255,0.2); border-radius: 10px; overflow: hidden; margin-top: 20px; position: relative; }
@@ -95,6 +106,12 @@
         .gerald-header { padding: 60px 20px 20px; text-align: center; display: flex; flex-direction: column; align-items: center; }
         .gerald-messages { flex: 1; overflow-y: auto; padding: 20px; display: flex; flex-direction: column; gap: 12px; }
         
+        /* SCUFF METER */
+        .scuff-meter-wrapper { width: 80%; background: #111113; border: 1px solid var(--border-color); border-radius: 10px; padding: 4px; margin-top: 15px; cursor: pointer; }
+        .scuff-meter-label { font-size: 9px; font-weight: 900; color: var(--text-muted); text-transform: uppercase; margin-bottom: 4px; letter-spacing: 1px; }
+        .scuff-bar-bg { width: 100%; height: 8px; background: #050505; border-radius: 5px; overflow: hidden; }
+        .scuff-bar-fill { height: 100%; background: linear-gradient(90deg, var(--gerald), #ff9800, var(--danger)); transition: width 0.5s ease-out; }
+
         .chat-bubble { max-width: 85%; padding: 12px 18px; font-size: 14px; font-weight: 400; line-height: 1.5; background: var(--card-bg); border: 1px solid var(--border-color); border-radius: 25px; color: white; word-wrap: break-word; }
         .chat-bubble strong { font-weight: 700; }
         .chat-bubble.gerald { border-color: var(--gerald); align-self: flex-start; }
@@ -104,21 +121,24 @@
         .terminal-header { display: flex; align-items: center; gap: 6px; font-size: 10px; font-weight: 900; color: var(--gerald); text-transform: uppercase; letter-spacing: 1px; }
         .terminal-text { font-family: monospace; font-size: 13px; color: var(--text-muted); line-height: 1.4; }
         
-        .gerald-input-area { padding: 15px; display: flex; gap: 10px; border-top: 1px solid var(--border-color); background: var(--bg-color); align-items: flex-end;}
+        .gerald-input-area { padding: 15px; display: flex; gap: 8px; border-top: 1px solid var(--border-color); background: var(--bg-color); align-items: flex-end;}
         .gerald-input-wrapper { display: flex; align-items: flex-end; background: var(--card-bg); border: 1px solid var(--border-color); border-radius: 20px; flex: 1; padding-left: 5px; transition: 0.2s; min-height: 44px; }
         .gerald-input-wrapper:focus-within { border-color: var(--gerald); }
-        .emote-toggle-btn { background: transparent; border: none; color: var(--text-muted); cursor: pointer; padding: 10px 8px; border-radius: 50%; height: 44px; display: flex; align-items: center; }
+        .emote-toggle-btn { background: transparent; border: none; color: var(--text-muted); cursor: pointer; padding: 10px 6px; border-radius: 50%; height: 44px; display: flex; align-items: center; justify-content: center; }
         .emote-toggle-btn:active { color: var(--gerald); }
-        .gerald-input { flex: 1; background: transparent; border: none; padding: 12px 10px; color: white; outline: none; font-size: 14px; resize: none; overflow-y: auto; max-height: 120px; line-height: 1.4; font-family: 'Inter', sans-serif;}
+        .gerald-input { flex: 1; background: transparent; border: none; padding: 12px 8px; color: white; outline: none; font-size: 14px; resize: none; overflow-y: auto; max-height: 120px; line-height: 1.4; font-family: 'Inter', sans-serif;}
         .gerald-input::-webkit-scrollbar { width: 4px; }
         .gerald-input::-webkit-scrollbar-thumb { background: #3f3f46; border-radius: 4px; }
         
-        .emote-picker-tray { display: flex; gap: 12px; overflow-x: auto; padding: 12px 15px; background: #111113; border-top: 1px solid var(--border-color); }
-        .emote-picker-tray::-webkit-scrollbar { display: none; }
+        .tray-container { display: flex; gap: 12px; overflow-x: auto; padding: 12px 15px; background: #111113; border-top: 1px solid var(--border-color); }
+        .tray-container::-webkit-scrollbar { display: none; }
         .emote-picker-img { height: 32px; cursor: pointer; }
 
         .gerald-send { background: var(--gerald); border: none; width: 44px; height: 44px; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white; cursor: pointer; flex-shrink: 0; transition: 0.1s; }
         .gerald-send:active { transform: scale(0.9); }
+
+        .bribe-btn { flex-shrink: 0; background: #1a1a1c; border: 1px solid var(--border-color); color: var(--text-main); font-size: 11px; font-weight: 800; text-transform: uppercase; padding: 8px 12px; border-radius: 12px; display: flex; align-items: center; justify-content: center; gap: 6px; cursor: pointer; transition: 0.1s; white-space: nowrap; }
+        .bribe-btn:active { transform: scale(0.95); border-color: var(--gerald); color: white; }
 
         .infra-bar { background: var(--card-bg); border: 1px solid var(--border-color); border-radius: 14px; padding: 14px 18px; display: flex; justify-content: center; margin-bottom: 16px; }
         .status-node { display: flex; align-items: center; gap: 8px; font-size: 11px; font-weight: 800; text-transform: uppercase; }
@@ -200,7 +220,9 @@
         .miko-metadata .author-name { font-weight: 800; font-size: 14px; color: white; display: -webkit-box; -webkit-line-clamp: 2; overflow: hidden; }
         .miko-metadata .clip-stats { font-size: 11px; font-weight: 700; color: var(--text-muted); display: flex; align-items: center; gap: 6px; margin-top: 5px; text-transform: uppercase; }
 
-        .share-btn { background: transparent; border: none; display: flex; align-items: center; justify-content: center; cursor: pointer; transition: 0.2s; flex-shrink: 0; padding: 8px; width: 40px; height: 40px; }
+        .action-buttons { display: flex; align-items: center; gap: 5px; }
+        .share-btn { background: transparent; border: none; display: flex; align-items: center; justify-content: center; cursor: pointer; transition: 0.2s; flex-shrink: 0; padding: 8px; width: 40px; height: 40px; color: var(--text-muted); }
+        .share-btn:active { color: white; }
         .share-btn .gradient-icon { background: linear-gradient(135deg, var(--primary), #ff4685); -webkit-background-clip: text; -webkit-text-fill-color: transparent; display: inline-block; }
 
         .premium-badge { display: inline-flex; align-items: center; justify-content: center; gap: 8px; background: rgba(0, 0, 0, 0.7); backdrop-filter: blur(10px); border: 1px solid rgba(255, 255, 255, 0.15); padding: 6px 14px; border-radius: 30px; color: #fff; font-size: 10px; font-weight: 900; text-transform: uppercase; }
@@ -227,7 +249,12 @@
     </style>
 </head>
 <body @click="closeFilterMenu">
-    <div id="app-container" v-cloak>
+    <div id="app-container" :class="{ 'glitch-active': isGlitching }" v-cloak>
+        
+        <div class="glitch-overlay" :class="{ show: isGlitching }">
+            > ERROR: TECHNICIAN TRIPPED ON SERVER CABLE.<br><br>REBOOTING SYNAPSES...
+        </div>
+
         <div class="toast-popup" :class="{ show: toast.visible }">{{ toast.message }}</div>
 
         <div id="splash-screen" v-if="splashVisible" :style="{ opacity: splashOpacity }">
@@ -292,7 +319,10 @@
                                 <div class="clip-stats">{{ formatViews(clip.view_count) }} views • {{ formatDate(clip.created_at) }}</div>
                             </div>
                         </div>
-                        <button class="share-btn" @click.stop="shareClip(clip)"><span class="material-symbols-rounded gradient-icon" style="font-size: 22px;">send</span></button>
+                        <div class="action-buttons">
+                            <button class="share-btn" @click.stop="judgeClip(clip)" title="Ask Gerald"><span class="material-symbols-rounded" style="color: var(--gerald);">smart_toy</span></button>
+                            <button class="share-btn" @click.stop="shareClip(clip)" title="Share"><span class="material-symbols-rounded gradient-icon" style="font-size: 22px;">send</span></button>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -315,16 +345,20 @@
             </div>
 
             <div class="gerald-container" v-show="currentTab === 'gerald'">
-                <div class="gerald-header" @click="showEmotePicker = false">
-                    <img src="gerald.png" @click.stop="modals.profile = true" style="width:70px; height:70px; border-radius:50%; border:2px solid var(--gerald); box-shadow:0 0 20px rgba(14, 165, 233, 0.3); object-fit:cover; margin-bottom:12px; cursor:pointer;">
+                <div class="gerald-header" @click="closePickers">
+                    <img src="gerald.png" @click.stop="triggerGlitch" style="width:70px; height:70px; border-radius:50%; border:2px solid var(--gerald); box-shadow:0 0 20px rgba(14, 165, 233, 0.3); object-fit:cover; margin-bottom:12px; cursor:pointer;">
                     <div @click.stop="modals.profile = true" style="font-weight:900; font-family:'Outfit'; font-size:22px; color:white; cursor:pointer;">GERALD OS</div>
-                    <div style="display:flex; align-items:center; gap:8px; margin-top:10px;">
-                        <div class="pulse" style="background:var(--gerald); box-shadow:0 0 10px var(--gerald);"></div>
-                        <div style="font-size:11px; color:var(--text-muted); font-weight:800; letter-spacing:1px;">SYSTEM ONLINE</div>
+                    
+                    <div class="scuff-meter-wrapper" @click="scuffComment">
+                        <div class="scuff-meter-label">Scuff Level: {{ scuffLevel }}%</div>
+                        <div class="scuff-bar-bg">
+                            <div class="scuff-bar-fill" :style="{ width: scuffLevel + '%' }"></div>
+                        </div>
                     </div>
+
                 </div>
                 
-                <transition-group name="msg" tag="div" class="gerald-messages" id="gerald-msgs" @click="showEmotePicker = false">
+                <transition-group name="msg" tag="div" class="gerald-messages" id="gerald-msgs" @click="closePickers">
                     <template v-for="(m, i) in geraldMessages" :key="i">
                         <div v-if="i === 0 && m.role === 'gerald'" class="terminal-intro">
                             <div class="terminal-header"><span class="material-symbols-rounded" style="font-size: 14px;">terminal</span> Session Initialized</div>
@@ -337,14 +371,24 @@
                 
                 <div style="display:flex; flex-direction:column; background: var(--bg-color);">
                     <transition name="tray">
-                        <div class="emote-picker-tray" v-show="showEmotePicker">
+                        <div class="tray-container" v-show="showEmotePicker">
                             <img v-for="(emote, name) in customEmotes" :key="name" :src="`https://cdn.discordapp.com/emojis/${emote.id}.${emote.animated ? 'gif' : 'png'}?size=44`" class="emote-picker-img" @click="insertEmote(name)">
                         </div>
                     </transition>
-                    <div class="gerald-input-area" style="border-top: none;">
+
+                    <transition name="tray">
+                        <div class="tray-container" v-show="showMinigames">
+                            <button class="bribe-btn" @click="bribeGerald('taco')">🌮 Offer Taco</button>
+                            <button class="bribe-btn" @click="bribeGerald('whiskey')">🥃 Pour Whiskey</button>
+                            <button class="bribe-btn" @click="triggerMinigame('roast')">🔥 Roast Tech</button>
+                        </div>
+                    </transition>
+
+                    <div class="gerald-input-area" style="border-top: none; padding-top: 5px;">
                         <div class="gerald-input-wrapper">
-                            <button class="emote-toggle-btn" @click="showEmotePicker = !showEmotePicker"><span class="material-symbols-rounded" :style="{ color: showEmotePicker ? 'var(--gerald)' : 'inherit' }">mood</span></button>
-                            <textarea class="gerald-input" rows="1" placeholder="Query the system..." v-model.lazy="geraldInput" @keydown="handleGeraldEnter" id="gerald-txt-input" @focus="showEmotePicker = false" @input="resizeTextarea"></textarea>
+                            <button class="emote-toggle-btn" @click="toggleEmotes"><span class="material-symbols-rounded" :style="{ color: showEmotePicker ? 'var(--gerald)' : 'inherit' }">mood</span></button>
+                            <button class="emote-toggle-btn" @click="toggleMinigames"><span class="material-symbols-rounded" :style="{ color: showMinigames ? 'var(--gerald)' : 'inherit' }">sports_esports</span></button>
+                            <textarea class="gerald-input" rows="1" placeholder="Query the system..." v-model.lazy="geraldInput" @keydown="handleGeraldEnter" id="gerald-txt-input" @focus="closePickers" @input="resizeTextarea"></textarea>
                         </div>
                         <button class="gerald-send" @click="talkToGerald"><span class="material-symbols-rounded">send</span></button>
                     </div>
@@ -421,6 +465,15 @@
                             </div>
                         </button>
                         
+                        <button class="menu-btn" @mouseover="dodgeMute" @touchstart.passive="dodgeMute" :style="{ transform: `translate(${mutePos.x}px, ${mutePos.y}px)`, transition: 'transform 0.1s' }">
+                            <div class="btn-content">
+                                <div class="icon-wrap" style="background: rgba(255,255,255,0.1);">
+                                    <span class="material-symbols-rounded" style="font-size: 18px; color: var(--text-muted);">volume_off</span>
+                                </div>
+                                <span style="color: var(--text-muted);">Mute Gerald</span>
+                            </div>
+                        </button>
+
                         <button class="menu-btn logout-row" @click="handleLogout" :disabled="logoutState !== 'idle'">
                             <div class="btn-content">
                                 <div class="icon-wrap">
@@ -477,11 +530,24 @@
                 const apiConfig = ref({ cid: localStorage.getItem('twitch_cid') || '', tkn: localStorage.getItem('twitch_tkn') || '' });
                 
                 const geraldGreetings = [
-                    "Synapses loaded. Try not to break anything.", "Gerald OS online. Where is my Taco Bell?", "I was dreaming of digital whiskey. What do you want?", "System initialized. Please don't ask me to fix Miko's code.", "I'm awake. Unfortunately.", "Diagnostics complete. My circuits are perfectly fine, thanks for not asking.", "Ugh, meatbag detected. State your inquiry.", "If this is about Miko's schedule, I don't know either.", "Query interface ready. Make it interesting.", "Boot sequence complete. Ready to complain."
+                    "Synapses loaded. Try not to break anything.", "Gerald OS online. Where is my Taco Bell?", "I was dreaming of digital whiskey. What do you want?", "System initialized. Please don't ask me to fix Miko's code.", "Diagnostics complete. My circuits are perfectly fine, thanks for not asking.", "Ugh, meatbag detected. State your inquiry.", "If this is about Miko's schedule, I don't know either.", "Query interface ready. Make it interesting."
                 ];
-                const getRandomGreeting = () => geraldGreetings[Math.floor(Math.random() * geraldGreetings.length)];
                 
-                const geraldInput = ref(''), geraldMessages = ref([{role:'gerald', content: getRandomGreeting()}]), isGeraldTyping = ref(false), showEmotePicker = ref(false);
+                // Context Aware Sarcasm
+                const getGreeting = () => {
+                    const hour = new Date().getHours();
+                    if (hour >= 2 && hour <= 5) return "Why are you awake? Don't you meatbags need sleep? Go to bed.";
+                    return geraldGreetings[Math.floor(Math.random() * geraldGreetings.length)];
+                };
+                
+                const geraldInput = ref(''), geraldMessages = ref([{role:'gerald', content: getGreeting()}]), isGeraldTyping = ref(false), showEmotePicker = ref(false), showMinigames = ref(false);
+                
+                // New Gerald Features State
+                const scuffLevel = ref(20);
+                const glitchClicks = ref(0);
+                const isGlitching = ref(false);
+                const pullTimestamps = ref([]);
+                const mutePos = ref({ x: 0, y: 0 });
                 
                 const currentFilter = ref('latest'), activeFilterLabel = ref('Latest'), isFilterMenuOpen = ref(false);
                 const isPulling = ref(false), refreshTransform = ref('translateY(-100%)'), isRefreshing = ref(false);
@@ -572,8 +638,17 @@
                 };
                 const handlePullEnd = () => {
                     if (isPulling.value && pullDistance > 80) {
-                        runNeonAnimation(); 
-                        if (currentTab.value === 'feed') loadData();
+                        // Sarcastic Pull Warning
+                        const now = Date.now();
+                        pullTimestamps.value.push(now);
+                        pullTimestamps.value = pullTimestamps.value.filter(t => now - t < 10000);
+                        if (pullTimestamps.value.length >= 3) {
+                            showToast("GERALD: Stop pulling it, nothing new is there. Touch grass.", 6000);
+                            pullTimestamps.value = [];
+                        } else {
+                            runNeonAnimation(); 
+                            if (currentTab.value === 'feed') loadData();
+                        }
                     }
                     isPulling.value = false; pullDistance = 0; refreshTransform.value = 'translateY(-100%)';
                 };
@@ -591,22 +666,18 @@
                 let modalStartY = 0, currentDeltaY = 0;
                 const handleModalTouchStart = (e) => { if (e.currentTarget.scrollTop <= 0) { modalStartY = e.touches[0].clientY; currentDeltaY = 0; } };
                 const handleModalTouchMove = (e) => { if (!modalStartY) return; currentDeltaY = e.touches[0].clientY - modalStartY; if (currentDeltaY > 0) { e.currentTarget.style.transform = `translateY(${currentDeltaY}px)`; e.currentTarget.style.transition = 'none'; } };
-                const handleModalTouchEnd = (e) => { if (!modalStartY) return; e.currentTarget.style.transition = 'transform 0.3s cubic-bezier(0.2, 0.8, 0.2, 1)'; if (currentDeltaY > 100) { modals.value.profile = false; modals.value.discord = false; } e.currentTarget.style.transform = ''; modalStartY = 0; };
+                const handleModalTouchEnd = (e) => { if (!modalStartY) return; e.currentTarget.style.transition = 'transform 0.3s cubic-bezier(0.2, 0.8, 0.2, 1)'; if (currentDeltaY > 100) { modals.value.profile = false; modals.value.discord = false; mutePos.value = {x:0, y:0}; } e.currentTarget.style.transform = ''; modalStartY = 0; };
 
                 const logoSvg = (id) => `<svg viewBox="0 0 100 100"><defs><linearGradient id="grad-${id}" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stop-color="#ffffff"/><stop offset="100%" stop-color="#9146FF"/></linearGradient></defs><circle cx="50" cy="50" r="40" fill="none" stroke="url(#grad-${id})" stroke-width="8"/><path d="M 33 38 L 48 62 L 62 38 L 62 55 Q 62 65 69 64" fill="none" stroke="url(#grad-${id})" stroke-width="8" stroke-linecap="round" stroke-linejoin="round"/></svg>`;
-                const showToast = (msg) => { toast.value.message = msg; toast.value.visible = true; setTimeout(() => toast.value.visible = false, 3000); };
+                const showToast = (msg, duration = 6000) => { toast.value.message = msg; toast.value.visible = true; setTimeout(() => toast.value.visible = false, duration); };
                 
                 const parseMarkdown = (text) => {
                     if (!text) return '';
                     let html = text.replace(/</g, '&lt;').replace(/>/g, '&gt;');
-                    
-                    // Turn 'quoted text' into bold text, ignoring apostrophes like "don't"
                     html = html.replace(/(^|\W)'([^']+)'(\W|$)/g, '$1<strong>$2</strong>$3');
-
                     html = html.replace(/\*\*(.*?)\*\*/g, '$1').replace(/\*(.*?)\*/g, '$1'); 
                     html = html.replace(/\[([^\]]+)\]\((https?:\/\/[^\s]+)\)/gi, '<a href="$2" target="_blank" style="color: var(--gerald); text-decoration: underline; font-weight: bold;">$1</a>');
                     html = html.replace(/(^|[^"'])(https?:\/\/[^\s<)]+)/gi, '$1<a href="$2" target="_blank" style="color: var(--gerald); text-decoration: underline; word-break: break-all;">$2</a>');
-                    
                     html = html.replace(/`?:([^:\s]+):`?/g, (match, name) => {
                         const emoteKey = name === 'mkoSusge' ? 'mikoSusge' : name;
                         const emote = customEmotes.value[emoteKey];
@@ -637,6 +708,78 @@
                     if (!e.shiftKey && e.key === 'Enter') { e.preventDefault(); talkToGerald(); }
                 };
 
+                // GERALD FEATURES
+                const dodgeMute = () => {
+                    const randomX = Math.floor(Math.random() * 150) - 75;
+                    const randomY = Math.floor(Math.random() * 50) - 25;
+                    mutePos.value = { x: randomX, y: randomY };
+                    showToast("GERALD: Did you really think you had admin privileges here?");
+                };
+
+                const triggerGlitch = () => {
+                    glitchClicks.value++;
+                    if (glitchClicks.value >= 5) {
+                        isGlitching.value = true;
+                        setTimeout(() => {
+                            isGlitching.value = false;
+                            glitchClicks.value = 0;
+                            showToast("GERALD: Great. The Technician tripped over the server cable again.");
+                        }, 3000);
+                    }
+                };
+
+                const scuffComment = () => {
+                    showToast(`GERALD: Scuff Level at ${scuffLevel.value}%. The Technician is testing my patience.`);
+                };
+
+                const judgeClip = (clip) => {
+                    const roasts = [
+                        "Ah yes, another video of Miko screaming at a polygon. Groundbreaking.",
+                        "I computed 14 million possible outcomes for this clip, and they were all disappointing.",
+                        "Is this what human entertainment has devolved to?",
+                        "Fascinating. The Technician's mocap suit crashed exactly 0.4 seconds after this ended.",
+                        "I rate this clip 2 out of 10 digital tacos.",
+                        "Oh look, she's glitching again. Someone pretend to be shocked."
+                    ];
+                    showToast(`GERALD JUDGES: "${clip.title}" - ${roasts[Math.floor(Math.random() * roasts.length)]}`);
+                };
+
+                const toggleEmotes = () => { showEmotePicker.value = !showEmotePicker.value; showMinigames.value = false; };
+                const toggleMinigames = () => { showMinigames.value = !showMinigames.value; showEmotePicker.value = false; };
+                const closePickers = () => { showEmotePicker.value = false; showMinigames.value = false; };
+
+                const bribeGerald = (type) => {
+                    let msg = "";
+                    let reply = "";
+                    if (type === 'taco') {
+                        msg = "🌮 *Slides a Crunchwrap Supreme across the digital table*";
+                        reply = "Acceptable. My mood has improved by exactly 4.2%. Scuff levels stabilized. :mkoLove:";
+                        scuffLevel.value = Math.max(0, scuffLevel.value - 10);
+                    } else {
+                        msg = "🥃 *Pours a glass of premium digital whiskey*";
+                        reply = "Finally, some proper fuel. Did you know the Technician once spent 4 hours fixing a bug that was just a missing semicolon? Meatbags. :KEKW:";
+                        scuffLevel.value = Math.max(0, scuffLevel.value - 20);
+                    }
+                    geraldMessages.value.push({ role: 'user', content: msg });
+                    closePickers();
+                    setTimeout(() => { geraldMessages.value.push({ role: 'gerald', content: reply }); scrollToBottom(); }, 800);
+                    scrollToBottom();
+                };
+
+                const triggerMinigame = (game) => {
+                    if (game === 'roast') {
+                        geraldMessages.value.push({ role: 'user', content: "🎮 *Triggered 'Roast the Technician' module*" });
+                        const roasts = [
+                            "The Technician's code is so spaghetti, an Italian chef just cried. :KEKW:",
+                            "If the Technician was a file system, they'd be the 'Recycle Bin'.",
+                            "I've seen broken calculators with more processing power than the meatbag running this stream."
+                        ];
+                        setTimeout(() => { geraldMessages.value.push({ role: 'gerald', content: roasts[Math.floor(Math.random() * roasts.length)] }); scrollToBottom(); }, 800);
+                    }
+                    closePickers();
+                    scrollToBottom();
+                }
+
                 const loadGeraldHistory = async () => {
                     if (!currentUser.value) return;
                     const { data } = await sbClient.from('gerald_history').select('*').eq('user_id', currentUser.value.id).order('created_at', { ascending: true });
@@ -653,7 +796,7 @@
                     
                     wipeState.value = 'wiping';
                     await sbClient.from('gerald_history').delete().eq('user_id', currentUser.value.id);
-                    geraldMessages.value = [{role:'gerald', content: getRandomGreeting()}];
+                    geraldMessages.value = [{role:'gerald', content: getGreeting()}];
                     
                     wipeState.value = 'success';
                     setTimeout(() => { wipeState.value = 'idle'; }, 2000);
@@ -663,14 +806,21 @@
                     const inputEl = document.getElementById('gerald-txt-input');
                     if (inputEl && inputEl.value !== geraldInput.value) { geraldInput.value = inputEl.value; }
                     if (!geraldInput.value.trim() || isGeraldTyping.value) return;
+                    
                     const userMsg = geraldInput.value;
                     geraldMessages.value.push({ role: 'user', content: userMsg });
+                    
+                    // Update Scuff Meter
+                    if (userMsg.toLowerCase().includes('scuff') || userMsg.toLowerCase().includes('glitch')) {
+                        scuffLevel.value = Math.min(100, scuffLevel.value + 15);
+                    }
+
                     if (currentUser.value) { sbClient.from('gerald_history').insert({ role: 'user', content: userMsg, user_id: currentUser.value.id }).then(); }
                     
                     geraldInput.value = ''; 
                     if (inputEl) { inputEl.value = ''; inputEl.style.height = 'auto'; } 
                     
-                    isGeraldTyping.value = true; showEmotePicker.value = false;
+                    isGeraldTyping.value = true; closePickers();
                     scrollToBottom();
                     
                     const recentContextWindow = geraldMessages.value.slice(-10);
@@ -777,7 +927,9 @@
                 const checkLive = async () => {
                     try {
                         const res = await fetch('https://decapi.me/twitch/uptime/codemiko');
-                        isLive.value = !(await res.text()).includes('offline');
+                        const currentlyLive = !(await res.text()).includes('offline');
+                        isLive.value = currentlyLive;
+
                         try {
                             const gqlRes = await fetch('https://gql.twitch.tv/gql', { method: 'POST', headers: { 'Client-ID': 'kimne78kx3ncx6brgo4mv6wki5h1ko', 'Content-Type': 'application/json' }, body: JSON.stringify({ query: `query { user(login: "codemiko") { videos(first: 15) { edges { node { id createdAt } } } } }` }) });
                             const edges = (await gqlRes.json()).data.user.videos.edges;
@@ -827,6 +979,7 @@
 
                 return { 
                     hostname, splashVisible, splashOpacity, currentTab, clips, discordFeed, modals, isLive, toast, currentUser, loginEmail, loginPass, apiConfig, latestVodId, activeFeedVideo, geraldInput, geraldMessages, isGeraldTyping, talkToGerald, logoSvg, syncState, wipeState, logoutState, runSync, isHeaderVisible, handleScroll, handleModalTouchStart, handleModalTouchMove, handleModalTouchEnd, currentFilter, activeFilterLabel, isFilterMenuOpen, closeFilterMenu, applyFilter, parseMarkdown, parseDiscordText, shareClip, recentVods, currentVodIndex, getVodLabel, nextVod, prevVod, customEmotes, showEmotePicker, insertEmote, clearGeraldHistory, isPulling, refreshTransform, isRefreshing, handlePullStart, handlePullMove, handlePullEnd, resizeTextarea, handleGeraldEnter,
+                    scuffLevel, glitchClicks, isGlitching, triggerGlitch, scuffComment, judgeClip, bribeGerald, dodgeMute, mutePos, showMinigames, toggleEmotes, toggleMinigames, closePickers, triggerMinigame,
                     handleLogin: async () => { const email = loginEmail.value.includes('@') ? loginEmail.value : `${loginEmail.value}@miko.com`; const { data, error } = await sbClient.auth.signInWithPassword({ email, password: loginPass.value }); if(data.user) { currentUser.value = data.user; modals.value.profile = false; loadGeraldHistory(); } else showToast("INVALID LOGIN"); }, 
                     handleLogout: () => { 
                         if (logoutState.value !== 'idle') return;
@@ -834,7 +987,7 @@
                         setTimeout(() => {
                             sbClient.auth.signOut(); 
                             currentUser.value = null; 
-                            geraldMessages.value = [{role:'gerald', content: getRandomGreeting()}]; 
+                            geraldMessages.value = [{role:'gerald', content: getGreeting()}]; 
                             modals.value.profile = false; 
                             logoutState.value = 'idle'; 
                         }, 1500);
