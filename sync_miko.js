@@ -1,3 +1,12 @@
+const { createClient } = require('@supabase/supabase-js');
+const { Client, GatewayIntentBits } = require('discord.js');
+
+// Initialize Clients
+const supabase = createClient(process.env.SUPABASE_URL, process.env.SUPABASE_SERVICE_ROLE_KEY);
+const discord = new Client({
+  intents: [GatewayIntentBits.Guilds, GatewayIntentBits.GuildMessages, GatewayIntentBits.MessageContent]
+});
+
 async function runSync() {
   try {
     console.log("Connecting to Discord...");
@@ -54,3 +63,6 @@ async function runSync() {
     discord.destroy();
   }
 }
+
+// THIS IS THE CRITICAL LINE THAT WAS MISSING!
+runSync();
