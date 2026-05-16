@@ -318,7 +318,7 @@
                     </div>
                 </div>
                 
-                <transition-group name="msg" tag="div" class="gerald-messages" id="gerald-msgs" ref="geraldMsgsRef" @click="showEmotePicker = false">
+                <transition-group name="msg" tag="div" class="gerald-messages" id="gerald-msgs" @click="showEmotePicker = false">
                     <template v-for="(m, i) in geraldMessages" :key="i">
                         <div v-if="i === 0 && m.role === 'gerald'" class="terminal-intro">
                             <div class="terminal-header"><span class="material-symbols-rounded" style="font-size: 14px;">terminal</span> Session Initialized</div>
@@ -494,7 +494,7 @@
                 const insertEmote = (name) => { const inputEl = document.getElementById('gerald-txt-input'); if (inputEl) { inputEl.value += `:${name}: `; geraldInput.value = inputEl.value; } else { geraldInput.value += `:${name}: `; } };
 
                 const scrollToBottom = () => {
-                    const b = geraldMsgsRef.value;
+                    const b = document.getElementById('gerald-msgs');
                     if (!b) return;
                     nextTick(() => {
                         b.scrollTo({ top: b.scrollHeight, behavior: 'smooth' });
@@ -673,7 +673,6 @@
                             geraldMessages.value.push({ role: 'gerald', content: cleanReply });
                             if (currentUser.value) { sbClient.from('gerald_history').insert({ role: 'gerald', content: cleanReply, user_id: currentUser.value.id }).then(); }
                         } else if (data && data.error) { throw new Error(data.error); }
-                    // CHANGED THIS CATCH BLOCK TO SHOW EXACT ERROR:
                     } catch (e) { geraldMessages.value.push({ role: 'gerald', content: 'SYSTEM ERROR: ' + (e.message || JSON.stringify(e)) }); 
                     } finally { isGeraldTyping.value = false; scrollToBottom(); }
                 };
