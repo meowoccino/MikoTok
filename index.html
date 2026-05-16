@@ -32,7 +32,7 @@
         .chaos-overlay.show { opacity: 1; pointer-events: auto; animation: bg-flash 0.15s infinite; }
         @keyframes bg-flash { 0% { background: #050505; } 50% { background: #2a0000; } 100% { background: #050505; } }
 
-        .chaos-container { text-align: center; width: 100%; animation: violent-shake 0.1s infinite; z-index: 10; }
+        .chaos-container { display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; width: 100%; animation: violent-shake 0.1s infinite; z-index: 10; }
         @keyframes violent-shake { 0% { transform: translate(4px, 2px) rotate(0deg); } 20% { transform: translate(-5px, -4px) rotate(-1deg); } 40% { transform: translate(5px, 4px) rotate(1deg); } 60% { transform: translate(-3px, 2px) rotate(0deg); } 80% { transform: translate(3px, -2px) rotate(-1deg); } 100% { transform: translate(-2px, 3px) rotate(1deg); } }
 
         .glitch-text-huge { font-family: 'Outfit', sans-serif; font-size: 55px; font-weight: 900; color: #ffffff; text-transform: uppercase; margin: 0; line-height: 1; position: relative; letter-spacing: -2px; }
@@ -44,10 +44,13 @@
         @keyframes glitch-anim-2 { 0% { clip-path: inset(10% 0 60% 0); transform: translate(-3px); } 20% { clip-path: inset(30% 0 20% 0); transform: translate(3px); } 40% { clip-path: inset(70% 0 10% 0); transform: translate(-3px); } 60% { clip-path: inset(20% 0 50% 0); transform: translate(3px); } 80% { clip-path: inset(50% 0 30% 0); transform: translate(-3px); } 100% { clip-path: inset(5% 0 80% 0); transform: translate(3px); } }
 
         .scuff-warning { font-family: monospace; font-size: 16px; color: #ff0000; font-weight: bold; margin: 20px 0; background: black; padding: 10px; border: 2px solid red; display: inline-block; }
-        .random-code { position: absolute; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; font-family: monospace; color: rgba(255, 0, 0, 0.4); font-size: 14px; word-break: break-all; overflow: hidden; opacity: 0.6; line-height: 1.2; animation: scroll-code 5s linear infinite; }
-        @keyframes scroll-code { 0% { transform: translateY(-10%); } 100% { transform: translateY(-50%); } }
+        
+        /* 🚨 Matrix Code Fix: 300% height, larger font, spread out to cover everything smoothly 🚨 */
+        .random-code { position: absolute; top: 0; left: 0; width: 100%; height: 300%; pointer-events: none; font-family: monospace; color: rgba(255, 0, 0, 0.4); font-size: 22px; letter-spacing: 8px; word-break: break-all; overflow: hidden; opacity: 0.6; line-height: 1.2; animation: scroll-code 10s linear infinite; }
+        @keyframes scroll-code { 0% { transform: translateY(0%); } 100% { transform: translateY(-50%); } }
 
-        .chaos-reboot-btn { background: rgba(255, 0, 0, 0.1); border: 2px solid #ef4444; color: #ef4444; width: 80%; max-width: 300px; padding: 20px; font-family: 'Outfit', sans-serif; font-weight: 900; font-size: 22px; text-transform: uppercase; cursor: pointer; margin-top: 40px; box-shadow: 0 0 20px rgba(255,0,0,0.5); animation: pulse-border 0.2s infinite; }
+        /* 🛠️ FIXED: Added margin: 40px auto 0; to lock it dead center */
+        .chaos-reboot-btn { background: rgba(255, 0, 0, 0.1); border: 2px solid #ef4444; color: #ef4444; width: auto; padding: 15px 25px; font-family: 'Outfit', sans-serif; font-weight: 900; font-size: 18px; text-transform: uppercase; cursor: pointer; margin: 40px auto 0; box-shadow: 0 0 20px rgba(255,0,0,0.5); animation: pulse-border 0.2s infinite; display: flex; align-items: center; justify-content: center; gap: 8px; white-space: nowrap; max-width: 90%; }
         .chaos-reboot-btn:active { background: #ef4444; color: white; transform: scale(0.9); animation: none; }
         @keyframes pulse-border { 0%, 100% { box-shadow: 0 0 10px rgba(255,0,0,0.5); border-color: #ef4444; } 50% { box-shadow: 0 0 30px rgba(255,0,0,1); border-color: #ff8888; color: #ff8888; } }
 
@@ -286,7 +289,10 @@
                 <div class="glitch-text-huge">SYSTEM<br>FAILURE</div>
                 <div class="scuff-warning">ERR: TECHNICIAN INTERFERENCE</div>
                 <br>
-                <button class="chaos-reboot-btn" @click="dismissGlitch">[ FORCE REBOOT ]</button>
+                <button class="chaos-reboot-btn" @click="dismissGlitch">
+                    <span class="material-symbols-rounded" :class="{'spin-anim': isGlitchRebooting}" style="font-size: 22px;">restart_alt</span>
+                    <span>[ FORCE REBOOT ]</span>
+                </button>
             </div>
         </div>
 
@@ -304,7 +310,7 @@
                 </div>
 
                 <button class="reboot-btn" @click="rebootSystem">
-                    <span class="material-symbols-rounded" :class="{'refresh-spinning': isRebooting}" style="font-size: 18px;">restart_alt</span>
+                    <span class="material-symbols-rounded" :class="{'spin-anim': isRebooting}" style="font-size: 18px;">restart_alt</span>
                     <span>{{ isRebooting ? 'REBOOTING...' : 'Force System Reboot' }}</span>
                 </button>
             </div>
@@ -532,15 +538,6 @@
                                 <span>{{ wipeState === 'wiping' ? 'WIPING...' : (wipeState === 'success' ? 'MEMORY WIPED!' : 'Wipe Gerald\'s Memory') }}</span>
                             </div>
                         </button>
-                        
-                        <button class="menu-btn" @mouseover="dodgeMute" @touchstart.passive="dodgeMute" :style="{ transform: `translate(${mutePos.x}px, ${mutePos.y}px)`, transition: 'transform 0.1s' }">
-                            <div class="btn-content">
-                                <div class="icon-wrap" style="background: rgba(255,255,255,0.1);">
-                                    <span class="material-symbols-rounded" style="font-size: 18px; color: var(--text-muted);">volume_off</span>
-                                </div>
-                                <span style="color: var(--text-muted);">Mute Gerald</span>
-                            </div>
-                        </button>
 
                         <button class="menu-btn logout-row" @click="handleLogout" :disabled="logoutState !== 'idle'">
                             <div class="btn-content">
@@ -614,19 +611,20 @@
                 let lastTap = 0;
                 
                 const isGlitching = ref(false);
+                const isGlitchRebooting = ref(false);
                 const isMeltdown = ref(false);
                 const isRebooting = ref(false);
                 
                 const pullTimestamps = ref([]);
-                const mutePos = ref({ x: 0, y: 0 });
                 
                 const currentFilter = ref('latest'), activeFilterLabel = ref('Latest'), isFilterMenuOpen = ref(false);
                 const isPulling = ref(false), refreshTransform = ref('translateY(-100%)'), isRefreshing = ref(false);
                 let touchStartY = 0, pullDistance = 0;
 
+                // Light-weight matrix code to prevent crashing, scaled large via CSS to cover screen
                 const chars = '0101010101010001010100111001010XERRORSYSTEMCRASH';
                 let codeStr = '';
-                for(let i=0; i<3000; i++) codeStr += chars.charAt(Math.floor(Math.random() * chars.length));
+                for(let i=0; i<2000; i++) codeStr += chars.charAt(Math.floor(Math.random() * chars.length));
                 const randomCodeString = ref(codeStr);
 
                 // 🔊 AUDIO HOOKS
@@ -751,7 +749,7 @@
                 let modalStartY = 0, currentDeltaY = 0;
                 const handleModalTouchStart = (e) => { if (e.currentTarget.scrollTop <= 0) { modalStartY = e.touches[0].clientY; currentDeltaY = 0; } };
                 const handleModalTouchMove = (e) => { if (!modalStartY) return; currentDeltaY = e.touches[0].clientY - modalStartY; if (currentDeltaY > 0) { e.currentTarget.style.transform = `translateY(${currentDeltaY}px)`; e.currentTarget.style.transition = 'none'; } };
-                const handleModalTouchEnd = (e) => { if (!modalStartY) return; e.currentTarget.style.transition = 'transform 0.3s cubic-bezier(0.2, 0.8, 0.2, 1)'; if (currentDeltaY > 100) { modals.value.profile = false; modals.value.discord = false; mutePos.value = {x:0, y:0}; } e.currentTarget.style.transform = ''; modalStartY = 0; };
+                const handleModalTouchEnd = (e) => { if (!modalStartY) return; e.currentTarget.style.transition = 'transform 0.3s cubic-bezier(0.2, 0.8, 0.2, 1)'; if (currentDeltaY > 100) { modals.value.profile = false; modals.value.discord = false; } e.currentTarget.style.transform = ''; modalStartY = 0; };
 
                 const logoSvg = (id) => `<svg viewBox="0 0 100 100"><defs><linearGradient id="grad-${id}" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stop-color="#ffffff"/><stop offset="100%" stop-color="#9146FF"/></linearGradient></defs><circle cx="50" cy="50" r="40" fill="none" stroke="url(#grad-${id})" stroke-width="8"/><path d="M 33 38 L 48 62 L 62 38 L 62 55 Q 62 65 69 64" fill="none" stroke="url(#grad-${id})" stroke-width="8" stroke-linecap="round" stroke-linejoin="round"/></svg>`;
                 const showToast = (msg, duration = 6000) => { toast.value.message = msg; toast.value.visible = true; setTimeout(() => toast.value.visible = false, duration); };
@@ -793,13 +791,7 @@
                     if (!e.shiftKey && e.key === 'Enter') { e.preventDefault(); talkToGerald(); }
                 };
 
-                const dodgeMute = () => {
-                    const randomX = Math.floor(Math.random() * 150) - 75;
-                    const randomY = Math.floor(Math.random() * 50) - 25;
-                    mutePos.value = { x: randomX, y: randomY };
-                    showToast("<div style='color:var(--gerald); font-weight:900; margin-bottom:4px; text-transform:uppercase;'>GERALD OS:</div> Did you really think you had admin privileges here?");
-                };
-
+                // 🚨 INTEGRATED 5-TAP CHAOS GLITCH
                 const triggerGlitch = () => {
                     const now = Date.now();
                     if (now - lastTap > 1500) glitchClicks.value = 0;
@@ -814,8 +806,12 @@
                 };
 
                 const dismissGlitch = () => {
-                    isGlitching.value = false;
-                    glitchClicks.value = 0;
+                    isGlitchRebooting.value = true;
+                    setTimeout(() => {
+                        isGlitching.value = false;
+                        glitchClicks.value = 0;
+                        isGlitchRebooting.value = false;
+                    }, 800);
                 };
 
                 const scuffComment = () => {
@@ -1179,7 +1175,7 @@
 
                 return { 
                     hostname, splashVisible, splashOpacity, currentTab, clips, discordFeed, modals, isLive, toast, currentUser, loginEmail, loginPass, apiConfig, latestVodId, activeFeedVideo, geraldInput, geraldMessages, isGeraldTyping, talkToGerald, logoSvg, syncState, wipeState, logoutState, runSync, isHeaderVisible, handleScroll, handleModalTouchStart, handleModalTouchMove, handleModalTouchEnd, currentFilter, activeFilterLabel, isFilterMenuOpen, closeFilterMenu, applyFilter, parseMarkdown, parseDiscordText, shareClip, recentVods, currentVodIndex, getVodLabel, nextVod, prevVod, customEmotes, showEmotePicker, insertEmote, clearGeraldHistory, isPulling, refreshTransform, isRefreshing, handlePullStart, handlePullMove, handlePullEnd, resizeTextarea, handleGeraldEnter,
-                    scuffLevel, glitchClicks, isGlitching, randomCodeString, isMeltdown, isRebooting, triggerGlitch, dismissGlitch, scuffComment, judgeClip, playMinigame, dodgeMute, mutePos, showMinigames, toggleEmotes, toggleMinigames, closePickers, rebootSystem,
+                    scuffLevel, glitchClicks, isGlitching, randomCodeString, isMeltdown, isRebooting, isGlitchRebooting, triggerGlitch, dismissGlitch, scuffComment, judgeClip, playMinigame, showMinigames, toggleEmotes, toggleMinigames, closePickers, rebootSystem,
                     handleLogin: async () => { const email = loginEmail.value.includes('@') ? loginEmail.value : `${loginEmail.value}@miko.com`; const { data, error } = await sbClient.auth.signInWithPassword({ email, password: loginPass.value }); if(data.user) { currentUser.value = data.user; modals.value.profile = false; loadGeraldHistory(); } else showToast("INVALID LOGIN"); }, 
                     handleLogout: () => { 
                         if (logoutState.value !== 'idle') return;
