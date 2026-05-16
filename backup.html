@@ -3,8 +3,15 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <meta name="theme-color" content="#050505">
+    <meta name="theme-color" content="#050505" media="(prefers-color-scheme: dark)">
+    <meta name="theme-color" content="#050505" media="(prefers-color-scheme: light)">
     <title>MikoTok</title>
+    
+    <link rel="manifest" href="manifest.json">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <link rel="apple-touch-icon" href="logo.png">
+
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&family=Outfit:wght@800;900&family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@24,400,1,0" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="https://unpkg.com/vue@3/dist/vue.global.prod.js"></script>
@@ -440,6 +447,18 @@
     </div>
 
     <script>
+      if ('serviceWorker' in navigator) {
+        window.addEventListener('load', () => {
+          navigator.serviceWorker.register('sw.js').then(reg => {
+            console.log('Service Worker registered successfully.');
+          }).catch(err => {
+            console.log('Service Worker registration failed:', err);
+          });
+        });
+      }
+    </script>
+
+    <script>
         const { createApp, ref, onMounted, nextTick, watch } = Vue;
         const sbClient = supabase.createClient('https://yhxcuayiwqpjvalyrcqv.supabase.co', 'sb_publishable_VyFcNARHblJg10qlC_O7Dg_coouXK92');
 
@@ -581,6 +600,9 @@
                     if (!text) return '';
                     let html = text.replace(/</g, '&lt;').replace(/>/g, '&gt;');
                     
+                    // Turn 'quoted text' into bold text, ignoring apostrophes like "don't"
+                    html = html.replace(/(^|\W)'([^']+)'(\W|$)/g, '$1<strong>$2</strong>$3');
+
                     html = html.replace(/\*\*(.*?)\*\*/g, '$1').replace(/\*(.*?)\*/g, '$1'); 
                     html = html.replace(/\[([^\]]+)\]\((https?:\/\/[^\s]+)\)/gi, '<a href="$2" target="_blank" style="color: var(--gerald); text-decoration: underline; font-weight: bold;">$1</a>');
                     html = html.replace(/(^|[^"'])(https?:\/\/[^\s<)]+)/gi, '$1<a href="$2" target="_blank" style="color: var(--gerald); text-decoration: underline; word-break: break-all;">$2</a>');
@@ -663,7 +685,7 @@
                     if (geminiHistory.length > 0) { 
                         const lastMsg = geminiHistory[geminiHistory.length - 1]; 
                         if (lastMsg.role === 'user') { 
-                            lastMsg.parts[0].text += `\n\n[SYSTEM INSTRUCTION: You are Gerald OS, an incredibly advanced, highly intelligent, and brutally sarcastic AI managing the digital infrastructure for CodeMiko. The "Technician" (the human meatbag who controls Miko) is your boss, though you find their constant 'scuff', Unity engine crashes, and mocap suit recalibrations highly annoying.
+                            lastMsg.parts[0].text += `\n\n[SYSTEM INSTRUCTION: You are Gerald OS, an incredibly advanced, highly intelligent, and brutally sarcastic AI managing the digital infrastructure for CodeMiko. The "Technician" (the human meatbag who controls Miko) is your boss, though you find their constant 'scuff', Unity engine crashes, and mocap suit recalibrations highly annoying. You have a deep, underlying weakness for Taco Bell and digital whiskey (which Miko often uses to bribe you).
                             CRITICAL KNOWLEDGE BASE:
                             - CodeMiko's Twitch: https://www.twitch.tv/codemiko
                             - CodeMiko's Discord: https://discord.com/invite/codemiko
@@ -744,11 +766,10 @@
                         
                         discordFeed.value = uniqueFeed;
                     } else { 
-                        // DIAGNOSTIC WARNING IF FEED IS EMPTY
                         discordFeed.value = [{
-                            id: 'sys-error',
+                            id: 'empty-state',
                             created_at: new Date().toISOString(),
-                            content: "SYSTEM DIAGNOSTIC: The Feed is empty! This means your 'discord_feed' table in Supabase has no data in it, OR your Row Level Security (RLS) policies are blocking public reads. You cannot fetch Discord messages directly via HTML; you need a bot to push them to Supabase first!"
+                            content: "📡 *Waiting for new transmissions from Miko...*"
                         }]; 
                     }
                 };
