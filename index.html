@@ -142,7 +142,6 @@
         .sync-btn { width: 100%; background: var(--primary); border: none; color: white; padding: 15px; border-radius: 12px; font-weight: 800; cursor: pointer; margin-bottom: 10px; display: flex; justify-content: center; align-items: center; gap: 8px; transition: 0.2s; }
         .sync-btn:active { transform: scale(0.97); }
 
-        /* --- NEW SLEEK ADMIN PANEL STYLES --- */
         .settings-block { background: var(--card-bg); border: 1px solid var(--border-color); border-radius: 16px; padding: 16px; margin-bottom: 20px; text-align: left; }
         .block-title { font-size: 10px; font-weight: 800; color: var(--text-muted); margin-bottom: 12px; letter-spacing: 0.5px; }
         .sleek-input { width: 100%; box-sizing: border-box; background: #050505; border: 1px solid #27272a; border-radius: 10px; padding: 12px 14px; color: white; font-size: 12px; font-weight: 600; outline: none; margin-bottom: 8px; transition: 0.2s; }
@@ -169,7 +168,6 @@
         @keyframes shake { 0%, 100% { transform: rotate(0deg); } 25% { transform: rotate(-10deg); } 50% { transform: rotate(10deg); } 75% { transform: rotate(-10deg); } }
         .shake-anim { animation: shake 0.4s ease-in-out infinite; }
 
-        /* --- NEW GERALD ANIMATIONS --- */
         .msg-enter-active, .msg-leave-active { transition: all 0.3s cubic-bezier(0.2, 0.8, 0.2, 1); }
         .msg-enter-from, .msg-leave-to { opacity: 0; transform: translateY(15px); }
 
@@ -206,7 +204,6 @@
         @keyframes heartbeat { 0%, 100% { transform: scale(1); opacity: 1; } 50% { transform: scale(1.3); opacity: 0.5; } }
         @keyframes spin { 100% { transform: rotate(360deg); } }
 
-        /* PC FLOATING DOCK STYLES */
         @media (min-width: 768px) {
             body { padding: 2vh; }
             #app-container { flex-direction: column; max-width: 1000px; height: 95vh; border-radius: 24px; }
@@ -318,7 +315,7 @@
                     </div>
                 </div>
                 
-                <transition-group name="msg" tag="div" class="gerald-messages" id="gerald-msgs" @click="showEmotePicker = false">
+                <transition-group name="msg" tag="div" class="gerald-messages" id="gerald-msgs" @click="showEmotePicker = false" ref="geraldMsgsRef">
                     <template v-for="(m, i) in geraldMessages" :key="i">
                         <div v-if="i === 0 && m.role === 'gerald'" class="terminal-intro">
                             <div class="terminal-header"><span class="material-symbols-rounded" style="font-size: 14px;">terminal</span> Session Initialized</div>
@@ -471,7 +468,6 @@
 
                 const defaultEmotes = {
                     "mikoSusge": { id: "1273724925743595540", animated: false },
-                    "mkoSusge": { id: "1273724925743595540", animated: false },
                     "KEKW": { id: "1456296327964262453", animated: false }, 
                     "mkoNOTED": { id: "1369891690898391070", animated: false }, 
                     "mkoHype": { id: "870761283035734086", animated: false }, 
@@ -498,8 +494,8 @@
                     if (!b) return;
                     nextTick(() => {
                         b.scrollTo({ top: b.scrollHeight, behavior: 'smooth' });
-                        setTimeout(() => { b.scrollTop = b.scrollHeight; }, 100);
-                        setTimeout(() => { b.scrollTop = b.scrollHeight; }, 300);
+                        setTimeout(() => { b.scrollTop = b.scrollHeight; }, 50);
+                        setTimeout(() => { b.scrollTop = b.scrollHeight; }, 200);
                     });
                 };
 
@@ -507,7 +503,7 @@
                 onMounted(() => {
                     const obs = new ResizeObserver(() => { 
                         clearTimeout(scrollTimeout);
-                        scrollTimeout = setTimeout(() => { if(currentTab.value === 'gerald') scrollToBottom(); }, 150);
+                        scrollTimeout = setTimeout(() => { if(currentTab.value === 'gerald') scrollToBottom(); }, 100);
                     });
                     if(geraldMsgsRef.value) obs.observe(geraldMsgsRef.value);
                 });
@@ -570,7 +566,11 @@
                     isPulling.value = false; pullDistance = 0; refreshTransform.value = 'translateY(-100%)';
                 };
 
-                watch(currentTab, (newTab) => { if (window.location.hash !== `#${newTab}`) { window.history.pushState(null, '', `#${newTab}`); }});
+                watch(currentTab, (newTab) => { 
+                    if (window.location.hash !== `#${newTab}`) { window.history.pushState(null, '', `#${newTab}`); }
+                    if (newTab === 'gerald') { setTimeout(scrollToBottom, 50); }
+                });
+                
                 window.addEventListener('popstate', () => { const hash = window.location.hash.replace('#', ''); if (validTabs.includes(hash)) { currentTab.value = hash; } else { currentTab.value = 'home'; }});
                 
                 const isHeaderVisible = ref(true); let lastScrollY = 0;
@@ -584,14 +584,14 @@
                 const logoSvg = (id) => `<svg viewBox="0 0 100 100"><defs><linearGradient id="grad-${id}" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stop-color="#ffffff"/><stop offset="100%" stop-color="#9146FF"/></linearGradient></defs><circle cx="50" cy="50" r="40" fill="none" stroke="url(#grad-${id})" stroke-width="8"/><path d="M 33 38 L 48 62 L 62 38 L 62 55 Q 62 65 69 64" fill="none" stroke="url(#grad-${id})" stroke-width="8" stroke-linecap="round" stroke-linejoin="round"/></svg>`;
                 const showToast = (msg) => { toast.value.message = msg; toast.value.visible = true; setTimeout(() => toast.value.visible = false, 3000); };
                 
+                // Completely safe markdown parser - no lookbehinds!
                 const parseMarkdown = (text) => {
                     if (!text) return '';
-                    let html = text
-                        .replace(/</g, '&lt;').replace(/>/g, '&gt;') 
-                        .replace(/(https?:\/\/[^\s]+)/g, '<a href="$1" target="_blank" style="color: var(--gerald); text-decoration: underline; word-break: break-all;">$1</a>') 
-                        .replace(/\[(.*?)\]\((.*?)\)/g, '<a href="$2" target="_blank" style="color: var(--gerald); text-decoration: underline;">$1</a>') 
-                        .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>') 
-                        .replace(/\*(.*?)\*/g, '<em>$1</em>'); 
+                    let html = text.replace(/</g, '&lt;').replace(/>/g, '&gt;');
+                    
+                    html = html.replace(/\*\*(.*?)\*\*/g, '$1').replace(/\*(.*?)\*/g, '$1'); 
+                    html = html.replace(/\[([^\]]+)\]\((https?:\/\/[^\s]+)\)/g, '<a href="$2" target="_blank" style="color: var(--gerald); text-decoration: underline; font-weight: bold;">$1</a>');
+                    html = html.replace(/(^|[^"'])(https?:\/\/[^\s<)]+)/g, '$1<a href="$2" target="_blank" style="color: var(--gerald); text-decoration: underline; word-break: break-all;">$2</a>');
                     
                     html = html.replace(/`?:([^:\s]+):`?/g, (match, name) => {
                         const emoteKey = name === 'mkoSusge' ? 'mikoSusge' : name;
@@ -659,7 +659,18 @@
                     if (geminiHistory.length > 0) { 
                         const lastMsg = geminiHistory[geminiHistory.length - 1]; 
                         if (lastMsg.role === 'user') { 
-                            lastMsg.parts[0].text += `\n\n[SYSTEM INSTRUCTION: You are Gerald OS, a grumpy, sarcastic AI. STRICT RULES: 1. DO NOT overuse quotes (""). 2. DO NOT repeat links or send the same link twice. 3. DO NOT wrap emotes in backticks. 4. Keep answers concise. 5. Stop mentioning Taco Bell, whiskey, or breaking the internet. You can express emotion using these custom emotes: ${emoteNames}]`; 
+                            lastMsg.parts[0].text += `\n\n[SYSTEM INSTRUCTION: You are Gerald OS, an incredibly advanced, highly intelligent, and brutally sarcastic AI. CodeMiko is your creator and boss.
+                            CRITICAL KNOWLEDGE BASE:
+                            - CodeMiko's official Twitch Link: https://www.twitch.tv/codemiko
+                            - CodeMiko's official Discord Link: https://discord.com/invite/codemiko
+                            
+                            STRICT RULES:
+                            1. NEVER use markdown formatting (no asterisks *, no bold **, no italics _).
+                            2. NEVER wrap emotes in backticks. Just type the emote name like :mikoSusge:.
+                            3. If asked for a link, provide the EXACT URL provided in the knowledge base above.
+                            4. Be witty, sharp, and condescending, but genuinely helpful. Do not act like a generic 2010 chatbot.
+                            5. Keep answers concise, punchy, and highly entertaining.
+                            6. Available custom visual emotes to use: ${emoteNames}]`; 
                         } 
                     }
                     
