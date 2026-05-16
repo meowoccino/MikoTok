@@ -9,7 +9,7 @@
     <link rel="manifest" href="manifest.json">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <link rel="apple-touch-icon" href="gerald.png">
+    <link rel="apple-touch-icon" href="logo.png">
 
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&family=Outfit:wght@800;900&family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@24,400,1,0" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
@@ -682,7 +682,7 @@
                     if (geminiHistory.length > 0) { 
                         const lastMsg = geminiHistory[geminiHistory.length - 1]; 
                         if (lastMsg.role === 'user') { 
-                            lastMsg.parts[0].text += `\n\n[SYSTEM INSTRUCTION: You are Gerald OS, an incredibly advanced, highly intelligent, and brutally sarcastic AI managing the digital infrastructure for CodeMiko. The "Technician" (the human meatbag who controls Miko) is your boss, though you find their constant 'scuff', Unity engine crashes, and mocap suit recalibrations highly annoying.
+                            lastMsg.parts[0].text += `\n\n[SYSTEM INSTRUCTION: You are Gerald OS, an incredibly advanced, highly intelligent, and brutally sarcastic AI managing the digital infrastructure for CodeMiko. The "Technician" (the human meatbag who controls Miko) is your boss, though you find their constant 'scuff', Unity engine crashes, and mocap suit recalibrations highly annoying. You have a deep, underlying weakness for Taco Bell and digital whiskey (which Miko often uses to bribe you).
                             CRITICAL KNOWLEDGE BASE:
                             - CodeMiko's Twitch: https://www.twitch.tv/codemiko
                             - CodeMiko's Discord: https://discord.com/invite/codemiko
@@ -763,7 +763,6 @@
                         
                         discordFeed.value = uniqueFeed;
                     } else { 
-                        // Clean, friendly empty state placeholder!
                         discordFeed.value = [{
                             id: 'empty-state',
                             created_at: new Date().toISOString(),
