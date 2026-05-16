@@ -110,7 +110,6 @@
 
         .gerald-send { background: var(--gerald); border: none; width: 44px; height: 44px; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white; cursor: pointer; flex-shrink: 0; transition: 0.1s; }
         .gerald-send:active { transform: scale(0.9); }
-        .typing-indicator { font-size: 11px; color: var(--gerald); padding: 5px 20px; font-weight: 700; text-transform: uppercase; }
 
         .infra-bar { background: var(--card-bg); border: 1px solid var(--border-color); border-radius: 14px; padding: 14px 18px; display: flex; justify-content: center; margin-bottom: 16px; }
         .status-node { display: flex; align-items: center; gap: 8px; font-size: 11px; font-weight: 800; text-transform: uppercase; }
@@ -135,7 +134,7 @@
 
         .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.85); z-index: 2000; display: flex; justify-content: center; align-items: flex-end; opacity: 0; pointer-events: none; transition: 0.3s; }
         .modal-overlay.open { opacity: 1; pointer-events: auto; }
-        .modal-content { background: var(--modal-bg); border-radius: 30px 30px 0 0; padding: 25px; border-top: 1px solid var(--border-color); width: 100%; max-width: 540px; transform: translateY(100%); transition: transform 0.3s cubic-bezier(0.2, 0.8, 0.2, 1); overflow-y: auto; max-height: 90vh; }
+        .modal-content { background: var(--modal-bg); border-radius: 30px 30px 0 0; padding: 25px; border-top: 1px solid var(--border-color); width: 100%; max-width: 540px; transform: translateY(100%); transition: transform 0.3s cubic-bezier(0.2, 0.8, 0.2, 1); overflow-y: auto; max-height: 90vh; will-change: transform; }
         .modal-overlay.open .modal-content { transform: translateY(0); }
         .drag-handle { width: 40px; height: 5px; background: #27272a; border-radius: 10px; margin: 0 auto 15px; }
         
@@ -169,7 +168,23 @@
         .spin-anim { animation: spin 1s linear infinite; }
         @keyframes shake { 0%, 100% { transform: rotate(0deg); } 25% { transform: rotate(-10deg); } 50% { transform: rotate(10deg); } 75% { transform: rotate(-10deg); } }
         .shake-anim { animation: shake 0.4s ease-in-out infinite; }
-        /* ------------------------------------ */
+
+        /* --- NEW GERALD ANIMATIONS --- */
+        .msg-enter-active, .msg-leave-active { transition: all 0.3s cubic-bezier(0.2, 0.8, 0.2, 1); }
+        .msg-enter-from, .msg-leave-to { opacity: 0; transform: translateY(15px); }
+
+        .tray-enter-active, .tray-leave-active { transition: all 0.2s ease-out; }
+        .tray-enter-from, .tray-leave-to { opacity: 0; transform: translateY(10px); }
+
+        @keyframes compute-bounce {
+            0%, 100% { transform: translateY(0); opacity: 0.5; }
+            50% { transform: translateY(-4px); opacity: 1; color: #fff; }
+        }
+        .typing-indicator { 
+            font-size: 11px; color: var(--gerald); padding: 5px 20px; 
+            font-weight: 700; text-transform: uppercase; 
+            animation: compute-bounce 1.5s infinite ease-in-out; 
+        }
 
         .miko-metadata { display: flex; align-items: flex-start; justify-content: space-between; padding: 12px 5px 0; background: transparent; width: 100%; gap: 10px; }
         .miko-metadata .author-info { display: flex; align-items: center; min-width: 0; flex: 1; }
@@ -276,8 +291,8 @@
                 </div>
             </div>
 
-            <div class="chat-container" style="height:100%; padding-bottom: 80px;" v-if="currentTab === 'chat'">
-                <iframe :src="'https://www.twitch.tv/embed/codemiko/chat?parent=' + hostname + '&darkpopout'" height="100%" width="100%" frameborder="0" loading="lazy"></iframe>
+            <div class="chat-container" style="height: calc(100% - 85px); width: 100%;" v-if="currentTab === 'chat'">
+                <iframe :src="'https://www.twitch.tv/embed/codemiko/chat?parent=' + hostname + '&darkpopout'" style="width: 100%; height: 100%; border: none;" loading="lazy"></iframe>
             </div>
 
             <div class="scroll-area community-feed content-shimmer" :class="{ active: isRefreshing }" id="discord-scroll" v-show="currentTab === 'feed'" @scroll="handleScroll">
@@ -303,7 +318,7 @@
                     </div>
                 </div>
                 
-                <div class="gerald-messages" id="gerald-msgs" ref="geraldMsgsRef" @click="showEmotePicker = false">
+                <transition-group name="msg" tag="div" class="gerald-messages" id="gerald-msgs" ref="geraldMsgsRef" @click="showEmotePicker = false">
                     <template v-for="(m, i) in geraldMessages" :key="i">
                         <div v-if="i === 0 && m.role === 'gerald'" class="terminal-intro">
                             <div class="terminal-header"><span class="material-symbols-rounded" style="font-size: 14px;">terminal</span> Session Initialized</div>
@@ -311,17 +326,19 @@
                         </div>
                         <div v-else class="chat-bubble" :class="m.role" v-html="parseMarkdown(m.content)"></div>
                     </template>
-                    <div v-if="isGeraldTyping" class="typing-indicator">Gerald is computing...</div>
-                </div>
+                    <div v-if="isGeraldTyping" key="typing" class="typing-indicator">Gerald is computing...</div>
+                </transition-group>
                 
                 <div style="display:flex; flex-direction:column; background: var(--bg-color);">
-                    <div class="emote-picker-tray" v-show="showEmotePicker">
-                        <img v-for="(emote, name) in customEmotes" :key="name" :src="`https://cdn.discordapp.com/emojis/${emote.id}.${emote.animated ? 'gif' : 'png'}?size=44`" class="emote-picker-img" @click="insertEmote(name)">
-                    </div>
+                    <transition name="tray">
+                        <div class="emote-picker-tray" v-show="showEmotePicker">
+                            <img v-for="(emote, name) in customEmotes" :key="name" :src="`https://cdn.discordapp.com/emojis/${emote.id}.${emote.animated ? 'gif' : 'png'}?size=44`" class="emote-picker-img" @click="insertEmote(name)">
+                        </div>
+                    </transition>
                     <div class="gerald-input-area" style="border-top: none;">
                         <div class="gerald-input-wrapper">
                             <button class="emote-toggle-btn" @click="showEmotePicker = !showEmotePicker"><span class="material-symbols-rounded" :style="{ color: showEmotePicker ? 'var(--gerald)' : 'inherit' }">mood</span></button>
-                            <input type="text" class="gerald-input" placeholder="Query the system..." v-model.lazy="geraldInput" @keyup.enter="talkToGerald" id="gerald-txt-input">
+                            <input type="text" class="gerald-input" placeholder="Query the system..." v-model.lazy="geraldInput" @keyup.enter="talkToGerald" id="gerald-txt-input" @focus="showEmotePicker = false">
                         </div>
                         <button class="gerald-send" @click="talkToGerald"><span class="material-symbols-rounded">send</span></button>
                     </div>
@@ -358,8 +375,8 @@
             <div class="modal-content" @touchstart="handleModalTouchStart" @touchmove="handleModalTouchMove" @touchend="handleModalTouchEnd">
                 <div class="drag-handle"></div>
                 <div v-if="!currentUser">
-                    <input type="text" v-model.lazy="loginEmail" class="input-box" placeholder="Email" style="margin-top: 10px;">
-                    <input type="password" v-model.lazy="loginPass" class="input-box" placeholder="Password" @keyup.enter="handleLogin">
+                    <input type="text" v-model.lazy="loginEmail" class="input-box" style="margin-top: 10px;">
+                    <input type="password" v-model.lazy="loginPass" class="input-box" @keyup.enter="handleLogin">
                     <button class="sync-btn" @click="handleLogin">LOGIN</button>
                 </div>
                 <div v-else>
@@ -419,7 +436,7 @@
             <div class="nav-item" :class="{ active: currentTab === 'chat' }" @click="currentTab = 'chat'; isHeaderVisible = true"><span class="material-symbols-rounded">chat</span>Chat</div>
             <div class="nav-item" :class="{ active: currentTab === 'feed' }" @click="currentTab = 'feed'; isHeaderVisible = true"><span class="material-symbols-rounded">forum</span>Feed</div>
             <div class="nav-item" @click="modals.discord = true"><svg viewBox="0 0 24 24" width="24" height="24" fill="currentColor" style="margin-bottom:4px"><path d="M20.317 4.3698a19.7913 19.7913 0 00-4.8851-1.5152.0741.0741 0 00-.0785.0371c-.211.3753-.4447.8648-.6083 1.2495-1.8447-.2762-3.68-.2762-5.4868 0-.1636-.3933-.4058-.8742-.6177-1.2495a.077.077 0 00-.0785-.037 19.7363 19.7363 0 00-4.8852 1.515.0699.0699 0 00-.0321.0277C.5334 9.0458-.319 13.5799.0992 18.0578a.0824.0824 0 00.0312.0561c2.0528 1.5076 4.0413 2.4228 5.9929 3.0294a.0777.0777 0 00.0842-.0276c.4616-.6304.8731-1.2952 1.226-1.9942a.076.076 0 00-.0416-.1057c-.6528-.2476-1.2743-.5495-1.8722-.8923a.077.077 0 01-.0076-.1277c.1258-.0943.2517-.1923.3718-.2914a.0743.0743 0 01.0776-.0105c3.9278 1.7933 8.18 1.7933 12.0614 0a.0739.0739 0 01.0785.0095c.1202.099.246.1981.3728.2924a.077.077 0 01-.0066.1276 12.2986 12.2986 0 01-1.873.8914.0766.0766 0 00-.0407.1067c.3604.698.7719 1.3628 1.225 1.9932a.076.076 0 00.0842.0286c1.961-.6067 3.9495-1.5219 6.0023-3.0314a.077.077 0 00.0313-.0552c.5004-5.177-.8382-9.6739-3.5485-13.6604a.061.061 0 00-.0312-.0286zM8.02 15.3312c-1.1825 0-2.1569-1.0857-2.1569-2.419 0-1.3332.9555-2.4189 2.157-2.4189 1.2108 0 2.1757 1.0952 2.1568 2.419 0 1.3332-.9555 2.4189-2.1569 2.4189zm7.9748 0c-1.1825 0-2.1569-1.0857-2.1569-2.419 0-1.3332.9554-2.4189 2.1569-2.4189 1.2108 0 2.1757 1.0952 2.1568 2.419 0 1.3332-.946 2.4189-2.1568 2.4189Z"/></svg>Discord</div>
-            <div class="nav-item" :class="{ 'active-gerald': currentTab === 'gerald' }" @click="currentTab = 'gerald'; isHeaderVisible = true"><span class="material-symbols-rounded">smart_toy</span>Gerald</div>
+            <div class="nav-item" :class="{ 'active-gerald': currentTab === 'gerald' }" @click="currentTab = 'gerald'; isHeaderVisible = true"><span class="material-symbols-rounded">psychology</span>Gerald</div>
         </nav>
     </div>
 
@@ -452,9 +469,20 @@
                 const isPulling = ref(false), refreshTransform = ref('translateY(-100%)'), isRefreshing = ref(false);
                 let touchStartY = 0, pullDistance = 0;
 
-                const customEmotes = ref({
-                    "mikoSusge": { id: "1273724925743595540", animated: false }, "KEKW": { id: "1456296327964262453", animated: false }, "mkoNOTED": { id: "1369891690898391070", animated: false }, "mkoHype": { id: "870761283035734086", animated: false }, "mkoMania": { id: "1503598179751432212", animated: false }, "mkoLove": { id: "1150505635721519115", animated: false }, "WOWERS": { id: "780097274939965490", animated: false }, "Shruge": { id: "1456297412875518078", animated: false }, "PAUSERS": { id: "802261333403762740", animated: false }, "slayyy": { id: "1456297602910916760", animated: false }
-                });
+                const defaultEmotes = {
+                    "mikoSusge": { id: "1273724925743595540", animated: false },
+                    "mkoSusge": { id: "1273724925743595540", animated: false },
+                    "KEKW": { id: "1456296327964262453", animated: false }, 
+                    "mkoNOTED": { id: "1369891690898391070", animated: false }, 
+                    "mkoHype": { id: "870761283035734086", animated: false }, 
+                    "mkoMania": { id: "1503598179751432212", animated: false }, 
+                    "mkoLove": { id: "1150505635721519115", animated: false }, 
+                    "WOWERS": { id: "780097274939965490", animated: false }, 
+                    "Shruge": { id: "1456297412875518078", animated: false }, 
+                    "PAUSERS": { id: "802261333403762740", animated: false }, 
+                    "slayyy": { id: "1456297602910916760", animated: false }
+                };
+                const customEmotes = ref({ ...defaultEmotes });
 
                 const recentVods = ref([]), currentVodIndex = ref(0), geraldMsgsRef = ref(null);
 
@@ -466,12 +494,12 @@
                 const insertEmote = (name) => { const inputEl = document.getElementById('gerald-txt-input'); if (inputEl) { inputEl.value += `:${name}: `; geraldInput.value = inputEl.value; } else { geraldInput.value += `:${name}: `; } };
 
                 const scrollToBottom = () => {
+                    const b = geraldMsgsRef.value;
+                    if (!b) return;
                     nextTick(() => {
-                        const b = geraldMsgsRef.value;
-                        if (b) {
-                            b.scrollTop = b.scrollHeight;
-                            setTimeout(() => { b.scrollTop = b.scrollHeight; }, 150);
-                        }
+                        b.scrollTo({ top: b.scrollHeight, behavior: 'smooth' });
+                        setTimeout(() => { b.scrollTop = b.scrollHeight; }, 100);
+                        setTimeout(() => { b.scrollTop = b.scrollHeight; }, 300);
                     });
                 };
 
@@ -558,9 +586,16 @@
                 
                 const parseMarkdown = (text) => {
                     if (!text) return '';
-                    let html = text.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>').replace(/\*(.*?)\*/g, '<em>$1</em>').replace(/\[(.*?)\]\((.*?)\)/g, '<a href="$2" target="_blank" style="color: var(--gerald); text-decoration: underline;">$1</a>'); 
-                    html = html.replace(/:([^:\s]+):/g, (match, name) => {
-                        const emote = customEmotes.value[name];
+                    let html = text
+                        .replace(/</g, '&lt;').replace(/>/g, '&gt;') 
+                        .replace(/(https?:\/\/[^\s]+)/g, '<a href="$1" target="_blank" style="color: var(--gerald); text-decoration: underline; word-break: break-all;">$1</a>') 
+                        .replace(/\[(.*?)\]\((.*?)\)/g, '<a href="$2" target="_blank" style="color: var(--gerald); text-decoration: underline;">$1</a>') 
+                        .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>') 
+                        .replace(/\*(.*?)\*/g, '<em>$1</em>'); 
+                    
+                    html = html.replace(/`?:([^:\s]+):`?/g, (match, name) => {
+                        const emoteKey = name === 'mkoSusge' ? 'mikoSusge' : name;
+                        const emote = customEmotes.value[emoteKey];
                         if (emote) { const ext = emote.animated ? 'gif' : 'png'; return `<img src="https://cdn.discordapp.com/emojis/${emote.id}.${ext}?size=44" alt=":${name}:" style="height: 1.5em; vertical-align: middle; display: inline-block;">`; }
                         return match;
                     });
@@ -590,7 +625,6 @@
                     scrollToBottom();
                 };
 
-                // Stripped out browser confirm alert pop-up! Runs animation smoothly instantly.
                 const clearGeraldHistory = async () => {
                     if (!currentUser.value || wipeState.value !== 'idle') return;
                     
@@ -614,9 +648,20 @@
                     isGeraldTyping.value = true; showEmotePicker.value = false;
                     scrollToBottom();
                     
-                    const geminiHistory = geraldMessages.value.map(m => ({ role: m.role === 'gerald' ? 'model' : 'user', parts: [{ text: m.content }] }));
+                    const geminiHistory = [];
+                    geraldMessages.value.forEach((m, index) => {
+                        if (index === 0 && m.role === 'gerald') return; 
+                        geminiHistory.push({ role: m.role === 'gerald' ? 'model' : 'user', parts: [{ text: m.content }] });
+                    });
+                    
                     const emoteNames = Object.keys(customEmotes.value).map(n => `:${n}:`).join(', ');
-                    if (emoteNames && geminiHistory.length > 0) { const lastMsg = geminiHistory[geminiHistory.length - 1]; if (lastMsg.role === 'user') { lastMsg.parts[0].text += `\n\n[SYSTEM NOTE: You can use these custom emotes in your response to express emotion: ${emoteNames}]`; } }
+                    
+                    if (geminiHistory.length > 0) { 
+                        const lastMsg = geminiHistory[geminiHistory.length - 1]; 
+                        if (lastMsg.role === 'user') { 
+                            lastMsg.parts[0].text += `\n\n[SYSTEM INSTRUCTION: You are Gerald OS, a grumpy, sarcastic AI. STRICT RULES: 1. DO NOT overuse quotes (""). 2. DO NOT repeat links or send the same link twice. 3. DO NOT wrap emotes in backticks. 4. Keep answers concise. 5. Stop mentioning Taco Bell, whiskey, or breaking the internet. You can express emotion using these custom emotes: ${emoteNames}]`; 
+                        } 
+                    }
                     
                     try {
                         const { data, error } = await sbClient.functions.invoke('gerald-chat', { body: { history: geminiHistory } });
@@ -628,7 +673,8 @@
                             geraldMessages.value.push({ role: 'gerald', content: cleanReply });
                             if (currentUser.value) { sbClient.from('gerald_history').insert({ role: 'gerald', content: cleanReply, user_id: currentUser.value.id }).then(); }
                         } else if (data && data.error) { throw new Error(data.error); }
-                    } catch (e) { geraldMessages.value.push({ role: 'gerald', content: 'SYSTEM ERROR: Edge Function offline or Gemini API missing.' }); 
+                    // CHANGED THIS CATCH BLOCK TO SHOW EXACT ERROR:
+                    } catch (e) { geraldMessages.value.push({ role: 'gerald', content: 'SYSTEM ERROR: ' + (e.message || JSON.stringify(e)) }); 
                     } finally { isGeraldTyping.value = false; scrollToBottom(); }
                 };
 
@@ -644,6 +690,13 @@
                 };
 
                 const loadData = async () => {
+                    const { data: dbEmotes } = await sbClient.from('emotes').select('*');
+                    if (dbEmotes) {
+                        dbEmotes.forEach(e => {
+                            customEmotes.value[e.name] = { id: e.id, animated: e.animated };
+                        });
+                    }
+
                     const { data: c } = await sbClient.from('clips').select('*').order('created_at', { ascending: false }).limit(3000);
                     allClips.value = c || []; clips.value = sortData(currentFilter.value);
                     setupObserver();
@@ -651,10 +704,29 @@
                     const { data: f } = await sbClient.from('discord_feed').select('*').order('created_at', { ascending: false }).limit(200);
                     if (f) {
                         const uniqueFeed = []; const seen = new Set(); const emoteRegex = /<(a?):([^:]+):(\d+)>/g;
+                        const newEmotesToSave = []; 
+                        
                         f.forEach(item => {
                             if (!item.content) return; const hash = item.content.trim();
-                            if (!seen.has(hash)) { seen.add(hash); uniqueFeed.push(item); let match; while ((match = emoteRegex.exec(hash)) !== null) { customEmotes.value[match[2]] = { id: match[3], animated: match[1] === 'a' }; } }
+                            if (!seen.has(hash)) { 
+                                seen.add(hash); uniqueFeed.push(item); let match; 
+                                while ((match = emoteRegex.exec(hash)) !== null) { 
+                                    const isAnimated = match[1] === 'a';
+                                    const eName = match[2];
+                                    const eId = match[3];
+                                    
+                                    if (!customEmotes.value[eName]) {
+                                        customEmotes.value[eName] = { id: eId, animated: isAnimated }; 
+                                        newEmotesToSave.push({ name: eName, id: eId, animated: isAnimated });
+                                    }
+                                } 
+                            }
                         });
+                        
+                        if (newEmotesToSave.length > 0) {
+                            sbClient.from('emotes').insert(newEmotesToSave).then(); 
+                        }
+                        
                         discordFeed.value = uniqueFeed;
                     } else { discordFeed.value = []; }
                 };
