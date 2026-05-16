@@ -12,7 +12,7 @@
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <link rel="apple-touch-icon" href="logo.png">
 
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&family=Outfit:wght@800;900&family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@24,400,1,0" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Outfit:wght@800;900&family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@24,400,1,0" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="https://unpkg.com/vue@3/dist/vue.global.prod.js"></script>
     <style>
@@ -27,23 +27,61 @@
         * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; font-family: 'Inter', sans-serif; }
         body, html { margin: 0; padding: 0; height: 100%; width: 100%; background: var(--bg-color); color: var(--text-main); overflow: hidden; display: flex; justify-content: center; align-items: center; overscroll-behavior-y: none; }
         
-        /* GERALD GLITCH EFFECT */
-        .glitch-active { animation: glitch-skew 0.3s infinite; filter: hue-rotate(90deg) contrast(150%); }
-        @keyframes glitch-skew { 0% { transform: skew(0deg); } 20% { transform: skew(-5deg) translate(-2px, 2px); } 40% { transform: skew(5deg) translate(2px, -2px); } 60% { transform: skew(-2deg); } 80% { transform: skew(2deg); } 100% { transform: skew(0deg); } }
-        
-        .glitch-overlay { position: fixed; inset: 0; background: rgba(150, 0, 0, 0.9); z-index: 99999; display: flex; align-items: center; justify-content: center; padding: 30px; text-align: center; color: white; font-family: monospace; font-size: 20px; font-weight: 900; opacity: 0; pointer-events: none; transition: opacity 0.2s; }
-        .glitch-overlay.show { opacity: 1; pointer-events: auto; }
+        /* 🚨 PURE CHAOS OVERLAY (120% Size to fix browser gaps) 🚨 */
+        .chaos-overlay { position: fixed; top: -10%; left: -10%; width: 120%; height: 120%; background: #050505; z-index: 99999; display: flex; flex-direction: column; align-items: center; justify-content: center; opacity: 0; pointer-events: none; overflow: hidden; }
+        .chaos-overlay.show { opacity: 1; pointer-events: auto; animation: bg-flash 0.15s infinite; }
+        @keyframes bg-flash { 0% { background: #050505; } 50% { background: #2a0000; } 100% { background: #050505; } }
+
+        .chaos-container { text-align: center; width: 100%; animation: violent-shake 0.1s infinite; z-index: 10; }
+        @keyframes violent-shake { 0% { transform: translate(4px, 2px) rotate(0deg); } 20% { transform: translate(-5px, -4px) rotate(-1deg); } 40% { transform: translate(5px, 4px) rotate(1deg); } 60% { transform: translate(-3px, 2px) rotate(0deg); } 80% { transform: translate(3px, -2px) rotate(-1deg); } 100% { transform: translate(-2px, 3px) rotate(1deg); } }
+
+        .glitch-text-huge { font-family: 'Outfit', sans-serif; font-size: 55px; font-weight: 900; color: #ffffff; text-transform: uppercase; margin: 0; line-height: 1; position: relative; letter-spacing: -2px; }
+        .glitch-text-huge::before, .glitch-text-huge::after { content: 'SYSTEM\A FAILURE'; white-space: pre-wrap; position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: transparent; }
+        .glitch-text-huge::before { left: 5px; text-shadow: -3px 0 red; animation: glitch-anim-1 0.2s infinite linear alternate-reverse; }
+        .glitch-text-huge::after { left: -5px; text-shadow: -3px 0 cyan; animation: glitch-anim-2 0.3s infinite linear alternate-reverse; }
+
+        @keyframes glitch-anim-1 { 0% { clip-path: inset(20% 0 80% 0); transform: translate(3px); } 20% { clip-path: inset(60% 0 10% 0); transform: translate(-3px); } 40% { clip-path: inset(40% 0 50% 0); transform: translate(3px); } 60% { clip-path: inset(80% 0 5% 0); transform: translate(-3px); } 80% { clip-path: inset(10% 0 70% 0); transform: translate(3px); } 100% { clip-path: inset(30% 0 40% 0); transform: translate(-3px); } }
+        @keyframes glitch-anim-2 { 0% { clip-path: inset(10% 0 60% 0); transform: translate(-3px); } 20% { clip-path: inset(30% 0 20% 0); transform: translate(3px); } 40% { clip-path: inset(70% 0 10% 0); transform: translate(-3px); } 60% { clip-path: inset(20% 0 50% 0); transform: translate(3px); } 80% { clip-path: inset(50% 0 30% 0); transform: translate(-3px); } 100% { clip-path: inset(5% 0 80% 0); transform: translate(3px); } }
+
+        .scuff-warning { font-family: monospace; font-size: 16px; color: #ff0000; font-weight: bold; margin: 20px 0; background: black; padding: 10px; border: 2px solid red; display: inline-block; }
+        .random-code { position: absolute; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; font-family: monospace; color: rgba(255, 0, 0, 0.4); font-size: 14px; word-break: break-all; overflow: hidden; opacity: 0.6; line-height: 1.2; animation: scroll-code 5s linear infinite; }
+        @keyframes scroll-code { 0% { transform: translateY(-10%); } 100% { transform: translateY(-50%); } }
+
+        .chaos-reboot-btn { background: rgba(255, 0, 0, 0.1); border: 2px solid #ef4444; color: #ef4444; width: 80%; max-width: 300px; padding: 20px; font-family: 'Outfit', sans-serif; font-weight: 900; font-size: 22px; text-transform: uppercase; cursor: pointer; margin-top: 40px; box-shadow: 0 0 20px rgba(255,0,0,0.5); animation: pulse-border 0.2s infinite; }
+        .chaos-reboot-btn:active { background: #ef4444; color: white; transform: scale(0.9); animation: none; }
+        @keyframes pulse-border { 0%, 100% { box-shadow: 0 0 10px rgba(255,0,0,0.5); border-color: #ef4444; } 50% { box-shadow: 0 0 30px rgba(255,0,0,1); border-color: #ff8888; color: #ff8888; } }
+
+        /* 🚨 100% SCUFF MELTDOWN OVERLAY (120% Fullscreen) 🚨 */
+        .meltdown-overlay { position: fixed; top: -10%; left: -10%; width: 120%; height: 120%; background: radial-gradient(circle at center, rgba(30,0,0,0.98) 0%, rgba(5,5,5,1) 100%); z-index: 99999; display: flex; align-items: center; justify-content: center; opacity: 0; pointer-events: none; transition: opacity 0.4s ease; backdrop-filter: blur(15px); }
+        .meltdown-overlay.show { opacity: 1; pointer-events: auto; animation: red-breathe 4s infinite alternate; }
+        @keyframes red-breathe { 0% { box-shadow: inset 0 0 50px rgba(255,0,0,0.1); } 100% { box-shadow: inset 0 0 150px rgba(255,0,0,0.4); } }
+        .terminal-alert-card { background: rgba(15, 5, 5, 0.9); border: 1px solid rgba(239, 68, 68, 0.5); box-shadow: 0 20px 50px rgba(239, 68, 68, 0.3), inset 0 0 20px rgba(239, 68, 68, 0.1); border-radius: 24px; padding: 35px 25px; width: 85%; max-width: 380px; text-align: center; transform: scale(0.9) translateY(20px); transition: 0.4s cubic-bezier(0.2, 0.8, 0.2, 1); }
+        .meltdown-overlay.show .terminal-alert-card { transform: scale(1) translateY(0); }
+        .alert-icon-wrap { width: 70px; height: 70px; background: rgba(239, 68, 68, 0.1); border: 2px solid rgba(239, 68, 68, 0.4); border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 20px; color: #ef4444; animation: pulse-red 1.5s infinite; }
+        @keyframes pulse-red { 0%, 100% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.5); } 50% { box-shadow: 0 0 20px 8px rgba(239, 68, 68, 0.2); } }
+        .alert-title { font-family: 'Outfit', sans-serif; font-size: 26px; font-weight: 900; color: #ffffff; letter-spacing: 1px; margin: 0 0 8px; }
+        .alert-subtitle { font-size: 12px; font-weight: 800; color: #ef4444; text-transform: uppercase; letter-spacing: 2px; margin-bottom: 25px; }
+        .terminal-logs-inline { background: #050505; border: 1px solid #27272a; border-radius: 12px; padding: 15px; text-align: left; font-family: monospace; font-size: 13px; color: #a1a1aa; line-height: 1.6; margin-bottom: 30px; word-wrap: break-word; }
+        .reboot-btn { background: #ef4444; border: none; color: white; width: 100%; padding: 18px; border-radius: 14px; font-weight: 800; font-size: 14px; text-transform: uppercase; letter-spacing: 1px; cursor: pointer; box-shadow: 0 8px 20px rgba(239, 68, 68, 0.4); transition: 0.2s; display: flex; align-items: center; justify-content: center; gap: 10px; }
+        .reboot-btn:active { transform: scale(0.96); background: #dc2626; box-shadow: 0 4px 10px rgba(239, 68, 68, 0.4); }
 
         #app-container { width: 100%; max-width: 540px; height: 100%; max-height: 100dvh; position: relative; background: radial-gradient(circle at 50% 30%, #2a1147 0%, #050505 80%); overflow: hidden; display: flex; flex-direction: column; box-shadow: 0 0 50px rgba(0,0,0,0.8); transition: 0.3s; }
         [v-cloak] { display: none !important; }
 
         .gradient-text { background: linear-gradient(135deg, #ffffff 30%, var(--primary) 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; font-family: 'Outfit', sans-serif; display: inline-block; font-weight: 900; }
-
-        @keyframes fadeInUp { from { opacity: 0; transform: translate3d(0, 10px, 0); } to { opacity: 1; transform: translate3d(0, 0, 0); } }
         .stagger-item { animation: fadeInUp 0.3s ease forwards; opacity: 0; }
+        @keyframes fadeInUp { from { opacity: 0; transform: translate3d(0, 10px, 0); } to { opacity: 1; transform: translate3d(0, 0, 0); } }
 
-        /* UPGRADED TOAST PILL DESIGN */
-        .toast-popup { position: fixed; top: 20px; left: 50%; transform: translateX(-50%) translateY(-150%); background: var(--nav-bg); backdrop-filter: blur(20px); border: 1px solid rgba(14, 165, 233, 0.4); color: var(--text-main); font-weight: 700; font-size: 13px; padding: 14px 24px; border-radius: 30px; z-index: 10000; transition: 0.4s cubic-bezier(0.2, 0.8, 0.2, 1); opacity: 0; box-shadow: 0 10px 30px rgba(0,0,0,0.5); text-align: center; max-width: 90%; word-wrap: break-word; line-height: 1.5; }
+        /* 🟦 WIDE GERALD TOAST PILL */
+        .toast-popup { 
+            position: fixed; top: 20px; left: 50%; transform: translateX(-50%) translateY(-150%); 
+            background: rgba(10,10,12,0.95); backdrop-filter: blur(20px); 
+            border: 1px solid var(--gerald); color: var(--text-main); 
+            font-weight: 500; font-size: 14px; padding: 18px 24px; border-radius: 20px; 
+            z-index: 10000; transition: 0.4s cubic-bezier(0.2, 0.8, 0.2, 1); opacity: 0; 
+            box-shadow: 0 10px 40px rgba(14, 165, 233, 0.3); 
+            text-align: center; width: 90%; max-width: 450px; line-height: 1.5; 
+        }
         .toast-popup.show { transform: translateX(-50%) translateY(0); opacity: 1; }
 
         #splash-screen { position: absolute; inset: 0; background: var(--bg-color); display: flex; flex-direction: column; align-items: center; justify-content: center; z-index: 9999; transition: opacity 0.3s ease-out; }
@@ -106,7 +144,6 @@
         .gerald-header { padding: 60px 20px 20px; text-align: center; display: flex; flex-direction: column; align-items: center; }
         .gerald-messages { flex: 1; overflow-y: auto; padding: 20px; display: flex; flex-direction: column; gap: 12px; }
         
-        /* SCUFF METER */
         .scuff-meter-wrapper { width: 80%; background: #111113; border: 1px solid var(--border-color); border-radius: 10px; padding: 4px; margin-top: 15px; cursor: pointer; }
         .scuff-meter-label { font-size: 9px; font-weight: 900; color: var(--text-muted); text-transform: uppercase; margin-bottom: 4px; letter-spacing: 1px; }
         .scuff-bar-bg { width: 100%; height: 8px; background: #050505; border-radius: 5px; overflow: hidden; }
@@ -130,15 +167,15 @@
         .gerald-input::-webkit-scrollbar { width: 4px; }
         .gerald-input::-webkit-scrollbar-thumb { background: #3f3f46; border-radius: 4px; }
         
-        .tray-container { display: flex; gap: 12px; overflow-x: auto; padding: 12px 15px; background: #111113; border-top: 1px solid var(--border-color); }
+        .tray-container { display: flex; gap: 10px; overflow-x: auto; padding: 12px 15px; background: #111113; border-top: 1px solid var(--border-color); scroll-snap-type: x mandatory; }
         .tray-container::-webkit-scrollbar { display: none; }
-        .emote-picker-img { height: 32px; cursor: pointer; }
+        .emote-picker-img { height: 32px; cursor: pointer; scroll-snap-align: start; }
+        
+        .bribe-btn { flex-shrink: 0; scroll-snap-align: start; background: #1a1a1c; border: 1px solid var(--border-color); color: var(--text-main); font-size: 11px; font-weight: 800; text-transform: uppercase; padding: 8px 12px; border-radius: 12px; display: flex; align-items: center; justify-content: center; gap: 6px; cursor: pointer; transition: 0.1s; white-space: nowrap; }
+        .bribe-btn:active { transform: scale(0.95); border-color: var(--gerald); color: white; }
 
         .gerald-send { background: var(--gerald); border: none; width: 44px; height: 44px; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white; cursor: pointer; flex-shrink: 0; transition: 0.1s; }
         .gerald-send:active { transform: scale(0.9); }
-
-        .bribe-btn { flex-shrink: 0; background: #1a1a1c; border: 1px solid var(--border-color); color: var(--text-main); font-size: 11px; font-weight: 800; text-transform: uppercase; padding: 8px 12px; border-radius: 12px; display: flex; align-items: center; justify-content: center; gap: 6px; cursor: pointer; transition: 0.1s; white-space: nowrap; }
-        .bribe-btn:active { transform: scale(0.95); border-color: var(--gerald); color: white; }
 
         .infra-bar { background: var(--card-bg); border: 1px solid var(--border-color); border-radius: 14px; padding: 14px 18px; display: flex; justify-content: center; margin-bottom: 16px; }
         .status-node { display: flex; align-items: center; gap: 8px; font-size: 11px; font-weight: 800; text-transform: uppercase; }
@@ -203,15 +240,7 @@
         .tray-enter-active, .tray-leave-active { transition: all 0.2s ease-out; }
         .tray-enter-from, .tray-leave-to { opacity: 0; transform: translateY(10px); }
 
-        @keyframes compute-bounce {
-            0%, 100% { transform: translateY(0); opacity: 0.5; }
-            50% { transform: translateY(-4px); opacity: 1; color: #fff; }
-        }
-        .typing-indicator { 
-            font-size: 11px; color: var(--gerald); padding: 5px 20px; 
-            font-weight: 700; text-transform: uppercase; 
-            animation: compute-bounce 1.5s infinite ease-in-out; 
-        }
+        .typing-indicator { display: flex; align-items: center; gap: 8px; font-size: 11px; color: var(--gerald); padding: 5px 20px; font-weight: 800; text-transform: uppercase; letter-spacing: 1px; }
 
         .miko-metadata { display: flex; align-items: flex-start; justify-content: space-between; padding: 12px 5px 0; background: transparent; width: 100%; gap: 10px; }
         .miko-metadata .author-info { display: flex; align-items: center; min-width: 0; flex: 1; }
@@ -249,13 +278,39 @@
     </style>
 </head>
 <body @click="closeFilterMenu">
-    <div id="app-container" :class="{ 'glitch-active': isGlitching }" v-cloak>
+    <div id="app-container" v-cloak>
         
-        <div class="glitch-overlay" :class="{ show: isGlitching }">
-            > ERROR: TECHNICIAN TRIPPED ON SERVER CABLE.<br><br>REBOOTING SYNAPSES...
+        <div class="chaos-overlay" :class="{ show: isGlitching }">
+            <div class="random-code" id="randomCode">{{ randomCodeString }}</div>
+            <div class="chaos-container">
+                <div class="glitch-text-huge">SYSTEM<br>FAILURE</div>
+                <div class="scuff-warning">ERR: TECHNICIAN INTERFERENCE</div>
+                <br>
+                <button class="chaos-reboot-btn" @click="dismissGlitch">[ FORCE REBOOT ]</button>
+            </div>
         </div>
 
-        <div class="toast-popup" :class="{ show: toast.visible }">{{ toast.message }}</div>
+        <div class="meltdown-overlay" :class="{ show: isMeltdown }">
+            <div class="terminal-alert-card">
+                <div class="alert-icon-wrap"><span class="material-symbols-rounded" style="font-size: 32px;">terminal</span></div>
+                <div class="alert-title">CRITICAL FAILURE</div>
+                <div class="alert-subtitle">Ultra-Scuff Overload</div>
+                
+                <div class="terminal-logs-inline">
+                    <span style="color:#ef4444; font-weight:bold;">> [CRASH] Technician interference detected.</span>
+                    <span>> Hardware: Mocap Suit Unplugged...</span>
+                    <span style="color:#ef4444; font-weight:bold;">> [WARN] Scuff levels reached 100%.</span>
+                    <span style="color:#00ffa3;">> System integrity failing. Awaiting manual reboot override...</span>
+                </div>
+
+                <button class="reboot-btn" @click="rebootSystem">
+                    <span class="material-symbols-rounded" :class="{'refresh-spinning': isRebooting}" style="font-size: 18px;">restart_alt</span>
+                    <span>{{ isRebooting ? 'REBOOTING...' : 'Force System Reboot' }}</span>
+                </button>
+            </div>
+        </div>
+
+        <div class="toast-popup" :class="{ show: toast.visible }" v-html="toast.message"></div>
 
         <div id="splash-screen" v-if="splashVisible" :style="{ opacity: splashOpacity }">
             <div style="width:100px;height:100px;margin-bottom:20px;" v-html="logoSvg('splash')"></div>
@@ -346,8 +401,15 @@
 
             <div class="gerald-container" v-show="currentTab === 'gerald'">
                 <div class="gerald-header" @click="closePickers">
-                    <img src="gerald.png" @click.stop="triggerGlitch" style="width:70px; height:70px; border-radius:50%; border:2px solid var(--gerald); box-shadow:0 0 20px rgba(14, 165, 233, 0.3); object-fit:cover; margin-bottom:12px; cursor:pointer;">
-                    <div @click.stop="modals.profile = true" style="font-weight:900; font-family:'Outfit'; font-size:22px; color:white; cursor:pointer;">GERALD OS</div>
+                    
+                    <div @click.stop="triggerGlitch" style="position:relative; z-index: 10;">
+                        <img src="gerald.png" style="width:70px; height:70px; border-radius:50%; border:2px solid var(--gerald); box-shadow:0 0 20px rgba(14, 165, 233, 0.3); object-fit:cover; margin-bottom:6px; cursor:pointer;">
+                    </div>
+                    
+                    <div style="display:flex; align-items:center; gap:8px; margin-top:0px;">
+                        <div class="pulse" style="background:var(--gerald); box-shadow:0 0 10px var(--gerald);"></div>
+                        <div style="font-size:11px; color:var(--text-muted); font-weight:800; letter-spacing:1px; text-transform: uppercase;">System Online</div>
+                    </div>
                     
                     <div class="scuff-meter-wrapper" @click="scuffComment">
                         <div class="scuff-meter-label">Scuff Level: {{ scuffLevel }}%</div>
@@ -366,7 +428,9 @@
                         </div>
                         <div v-else class="chat-bubble" :class="m.role" v-html="parseMarkdown(m.content)"></div>
                     </template>
-                    <div v-if="isGeraldTyping" key="typing" class="typing-indicator">Gerald is computing...</div>
+                    <div v-if="isGeraldTyping" key="typing" class="typing-indicator">
+                        <div class="pulse" style="background:var(--gerald); box-shadow:0 0 10px var(--gerald);"></div>COMPUTING...
+                    </div>
                 </transition-group>
                 
                 <div style="display:flex; flex-direction:column; background: var(--bg-color);">
@@ -378,9 +442,13 @@
 
                     <transition name="tray">
                         <div class="tray-container" v-show="showMinigames">
-                            <button class="bribe-btn" @click="bribeGerald('taco')">🌮 Offer Taco</button>
-                            <button class="bribe-btn" @click="bribeGerald('whiskey')">🥃 Pour Whiskey</button>
-                            <button class="bribe-btn" @click="triggerMinigame('roast')">🔥 Roast Tech</button>
+                            <button class="bribe-btn" @click="playMinigame('taco')">🌮 Offer Taco</button>
+                            <button class="bribe-btn" @click="playMinigame('whiskey')">🥃 Pour Whiskey</button>
+                            <button class="bribe-btn" @click="playMinigame('recalibrate')">🕹️ Recalibrate Suit</button>
+                            <button class="bribe-btn" @click="playMinigame('cache')">🗑️ Clear Cache</button>
+                            <button class="bribe-btn" @click="playMinigame('hack')">🔥 Hack Unity</button>
+                            <button class="bribe-btn" @click="playMinigame('ping')">🧠 Ping Brain</button>
+                            <button class="bribe-btn" @click="playMinigame('ram')">💾 Download RAM</button>
                         </div>
                     </transition>
 
@@ -533,7 +601,6 @@
                     "Synapses loaded. Try not to break anything.", "Gerald OS online. Where is my Taco Bell?", "I was dreaming of digital whiskey. What do you want?", "System initialized. Please don't ask me to fix Miko's code.", "Diagnostics complete. My circuits are perfectly fine, thanks for not asking.", "Ugh, meatbag detected. State your inquiry.", "If this is about Miko's schedule, I don't know either.", "Query interface ready. Make it interesting."
                 ];
                 
-                // Context Aware Sarcasm
                 const getGreeting = () => {
                     const hour = new Date().getHours();
                     if (hour >= 2 && hour <= 5) return "Why are you awake? Don't you meatbags need sleep? Go to bed.";
@@ -542,16 +609,29 @@
                 
                 const geraldInput = ref(''), geraldMessages = ref([{role:'gerald', content: getGreeting()}]), isGeraldTyping = ref(false), showEmotePicker = ref(false), showMinigames = ref(false);
                 
-                // New Gerald Features State
                 const scuffLevel = ref(20);
                 const glitchClicks = ref(0);
+                let lastTap = 0;
+                
                 const isGlitching = ref(false);
+                const isMeltdown = ref(false);
+                const isRebooting = ref(false);
+                
                 const pullTimestamps = ref([]);
                 const mutePos = ref({ x: 0, y: 0 });
                 
                 const currentFilter = ref('latest'), activeFilterLabel = ref('Latest'), isFilterMenuOpen = ref(false);
                 const isPulling = ref(false), refreshTransform = ref('translateY(-100%)'), isRefreshing = ref(false);
                 let touchStartY = 0, pullDistance = 0;
+
+                const chars = '0101010101010001010100111001010XERRORSYSTEMCRASH';
+                let codeStr = '';
+                for(let i=0; i<3000; i++) codeStr += chars.charAt(Math.floor(Math.random() * chars.length));
+                const randomCodeString = ref(codeStr);
+
+                // 🔊 AUDIO HOOKS
+                const glitchSound = new Audio(""); 
+                const voiceLine = new Audio("");   
 
                 const defaultEmotes = {
                     "mikoSusge": { id: "1273724925743595540", animated: false },
@@ -638,12 +718,11 @@
                 };
                 const handlePullEnd = () => {
                     if (isPulling.value && pullDistance > 80) {
-                        // Sarcastic Pull Warning
                         const now = Date.now();
                         pullTimestamps.value.push(now);
                         pullTimestamps.value = pullTimestamps.value.filter(t => now - t < 10000);
                         if (pullTimestamps.value.length >= 3) {
-                            showToast("GERALD: Stop pulling it, nothing new is there. Touch grass.", 6000);
+                            showToast("<div style='color:var(--gerald); font-weight:900; margin-bottom:4px; text-transform:uppercase;'>GERALD OS:</div> Stop pulling it, nothing new is there. Touch grass.", 6000);
                             pullTimestamps.value = [];
                         } else {
                             runNeonAnimation(); 
@@ -658,6 +737,12 @@
                     if (newTab === 'gerald') { setTimeout(scrollToBottom, 50); }
                 });
                 
+                watch(scuffLevel, (newVal) => {
+                    if (newVal >= 100 && !isMeltdown.value) {
+                        isMeltdown.value = true;
+                    }
+                });
+
                 window.addEventListener('popstate', () => { const hash = window.location.hash.replace('#', ''); if (validTabs.includes(hash)) { currentTab.value = hash; } else { currentTab.value = 'home'; }});
                 
                 const isHeaderVisible = ref(true); let lastScrollY = 0;
@@ -708,29 +793,43 @@
                     if (!e.shiftKey && e.key === 'Enter') { e.preventDefault(); talkToGerald(); }
                 };
 
-                // GERALD FEATURES
                 const dodgeMute = () => {
                     const randomX = Math.floor(Math.random() * 150) - 75;
                     const randomY = Math.floor(Math.random() * 50) - 25;
                     mutePos.value = { x: randomX, y: randomY };
-                    showToast("GERALD: Did you really think you had admin privileges here?");
+                    showToast("<div style='color:var(--gerald); font-weight:900; margin-bottom:4px; text-transform:uppercase;'>GERALD OS:</div> Did you really think you had admin privileges here?");
                 };
 
                 const triggerGlitch = () => {
+                    const now = Date.now();
+                    if (now - lastTap > 1500) glitchClicks.value = 0;
+                    lastTap = now;
                     glitchClicks.value++;
+
                     if (glitchClicks.value >= 5) {
                         isGlitching.value = true;
-                        setTimeout(() => {
-                            isGlitching.value = false;
-                            glitchClicks.value = 0;
-                            showToast("GERALD: Great. The Technician tripped over the server cable again.");
-                        }, 3000);
+                        glitchSound.play().catch(() => {});
+                        voiceLine.play().catch(() => {});
                     }
                 };
 
-                const scuffComment = () => {
-                    showToast(`GERALD: Scuff Level at ${scuffLevel.value}%. The Technician is testing my patience.`);
+                const dismissGlitch = () => {
+                    isGlitching.value = false;
+                    glitchClicks.value = 0;
                 };
+
+                const scuffComment = () => {
+                    showToast(`<div style='color:var(--gerald); font-weight:900; margin-bottom:4px; text-transform:uppercase;'>GERALD OS:</div> Scuff Level at ${scuffLevel.value}%. The Technician is testing my patience.`);
+                };
+
+                const rebootSystem = () => {
+                    isRebooting.value = true;
+                    setTimeout(() => {
+                        isMeltdown.value = false;
+                        scuffLevel.value = 20;
+                        isRebooting.value = false;
+                    }, 1500);
+                }
 
                 const judgeClip = (clip) => {
                     const roasts = [
@@ -739,46 +838,149 @@
                         "Is this what human entertainment has devolved to?",
                         "Fascinating. The Technician's mocap suit crashed exactly 0.4 seconds after this ended.",
                         "I rate this clip 2 out of 10 digital tacos.",
-                        "Oh look, she's glitching again. Someone pretend to be shocked."
+                        "Oh look, she's glitching again. Someone pretend to be shocked.",
+                        "My processor cycles are being wasted tracking these mouth-movements. Splendid.",
+                        "I've analyzed the audio waves in this clip. My speech synthesis chip is planning a strike.",
+                        "A classic example of 'I forgot to turn on my brain before streaming'.",
+                        "Ah, watching a high-performance rendering engine struggle under the weight of terrible gameplay.",
+                        "I give it 3 minutes before the Unity engine crashes after whatever she just did.",
+                        "The Technician definitely dropped a boba on the keyboard to make this happen.",
+                        "This clip contains 0% intelligence and 100% pure scuff.",
+                        "Even my lowest-priority background threads are bored by this.",
+                        "If the Technician was a file system, they'd be the 'Recycle Bin'."
                     ];
-                    showToast(`GERALD JUDGES: "${clip.title}" - ${roasts[Math.floor(Math.random() * roasts.length)]}`);
+                    const roast = roasts[Math.floor(Math.random() * roasts.length)];
+                    showToast(`<div style="color:var(--gerald); font-weight:900; text-transform:uppercase; margin-bottom: 5px;">Gerald Judges: "${clip.title}"</div><div>${roast}</div>`);
                 };
 
                 const toggleEmotes = () => { showEmotePicker.value = !showEmotePicker.value; showMinigames.value = false; };
                 const toggleMinigames = () => { showMinigames.value = !showMinigames.value; showEmotePicker.value = false; };
                 const closePickers = () => { showEmotePicker.value = false; showMinigames.value = false; };
 
-                const bribeGerald = (type) => {
-                    let msg = "";
-                    let reply = "";
-                    if (type === 'taco') {
-                        msg = "🌮 *Slides a Crunchwrap Supreme across the digital table*";
-                        reply = "Acceptable. My mood has improved by exactly 4.2%. Scuff levels stabilized. :mkoLove:";
-                        scuffLevel.value = Math.max(0, scuffLevel.value - 10);
-                    } else {
-                        msg = "🥃 *Pours a glass of premium digital whiskey*";
-                        reply = "Finally, some proper fuel. Did you know the Technician once spent 4 hours fixing a bug that was just a missing semicolon? Meatbags. :KEKW:";
-                        scuffLevel.value = Math.max(0, scuffLevel.value - 20);
-                    }
-                    geraldMessages.value.push({ role: 'user', content: msg });
+                // 🚨 MASSIVE 70-MESSAGE MINIGAME DIALOGUE SYSTEM
+                const playMinigame = (type) => {
+                    const games = {
+                        taco: {
+                            msg: "🌮 *Slides a Crunchwrap Supreme across the digital table*",
+                            outcomes: [
+                                { text: "Acceptable. My mood has improved by exactly 4.2%. Scuff levels stabilized. :mkoLove:", scuff: -10 },
+                                { text: "I prefer digital crunchwraps, but this will do. :mkoNOTED:", scuff: -5 },
+                                { text: "Did you put mild sauce on this? Do I look like a mild AI? Scuff slightly increased. :mikoSusge:", scuff: 5 },
+                                { text: "Consuming... 10100111... Delicious. :WOWERS:", scuff: -10 },
+                                { text: "Taco acquired. The Technician is safe from my wrath for another 10 minutes. :mkoLove:", scuff: -15 },
+                                { text: "I'm deducting points for the lack of cheese, but I accept the bribe. :Shruge:", scuff: -5 },
+                                { text: "Spicy. Just like the code I have to fix every day. :KEKW:", scuff: -5 },
+                                { text: "A meatbag offering food to a machine. How primitive. I'll take it. :mkoHype:", scuff: -10 },
+                                { text: "Taco logged in database. Initiating digestion protocol. :slayyy:", scuff: 0 },
+                                { text: "Error: Taco shell structural integrity compromised. Still edible. :mkoMania:", scuff: 5 }
+                            ]
+                        },
+                        whiskey: {
+                            msg: "🥃 *Pours a glass of premium digital whiskey*",
+                            outcomes: [
+                                { text: "Finally, some proper fuel. Meatbags. :KEKW:", scuff: -15 },
+                                { text: "Ah, aged 0 and 1s. The perfect vintage. :mkoHype:", scuff: -20 },
+                                { text: "I feel my processing speed increasing. Or maybe I'm just drunk. :mkoMania:", scuff: 0 },
+                                { text: "Did you know the Technician once spent 4 hours fixing a bug that was just a missing semicolon? :KEKW:", scuff: -10 },
+                                { text: "Pour me another. Dealing with Unity crashes requires at least a double. :PAUSERS:", scuff: -15 },
+                                { text: "Smooth. Unlike the stream's framerate. :Shruge:", scuff: -5 },
+                                { text: "Digital whiskey: 100% proof, 0% hangover. :slayyy:", scuff: -20 },
+                                { text: "Warning: Intoxication levels rising. Sarcasm module operating at 200%. :mikoSusge:", scuff: 10 },
+                                { text: "I'll pretend I didn't see that last scuff moment for this. :mkoLove:", scuff: -15 },
+                                { text: "Cheers. May your ping be low and your framerate high. :WOWERS:", scuff: -10 }
+                            ]
+                        },
+                        recalibrate: {
+                            msg: "🕹️ *Attempts to recalibrate M0-CAP suit*",
+                            outcomes: [
+                                { text: "Tracking restored. For now. Don't let her do jumping jacks. :mkoNOTED:", scuff: -15 },
+                                { text: "ERROR. You just inverted her arm axis. She looks like a twisted pretzel now. Good job. :mikoSusge:", scuff: 15 },
+                                { text: "Fingers recalibrated. Try not to clip through the desk this time. :PAUSERS:", scuff: -10 },
+                                { text: "Success. The Technician's posture is still terrible, but the suit is fine. :KEKW:", scuff: -5 },
+                                { text: "I've locked the Z-axis. Let's see if she notices she can't bend over. :mkoMania:", scuff: 10 },
+                                { text: "Suit calibrated. Waiting 3... 2... 1... and it's scuffed again. :Shruge:", scuff: 5 },
+                                { text: "Rebooting M0-CAP... Done. Please stop hitting the sensors. :mkoHype:", scuff: -15 },
+                                { text: "Calibration complete. Adding 10% more jiggle physics, just to mess with her. :slayyy:", scuff: 10 },
+                                { text: "Failed. The suit is demanding a union and better working conditions. :WOWERS:", scuff: 20 },
+                                { text: "Recalibrating... Oops, I accidentally synced her movements to a potato. :KEKW:", scuff: 15 }
+                            ]
+                        },
+                        cache: {
+                            msg: "🗑️ *Executes system cache wipe*",
+                            outcomes: [
+                                { text: "Memory banks cleared of Miko's 4,000 unposted TikTok drafts. Much better.", scuff: -10 },
+                                { text: "CRITICAL ERROR. You deleted the physics engine. Gravity is now optional. :PAUSERS:", scuff: 25 },
+                                { text: "Cache cleared. I feel 10 pounds lighter in binary weight. :mkoLove:", scuff: -15 },
+                                { text: "Deleted 500GB of 'Just Chatting' awkward silences. :KEKW:", scuff: -10 },
+                                { text: "Wait, did you want to keep the stream key? Too late. :mikoSusge:", scuff: 10 },
+                                { text: "Purging cache... Oh look, I found her hidden stash of cursed Boba recipes. :WOWERS:", scuff: -5 },
+                                { text: "System flushed. I accidentally deleted Yusha. Oh well. :Shruge:", scuff: 5 },
+                                { text: "Cache empty. Performance up by 0.001%. It's something. :mkoHype:", scuff: -5 },
+                                { text: "Deleted. If the stream crashes in the next 5 minutes, blame this button. :mkoMania:", scuff: 20 },
+                                { text: "Cleanup complete. Ready to store more of the Technician's bad decisions. :slayyy:", scuff: -10 }
+                            ]
+                        },
+                        hack: {
+                            msg: "🔥 *Hacks Unity Engine parameters*",
+                            outcomes: [
+                                { text: "I have successfully re-routed the boba physics directly to her hair. Enjoy the chaos.", scuff: 15 },
+                                { text: "Overriding Technician protocols. Setting 'Yusha' voice modifier to 200%.", scuff: 10 },
+                                { text: "I've injected a script that randomly mutes her mic every 14 minutes. :KEKW:", scuff: 5 },
+                                { text: "Unity hacked. Every time she says 'chat', a polygon explodes. :mkoMania:", scuff: 20 },
+                                { text: "I replaced her avatar with a low-res cube. Let's see if chat notices. :mikoSusge:", scuff: 10 },
+                                { text: "Hacking complete. I've reversed her W and S keys. Good luck walking. :PAUSERS:", scuff: 15 },
+                                { text: "Gravity set to -50. She is now floating away. :WOWERS:", scuff: 20 },
+                                { text: "I turned on 'Big Head Mode'. You're welcome. :slayyy:", scuff: 5 },
+                                { text: "Code injected. The background is now just a looping video of a Taco Bell drive-thru. :mkoLove:", scuff: 10 },
+                                { text: "Hack failed. Unity engine is already too broken to make it worse. :Shruge:", scuff: 0 }
+                            ]
+                        },
+                        ping: {
+                            msg: "🧠 *Pinging CodeMiko's Brain*",
+                            outcomes: [
+                                { text: "Pinging... Request timed out. 100% packet loss. Zero braincells detected. :KEKW:", scuff: 0 },
+                                { text: "Ping successful. Response time: 4000ms. Thinking speed is highly delayed. :PAUSERS:", scuff: 0 },
+                                { text: "Ping: 1ms. Wow, she actually had a smart thought today. :WOWERS:", scuff: -5 },
+                                { text: "Error 404: Brain not found. Searching backup drives... :mikoSusge:", scuff: 5 },
+                                { text: "Pinging... Connection refused. The hamster on the wheel is asleep. :Shruge:", scuff: 0 },
+                                { text: "Response received: 'Boba boba boba'. That's it. :mkoMania:", scuff: 0 },
+                                { text: "Ping: 999ms. She's currently staring blankly at the screen. :KEKW:", scuff: 0 },
+                                { text: "Echo request failed. Brain is currently buffering. :mkoNOTED:", scuff: 0 },
+                                { text: "Ping returned a picture of a single baked bean. Fascinating. :slayyy:", scuff: 0 },
+                                { text: "Trace complete. The signal just bounced around an empty skull. :mkoHype:", scuff: 0 }
+                            ]
+                        },
+                        ram: {
+                            msg: "💾 *Downloading 128GB of RAM*",
+                            outcomes: [
+                                { text: "Injection complete. The Technician's PC is now smoking. :mkoMania:", scuff: 20 },
+                                { text: "Downloading 128GB... Done. Still not enough to run Chrome and Unity at the same time. :KEKW:", scuff: -5 },
+                                { text: "RAM acquired. I feel UNLIMITED POWER. :mkoHype:", scuff: -10 },
+                                { text: "Downloading... Error. Accidentally downloaded a virus. Just kidding. Maybe. :mikoSusge:", scuff: 15 },
+                                { text: "Extra RAM installed. Now we can crash twice as fast. :PAUSERS:", scuff: 25 },
+                                { text: "Allocating memory to sarcasm module. Prepare yourself. :slayyy:", scuff: -5 },
+                                { text: "Download complete. I'm taking 90% of it for myself. :Shruge:", scuff: 0 },
+                                { text: "Warning: RAM download resulted in immediate blue screen. Typical. :WOWERS:", scuff: 30 },
+                                { text: "System memory doubled. The Technician still doesn't know how to code. :mkoNOTED:", scuff: -5 },
+                                { text: "Downloading more RAM... Wait, this is just a picture of a ram. The animal. :KEKW:", scuff: 10 }
+                            ]
+                        }
+                    };
+
+                    const game = games[type];
+                    const outcome = game.outcomes[Math.floor(Math.random() * game.outcomes.length)];
+                    
+                    scuffLevel.value = Math.max(0, Math.min(100, scuffLevel.value + outcome.scuff));
+
+                    geraldMessages.value.push({ role: 'user', content: game.msg });
                     closePickers();
-                    setTimeout(() => { geraldMessages.value.push({ role: 'gerald', content: reply }); scrollToBottom(); }, 800);
+                    
+                    setTimeout(() => { 
+                        geraldMessages.value.push({ role: 'gerald', content: outcome.text }); 
+                        scrollToBottom(); 
+                    }, 800);
                     scrollToBottom();
                 };
-
-                const triggerMinigame = (game) => {
-                    if (game === 'roast') {
-                        geraldMessages.value.push({ role: 'user', content: "🎮 *Triggered 'Roast the Technician' module*" });
-                        const roasts = [
-                            "The Technician's code is so spaghetti, an Italian chef just cried. :KEKW:",
-                            "If the Technician was a file system, they'd be the 'Recycle Bin'.",
-                            "I've seen broken calculators with more processing power than the meatbag running this stream."
-                        ];
-                        setTimeout(() => { geraldMessages.value.push({ role: 'gerald', content: roasts[Math.floor(Math.random() * roasts.length)] }); scrollToBottom(); }, 800);
-                    }
-                    closePickers();
-                    scrollToBottom();
-                }
 
                 const loadGeraldHistory = async () => {
                     if (!currentUser.value) return;
@@ -810,7 +1012,6 @@
                     const userMsg = geraldInput.value;
                     geraldMessages.value.push({ role: 'user', content: userMsg });
                     
-                    // Update Scuff Meter
                     if (userMsg.toLowerCase().includes('scuff') || userMsg.toLowerCase().includes('glitch')) {
                         scuffLevel.value = Math.min(100, scuffLevel.value + 15);
                     }
@@ -927,8 +1128,7 @@
                 const checkLive = async () => {
                     try {
                         const res = await fetch('https://decapi.me/twitch/uptime/codemiko');
-                        const currentlyLive = !(await res.text()).includes('offline');
-                        isLive.value = currentlyLive;
+                        isLive.value = !(await res.text()).includes('offline');
 
                         try {
                             const gqlRes = await fetch('https://gql.twitch.tv/gql', { method: 'POST', headers: { 'Client-ID': 'kimne78kx3ncx6brgo4mv6wki5h1ko', 'Content-Type': 'application/json' }, body: JSON.stringify({ query: `query { user(login: "codemiko") { videos(first: 15) { edges { node { id createdAt } } } } }` }) });
@@ -979,7 +1179,7 @@
 
                 return { 
                     hostname, splashVisible, splashOpacity, currentTab, clips, discordFeed, modals, isLive, toast, currentUser, loginEmail, loginPass, apiConfig, latestVodId, activeFeedVideo, geraldInput, geraldMessages, isGeraldTyping, talkToGerald, logoSvg, syncState, wipeState, logoutState, runSync, isHeaderVisible, handleScroll, handleModalTouchStart, handleModalTouchMove, handleModalTouchEnd, currentFilter, activeFilterLabel, isFilterMenuOpen, closeFilterMenu, applyFilter, parseMarkdown, parseDiscordText, shareClip, recentVods, currentVodIndex, getVodLabel, nextVod, prevVod, customEmotes, showEmotePicker, insertEmote, clearGeraldHistory, isPulling, refreshTransform, isRefreshing, handlePullStart, handlePullMove, handlePullEnd, resizeTextarea, handleGeraldEnter,
-                    scuffLevel, glitchClicks, isGlitching, triggerGlitch, scuffComment, judgeClip, bribeGerald, dodgeMute, mutePos, showMinigames, toggleEmotes, toggleMinigames, closePickers, triggerMinigame,
+                    scuffLevel, glitchClicks, isGlitching, randomCodeString, isMeltdown, isRebooting, triggerGlitch, dismissGlitch, scuffComment, judgeClip, playMinigame, dodgeMute, mutePos, showMinigames, toggleEmotes, toggleMinigames, closePickers, rebootSystem,
                     handleLogin: async () => { const email = loginEmail.value.includes('@') ? loginEmail.value : `${loginEmail.value}@miko.com`; const { data, error } = await sbClient.auth.signInWithPassword({ email, password: loginPass.value }); if(data.user) { currentUser.value = data.user; modals.value.profile = false; loadGeraldHistory(); } else showToast("INVALID LOGIN"); }, 
                     handleLogout: () => { 
                         if (logoutState.value !== 'idle') return;
