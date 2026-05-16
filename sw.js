@@ -1,20 +1,18 @@
 const CACHE_NAME = 'mikotok-v1';
-const ASSETS = [
-  '/',
-  '/index.html',
-  // Add other local assets here if you have them
-];
 
-self.addEventListener('install', (event) => {
-  event.waitUntil(
-    caches.open(CACHE_NAME).then((cache) => cache.addAll(ASSETS))
-  );
+// Install the service worker immediately
+self.addEventListener('install', (e) => {
+  self.skipWaiting();
 });
 
-self.addEventListener('fetch', (event) => {
-  event.respondWith(
-    caches.match(event.request).then((response) => {
-      return response || fetch(event.request);
-    })
+// Activate and claim the client
+self.addEventListener('activate', (e) => {
+  e.waitUntil(clients.claim());
+});
+
+// Network-first strategy: Always fetch newest code from GitHub, fallback to cache if offline
+self.addEventListener('fetch', (e) => {
+  e.respondWith(
+    fetch(e.request).catch(() => caches.match(e.request))
   );
 });
