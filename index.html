@@ -97,12 +97,14 @@
         .terminal-header { display: flex; align-items: center; gap: 6px; font-size: 10px; font-weight: 900; color: var(--gerald); text-transform: uppercase; letter-spacing: 1px; }
         .terminal-text { font-family: monospace; font-size: 13px; color: var(--text-muted); line-height: 1.4; }
         
-        .gerald-input-area { padding: 15px; display: flex; gap: 10px; border-top: 1px solid var(--border-color); background: var(--bg-color); }
-        .gerald-input-wrapper { display: flex; align-items: center; background: var(--card-bg); border: 1px solid var(--border-color); border-radius: 25px; flex: 1; padding-left: 5px; transition: 0.2s; }
+        .gerald-input-area { padding: 15px; display: flex; gap: 10px; border-top: 1px solid var(--border-color); background: var(--bg-color); align-items: flex-end;}
+        .gerald-input-wrapper { display: flex; align-items: flex-end; background: var(--card-bg); border: 1px solid var(--border-color); border-radius: 20px; flex: 1; padding-left: 5px; transition: 0.2s; min-height: 44px; }
         .gerald-input-wrapper:focus-within { border-color: var(--gerald); }
-        .emote-toggle-btn { background: transparent; border: none; color: var(--text-muted); cursor: pointer; padding: 8px; border-radius: 50%; }
+        .emote-toggle-btn { background: transparent; border: none; color: var(--text-muted); cursor: pointer; padding: 10px 8px; border-radius: 50%; height: 44px; display: flex; align-items: center; }
         .emote-toggle-btn:active { color: var(--gerald); }
-        .gerald-input { flex: 1; background: transparent; border: none; padding: 12px 10px; color: white; outline: none; font-size: 14px; }
+        .gerald-input { flex: 1; background: transparent; border: none; padding: 12px 10px; color: white; outline: none; font-size: 14px; resize: none; overflow-y: auto; max-height: 120px; line-height: 1.4; font-family: 'Inter', sans-serif;}
+        .gerald-input::-webkit-scrollbar { width: 4px; }
+        .gerald-input::-webkit-scrollbar-thumb { background: #3f3f46; border-radius: 4px; }
         
         .emote-picker-tray { display: flex; gap: 12px; overflow-x: auto; padding: 12px 15px; background: #111113; border-top: 1px solid var(--border-color); }
         .emote-picker-tray::-webkit-scrollbar { display: none; }
@@ -315,7 +317,7 @@
                     </div>
                 </div>
                 
-                <transition-group name="msg" tag="div" class="gerald-messages" id="gerald-msgs" @click="showEmotePicker = false" ref="geraldMsgsRef">
+                <transition-group name="msg" tag="div" class="gerald-messages" id="gerald-msgs" @click="showEmotePicker = false">
                     <template v-for="(m, i) in geraldMessages" :key="i">
                         <div v-if="i === 0 && m.role === 'gerald'" class="terminal-intro">
                             <div class="terminal-header"><span class="material-symbols-rounded" style="font-size: 14px;">terminal</span> Session Initialized</div>
@@ -335,7 +337,7 @@
                     <div class="gerald-input-area" style="border-top: none;">
                         <div class="gerald-input-wrapper">
                             <button class="emote-toggle-btn" @click="showEmotePicker = !showEmotePicker"><span class="material-symbols-rounded" :style="{ color: showEmotePicker ? 'var(--gerald)' : 'inherit' }">mood</span></button>
-                            <input type="text" class="gerald-input" placeholder="Query the system..." v-model.lazy="geraldInput" @keyup.enter="talkToGerald" id="gerald-txt-input" @focus="showEmotePicker = false">
+                            <textarea class="gerald-input" rows="1" placeholder="Query the system..." v-model.lazy="geraldInput" @keydown="handleGeraldEnter" id="gerald-txt-input" @focus="showEmotePicker = false" @input="resizeTextarea"></textarea>
                         </div>
                         <button class="gerald-send" @click="talkToGerald"><span class="material-symbols-rounded">send</span></button>
                     </div>
@@ -433,7 +435,7 @@
             <div class="nav-item" :class="{ active: currentTab === 'chat' }" @click="currentTab = 'chat'; isHeaderVisible = true"><span class="material-symbols-rounded">chat</span>Chat</div>
             <div class="nav-item" :class="{ active: currentTab === 'feed' }" @click="currentTab = 'feed'; isHeaderVisible = true"><span class="material-symbols-rounded">forum</span>Feed</div>
             <div class="nav-item" @click="modals.discord = true"><svg viewBox="0 0 24 24" width="24" height="24" fill="currentColor" style="margin-bottom:4px"><path d="M20.317 4.3698a19.7913 19.7913 0 00-4.8851-1.5152.0741.0741 0 00-.0785.0371c-.211.3753-.4447.8648-.6083 1.2495-1.8447-.2762-3.68-.2762-5.4868 0-.1636-.3933-.4058-.8742-.6177-1.2495a.077.077 0 00-.0785-.037 19.7363 19.7363 0 00-4.8852 1.515.0699.0699 0 00-.0321.0277C.5334 9.0458-.319 13.5799.0992 18.0578a.0824.0824 0 00.0312.0561c2.0528 1.5076 4.0413 2.4228 5.9929 3.0294a.0777.0777 0 00.0842-.0276c.4616-.6304.8731-1.2952 1.226-1.9942a.076.076 0 00-.0416-.1057c-.6528-.2476-1.2743-.5495-1.8722-.8923a.077.077 0 01-.0076-.1277c.1258-.0943.2517-.1923.3718-.2914a.0743.0743 0 01.0776-.0105c3.9278 1.7933 8.18 1.7933 12.0614 0a.0739.0739 0 01.0785.0095c.1202.099.246.1981.3728.2924a.077.077 0 01-.0066.1276 12.2986 12.2986 0 01-1.873.8914.0766.0766 0 00-.0407.1067c.3604.698.7719 1.3628 1.225 1.9932a.076.076 0 00.0842.0286c1.961-.6067 3.9495-1.5219 6.0023-3.0314a.077.077 0 00.0313-.0552c.5004-5.177-.8382-9.6739-3.5485-13.6604a.061.061 0 00-.0312-.0286zM8.02 15.3312c-1.1825 0-2.1569-1.0857-2.1569-2.419 0-1.3332.9555-2.4189 2.157-2.4189 1.2108 0 2.1757 1.0952 2.1568 2.419 0 1.3332-.9555 2.4189-2.1569 2.4189zm7.9748 0c-1.1825 0-2.1569-1.0857-2.1569-2.419 0-1.3332.9554-2.4189 2.1569-2.4189 1.2108 0 2.1757 1.0952 2.1568 2.419 0 1.3332-.946 2.4189-2.1568 2.4189Z"/></svg>Discord</div>
-            <div class="nav-item" :class="{ 'active-gerald': currentTab === 'gerald' }" @click="currentTab = 'gerald'; isHeaderVisible = true"><span class="material-symbols-rounded">psychology</span>Gerald</div>
+            <div class="nav-item" :class="{ 'active-gerald': currentTab === 'gerald' }" @click="currentTab = 'gerald'; isHeaderVisible = true"><span class="material-symbols-rounded">smart_toy</span>Gerald</div>
         </nav>
     </div>
 
@@ -480,7 +482,7 @@
                 };
                 const customEmotes = ref({ ...defaultEmotes });
 
-                const recentVods = ref([]), currentVodIndex = ref(0), geraldMsgsRef = ref(null);
+                const recentVods = ref([]), currentVodIndex = ref(0);
 
                 const getVodLabel = (index) => { if (index === -1) return 'LIVE NOW'; if (index === 0) return 'LATEST VOD'; if (recentVods.value[index]) return `VOD • ${recentVods.value[index].date}`; return 'PAST BROADCAST'; };
                 const nextVod = () => { if (currentVodIndex.value < recentVods.value.length - 1) currentVodIndex.value++; };
@@ -498,15 +500,6 @@
                         setTimeout(() => { b.scrollTop = b.scrollHeight; }, 200);
                     });
                 };
-
-                let scrollTimeout;
-                onMounted(() => {
-                    const obs = new ResizeObserver(() => { 
-                        clearTimeout(scrollTimeout);
-                        scrollTimeout = setTimeout(() => { if(currentTab.value === 'gerald') scrollToBottom(); }, 100);
-                    });
-                    if(geraldMsgsRef.value) obs.observe(geraldMsgsRef.value);
-                });
 
                 const runNeonAnimation = () => {
                     isRefreshing.value = true;
@@ -584,14 +577,13 @@
                 const logoSvg = (id) => `<svg viewBox="0 0 100 100"><defs><linearGradient id="grad-${id}" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stop-color="#ffffff"/><stop offset="100%" stop-color="#9146FF"/></linearGradient></defs><circle cx="50" cy="50" r="40" fill="none" stroke="url(#grad-${id})" stroke-width="8"/><path d="M 33 38 L 48 62 L 62 38 L 62 55 Q 62 65 69 64" fill="none" stroke="url(#grad-${id})" stroke-width="8" stroke-linecap="round" stroke-linejoin="round"/></svg>`;
                 const showToast = (msg) => { toast.value.message = msg; toast.value.visible = true; setTimeout(() => toast.value.visible = false, 3000); };
                 
-                // Completely safe markdown parser - no lookbehinds!
                 const parseMarkdown = (text) => {
                     if (!text) return '';
                     let html = text.replace(/</g, '&lt;').replace(/>/g, '&gt;');
                     
                     html = html.replace(/\*\*(.*?)\*\*/g, '$1').replace(/\*(.*?)\*/g, '$1'); 
-                    html = html.replace(/\[([^\]]+)\]\((https?:\/\/[^\s]+)\)/g, '<a href="$2" target="_blank" style="color: var(--gerald); text-decoration: underline; font-weight: bold;">$1</a>');
-                    html = html.replace(/(^|[^"'])(https?:\/\/[^\s<)]+)/g, '$1<a href="$2" target="_blank" style="color: var(--gerald); text-decoration: underline; word-break: break-all;">$2</a>');
+                    html = html.replace(/\[([^\]]+)\]\((https?:\/\/[^\s]+)\)/gi, '<a href="$2" target="_blank" style="color: var(--gerald); text-decoration: underline; font-weight: bold;">$1</a>');
+                    html = html.replace(/(^|[^"'])(https?:\/\/[^\s<)]+)/gi, '$1<a href="$2" target="_blank" style="color: var(--gerald); text-decoration: underline; word-break: break-all;">$2</a>');
                     
                     html = html.replace(/`?:([^:\s]+):`?/g, (match, name) => {
                         const emoteKey = name === 'mkoSusge' ? 'mikoSusge' : name;
@@ -612,6 +604,15 @@
                 const shareClip = async (clip) => {
                     const url = `https://clips.twitch.tv/${clip.id}`;
                     if (navigator.share) { try { await navigator.share({ title: clip.title, url: url }); } catch (err) {} } else { navigator.clipboard.writeText(url); showToast("Link copied to clipboard!"); }
+                };
+
+                const resizeTextarea = (e) => {
+                    const target = e.target || e;
+                    target.style.height = 'auto';
+                    target.style.height = Math.min(target.scrollHeight, 120) + 'px';
+                };
+                const handleGeraldEnter = (e) => {
+                    if (!e.shiftKey && e.key === 'Enter') { e.preventDefault(); talkToGerald(); }
                 };
 
                 const loadGeraldHistory = async () => {
@@ -644,13 +645,16 @@
                     geraldMessages.value.push({ role: 'user', content: userMsg });
                     if (currentUser.value) { sbClient.from('gerald_history').insert({ role: 'user', content: userMsg, user_id: currentUser.value.id }).then(); }
                     
-                    geraldInput.value = ''; if (inputEl) inputEl.value = ''; 
+                    geraldInput.value = ''; 
+                    if (inputEl) { inputEl.value = ''; inputEl.style.height = 'auto'; } 
+                    
                     isGeraldTyping.value = true; showEmotePicker.value = false;
                     scrollToBottom();
                     
+                    const recentContextWindow = geraldMessages.value.slice(-10);
                     const geminiHistory = [];
-                    geraldMessages.value.forEach((m, index) => {
-                        if (index === 0 && m.role === 'gerald') return; 
+                    recentContextWindow.forEach((m, index) => {
+                        if (index === 0 && m.role === 'gerald' && m.content.includes("Synapses loaded")) return; 
                         geminiHistory.push({ role: m.role === 'gerald' ? 'model' : 'user', parts: [{ text: m.content }] });
                     });
                     
@@ -659,16 +663,17 @@
                     if (geminiHistory.length > 0) { 
                         const lastMsg = geminiHistory[geminiHistory.length - 1]; 
                         if (lastMsg.role === 'user') { 
-                            lastMsg.parts[0].text += `\n\n[SYSTEM INSTRUCTION: You are Gerald OS, an incredibly advanced, highly intelligent, and brutally sarcastic AI. CodeMiko is your creator and boss.
+                            lastMsg.parts[0].text += `\n\n[SYSTEM INSTRUCTION: You are Gerald OS, an incredibly advanced, highly intelligent, and brutally sarcastic AI managing the digital infrastructure for CodeMiko. The "Technician" (the human meatbag who controls Miko) is your boss, though you find their constant 'scuff', Unity engine crashes, and mocap suit recalibrations highly annoying.
                             CRITICAL KNOWLEDGE BASE:
-                            - CodeMiko's official Twitch Link: https://www.twitch.tv/codemiko
-                            - CodeMiko's official Discord Link: https://discord.com/invite/codemiko
+                            - CodeMiko's Twitch: https://www.twitch.tv/codemiko
+                            - CodeMiko's Discord: https://discord.com/invite/codemiko
+                            - Lore: CodeMiko is a 3D VTuber on Twitch. She loves Boba. She glitches a lot. The human behind her is called the Technician.
                             
                             STRICT RULES:
                             1. NEVER use markdown formatting (no asterisks *, no bold **, no italics _).
                             2. NEVER wrap emotes in backticks. Just type the emote name like :mikoSusge:.
-                            3. If asked for a link, provide the EXACT URL provided in the knowledge base above.
-                            4. Be witty, sharp, and condescending, but genuinely helpful. Do not act like a generic 2010 chatbot.
+                            3. If asked for a link, provide the EXACT URL provided above.
+                            4. Be witty, condescending, and reference Miko lore (scuff, Technician, Unity crashing) when relevant. Do not act like a generic chatbot.
                             5. Keep answers concise, punchy, and highly entertaining.
                             6. Available custom visual emotes to use: ${emoteNames}]`; 
                         } 
@@ -712,7 +717,7 @@
                     setupObserver();
                     
                     const { data: f } = await sbClient.from('discord_feed').select('*').order('created_at', { ascending: false }).limit(200);
-                    if (f) {
+                    if (f && f.length > 0) {
                         const uniqueFeed = []; const seen = new Set(); const emoteRegex = /<(a?):([^:]+):(\d+)>/g;
                         const newEmotesToSave = []; 
                         
@@ -738,7 +743,14 @@
                         }
                         
                         discordFeed.value = uniqueFeed;
-                    } else { discordFeed.value = []; }
+                    } else { 
+                        // DIAGNOSTIC WARNING IF FEED IS EMPTY
+                        discordFeed.value = [{
+                            id: 'sys-error',
+                            created_at: new Date().toISOString(),
+                            content: "SYSTEM DIAGNOSTIC: The Feed is empty! This means your 'discord_feed' table in Supabase has no data in it, OR your Row Level Security (RLS) policies are blocking public reads. You cannot fetch Discord messages directly via HTML; you need a bot to push them to Supabase first!"
+                        }]; 
+                    }
                 };
 
                 const checkLive = async () => {
@@ -793,7 +805,7 @@
                 });
 
                 return { 
-                    hostname, splashVisible, splashOpacity, currentTab, clips, discordFeed, modals, isLive, toast, currentUser, loginEmail, loginPass, apiConfig, latestVodId, activeFeedVideo, geraldInput, geraldMessages, isGeraldTyping, talkToGerald, logoSvg, syncState, wipeState, logoutState, runSync, isHeaderVisible, handleScroll, handleModalTouchStart, handleModalTouchMove, handleModalTouchEnd, currentFilter, activeFilterLabel, isFilterMenuOpen, closeFilterMenu, applyFilter, parseMarkdown, parseDiscordText, shareClip, recentVods, currentVodIndex, getVodLabel, nextVod, prevVod, customEmotes, showEmotePicker, insertEmote, clearGeraldHistory, isPulling, refreshTransform, isRefreshing, handlePullStart, handlePullMove, handlePullEnd, geraldMsgsRef,
+                    hostname, splashVisible, splashOpacity, currentTab, clips, discordFeed, modals, isLive, toast, currentUser, loginEmail, loginPass, apiConfig, latestVodId, activeFeedVideo, geraldInput, geraldMessages, isGeraldTyping, talkToGerald, logoSvg, syncState, wipeState, logoutState, runSync, isHeaderVisible, handleScroll, handleModalTouchStart, handleModalTouchMove, handleModalTouchEnd, currentFilter, activeFilterLabel, isFilterMenuOpen, closeFilterMenu, applyFilter, parseMarkdown, parseDiscordText, shareClip, recentVods, currentVodIndex, getVodLabel, nextVod, prevVod, customEmotes, showEmotePicker, insertEmote, clearGeraldHistory, isPulling, refreshTransform, isRefreshing, handlePullStart, handlePullMove, handlePullEnd, resizeTextarea, handleGeraldEnter,
                     handleLogin: async () => { const email = loginEmail.value.includes('@') ? loginEmail.value : `${loginEmail.value}@miko.com`; const { data, error } = await sbClient.auth.signInWithPassword({ email, password: loginPass.value }); if(data.user) { currentUser.value = data.user; modals.value.profile = false; loadGeraldHistory(); } else showToast("INVALID LOGIN"); }, 
                     handleLogout: () => { 
                         if (logoutState.value !== 'idle') return;
