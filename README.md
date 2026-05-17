@@ -1,13 +1,10 @@
-# MikoTok 
-https://meowoccino.github.io/MikoTok/
-
 # 📱 MikoTok
 
 The ultimate, all-in-one mobile Progressive Web App (PWA) built exclusively for the CodeMiko community. 
 
 MikoTok brings the Twitch stream, YouTube uploads, Reddit memes, and the scuff directly to your pocket. It features a fully integrated, lore-accurate AI chatbot named **Gerald OS**, who worships Miko, hates the Technician, and allows you to trigger virtual meltdowns.
 
-🔗 **[Click Here to Launch the App]**(https://yourusername.github.io/MikoTok/) *(Replace with your actual GitHub Pages link)*
+🔗 **[Launch MikoTok](https://meowoccino.github.io/MikoTok/)**
 
 ---
 
