@@ -8,17 +8,13 @@ MikoTok brings the Twitch stream, YouTube uploads, Reddit memes, and the scuff d
 
 ---
 
-## 💜 Support The Creator (Official Links)
+## 💜 Support The Creator
 Make sure to support CodeMiko across all her official channels!
 * 📺 **Twitch:** [twitch.tv/codemiko](https://www.twitch.tv/codemiko)
 * 🎥 **YouTube:** [youtube.com/@CodeMiko](https://www.youtube.com/@CodeMiko)
 * 💬 **Discord:** [discord.gg/codemiko](https://discord.com/invite/codemiko)
 * 🐦 **X (Twitter):** [@codemikotv](https://twitter.com/codemikotv)
 * 🤖 **Reddit:** [r/CodeMiko](https://www.reddit.com/r/CodeMiko/)
-
----
-
-## ✨ Features
 
 ---
 
