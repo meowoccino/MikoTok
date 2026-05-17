@@ -8,6 +8,20 @@ MikoTok brings the Twitch stream, YouTube uploads, Reddit memes, and the scuff d
 
 ---
 
+## 💜 Support The Creator (Official Links)
+Make sure to support CodeMiko across all her official channels!
+* 📺 **Twitch:** [twitch.tv/codemiko](https://www.twitch.tv/codemiko)
+* 🎥 **YouTube:** [youtube.com/@CodeMiko](https://www.youtube.com/@CodeMiko)
+* 💬 **Discord:** [discord.gg/codemiko](https://discord.com/invite/codemiko)
+* 🐦 **X (Twitter):** [@codemikotv](https://twitter.com/codemikotv)
+* 🤖 **Reddit:** [r/CodeMiko](https://www.reddit.com/r/CodeMiko/)
+
+---
+
+## ✨ Features
+
+---
+
 ## ✨ Features
 
 * **🔴 Auto-Live Twitch Integration:** Automatically detects when CodeMiko goes live and snaps the player to the live broadcast. Swipe through the latest VODs when offline.
