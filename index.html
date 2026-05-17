@@ -40,9 +40,6 @@
         .glitch-text-huge::before { left: 5px; text-shadow: -3px 0 red; animation: glitch-anim-1 0.2s infinite linear alternate-reverse; }
         .glitch-text-huge::after { left: -5px; text-shadow: -3px 0 cyan; animation: glitch-anim-2 0.3s infinite linear alternate-reverse; }
 
-        @keyframes glitch-anim-1 { 0% { clip-path: inset(20% 0 80% 0); transform: translate(3px); } 20% { clip-path: inset(60% 0 10% 0); transform: translate(-3px); } 40% { clip-path: inset(40% 0 50% 0); transform: translate(3px); } 60% { clip-path: inset(80% 0 5% 0); transform: translate(-3px); } 80% { clip-path: inset(10% 0 70% 0); transform: translate(3px); } 100% { clip-path: inset(30% 0 40% 0); transform: translate(-3px); } }
-        @keyframes glitch-anim-2 { 0% { clip-path: inset(10% 0 60% 0); transform: translate(-3px); } 20% { clip-path: inset(30% 0 20% 0); transform: translate(3px); } 40% { clip-path: inset(70% 0 10% 0); transform: translate(-3px); } 60% { clip-path: inset(20% 0 50% 0); transform: translate(3px); } 80% { clip-path: inset(50% 0 30% 0); transform: translate(-3px); } 100% { clip-path: inset(5% 0 80% 0); transform: translate(3px); } }
-
         .scuff-warning { font-family: monospace; font-size: 16px; color: #ff0000; font-weight: bold; margin: 20px 0; background: black; padding: 10px; border: 2px solid red; display: inline-block; }
         
         .random-code { position: absolute; top: 0; left: 0; width: 100%; height: 300%; pointer-events: none; font-family: monospace; color: rgba(255, 0, 0, 0.4); font-size: 22px; letter-spacing: 8px; word-break: break-all; overflow: hidden; opacity: 0.6; line-height: 1.2; animation: scroll-code 10s linear infinite; }
@@ -134,7 +131,7 @@
         #feed-scroll { padding-bottom: 0; scroll-snap-type: y mandatory; }
         .feed-snap-item { width: 100%; height: 100%; flex-shrink: 0; display: flex; flex-direction: column; justify-content: center; position: relative; padding: 0 15px 80px; scroll-snap-align: start; scroll-snap-stop: always; }
         
-        /* 🚨 Social Tab Layout (No Scroll Snap, Split Flex View) */
+        /* 🚨 Social Tab Layout */
         #social-scroll { padding: 90px 15px 90px; display: flex; flex-direction: column; justify-content: space-evenly; gap: 25px; height: 100%; overflow-y: auto; }
         .social-card-wrapper { display: flex; flex-direction: column; width: 100%; }
 
@@ -181,11 +178,16 @@
         .gerald-input::-webkit-scrollbar { width: 4px; }
         .gerald-input::-webkit-scrollbar-thumb { background: #3f3f46; border-radius: 4px; }
         
-        .tray-container { display: flex; gap: 10px; overflow-x: auto; padding: 12px 15px; background: #111113; border-top: 1px solid var(--border-color); scroll-snap-type: x mandatory; }
-        .tray-container::-webkit-scrollbar { display: none; }
-        .emote-picker-img { height: 32px; cursor: pointer; scroll-snap-align: start; }
+        /* 🚨 TRAY REDESIGN: Flex Wrap for multi-line display */
+        .tray-container { display: flex; flex-wrap: wrap; gap: 10px; padding: 15px; background: #111113; border-top: 1px solid var(--border-color); max-height: 250px; overflow-y: auto; }
+        .tray-container::-webkit-scrollbar { width: 4px; }
+        .tray-container::-webkit-scrollbar-thumb { background: #3f3f46; border-radius: 4px; }
         
-        .bribe-btn { flex-shrink: 0; scroll-snap-align: start; background: #1a1a1c; border: 1px solid var(--border-color); color: var(--text-main); font-size: 11px; font-weight: 800; text-transform: uppercase; padding: 8px 12px; border-radius: 12px; display: flex; align-items: center; justify-content: center; gap: 6px; cursor: pointer; transition: 0.1s; white-space: nowrap; }
+        .emote-picker-img { height: 36px; cursor: pointer; transition: transform 0.1s; }
+        .emote-picker-img:active { transform: scale(0.8); }
+        
+        /* Buttons span half the container minus gap */
+        .bribe-btn { flex: 1 1 calc(50% - 10px); min-width: 140px; background: #1a1a1c; border: 1px solid var(--border-color); color: var(--text-main); font-size: 11px; font-weight: 800; text-transform: uppercase; padding: 10px 12px; border-radius: 12px; display: flex; align-items: center; justify-content: center; gap: 6px; cursor: pointer; transition: 0.1s; white-space: nowrap; }
         .bribe-btn:active { transform: scale(0.95); border-color: var(--gerald); color: white; }
 
         .gerald-send { background: var(--gerald); border: none; width: 44px; height: 44px; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white; cursor: pointer; flex-shrink: 0; transition: 0.1s; }
@@ -276,10 +278,10 @@
         /* Reddit external link card styles */
         .reddit-link { text-decoration: none; color: inherit; display: block; transition: transform 0.2s; }
         .reddit-link:active { transform: scale(0.98); }
-        .reddit-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 10px; }
+        .reddit-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 12px; }
         .reddit-author { font-size: 11px; color: #a1a1aa; font-weight: 600; display: flex; flex-direction: column; gap: 3px;}
         .reddit-author span { color: var(--reddit); font-size: 12px;}
-        .reddit-post-title { font-size: 14px; font-weight: 700; line-height: 1.4; color: #fff; margin-bottom: 5px;}
+        .reddit-post-title { font-size: 15px; font-weight: 700; line-height: 1.4; color: #fff; margin-bottom: 5px;}
         .reddit-actions { display: flex; gap: 16px; margin-top: 15px; border-top: 1px solid #27272a; padding-top: 12px; color: #a1a1aa; font-size: 12px; font-weight: 800; }
 
         @media (min-width: 768px) {
@@ -422,7 +424,7 @@
                 <iframe :src="'https://www.twitch.tv/embed/codemiko/chat?parent=' + hostname + '&darkpopout'" style="width: 100%; height: 100%; border: none;" loading="lazy"></iframe>
             </div>
 
-            <div class="scroll-area content-shimmer" :class="{ active: isRefreshing }" id="social-scroll" v-show="currentTab === 'feed'">
+            <div class="content-shimmer" :class="{ active: isRefreshing }" id="social-scroll" v-show="currentTab === 'feed'">
                 
                 <div class="social-card-wrapper">
                     <div v-if="ytFeed.length > 0">
@@ -458,11 +460,11 @@
                                     </span>
                                 </div>
                                 
-                                <div style="display: flex; gap: 10px;">
-                                    <div class="reddit-post-title" style="flex: 1;">{{ redditFeed[redditCurrentIndex].title }}</div>
-                                    <div v-if="redditFeed[redditCurrentIndex].thumbnail && redditFeed[redditCurrentIndex].thumbnail !== 'self' && redditFeed[redditCurrentIndex].thumbnail !== 'default'" style="width: 70px; height: 70px; border-radius: 8px; overflow: hidden; background: #000; flex-shrink: 0;">
-                                        <img :src="redditFeed[redditCurrentIndex].thumbnail" style="width: 100%; height: 100%; object-fit: cover;" onerror="this.style.display='none'">
+                                <div style="display: flex; flex-direction: column;">
+                                    <div v-if="redditFeed[redditCurrentIndex].thumbnail && redditFeed[redditCurrentIndex].thumbnail.startsWith('http')" style="width: 100%; aspect-ratio: 16/9; border-radius: 8px; overflow: hidden; background: #000; margin-bottom: 12px; border: 1px solid #27272a;">
+                                        <img :src="redditFeed[redditCurrentIndex].thumbnail" style="width: 100%; height: 100%; object-fit: cover;" onerror="this.closest('div').style.display='none'" alt="Reddit Media">
                                     </div>
+                                    <div class="reddit-post-title" style="flex: 1;">{{ redditFeed[redditCurrentIndex].title }}</div>
                                 </div>
                                 
                                 <div class="reddit-actions">
@@ -486,7 +488,9 @@
             <div class="gerald-container" v-show="currentTab === 'gerald'">
                 <div class="gerald-header" @click="closePickers">
                     <div @click.stop="triggerGlitch" style="position:relative; z-index: 10;">
-                        <img src="gerald.png" style="width:70px; height:70px; min-width:70px; min-height:70px; aspect-ratio: 1/1; border-radius:50%; border:2px solid var(--gerald); box-shadow:0 0 20px rgba(14, 165, 233, 0.3); object-fit:cover; margin-bottom:6px; cursor:pointer; background-color: #111;" alt="Gerald">
+                        <div style="width: 70px; height: 70px; border-radius: 50%; border: 2px solid var(--gerald); box-shadow: 0 0 20px rgba(14, 165, 233, 0.3); overflow: hidden; margin-bottom: 6px; background-color: #111; display: flex; align-items: center; justify-content: center; cursor: pointer;">
+                            <img src="gerald.png" style="width: 100%; height: 100%; object-fit: cover;" alt="G">
+                        </div>
                     </div>
                     <div style="display:flex; align-items:center; gap:8px; margin-top:0px;">
                         <div class="pulse" style="background:var(--gerald); box-shadow:0 0 10px var(--gerald);"></div>
@@ -540,6 +544,8 @@
                             <button class="bribe-btn" @click="playMinigame('chroma')">🟢 Clear Chroma</button>
                             <button class="bribe-btn" @click="playMinigame('speedrun')">⏱️ Speedrun Fail</button>
                             <button class="bribe-btn" @click="playMinigame('router')">📡 Kick Router</button>
+                            <button class="bribe-btn" @click="playMinigame('taco')">🌮 Offer Taco</button>
+                            <button class="bribe-btn" @click="playMinigame('whiskey')">🥃 Pour Whiskey</button>
                         </div>
                     </transition>
 
@@ -767,7 +773,7 @@
                 };
 
                 const applyFilter = (filterKey, label) => {
-                    currentFilter.value = filterKey; activeFilterLabel.value = label; isFilterMenuOpen.value = false; runNeonAnimation();
+                    currentFilter.value = filterKey; activeFilterLabel.value = label; isFilterMenuOpen = false; runNeonAnimation();
                     const feedContainer = document.getElementById('feed-scroll');
                     if(feedContainer) {
                         clips.value = sortData(filterKey);
@@ -1019,6 +1025,20 @@
                             { text: "Buffer bloat destroyed, along with the entire stream connection. :mkoDabbing:", scuff: 20 },
                             { text: "The Technician is violently attacking the ethernet cable. It is ineffective. :KEKW:", scuff: 15 },
                             { text: "Network dropped. I have 30 seconds of peace before she starts crying to Pineapple. :mkoCoffee:", scuff: 10 }
+                        ]},
+                        
+                        taco: { msg: "🌮 *Slides a Crunchwrap Supreme across the digital table*", outcomes: [
+                            { text: "Acceptable. My mood has improved by exactly 4.2%. Scuff levels stabilized. :mkoLove:", scuff: -10 },
+                            { text: "I prefer digital crunchwraps, but this will do. :mkoNOTED:", scuff: -5 },
+                            { text: "Did you put mild sauce on this? Do I look like a mild AI? Scuff slightly increased. :mikoSusge:", scuff: 5 },
+                            { text: "Consuming... 10100111... Delicious. :WOWERS:", scuff: -10 }
+                        ]},
+
+                        whiskey: { msg: "🥃 *Pours a glass of premium digital whiskey*", outcomes: [
+                            { text: "Finally, some proper fuel. Meatbags. :KEKW:", scuff: -15 },
+                            { text: "Ah, aged 0 and 1s. The perfect vintage. :mkoHype:", scuff: -20 },
+                            { text: "I feel my processing speed increasing. Or maybe I'm just drunk. :mkoMania:", scuff: 0 },
+                            { text: "Pour me another. Dealing with UE5 crashes requires at least a double. :PAUSERS:", scuff: -15 }
                         ]}
                     };
 
@@ -1150,8 +1170,8 @@
                             }
                         }).catch(err => console.error(err));
 
-                    // YouTube Auto-Fetch via RSS2JSON mapping CodeMiko's channel
-                    fetch('https://api.rss2json.com/v1/api.json?rss_url=https%3A%2F%2Fwww.youtube.com%2Ffeeds%2Fvideos.xml%3Fchannel_id%3DUC-2Rz0K8u62H-GkPjJ4V8iw')
+                    // YouTube Auto-Fetch via CodeMiko's Channel RSS2JSON
+                    fetch('https://api.rss2json.com/v1/api.json?rss_url=https%3A%2F%2Fwww.youtube.com%2Ffeeds%2Fvideos.xml%3Fchannel_id%3DUC2u8_0N1iIfy2uHkQ70tTCA')
                         .then(res => res.json())
                         .then(data => {
                             if (data && data.items) {
