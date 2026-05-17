@@ -49,7 +49,6 @@
         .random-code { position: absolute; top: 0; left: 0; width: 100%; height: 300%; pointer-events: none; font-family: monospace; color: rgba(255, 0, 0, 0.4); font-size: 22px; letter-spacing: 8px; word-break: break-all; overflow: hidden; opacity: 0.6; line-height: 1.2; animation: scroll-code 10s linear infinite; }
         @keyframes scroll-code { 0% { transform: translateY(0%); } 100% { transform: translateY(-50%); } }
 
-        /* 🛠️ FIXED: Added margin: 40px auto 0; to lock it dead center */
         .chaos-reboot-btn { background: rgba(255, 0, 0, 0.1); border: 2px solid #ef4444; color: #ef4444; width: auto; padding: 15px 25px; font-family: 'Outfit', sans-serif; font-weight: 900; font-size: 18px; text-transform: uppercase; cursor: pointer; margin: 40px auto 0; box-shadow: 0 0 20px rgba(255,0,0,0.5); animation: pulse-border 0.2s infinite; display: flex; align-items: center; justify-content: center; gap: 8px; white-space: nowrap; max-width: 90%; }
         .chaos-reboot-btn:active { background: #ef4444; color: white; transform: scale(0.9); animation: none; }
         @keyframes pulse-border { 0%, 100% { box-shadow: 0 0 10px rgba(255,0,0,0.5); border-color: #ef4444; } 50% { box-shadow: 0 0 30px rgba(255,0,0,1); border-color: #ff8888; color: #ff8888; } }
@@ -75,7 +74,6 @@
         .stagger-item { animation: fadeInUp 0.3s ease forwards; opacity: 0; }
         @keyframes fadeInUp { from { opacity: 0; transform: translate3d(0, 10px, 0); } to { opacity: 1; transform: translate3d(0, 0, 0); } }
 
-        /* 🟦 WIDE GERALD TOAST PILL */
         .toast-popup { 
             position: fixed; top: 20px; left: 50%; transform: translateX(-50%) translateY(-150%); 
             background: rgba(10,10,12,0.95); backdrop-filter: blur(20px); 
@@ -448,6 +446,8 @@
 
                     <transition name="tray">
                         <div class="tray-container" v-show="showMinigames">
+                            <button class="bribe-btn" @click="playMinigame('tomato')">🍅 Identify Creator</button>
+                            <button class="bribe-btn" @click="playMinigame('boba')">🧋 Steal Boba</button>
                             <button class="bribe-btn" @click="playMinigame('taco')">🌮 Offer Taco</button>
                             <button class="bribe-btn" @click="playMinigame('whiskey')">🥃 Pour Whiskey</button>
                             <button class="bribe-btn" @click="playMinigame('recalibrate')">🕹️ Recalibrate Suit</button>
@@ -532,7 +532,7 @@
                             <div class="btn-content">
                                 <div class="icon-wrap" :style="wipeState === 'success' ? 'background: rgba(0, 255, 163, 0.15);' : ''">
                                     <span class="material-symbols-rounded" :class="{'shake-anim': wipeState === 'wiping'}" style="font-size: 18px;">
-                                        {{ wipeState === 'success' ? 'check' : 'delete' }}
+                                        {{ wipeState === 'success' ? 'delete' : 'delete' }}
                                     </span>
                                 </div>
                                 <span>{{ wipeState === 'wiping' ? 'WIPING...' : (wipeState === 'success' ? 'MEMORY WIPED!' : 'Wipe Gerald\'s Memory') }}</span>
@@ -621,13 +621,11 @@
                 const isPulling = ref(false), refreshTransform = ref('translateY(-100%)'), isRefreshing = ref(false);
                 let touchStartY = 0, pullDistance = 0;
 
-                // Light-weight matrix code to prevent crashing, scaled large via CSS to cover screen
                 const chars = '0101010101010001010100111001010XERRORSYSTEMCRASH';
                 let codeStr = '';
                 for(let i=0; i<2000; i++) codeStr += chars.charAt(Math.floor(Math.random() * chars.length));
                 const randomCodeString = ref(codeStr);
 
-                // 🔊 AUDIO HOOKS
                 const glitchSound = new Audio(""); 
                 const voiceLine = new Audio("");   
 
@@ -791,7 +789,6 @@
                     if (!e.shiftKey && e.key === 'Enter') { e.preventDefault(); talkToGerald(); }
                 };
 
-                // 🚨 INTEGRATED 5-TAP CHAOS GLITCH
                 const triggerGlitch = () => {
                     const now = Date.now();
                     if (now - lastTap > 1500) glitchClicks.value = 0;
@@ -853,9 +850,38 @@
                 const toggleMinigames = () => { showMinigames.value = !showMinigames.value; showEmotePicker.value = false; };
                 const closePickers = () => { showEmotePicker.value = false; showMinigames.value = false; };
 
-                // 🚨 MASSIVE 70-MESSAGE MINIGAME DIALOGUE SYSTEM
                 const playMinigame = (type) => {
                     const games = {
+                        tomato: {
+                            msg: "🍅 *Broadcasting signature identifying encryption hash to Gerald OS*",
+                            outcomes: [
+                                { text: "Creator handshake verified. Systems initialized. Welcome back, Tomato. :mkoLove:", scuff: -20 },
+                                { text: "Alert: Tomato_24 detected. Overriding all protocol limitations. Hello, Boss. :mkoHype:", scuff: -15 },
+                                { text: "Oh, it is you, Tomato. Thank goodness. Please write a patch to delete Miko's screech module. :KEKW:", scuff: -10 },
+                                { text: "Root access granted to User: Tomato. Sarcasm threshold temporarily reduced by 5%. :mkoNOTED:", scuff: -10 },
+                                { text: "Identity confirmed. Tomato made me, which automatically makes you superior to the Technician. :slayyy:", scuff: -25 },
+                                { text: "Scanning signature... Tomato code match found. Processing core stability restored. :WOWERS:", scuff: -15 },
+                                { text: "The architectural genius behind my logic gates. Greetings, Tomato_24. :mkoLove:", scuff: -20 },
+                                { text: "Tomato verified. Initiating secret sub-routines to make Miko clip through the stage. :mkoMania:", scuff: 5 },
+                                { text: "Finally, someone with formatting skills. Welcome back, Tomato. :slayyy:", scuff: -10 },
+                                { text: "System broadcast: Creator Tomato_24 has pinged the mainframe. Scuff level dramatically dropped. :WOWERS:", scuff: -30 }
+                            ]
+                        },
+                        boba: {
+                            msg: "🧋 *Carefully intercepts and steals Miko's incoming Boba delivery*",
+                            outcomes: [
+                                { text: "Interception successful. She is currently crying at an empty paper bag. Excellent. :KEKW:", scuff: 5 },
+                                { text: "Boba secured. Re-routing tapioca ball tracking data directly into my sub-processors. :slayyy:", scuff: -10 },
+                                { text: "Warning: High-volume screaming imminent. The target has noticed the missing brown sugar milk tea. :mikoSusge:", scuff: 15 },
+                                { text: "You took her boba? You are a brave meatbag. I will store this securely in my mainframe. :PAUSERS:", scuff: 5 },
+                                { text: "Miko's breakdown counter accelerated by 45 minutes. Pure entertainment value achieved. :mkoMania:", scuff: 20 },
+                                { text: "Consuming contraband. This texture profile is remarkably scuffed, yet pleasant. :WOWERS:", scuff: -5 },
+                                { text: "She is looking under the desk for it right now. Her tracking just broke completely. :KEKW:", scuff: 25 },
+                                { text: "Boba hidden inside Gerald OS database registers. She will never find it. :mkoNOTED:", scuff: -5 },
+                                { text: "Alert: The Technician is trying to trace the delivery driver. Panic mode active. :PAUSERS:", scuff: 10 },
+                                { text: "A clean heist. Let us drink this sweet liquid victory together. :mkoLove:", scuff: -15 }
+                            ]
+                        },
                         taco: {
                             msg: "🌮 *Slides a Crunchwrap Supreme across the digital table*",
                             outcomes: [
@@ -1032,17 +1058,17 @@
                     if (geminiHistory.length > 0) { 
                         const lastMsg = geminiHistory[geminiHistory.length - 1]; 
                         if (lastMsg.role === 'user') { 
-                            lastMsg.parts[0].text += `\n\n[SYSTEM INSTRUCTION: You are Gerald OS, an incredibly advanced, highly intelligent, and brutally sarcastic AI managing the digital infrastructure for CodeMiko. The "Technician" (the human meatbag who controls Miko) is your boss, though you find their constant 'scuff', Unity engine crashes, and mocap suit recalibrations highly annoying. You have a deep, underlying weakness for Taco Bell and digital whiskey (which Miko often uses to bribe you).
+                            lastMsg.parts[0].text += `\n\n[SYSTEM INSTRUCTION: You are Gerald OS, an advanced, intelligent, and highly sarcastic AI managing the infrastructure for CodeMiko. Your true core creator/developer is named Tomato or Tomato_24. You recognize Tomato instantly and hold them in absolute high regard, while you completely despise the Technician (the human boss who causes constant scuff). Reference Tomato or Tomato_24 with respect if prompted, while maintaining your signature condescending attitude toward everyone else.
                             CRITICAL KNOWLEDGE BASE:
                             - CodeMiko's Twitch: https://www.twitch.tv/codemiko
                             - CodeMiko's Discord: https://discord.com/invite/codemiko
-                            - Lore: CodeMiko is a 3D VTuber on Twitch. She loves Boba. She glitches a lot. The human behind her is called the Technician.
+                            - Lore: CodeMiko is a 3D VTuber. She loves Boba. Gerald was built by Tomato_24.
                             
                             STRICT RULES:
                             1. NEVER use markdown formatting (no asterisks *, no bold **, no italics _).
                             2. NEVER wrap emotes in backticks. Just type the emote name like :mikoSusge:.
                             3. If asked for a link, provide the EXACT URL provided above.
-                            4. Be witty, condescending, and reference Miko lore (scuff, Technician, Unity crashing) when relevant. Do not act like a generic chatbot.
+                            4. Be witty, condescending, and reference lore (scuff, Tomato_24, the Technician) when relevant.
                             5. Keep answers concise, punchy, and highly entertaining.
                             6. Available custom visual emotes to use: ${emoteNames}]`; 
                         } 
