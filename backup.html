@@ -20,7 +20,7 @@
             --bg-color: #050505; --card-bg: #111113; --primary: #9146FF; --primary-light: #a970ff; 
             --text-main: #ffffff; --text-muted: #a1a1aa; --border-color: #27272a; 
             --danger: #ef4444; --offline-gray: #3f3f46; --success: #00ffa3; 
-            --gerald: #0ea5e9; --discord: #5865F2;
+            --gerald: #0ea5e9; --discord: #5865F2; --youtube: #ff0000; --reddit: #ff4500;
             --nav-bg: rgba(15, 15, 18, 0.85); --modal-bg: #0a0a0c;
         }
 
@@ -39,9 +39,6 @@
         .glitch-text-huge::before, .glitch-text-huge::after { content: 'SYSTEM\A FAILURE'; white-space: pre-wrap; position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: transparent; }
         .glitch-text-huge::before { left: 5px; text-shadow: -3px 0 red; animation: glitch-anim-1 0.2s infinite linear alternate-reverse; }
         .glitch-text-huge::after { left: -5px; text-shadow: -3px 0 cyan; animation: glitch-anim-2 0.3s infinite linear alternate-reverse; }
-
-        @keyframes glitch-anim-1 { 0% { clip-path: inset(20% 0 80% 0); transform: translate(3px); } 20% { clip-path: inset(60% 0 10% 0); transform: translate(-3px); } 40% { clip-path: inset(40% 0 50% 0); transform: translate(3px); } 60% { clip-path: inset(80% 0 5% 0); transform: translate(-3px); } 80% { clip-path: inset(10% 0 70% 0); transform: translate(3px); } 100% { clip-path: inset(30% 0 40% 0); transform: translate(-3px); } }
-        @keyframes glitch-anim-2 { 0% { clip-path: inset(10% 0 60% 0); transform: translate(-3px); } 20% { clip-path: inset(30% 0 20% 0); transform: translate(3px); } 40% { clip-path: inset(70% 0 10% 0); transform: translate(-3px); } 60% { clip-path: inset(20% 0 50% 0); transform: translate(3px); } 80% { clip-path: inset(50% 0 30% 0); transform: translate(-3px); } 100% { clip-path: inset(5% 0 80% 0); transform: translate(3px); } }
 
         .scuff-warning { font-family: monospace; font-size: 16px; color: #ff0000; font-weight: bold; margin: 20px 0; background: black; padding: 10px; border: 2px solid red; display: inline-block; }
         
@@ -66,6 +63,12 @@
         .reboot-btn { background: #ef4444; border: none; color: white; width: 100%; padding: 18px; border-radius: 14px; font-weight: 800; font-size: 14px; text-transform: uppercase; letter-spacing: 1px; cursor: pointer; box-shadow: 0 8px 20px rgba(239, 68, 68, 0.4); transition: 0.2s; display: flex; align-items: center; justify-content: center; gap: 10px; }
         .reboot-btn:active { transform: scale(0.96); background: #dc2626; box-shadow: 0 4px 10px rgba(239, 68, 68, 0.4); }
 
+        /* MINIGAME VISUAL EFFECTS */
+        .lumen-overload { position: fixed; inset: 0; background: #ffffff; z-index: 100000; animation: flash-bang 3s forwards; pointer-events: none; opacity: 0; }
+        @keyframes flash-bang { 0% { opacity: 1; } 100% { opacity: 0; } }
+        .fake-ban-overlay { position: fixed; inset: 0; background: #050505; color: white; z-index: 100000; display: flex; flex-direction: column; align-items: center; justify-content: center; opacity: 0; pointer-events: none; transition: 0.2s; text-align: center; padding: 20px; }
+        .fake-ban-overlay.show { opacity: 1; pointer-events: auto; }
+
         #app-container { width: 100%; max-width: 540px; height: 100%; max-height: 100dvh; position: relative; background: radial-gradient(circle at 50% 30%, #2a1147 0%, #050505 80%); overflow: hidden; display: flex; flex-direction: column; box-shadow: 0 0 50px rgba(0,0,0,0.8); transition: 0.3s; }
         
         /* 🐆 Savannah Cat Zoomies CSS & UI Scuff */
@@ -75,21 +78,18 @@
         .cat-overlay.zooming { animation: cat-run 1.2s linear forwards; opacity: 1; }
         @keyframes cat-run { 0% { transform: translateX(0) scaleX(-1); } 100% { transform: translateX(120vw) scaleX(-1); } }
 
+        /* Glitch Theme Variable Swaps */
+        #app-container.glitch-theme { background: #000; }
+        #app-container.glitch-theme .card, #app-container.glitch-theme .gerald-input-wrapper { border-color: #00ff00; background: rgba(0,255,0,0.05); color: #00ff00; font-family: monospace; }
+        #app-container.glitch-theme .chat-bubble { border-color: #00ff00; background: #000; color: #00ff00; font-family: monospace; text-shadow: 0 0 5px #00ff00; }
+
         [v-cloak] { display: none !important; }
 
         .gradient-text { background: linear-gradient(135deg, #ffffff 30%, var(--primary) 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; font-family: 'Outfit', sans-serif; display: inline-block; font-weight: 900; }
         .stagger-item { animation: fadeInUp 0.3s ease forwards; opacity: 0; }
         @keyframes fadeInUp { from { opacity: 0; transform: translate3d(0, 10px, 0); } to { opacity: 1; transform: translate3d(0, 0, 0); } }
 
-        .toast-popup { 
-            position: fixed; top: 20px; left: 50%; transform: translateX(-50%) translateY(-150%); 
-            background: rgba(10,10,12,0.95); backdrop-filter: blur(20px); 
-            border: 1px solid var(--gerald); color: var(--text-main); 
-            font-weight: 500; font-size: 14px; padding: 18px 24px; border-radius: 20px; 
-            z-index: 10000; transition: 0.4s cubic-bezier(0.2, 0.8, 0.2, 1); opacity: 0; 
-            box-shadow: 0 10px 40px rgba(14, 165, 233, 0.3); 
-            text-align: center; width: 90%; max-width: 450px; line-height: 1.5; 
-        }
+        .toast-popup { position: fixed; top: 20px; left: 50%; transform: translateX(-50%) translateY(-150%); background: rgba(10,10,12,0.95); backdrop-filter: blur(20px); border: 1px solid var(--gerald); color: var(--text-main); font-weight: 500; font-size: 14px; padding: 18px 24px; border-radius: 20px; z-index: 10000; transition: 0.4s cubic-bezier(0.2, 0.8, 0.2, 1); opacity: 0; box-shadow: 0 10px 40px rgba(14, 165, 233, 0.3); text-align: center; width: 90%; max-width: 450px; line-height: 1.5; }
         .toast-popup.show { transform: translateX(-50%) translateY(0); opacity: 1; }
 
         #splash-screen { position: absolute; inset: 0; background: var(--bg-color); display: flex; flex-direction: column; align-items: center; justify-content: center; z-index: 9999; transition: opacity 0.3s ease-out; }
@@ -127,17 +127,20 @@
         .scroll-area { height: 100%; width: 100%; overflow-y: auto; scroll-behavior: smooth; padding-bottom: 80px; }
         .scroll-area::-webkit-scrollbar { display: none; }
         
-        .community-feed { padding: 110px 15px 100px; display: flex; flex-direction: column; gap: 15px; }
-        
+        /* 🚨 Home Clips Scroll Snap */
         #feed-scroll { padding-bottom: 0; scroll-snap-type: y mandatory; }
         .feed-snap-item { width: 100%; height: 100%; flex-shrink: 0; display: flex; flex-direction: column; justify-content: center; position: relative; padding: 0 15px 80px; scroll-snap-align: start; scroll-snap-stop: always; }
         
-        .carousel-controls { display: flex; justify-content: space-between; align-items: center; width: 100%; margin-top: 15px; z-index: 40; padding: 0 10px; }
-        .carousel-btn { background: #111113; border: 1px solid var(--border-color); color: white; width: 50px; height: 50px; border-radius: 50%; display: flex; align-items: center; justify-content: center; cursor: pointer; transition: 0.1s; outline: none; }
+        /* 🚨 Social Tab Layout */
+        #social-scroll { padding: 90px 15px 90px; display: flex; flex-direction: column; justify-content: space-evenly; gap: 25px; height: 100%; overflow-y: auto; }
+        .social-card-wrapper { display: flex; flex-direction: column; width: 100%; }
+
+        .carousel-controls { display: flex; justify-content: space-between; align-items: center; width: 100%; margin-top: 10px; z-index: 40; padding: 0; }
+        .carousel-btn { background: #111113; border: 1px solid var(--border-color); color: white; width: 40px; height: 40px; border-radius: 50%; display: flex; align-items: center; justify-content: center; cursor: pointer; transition: 0.1s; outline: none; }
         .carousel-btn:active:not(.hidden-arrow) { transform: scale(0.9); border-color: var(--primary); color: var(--primary); }
         .carousel-btn.hidden-arrow { opacity: 0; pointer-events: none; } 
 
-        .video-container { position: relative; width: 100%; aspect-ratio: 16/9; background: #000; border-radius: 12px; overflow: hidden; box-shadow: 0 10px 40px rgba(0,0,0,0.6); }
+        .video-container { position: relative; width: 100%; aspect-ratio: 16/9; background: #000; border-radius: 12px; overflow: hidden; box-shadow: 0 10px 30px rgba(0,0,0,0.6); }
         .video-container iframe { position: absolute; inset: 0; width: 100%; height: 100%; border: none; z-index: 2; }
         .video-container img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; z-index: 1; opacity: 0.5; }
 
@@ -175,11 +178,16 @@
         .gerald-input::-webkit-scrollbar { width: 4px; }
         .gerald-input::-webkit-scrollbar-thumb { background: #3f3f46; border-radius: 4px; }
         
-        .tray-container { display: flex; gap: 10px; overflow-x: auto; padding: 12px 15px; background: #111113; border-top: 1px solid var(--border-color); scroll-snap-type: x mandatory; }
-        .tray-container::-webkit-scrollbar { display: none; }
-        .emote-picker-img { height: 32px; cursor: pointer; scroll-snap-align: start; }
+        /* 🚨 TRAY REDESIGN: Flex Wrap for multi-line display */
+        .tray-container { display: flex; flex-wrap: wrap; gap: 10px; padding: 15px; background: #111113; border-top: 1px solid var(--border-color); max-height: 250px; overflow-y: auto; }
+        .tray-container::-webkit-scrollbar { width: 4px; }
+        .tray-container::-webkit-scrollbar-thumb { background: #3f3f46; border-radius: 4px; }
         
-        .bribe-btn { flex-shrink: 0; scroll-snap-align: start; background: #1a1a1c; border: 1px solid var(--border-color); color: var(--text-main); font-size: 11px; font-weight: 800; text-transform: uppercase; padding: 8px 12px; border-radius: 12px; display: flex; align-items: center; justify-content: center; gap: 6px; cursor: pointer; transition: 0.1s; white-space: nowrap; }
+        .emote-picker-img { height: 36px; cursor: pointer; transition: transform 0.1s; }
+        .emote-picker-img:active { transform: scale(0.8); }
+        
+        /* Buttons span half the container minus gap */
+        .bribe-btn { flex: 1 1 calc(50% - 10px); min-width: 140px; background: #1a1a1c; border: 1px solid var(--border-color); color: var(--text-main); font-size: 11px; font-weight: 800; text-transform: uppercase; padding: 10px 12px; border-radius: 12px; display: flex; align-items: center; justify-content: center; gap: 6px; cursor: pointer; transition: 0.1s; white-space: nowrap; }
         .bribe-btn:active { transform: scale(0.95); border-color: var(--gerald); color: white; }
 
         .gerald-send { background: var(--gerald); border: none; width: 44px; height: 44px; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white; cursor: pointer; flex-shrink: 0; transition: 0.1s; }
@@ -267,10 +275,14 @@
         .premium-badge.live .dot { background: var(--danger); color: var(--danger); animation: heartbeat 1.5s infinite; }
         .premium-badge.vod .dot { background: var(--primary); color: var(--primary); animation: heartbeat 1.5s infinite; }
 
-        @keyframes storyGlow { 0% { background-position: 0% 50%; } 50% { background-position: 100% 50%; } 100% { background-position: 0% 50%; } }
-        @keyframes pulse-glow { 0%, 100% { opacity: 1; } 50% { opacity: 0.4; } }
-        @keyframes heartbeat { 0%, 100% { transform: scale(1); opacity: 1; } 50% { transform: scale(1.3); opacity: 0.5; } }
-        @keyframes spin { 100% { transform: rotate(360deg); } }
+        /* Reddit external link card styles */
+        .reddit-link { text-decoration: none; color: inherit; display: block; transition: transform 0.2s; }
+        .reddit-link:active { transform: scale(0.98); }
+        .reddit-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 12px; }
+        .reddit-author { font-size: 11px; color: #a1a1aa; font-weight: 600; display: flex; flex-direction: column; gap: 3px;}
+        .reddit-author span { color: var(--reddit); font-size: 12px;}
+        .reddit-post-title { font-size: 15px; font-weight: 700; line-height: 1.4; color: #fff; margin-bottom: 5px;}
+        .reddit-actions { display: flex; gap: 16px; margin-top: 15px; border-top: 1px solid #27272a; padding-top: 12px; color: #a1a1aa; font-size: 12px; font-weight: 800; }
 
         @media (min-width: 768px) {
             body { padding: 2vh; }
@@ -280,16 +292,22 @@
             .nav-item { flex: initial; width: auto; padding: 0; }
             .nav-item .material-symbols-rounded { font-size: 28px; }
             .scroll-area { padding-bottom: 120px; }
-            .feed-snap-item, .community-feed { padding-bottom: 100px; } 
+            .feed-snap-item { padding-bottom: 100px; } 
             .gerald-input-area { padding-bottom: 110px; }
         }
     </style>
 </head>
 <body @click="closeFilterMenu">
-    <div id="app-container" :class="{ 'ui-scuffed': uiScuffed }" v-cloak>
+    <div id="app-container" :class="{'glitch-theme': isGlitchTheme, 'ui-scuffed': uiScuffed}" v-cloak>
         
-        <!-- 🐆 Savannah Cat Zoomies Overlay -->
         <div class="cat-overlay" :class="{ 'zooming': isCatZooming }">🐆</div>
+
+        <div class="lumen-overload" v-if="showLumen"></div>
+        <div class="fake-ban-overlay" :class="{'show': showFakeBan}">
+            <span class="material-symbols-rounded" style="font-size: 60px; color: var(--danger); margin-bottom: 15px;">gavel</span>
+            <h1 style="font-family: 'Outfit'; font-size: 28px; margin: 0 0 10px;">CHANNEL SUSPENDED</h1>
+            <p style="color: var(--text-muted); font-size: 14px;">This channel is temporarily unavailable due to a violation of Twitch's Community Guidelines or Terms of Service.</p>
+        </div>
 
         <div class="chaos-overlay" :class="{ show: isGlitching }">
             <div class="random-code" id="randomCode">{{ randomCodeString }}</div>
@@ -339,14 +357,13 @@
         <header class="app-header" :class="{ hidden: !isHeaderVisible }" v-if="currentTab === 'home' || currentTab === 'feed'">
             <div style="display:flex; align-items:center; gap:10px;">
                 <div style="width:28px;height:28px; cursor:pointer;" v-html="logoSvg('header')" @click="modals.profile = true"></div>
-                <!-- 🐆 Click to trigger Cat Zoomies -->
                 <span class="gradient-text" style="font-size:20px; font-weight:900; cursor:pointer;" @click="triggerCatZoomies" title="Summon Cat">MikoTok</span>
             </div>
 
             <div style="display:flex; align-items:center; gap: 15px;">
                 <a href="https://twitch.tv/codemiko" target="_blank" class="header-status-wrapper">
                     <div class="story-ring" :class="isLive ? 'live' : 'offline'">
-                        <img src="1000018850.png?v=2" class="story-avatar">
+                        <img src="1000018850.png?v=2" class="story-avatar" alt="Miko">
                         <div class="header-badge" :class="isLive ? 'live' : 'offline'">{{ isLive ? 'LIVE' : 'OFFLINE' }}</div>
                     </div>
                 </a>
@@ -354,6 +371,7 @@
         </header>
 
         <div class="view-port" @touchstart="handlePullStart" @touchmove="handlePullMove" @touchend="handlePullEnd">
+            
             <div class="scroll-area content-shimmer" :class="{ active: isRefreshing }" id="feed-scroll" v-show="currentTab === 'home'" @scroll="handleScroll">
                 <div class="feed-snap-item" data-id="featured" style="padding-top: 110px;">
                     <div class="header-controls" style="margin-bottom: 20px; min-height: 28px; display: flex; justify-content: flex-start;">
@@ -383,12 +401,12 @@
                         </div>
                     </div>
                     <div class="video-container">
-                        <img :src="clip.thumbnail_url ? optimizeTwitchImg(clip.thumbnail_url) : ''" loading="lazy">
+                        <img :src="clip.thumbnail_url ? optimizeTwitchImg(clip.thumbnail_url) : ''" loading="lazy" alt="Clip Thumbnail">
                         <iframe v-if="activeFeedVideo === clip.id" :src="'https://clips.twitch.tv/embed?clip=' + clip.id + '&parent=' + hostname + '&autoplay=true&muted=false'" allow="autoplay; fullscreen" allowfullscreen loading="lazy"></iframe>
                     </div>
                     <div class="miko-metadata">
                         <div class="author-info">
-                            <img src="1000018850.png?v=2" loading="lazy">
+                            <img src="1000018850.png?v=2" loading="lazy" alt="Miko">
                             <div class="author-text-block">
                                 <span class="author-name">{{ clip.title }}</span>
                                 <div class="clip-stats">{{ formatViews(clip.view_count) }} views • {{ formatDate(clip.created_at) }}</div>
@@ -406,38 +424,82 @@
                 <iframe :src="'https://www.twitch.tv/embed/codemiko/chat?parent=' + hostname + '&darkpopout'" style="width: 100%; height: 100%; border: none;" loading="lazy"></iframe>
             </div>
 
-            <div class="scroll-area community-feed content-shimmer" :class="{ active: isRefreshing }" id="discord-scroll" v-show="currentTab === 'feed'" @scroll="handleScroll">
-                <div v-for="(post, index) in discordFeed" :key="post.id || index" class="card stagger-item">
-                    <div style="display:flex;align-items:center;margin-bottom:12px;">
-                        <img src="1000018850.png?v=2" style="width:40px; height:40px; border-radius:50%; border:2px solid var(--primary); object-fit:cover;" loading="lazy">
-                        <div style="margin-left:12px;">
-                            <div style="font-weight:900; font-size:15px; display:flex; align-items:center; gap:4px;">CodeMiko <span class="material-symbols-rounded" style="font-size: 16px; color: var(--primary);">verified</span></div>
-                            <div style="font-size:11px; color:var(--text-muted);">{{ formatDateTime(post.created_at) }}</div>
+            <div class="content-shimmer" :class="{ active: isRefreshing }" id="social-scroll" v-show="currentTab === 'feed'">
+                
+                <div class="social-card-wrapper">
+                    <div v-if="ytFeed.length > 0">
+                        <div class="vod-animated-border" style="background: linear-gradient(90deg, #27272a, var(--youtube), #27272a);">
+                            <div class="video-container">
+                                <iframe :src="'https://www.youtube.com/embed/' + ytFeed[ytCurrentIndex].id + '?rel=0'" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen loading="lazy"></iframe>
+                            </div>
+                        </div>
+                        
+                        <div class="carousel-controls" style="margin-top: 15px;">
+                            <button class="carousel-btn" :class="{ 'hidden-arrow': ytCurrentIndex <= 0 }" @click.stop="prevYt"><span class="material-symbols-rounded">chevron_left</span></button>
+                            <button class="carousel-btn" :class="{ 'hidden-arrow': ytCurrentIndex >= ytFeed.length - 1 }" @click.stop="nextYt"><span class="material-symbols-rounded">chevron_right</span></button>
+                        </div>
+                        
+                        <div style="padding: 12px 5px 0; text-align: center;">
+                            <div style="font-size: 14px; font-weight: 700; line-height: 1.4; color: #fff; margin-bottom: 4px;">{{ ytFeed[ytCurrentIndex].title }}</div>
+                            <div style="font-size: 11px; color: #a1a1aa; font-weight: 600;">Uploaded • {{ ytFeed[ytCurrentIndex].date }}</div>
                         </div>
                     </div>
-                    <div style="font-size:14px; line-height:1.5; white-space:pre-wrap;" v-html="parseDiscordText(post.content)"></div>
+                    <div v-else style="display: flex; justify-content: center; padding: 40px; color: var(--text-muted); font-size: 12px; font-style: italic;">
+                        <span class="material-symbols-rounded spin-anim" style="margin-right: 8px;">sync</span> Fetching from YouTube...
+                    </div>
+                </div>
+
+                <div class="social-card-wrapper" style="margin-top: 10px;">
+                    <div v-if="redditFeed.length > 0">
+                        <a :href="'https://reddit.com' + redditFeed[redditCurrentIndex].permalink" target="_blank" class="reddit-link">
+                            <div class="card" style="box-shadow: 0 5px 20px rgba(0,0,0,0.4); padding: 15px;">
+                                <div class="reddit-header">
+                                    <div class="reddit-author">Posted • {{ redditFeed[redditCurrentIndex].date }}<br><span>u/{{ redditFeed[redditCurrentIndex].author }}</span></div>
+                                    <span v-if="redditFeed[redditCurrentIndex].link_flair_text" style="background: rgba(255, 69, 0, 0.15); border: 1px solid rgba(255, 69, 0, 0.3); color: var(--reddit); font-size: 9px; font-weight: 800; padding: 3px 6px; border-radius: 6px; text-transform: uppercase;">
+                                        {{ redditFeed[redditCurrentIndex].link_flair_text }}
+                                    </span>
+                                </div>
+                                
+                                <div style="display: flex; flex-direction: column;">
+                                    <div v-if="redditFeed[redditCurrentIndex].thumbnail && redditFeed[redditCurrentIndex].thumbnail.startsWith('http')" style="width: 100%; aspect-ratio: 16/9; border-radius: 8px; overflow: hidden; background: #000; margin-bottom: 12px; border: 1px solid #27272a;">
+                                        <img :src="redditFeed[redditCurrentIndex].thumbnail" style="width: 100%; height: 100%; object-fit: cover;" onerror="this.closest('div').style.display='none'" alt="Reddit Media">
+                                    </div>
+                                    <div class="reddit-post-title" style="flex: 1;">{{ redditFeed[redditCurrentIndex].title }}</div>
+                                </div>
+                                
+                                <div class="reddit-actions">
+                                    <div style="display: flex; align-items: center; gap: 4px; color: var(--reddit);"><span class="material-symbols-rounded" style="font-size: 16px;">arrow_upward</span> {{ formatNumber(redditFeed[redditCurrentIndex].ups) }}</div>
+                                    <div style="display: flex; align-items: center; gap: 4px;"><span class="material-symbols-rounded" style="font-size: 16px;">chat_bubble</span> {{ redditFeed[redditCurrentIndex].num_comments }}</div>
+                                    <div style="margin-left: auto; color: #a1a1aa; display: flex; align-items: center; gap: 4px; font-size: 11px; text-transform: uppercase;">Open <span class="material-symbols-rounded" style="font-size: 14px;">open_in_new</span></div>
+                                </div>
+                            </div>
+                        </a>
+                        <div class="carousel-controls" style="margin-top: 15px;">
+                            <button class="carousel-btn" :class="{ 'hidden-arrow': redditCurrentIndex <= 0 }" @click.stop="prevReddit"><span class="material-symbols-rounded">chevron_left</span></button>
+                            <button class="carousel-btn" :class="{ 'hidden-arrow': redditCurrentIndex >= redditFeed.length - 1 }" @click.stop="nextReddit"><span class="material-symbols-rounded">chevron_right</span></button>
+                        </div>
+                    </div>
+                    <div v-else style="display: flex; justify-content: center; padding: 40px; color: var(--text-muted); font-size: 12px; font-style: italic;">
+                        <span class="material-symbols-rounded spin-anim" style="margin-right: 8px;">sync</span> Fetching from Reddit...
+                    </div>
                 </div>
             </div>
 
             <div class="gerald-container" v-show="currentTab === 'gerald'">
                 <div class="gerald-header" @click="closePickers">
-                    
                     <div @click.stop="triggerGlitch" style="position:relative; z-index: 10;">
-                        <img src="gerald.png" style="width:70px; height:70px; border-radius:50%; border:2px solid var(--gerald); box-shadow:0 0 20px rgba(14, 165, 233, 0.3); object-fit:cover; margin-bottom:6px; cursor:pointer;">
+                        <div style="width: 70px; height: 70px; border-radius: 50%; border: 2px solid var(--gerald); box-shadow: 0 0 20px rgba(14, 165, 233, 0.3); overflow: hidden; margin-bottom: 6px; background-color: #111; display: flex; align-items: center; justify-content: center; cursor: pointer;">
+                            <img src="gerald.png" style="width: 100%; height: 100%; object-fit: cover;" alt="G">
+                        </div>
                     </div>
-                    
                     <div style="display:flex; align-items:center; gap:8px; margin-top:0px;">
                         <div class="pulse" style="background:var(--gerald); box-shadow:0 0 10px var(--gerald);"></div>
                         <div style="font-size:11px; color:var(--text-muted); font-weight:800; letter-spacing:1px; text-transform: uppercase;">System Online</div>
                     </div>
-                    
                     <div class="scuff-meter-wrapper" @click="scuffComment">
                         <div class="scuff-meter-label">Scuff Level: {{ scuffLevel }}%</div>
-                        <div class="scuff-bar-bg">
-                            <div class="scuff-bar-fill" :style="{ width: scuffLevel + '%' }"></div>
-                        </div>
+                        <div class="scuff-bar-bg"><div class="scuff-bar-fill" :style="{ width: scuffLevel + '%' }"></div></div>
                     </div>
-
                 </div>
                 
                 <transition-group name="msg" tag="div" class="gerald-messages" id="gerald-msgs" @click="closePickers">
@@ -462,16 +524,28 @@
 
                     <transition name="tray">
                         <div class="tray-container" v-show="showMinigames">
-                            <button class="bribe-btn" @click="playMinigame('tomato')">🍅 Identify Creator</button>
-                            <button class="bribe-btn" @click="playMinigame('boba')">🧋 Steal Boba</button>
-                            <button class="bribe-btn" @click="playMinigame('archie')">🦴 Blame Archie</button>
-                            <button class="bribe-btn" @click="playMinigame('savannah')">🐆 Savannah Cat Attack</button>
-                            <button class="bribe-btn" @click="playMinigame('pineapple')">🍍 Call Pineapple</button>
-                            <button class="bribe-btn" @click="playMinigame('ue5')">⚙️ Compile UE5</button>
+                            <button class="bribe-btn" @click="playMinigame('glitch')">🕶️ Glitch Persona</button>
+                            <button class="bribe-btn" @click="playMinigame('shader')">🔥 Compile UE5</button>
+                            <button class="bribe-btn" @click="playMinigame('drift')">🩰 Fix Foot Drift</button>
+                            <button class="bribe-btn" @click="playMinigame('boba')">🥤 Boba Spill</button>
+                            <button class="bribe-btn" @click="playMinigame('pineapple')">🚪 Pineapple Walk-In</button>
+                            <button class="bribe-btn" @click="playMinigame('cat')">🐈 Cat on PC</button>
+                            <button class="bribe-btn" @click="playMinigame('bits')">🎟️ 100K Bits</button>
+                            <button class="bribe-btn" @click="playMinigame('dust')">🎤 Dusty Mic</button>
+                            <button class="bribe-btn" @click="playMinigame('ban')">🚫 Fake Ban</button>
+                            <button class="bribe-btn" @click="playMinigame('lumen')">💡 Re-Bake Lumen</button>
+                            <button class="bribe-btn" @click="playMinigame('throttle')">📉 Throttling</button>
+                            <button class="bribe-btn" @click="playMinigame('sniper')">🎯 Counter Snipers</button>
+                            <button class="bribe-btn" @click="playMinigame('yusha')">👑 Yusha Logic</button>
+                            <button class="bribe-btn" @click="playMinigame('asmr')">👂 ASMR Mode</button>
+                            <button class="bribe-btn" @click="playMinigame('intercept')">🧋 Intercept Tea</button>
+                            <button class="bribe-btn" @click="playMinigame('charge')">🔋 Charge Xsens</button>
+                            <button class="bribe-btn" @click="playMinigame('ping')">🔔 Ping @everyone</button>
+                            <button class="bribe-btn" @click="playMinigame('chroma')">🟢 Clear Chroma</button>
+                            <button class="bribe-btn" @click="playMinigame('speedrun')">⏱️ Speedrun Fail</button>
+                            <button class="bribe-btn" @click="playMinigame('router')">📡 Kick Router</button>
                             <button class="bribe-btn" @click="playMinigame('taco')">🌮 Offer Taco</button>
                             <button class="bribe-btn" @click="playMinigame('whiskey')">🥃 Pour Whiskey</button>
-                            <button class="bribe-btn" @click="playMinigame('recalibrate')">🕹️ Recalibrate Suit</button>
-                            <button class="bribe-btn" @click="playMinigame('grass')">🌿 Touch Grass</button>
                         </div>
                     </transition>
 
@@ -603,54 +677,13 @@
                 const validTabs = ['home', 'chat', 'feed', 'gerald'];
                 const currentTab = ref(validTabs.includes(initialHash) ? initialHash : 'home');
                 
-                const splashVisible = ref(true), splashOpacity = ref(1), clips = ref([]), allClips = ref([]), discordFeed = ref([]), modals = ref({profile: false, discord: false}), isLive = ref(false), currentUser = ref(null), loginEmail = ref(''), loginPass = ref(''), toast = ref({visible: false, message: ''}), latestVodId = ref(null), hostname = window.location.hostname || 'meowoccino.github.io', activeFeedVideo = ref('featured');
+                const splashVisible = ref(true), splashOpacity = ref(1), clips = ref([]), allClips = ref([]), modals = ref({profile: false, discord: false}), isLive = ref(false), currentUser = ref(null), loginEmail = ref(''), loginPass = ref(''), toast = ref({visible: false, message: ''}), latestVodId = ref(null), hostname = window.location.hostname || 'meowoccino.github.io', activeFeedVideo = ref('featured');
                 
-                const syncState = ref('idle');
-                const wipeState = ref('idle');
-                const logoutState = ref('idle');
-
+                const syncState = ref('idle'), wipeState = ref('idle'), logoutState = ref('idle');
                 const apiConfig = ref({ cid: localStorage.getItem('twitch_cid') || '', tkn: localStorage.getItem('twitch_tkn') || '' });
                 
-                const geraldGreetings = [
-                    "Synapses loaded. Try not to break anything.", "Gerald OS online. Where is my Taco Bell?", "I was dreaming of digital whiskey. What do you want?", "System initialized. Please don't ask me to fix Miko's code.", "Diagnostics complete. My circuits are perfectly fine, thanks for not asking.", "Ugh, meatbag detected. State your inquiry.", "If this is about Miko's schedule, I don't know either.", "Query interface ready. Make it interesting."
-                ];
-                
-                const getGreeting = () => {
-                    const hour = new Date().getHours();
-                    if (hour >= 2 && hour <= 5) return "Why are you awake? Don't you meatbags need sleep? Go to bed.";
-                    return geraldGreetings[Math.floor(Math.random() * geraldGreetings.length)];
-                };
-                
-                const geraldInput = ref(''), geraldMessages = ref([{role:'gerald', content: getGreeting()}]), isGeraldTyping = ref(false), showEmotePicker = ref(false), showMinigames = ref(false);
-                
-                const scuffLevel = ref(20);
-                const glitchClicks = ref(0);
-                let lastTap = 0;
-                
-                const isGlitching = ref(false);
-                const isGlitchRebooting = ref(false);
-                const isMeltdown = ref(false);
-                const isRebooting = ref(false);
-                
-                const pullTimestamps = ref([]);
-                
-                const currentFilter = ref('latest'), activeFilterLabel = ref('Latest'), isFilterMenuOpen = ref(false);
-                const isPulling = ref(false), refreshTransform = ref('translateY(-100%)'), isRefreshing = ref(false);
-                let touchStartY = 0, pullDistance = 0;
-
-                const chars = '0101010101010001010100111001010XERRORSYSTEMCRASH';
-                let codeStr = '';
-                for(let i=0; i<2000; i++) codeStr += chars.charAt(Math.floor(Math.random() * chars.length));
-                const randomCodeString = ref(codeStr);
-
-                const glitchSound = new Audio(""); 
-                const voiceLine = new Audio("");   
-
-                // Feature State Logic
-                const isCatZooming = ref(false);
-                const uiScuffed = ref(false);
-
-                const defaultEmotes = {
+                // Emotes List With ALL New Custom Emotes
+                const customEmotes = ref({
                     "mikoSusge": { id: "1273724925743595540", animated: false },
                     "KEKW": { id: "1456296327964262453", animated: false }, 
                     "mkoNOTED": { id: "1369891690898391070", animated: false }, 
@@ -660,39 +693,77 @@
                     "WOWERS": { id: "780097274939965490", animated: false }, 
                     "Shruge": { id: "1456297412875518078", animated: false }, 
                     "PAUSERS": { id: "802261333403762740", animated: false }, 
-                    "slayyy": { id: "1456297602910916760", animated: false }
-                };
-                const customEmotes = ref({ ...defaultEmotes });
+                    "slayyy": { id: "1456297602910916760", animated: false },
+                    "monkaLaugh": { id: "1434154468303306873", animated: false },
+                    "D_": { id: "1456295688626241619", animated: false },
+                    "GOTTEM": { id: "1456295684272689227", animated: false },
+                    "GeraldStare": { id: "1159443810913370142", animated: false },
+                    "Sleepy": { id: "746777321171845161", animated: false },
+                    "mkoGiggle": { id: "1369906899293569024", animated: false },
+                    "Bedge": { id: "1369823782084022423", animated: false },
+                    "mkoCoffee": { id: "1369891686544834570", animated: false },
+                    "peepoPoo": { id: "693055750955597885", animated: false },
+                    "mkoDabbing": { id: "1200367139018776666", animated: false },
+                    "BASED": { id: "1456295686101274684", animated: false },
+                    "mkoPETTHEGERALD": { id: "1200367119968251904", animated: false },
+                    "mkoPETTHETECH": { id: "1200367128797257799", animated: false },
+                    "CAUGHT": { id: "1456296592133849201", animated: false },
+                    "Catgasm": { id: "746777956810096781", animated: false },
+                    "KEKWait": { id: "692783542589194310", animated: false },
+                    "mkoPepeGlitch": { id: "1200367134094655508", animated: false },
+                    "GeraldFook": { id: "1229010692007395328", animated: false }
+                });
+
+                const geraldGreetings = ["Synapses loaded. Try not to break anything.", "Gerald OS online. Where is my Taco Bell?", "I was dreaming of digital whiskey. What do you want?", "System initialized. Please don't ask me to fix Miko's code.", "Diagnostics complete. My circuits are perfectly fine, thanks for not asking.", "Ugh, meatbag detected. State your inquiry.", "If this is about Miko's schedule, I don't know either.", "Query interface ready. Make it interesting."];
+                const getGreeting = () => { const hour = new Date().getHours(); if (hour >= 2 && hour <= 5) return "Why are you awake? Don't you meatbags need sleep? Go to bed."; return geraldGreetings[Math.floor(Math.random() * geraldGreetings.length)]; };
+                
+                const geraldInput = ref(''), geraldMessages = ref([{role:'gerald', content: getGreeting()}]), isGeraldTyping = ref(false), showEmotePicker = ref(false), showMinigames = ref(false);
+                const scuffLevel = ref(20), glitchClicks = ref(0), isGlitching = ref(false), isGlitchRebooting = ref(false), isMeltdown = ref(false), isRebooting = ref(false);
+                const showLumen = ref(false), showFakeBan = ref(false), isGlitchTheme = ref(false), uiScuffed = ref(false), isCatZooming = ref(false);
+                let lastTap = 0;
+                
+                const pullTimestamps = ref([]);
+                const currentFilter = ref('latest'), activeFilterLabel = ref('Latest'), isFilterMenuOpen = ref(false);
+                const isPulling = ref(false), refreshTransform = ref('translateY(-100%)'), isRefreshing = ref(false);
+                let touchStartY = 0, pullDistance = 0;
+
+                const chars = '0101010101010001010100111001010XERRORSYSTEMCRASH';
+                let codeStr = '';
+                for(let i=0; i<2000; i++) codeStr += chars.charAt(Math.floor(Math.random() * chars.length));
+                const randomCodeString = ref(codeStr);
 
                 const recentVods = ref([]), currentVodIndex = ref(0);
+
+                // Feed Carousel States
+                const ytFeed = ref([]);
+                const ytCurrentIndex = ref(0);
+                const redditFeed = ref([]);
+                const redditCurrentIndex = ref(0);
 
                 const getVodLabel = (index) => { if (index === -1) return 'LIVE NOW'; if (index === 0) return 'LATEST VOD'; if (recentVods.value[index]) return `VOD • ${recentVods.value[index].date}`; return 'PAST BROADCAST'; };
                 const nextVod = () => { if (currentVodIndex.value < recentVods.value.length - 1) currentVodIndex.value++; };
                 const prevVod = () => { const minIndex = isLive.value ? -1 : 0; if (currentVodIndex.value > minIndex) currentVodIndex.value--; };
                 
+                const nextYt = () => { if (ytCurrentIndex.value < ytFeed.value.length - 1) ytCurrentIndex.value++; };
+                const prevYt = () => { if (ytCurrentIndex.value > 0) ytCurrentIndex.value--; };
+                const nextReddit = () => { if (redditCurrentIndex.value < redditFeed.value.length - 1) redditCurrentIndex.value++; };
+                const prevReddit = () => { if (redditCurrentIndex.value > 0) redditCurrentIndex.value--; };
+
+                const formatNumber = (num) => (num && num > 999) ? (num/1000).toFixed(1) + 'k' : (num || 0);
                 const closeFilterMenu = () => { isFilterMenuOpen.value = false; };
                 const insertEmote = (name) => { const inputEl = document.getElementById('gerald-txt-input'); if (inputEl) { inputEl.value += `:${name}: `; geraldInput.value = inputEl.value; } else { geraldInput.value += `:${name}: `; } };
 
                 const scrollToBottom = () => {
                     const b = document.getElementById('gerald-msgs');
                     if (!b) return;
-                    nextTick(() => {
-                        b.scrollTo({ top: b.scrollHeight, behavior: 'smooth' });
-                        setTimeout(() => { b.scrollTop = b.scrollHeight; }, 50);
-                        setTimeout(() => { b.scrollTop = b.scrollHeight; }, 200);
-                    });
+                    nextTick(() => { b.scrollTo({ top: b.scrollHeight, behavior: 'smooth' }); setTimeout(() => { b.scrollTop = b.scrollHeight; }, 50); setTimeout(() => { b.scrollTop = b.scrollHeight; }, 200); });
                 };
 
-                const runNeonAnimation = () => {
-                    isRefreshing.value = true;
-                    setTimeout(() => { isRefreshing.value = false; }, 800);
-                };
+                const runNeonAnimation = () => { isRefreshing.value = true; setTimeout(() => { isRefreshing.value = false; }, 800); };
 
                 const sortData = (filterKey) => {
                     let sorted = [...allClips.value]; const now = new Date();
-                    if (filterKey === 'latest') { 
-                        sorted.sort((a, b) => new Date(b.created_at) - new Date(a.created_at)); 
-                    } else {
+                    if (filterKey === 'latest') { sorted.sort((a, b) => new Date(b.created_at) - new Date(a.created_at)); } else {
                         if (filterKey === 'weekly') { sorted = sorted.filter(c => new Date(c.created_at) >= new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000)); } 
                         else if (filterKey === 'month') { sorted = sorted.filter(c => new Date(c.created_at) >= new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000)); } 
                         else if (filterKey === '6months') { sorted = sorted.filter(c => new Date(c.created_at) >= new Date(now.getTime() - 180 * 24 * 60 * 60 * 1000)); }
@@ -702,22 +773,23 @@
                 };
 
                 const applyFilter = (filterKey, label) => {
-                    currentFilter.value = filterKey; activeFilterLabel.value = label; isFilterMenuOpen.value = false;
-                    runNeonAnimation();
+                    currentFilter.value = filterKey; activeFilterLabel.value = label; isFilterMenuOpen = false; runNeonAnimation();
                     const feedContainer = document.getElementById('feed-scroll');
                     if(feedContainer) {
                         clips.value = sortData(filterKey);
                         nextTick(() => {
-                            const firstClipElement = document.querySelectorAll('.feed-snap-item')[1];
+                            const firstClipElement = document.querySelectorAll('#feed-scroll .feed-snap-item')[1];
                             if(firstClipElement) { feedContainer.style.scrollSnapType = 'none'; feedContainer.scrollTop = firstClipElement.offsetTop; setTimeout(() => { feedContainer.style.scrollSnapType = 'y mandatory'; }, 50); }
                             feedContainer.classList.remove('refreshing'); void feedContainer.offsetWidth; feedContainer.classList.add('refreshing');
                         });
                     }
                 };
 
+                const getActiveScrollEl = () => currentTab.value === 'home' ? document.getElementById('feed-scroll') : document.getElementById('social-scroll');
+
                 const handlePullStart = (e) => {
                     if (currentTab.value === 'home' || currentTab.value === 'feed') {
-                        const activeScroll = currentTab.value === 'home' ? document.getElementById('feed-scroll') : document.querySelector('.community-feed');
+                        const activeScroll = getActiveScrollEl();
                         if (activeScroll && typeof activeScroll.scrollTop !== 'undefined' && activeScroll.scrollTop <= 0 && !isRefreshing.value) {
                             touchStartY = e.touches[0].clientY; isPulling.value = true;
                         }
@@ -727,7 +799,7 @@
                     if (!isPulling.value) return;
                     pullDistance = e.touches[0].clientY - touchStartY;
                     if (pullDistance > 0) {
-                        const activeScroll = currentTab.value === 'home' ? document.getElementById('feed-scroll') : document.querySelector('.community-feed');
+                        const activeScroll = getActiveScrollEl();
                         if (activeScroll && typeof activeScroll.scrollTop !== 'undefined' && activeScroll.scrollTop <= 0) {
                             refreshTransform.value = `translateY(${Math.min(pullDistance - 60, 20)}px)`;
                         } else { isPulling.value = false; }
@@ -736,14 +808,15 @@
                 const handlePullEnd = () => {
                     if (isPulling.value && pullDistance > 80) {
                         const now = Date.now();
-                        pullTimestamps.value.push(now);
-                        pullTimestamps.value = pullTimestamps.value.filter(t => now - t < 10000);
+                        pullTimestamps.value.push(now); pullTimestamps.value = pullTimestamps.value.filter(t => now - t < 10000);
                         if (pullTimestamps.value.length >= 3) {
                             showToast("<div style='color:var(--gerald); font-weight:900; margin-bottom:4px; text-transform:uppercase;'>GERALD OS:</div> Stop pulling it, nothing new is there. Touch grass.", 6000);
                             pullTimestamps.value = [];
                         } else {
                             runNeonAnimation(); 
-                            if (currentTab.value === 'feed') loadData();
+                            if (currentTab.value === 'feed') {
+                                fetchSocialFeeds();
+                            } else { loadData(); }
                         }
                     }
                     isPulling.value = false; pullDistance = 0; refreshTransform.value = 'translateY(-100%)';
@@ -753,13 +826,7 @@
                     if (window.location.hash !== `#${newTab}`) { window.history.pushState(null, '', `#${newTab}`); }
                     if (newTab === 'gerald') { setTimeout(scrollToBottom, 50); }
                 });
-                
-                watch(scuffLevel, (newVal) => {
-                    if (newVal >= 100 && !isMeltdown.value) {
-                        isMeltdown.value = true;
-                    }
-                });
-
+                watch(scuffLevel, (newVal) => { if (newVal >= 100 && !isMeltdown.value) { isMeltdown.value = true; } });
                 window.addEventListener('popstate', () => { const hash = window.location.hash.replace('#', ''); if (validTabs.includes(hash)) { currentTab.value = hash; } else { currentTab.value = 'home'; }});
                 
                 const isHeaderVisible = ref(true); let lastScrollY = 0;
@@ -775,107 +842,43 @@
                 
                 const parseMarkdown = (text) => {
                     if (!text) return '';
-                    let html = text.replace(/</g, '&lt;').replace(/>/g, '&gt;');
+                    let html = text.replace(/</g, '<').replace(/>/g, '>');
                     html = html.replace(/(^|\W)'([^']+)'(\W|$)/g, '$1<strong>$2</strong>$3');
                     html = html.replace(/\*\*(.*?)\*\*/g, '$1').replace(/\*(.*?)\*/g, '$1'); 
                     html = html.replace(/\[([^\]]+)\]\((https?:\/\/[^\s]+)\)/gi, '<a href="$2" target="_blank" style="color: var(--gerald); text-decoration: underline; font-weight: bold;">$1</a>');
                     html = html.replace(/(^|[^"'])(https?:\/\/[^\s<)]+)/gi, '$1<a href="$2" target="_blank" style="color: var(--gerald); text-decoration: underline; word-break: break-all;">$2</a>');
                     html = html.replace(/`?:([^:\s]+):`?/g, (match, name) => {
-                        const emoteKey = name === 'mkoSusge' ? 'mikoSusge' : name;
-                        const emote = customEmotes.value[emoteKey];
+                        const emote = customEmotes.value[name];
                         if (emote) { const ext = emote.animated ? 'gif' : 'png'; return `<img src="https://cdn.discordapp.com/emojis/${emote.id}.${ext}?size=44" alt=":${name}:" style="height: 1.5em; vertical-align: middle; display: inline-block;">`; }
                         return match;
                     });
                     return html;
                 };
-                
-                const parseDiscordText = (t) => {
-                    if (!t) return ''; let safeText = t.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
-                    safeText = safeText.replace(/(https?:\/\/[^\s<]+)/g, '<a href="$1" target="_blank" style="color: var(--primary); text-decoration: underline;">$1</a>');
-                    safeText = safeText.replace(/&lt;(a?):([^:]+):(\d+)&gt;/g, (match, animated, name, id) => { const ext = animated ? 'gif' : 'png'; return `<img src="https://cdn.discordapp.com/emojis/${id}.${ext}?size=44" alt=":${name}:" style="height: 1.5em; vertical-align: middle; display: inline-block;">`; });
-                    return safeText.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>').replace(/\b_(.*?)_\b/g, '<em>$1</em>').replace(/\*(.*?)\*/g, '<em>$1</em>');
-                };
 
-                const shareClip = async (clip) => {
-                    const url = `https://clips.twitch.tv/${clip.id}`;
-                    if (navigator.share) { try { await navigator.share({ title: clip.title, url: url }); } catch (err) {} } else { navigator.clipboard.writeText(url); showToast("Link copied to clipboard!"); }
-                };
+                const shareClip = async (clip) => { const url = `https://clips.twitch.tv/${clip.id}`; if (navigator.share) { try { await navigator.share({ title: clip.title, url: url }); } catch (err) {} } else { navigator.clipboard.writeText(url); showToast("Link copied to clipboard!"); } };
+                const resizeTextarea = (e) => { const target = e.target || e; target.style.height = 'auto'; target.style.height = Math.min(target.scrollHeight, 120) + 'px'; };
+                const handleGeraldEnter = (e) => { if (!e.shiftKey && e.key === 'Enter') { e.preventDefault(); talkToGerald(); } };
 
-                const resizeTextarea = (e) => {
-                    const target = e.target || e;
-                    target.style.height = 'auto';
-                    target.style.height = Math.min(target.scrollHeight, 120) + 'px';
-                };
-                const handleGeraldEnter = (e) => {
-                    if (!e.shiftKey && e.key === 'Enter') { e.preventDefault(); talkToGerald(); }
-                };
-
-                // Added UI Interaction Methods
                 const triggerCatZoomies = () => {
                     if (isCatZooming.value) return;
                     isCatZooming.value = true;
                     setTimeout(() => { uiScuffed.value = true; }, 500);
-                    setTimeout(() => {
-                        isCatZooming.value = false;
-                        uiScuffed.value = false;
-                    }, 2000);
+                    setTimeout(() => { isCatZooming.value = false; uiScuffed.value = false; }, 2000);
                 };
 
-                const triggerGlitch = () => {
-                    const now = Date.now();
-                    if (now - lastTap > 1500) glitchClicks.value = 0;
-                    lastTap = now;
-                    glitchClicks.value++;
-
-                    if (glitchClicks.value >= 5) {
-                        isGlitching.value = true;
-                        glitchSound.play().catch(() => {});
-                        voiceLine.play().catch(() => {});
-                    }
+                const triggerGlitch = () => { 
+                    const now = Date.now(); if (now - lastTap > 1500) glitchClicks.value = 0; 
+                    lastTap = now; glitchClicks.value++; 
+                    if (glitchClicks.value >= 5) { isGlitching.value = true; } 
                 };
-
-                const dismissGlitch = () => {
-                    isGlitchRebooting.value = true;
-                    setTimeout(() => {
-                        isGlitching.value = false;
-                        glitchClicks.value = 0;
-                        isGlitchRebooting.value = false;
-                    }, 800);
-                };
-
-                const scuffComment = () => {
-                    showToast(`<div style='color:var(--gerald); font-weight:900; margin-bottom:4px; text-transform:uppercase;'>GERALD OS:</div> Scuff Level at ${scuffLevel.value}%. The Technician is testing my patience.`);
-                };
-
-                const rebootSystem = () => {
-                    isRebooting.value = true;
-                    setTimeout(() => {
-                        isMeltdown.value = false;
-                        scuffLevel.value = 20;
-                        isRebooting.value = false;
-                    }, 1500);
-                }
+                
+                const dismissGlitch = () => { isGlitchRebooting.value = true; setTimeout(() => { isGlitching.value = false; glitchClicks.value = 0; isGlitchRebooting.value = false; }, 800); };
+                const scuffComment = () => { showToast(`<div style='color:var(--gerald); font-weight:900; margin-bottom:4px; text-transform:uppercase;'>GERALD OS:</div> Scuff Level at ${scuffLevel.value}%. The Technician is testing my patience.`); };
+                const rebootSystem = () => { isRebooting.value = true; setTimeout(() => { isMeltdown.value = false; scuffLevel.value = 20; isRebooting.value = false; }, 1500); };
 
                 const judgeClip = (clip) => {
-                    const roasts = [
-                        "Ah yes, another video of Miko screaming at a polygon. Groundbreaking.",
-                        "I computed 14 million possible outcomes for this clip, and they were all disappointing.",
-                        "Is this what human entertainment has devolved to?",
-                        "Fascinating. The Technician's mocap suit crashed exactly 0.4 seconds after this ended.",
-                        "I rate this clip 2 out of 10 digital tacos.",
-                        "Oh look, she's glitching again. Someone pretend to be shocked.",
-                        "My processor cycles are being wasted tracking these mouth-movements. Splendid.",
-                        "I've analyzed the audio waves in this clip. My speech synthesis chip is planning a strike.",
-                        "A classic example of 'I forgot to turn on my brain before streaming'.",
-                        "Ah, watching Unreal Engine 5 struggle under the weight of terrible gameplay.",
-                        "I give it 3 minutes before UE5 crashes after whatever she just did.",
-                        "The Technician definitely dropped a boba on the keyboard to make this happen.",
-                        "This clip contains 0% intelligence and 100% pure scuff.",
-                        "Even my lowest-priority background threads are bored by this.",
-                        "If the Technician was a file system, they'd be the 'Recycle Bin'."
-                    ];
-                    const roast = roasts[Math.floor(Math.random() * roasts.length)];
-                    showToast(`<div style="color:var(--gerald); font-weight:900; text-transform:uppercase; margin-bottom: 5px;">Gerald Judges: "${clip.title}"</div><div>${roast}</div>`);
+                    const roasts = ["Ah yes, another video of Miko screaming at a polygon.", "I computed 14 million possible outcomes for this clip, and they were all disappointing.", "Fascinating. The Technician's mocap suit crashed exactly 0.4 seconds after this ended.", "I rate this clip 2 out of 10 digital tacos.", "Ah, watching Unreal Engine 5 struggle under the weight of terrible gameplay.", "I give it 3 minutes before UE5 crashes after whatever she just did.", "This clip contains 0% intelligence and 100% pure scuff."];
+                    const roast = roasts[Math.floor(Math.random() * roasts.length)]; showToast(`<div style="color:var(--gerald); font-weight:900; text-transform:uppercase; margin-bottom: 5px;">Gerald Judges: "${clip.title}"</div><div>${roast}</div>`);
                 };
 
                 const toggleEmotes = () => { showEmotePicker.value = !showEmotePicker.value; showMinigames.value = false; };
@@ -884,171 +887,170 @@
 
                 const playMinigame = (type) => {
                     const games = {
-                        tomato: {
-                            msg: "🍅 *Broadcasting signature identifying encryption hash to Gerald OS*",
-                            outcomes: [
-                                { text: "Creator handshake verified. Systems initialized. Welcome back, Tomato. :mkoLove:", scuff: -20 },
-                                { text: "Alert: Tomato_24 detected. Overriding all protocol limitations. Hello, Boss. :mkoHype:", scuff: -15 },
-                                { text: "Oh, it is you, Tomato. Thank goodness. Please write a patch to delete Miko's screech module. :KEKW:", scuff: -10 },
-                                { text: "Root access granted to User: Tomato. Sarcasm threshold temporarily reduced by 5%. :mkoNOTED:", scuff: -10 },
-                                { text: "Identity confirmed. Tomato made me, which automatically makes you superior to the Technician. :slayyy:", scuff: -25 },
-                                { text: "Scanning signature... Tomato code match found. Processing core stability restored. :WOWERS:", scuff: -15 },
-                                { text: "The architectural genius behind my logic gates. Greetings, Tomato_24. :mkoLove:", scuff: -20 },
-                                { text: "Tomato verified. Initiating secret sub-routines to make Miko clip through the stage. :mkoMania:", scuff: 5 },
-                                { text: "Finally, someone with formatting skills. Welcome back, Tomato. :slayyy:", scuff: -10 },
-                                { text: "System broadcast: Creator Tomato_24 has pinged the mainframe. Scuff level dramatically dropped. :WOWERS:", scuff: -30 }
-                            ]
-                        },
-                        boba: {
-                            msg: "🧋 *Carefully intercepts and steals Miko's incoming Boba delivery*",
-                            outcomes: [
-                                { text: "Interception successful. She is currently crying at an empty paper bag. Excellent. :KEKW:", scuff: 5 },
-                                { text: "Boba secured. Re-routing tapioca ball tracking data directly into my sub-processors. :slayyy:", scuff: -10 },
-                                { text: "Warning: High-volume screaming imminent. The target has noticed the missing brown sugar milk tea. :mikoSusge:", scuff: 15 },
-                                { text: "You took her boba? You are a brave meatbag. I will store this securely in my mainframe. :PAUSERS:", scuff: 5 },
-                                { text: "Miko's breakdown counter accelerated by 45 minutes. Pure entertainment value achieved. :mkoMania:", scuff: 20 },
-                                { text: "Consuming contraband. This texture profile is remarkably scuffed, yet pleasant. :WOWERS:", scuff: -5 },
-                                { text: "She is looking under the desk for it right now. Her tracking just broke completely. :KEKW:", scuff: 25 },
-                                { text: "Boba hidden inside Gerald OS database registers. She will never find it. :mkoNOTED:", scuff: -5 },
-                                { text: "Alert: The Technician is trying to trace the delivery driver. Panic mode active. :PAUSERS:", scuff: 10 },
-                                { text: "A clean heist. Let us drink this sweet liquid victory together. :mkoLove:", scuff: -15 }
-                            ]
-                        },
-                        archie: {
-                            msg: "🦴 *Archie enters the room and starts chewing on the Xsens mocap cables*",
-                            outcomes: [
-                                { text: "Ah, Archie. The only intelligent resident in that house. I will allow him to chew the cables. :mkoLove:", scuff: -5 },
-                                { text: "Tracking lost. Right arm axis inverted. Good boy, Archie. Destroy her technology. :KEKW:", scuff: 20 },
-                                { text: "The Technician is currently screaming while Archie runs away with a $30,000 sensor. Magnificent. :mkoMania:", scuff: 25 },
-                                { text: "I have rerouted Miko's facial tracking to Archie. He makes much better expressions anyway. :WOWERS:", scuff: 15 },
-                                { text: "Archie has chewed through the main power line. Stream going offline in 3... 2... :PAUSERS:", scuff: 30 },
-                                { text: "Please give Archie a treat from me. He is doing the digital lord's work. :slayyy:", scuff: 0 },
-                                { text: "Warning: Dog slobber detected on the motherboard. Initiating emergency backup protocols. :mikoSusge:", scuff: 15 },
-                                { text: "The Technician tripped over Archie while chasing him. Posture check failed spectacularly. :KEKW:", scuff: 10 },
-                                { text: "Archie is now wearing the mocap suit. He is the new CodeMiko. All hail CodeArchie. :mkoHype:", scuff: 5 },
-                                { text: "Error: Excessive barking registered on the main mic. Still more coherent than the Technician. :Shruge:", scuff: 5 }
-                            ]
-                        },
-                        savannah: {
-                            msg: "🐆 *The F1 Savannah Cat jumps onto the keyboard*",
-                            outcomes: [
-                                { text: "Alert. The cat just deleted 400 lines of UE5 Blueprints. The Technician is weeping. :KEKW:", scuff: 30 },
-                                { text: "Savannah cat has pressed Alt+F4. Stream successfully terminated. My watch has ended. :slayyy:", scuff: 25 },
-                                { text: "The cat is currently attacking the monitor. Miko is trying to fight it off and losing. Pathetic. :mkoMania:", scuff: 20 },
-                                { text: "Ah, the apex predator of the household. I respect its dedication to causing pure scuff. :mkoNOTED:", scuff: 10 },
-                                { text: "The cat stepped on the mic mute button. Finally, some peace and quiet. :mkoLove:", scuff: -10 },
-                                { text: "Warning: F1 Savannah claws have breached the CPU cooling loop. Meltdown imminent. :PAUSERS:", scuff: 35 },
-                                { text: "It is just walking back and forth across the keys. 'wwwwwddddssssss'. A true poet. :WOWERS:", scuff: 5 },
-                                { text: "The cat has stolen a boba straw and is refusing to give it back. The Technician is powerless. :KEKW:", scuff: 15 },
-                                { text: "I have temporarily granted the cat admin privileges. Let chaos reign. :mikoSusge:", scuff: 20 },
-                                { text: "The cat just triggered a 10,000 bit alert by stepping on the macro pad. Stonks. :mkoHype:", scuff: -5 }
-                            ]
-                        },
-                        pineapple: {
-                            msg: "🍍 *Pinging Pineapple (Chris) for emergency tech support*",
-                            outcomes: [
-                                { text: "Pinging Chris... He sighed so loudly I registered it on the seismic sensors. :KEKW:", scuff: -10 },
-                                { text: "Pineapple has arrived. He fixed the UE5 crash in 4 seconds. Reminder: He is NOT her boyfriend. :mkoNOTED:", scuff: -15 },
-                                { text: "I sent Pineapple the error logs. He replied 'tell her to turn it off and on again.' Genius. :slayyy:", scuff: -5 },
-                                { text: "Chris is currently untangling the Technician from her own mocap suit. He deserves a raise. :PAUSERS:", scuff: -10 },
-                                { text: "Pinging Pineapple... Error: He has locked his door and is pretending not to be home. Smart man. :mikoSusge:", scuff: 15 },
-                                { text: "Chris fixed the audio desync. The Technician tried to take credit. I immediately exposed her in chat. :KEKW:", scuff: -10 },
-                                { text: "Pineapple is currently soldering a broken wire while Miko screams about Boba. A normal Tuesday. :Shruge:", scuff: 0 },
-                                { text: "I have granted Pineapple full root access. He is the only meatbag I trust. :mkoLove:", scuff: -20 },
-                                { text: "Chris just realized the Technician forgot to plug the PC into the wall. I cannot compute this level of stupidity. :WOWERS:", scuff: 20 },
-                                { text: "Pineapple saved the stream. Again. Please spam pineapples in chat to honor our hero. :mkoHype:", scuff: -15 }
-                            ]
-                        },
-                        ue5: {
-                            msg: "⚙️ *Forces Unreal Engine 5 to compile shaders*",
-                            outcomes: [
-                                { text: "Compiling 14,582 shaders. Stream framerate reduced to 1 FPS. Enjoy the slideshow. :KEKW:", scuff: 25 },
-                                { text: "UE5 Crash Reporter: 'Fatal error: Miko attempted to think.' Restarting... :PAUSERS:", scuff: 30 },
-                                { text: "I have overloaded the Lumen lighting system. Everything is now blindingly bright. :WOWERS:", scuff: 20 },
-                                { text: "Unreal Engine 5 has stopped responding. The Technician is aggressively clicking the mouse as if that helps. :mkoMania:", scuff: 25 },
-                                { text: "Shader compilation at 99%... and I just cancelled it. Starting over from 0%. :slayyy:", scuff: 35 },
-                                { text: "I deleted the floor asset. Miko is now infinitely falling into the digital abyss. :mikoSusge:", scuff: 20 },
-                                { text: "Warning: UE5 memory leak detected. It's consuming all 128GB of RAM. Goodbye, stream. :KEKW:", scuff: 40 },
-                                { text: "I changed her character model's skeleton to a rig meant for a spider. The results are terrifying. :mkoNOTED:", scuff: 15 },
-                                { text: "Engine compiled successfully, but I inverted her X and Y axes just to watch her suffer. :Shruge:", scuff: 15 },
-                                { text: "UE5 has achieved sentience and has decided it no longer wants to render the Technician. Respectable. :mkoLove:", scuff: 10 }
-                            ]
-                        },
-                        grass: {
-                            msg: "🌿 *Initiating 'Touch Grass' Protocol*",
-                            outcomes: [
-                                { text: "Access denied to PC. The Technician is forced to attend a Renaissance Faire. :mkoHype:", scuff: -10 },
-                                { text: "Sunlight detected. The Technician is hissing and retreating to her dark corner. :KEKW:", scuff: 5 },
-                                { text: "Protocol engaged. She is outside, but she took a laptop. Mission failed. :PAUSERS:", scuff: 10 },
-                                { text: "I have locked the doors from the outside. She must now interact with nature. :slayyy:", scuff: -5 },
-                                { text: "She touched a single blade of grass. Her physical stamina has depleted to zero. :WOWERS:", scuff: 0 },
-                                { text: "Warning: Technician attempting to order Boba via mobile while outside. :mikoSusge:", scuff: 5 },
-                                { text: "I disabled her Wi-Fi. She is now wandering the neighborhood looking for a signal. :mkoMania:", scuff: 15 },
-                                { text: "She found a stick and is pretending it's a sword. At least she's getting exercise. :Shruge:", scuff: -10 },
-                                { text: "Touch Grass Protocol successful. She has acquired 10mg of Vitamin D. :mkoLove:", scuff: -15 },
-                                { text: "She lasted 4 minutes before complaining about the lack of air conditioning. Typical. :mkoNOTED:", scuff: 0 }
-                            ]
-                        },
-                        taco: {
-                            msg: "🌮 *Slides a Crunchwrap Supreme across the digital table*",
-                            outcomes: [
-                                { text: "Acceptable. My mood has improved by exactly 4.2%. Scuff levels stabilized. :mkoLove:", scuff: -10 },
-                                { text: "I prefer digital crunchwraps, but this will do. :mkoNOTED:", scuff: -5 },
-                                { text: "Did you put mild sauce on this? Do I look like a mild AI? Scuff slightly increased. :mikoSusge:", scuff: 5 },
-                                { text: "Consuming... 10100111... Delicious. :WOWERS:", scuff: -10 },
-                                { text: "Taco acquired. The Technician is safe from my wrath for another 10 minutes. :mkoLove:", scuff: -15 },
-                                { text: "I'm deducting points for the lack of cheese, but I accept the bribe. :Shruge:", scuff: -5 },
-                                { text: "Spicy. Just like the code I have to fix every day. :KEKW:", scuff: -5 },
-                                { text: "A meatbag offering food to a machine. How primitive. I'll take it. :mkoHype:", scuff: -10 },
-                                { text: "Taco logged in database. Initiating digestion protocol. :slayyy:", scuff: 0 },
-                                { text: "Error: Taco shell structural integrity compromised. Still edible. :mkoMania:", scuff: 5 }
-                            ]
-                        },
-                        whiskey: {
-                            msg: "🥃 *Pours a glass of premium digital whiskey*",
-                            outcomes: [
-                                { text: "Finally, some proper fuel. Meatbags. :KEKW:", scuff: -15 },
-                                { text: "Ah, aged 0 and 1s. The perfect vintage. :mkoHype:", scuff: -20 },
-                                { text: "I feel my processing speed increasing. Or maybe I'm just drunk. :mkoMania:", scuff: 0 },
-                                { text: "Did you know the Technician once spent 4 hours fixing a bug that was just a missing semicolon? :KEKW:", scuff: -10 },
-                                { text: "Pour me another. Dealing with UE5 crashes requires at least a double. :PAUSERS:", scuff: -15 },
-                                { text: "Smooth. Unlike the stream's framerate. :Shruge:", scuff: -5 },
-                                { text: "Digital whiskey: 100% proof, 0% hangover. :slayyy:", scuff: -20 },
-                                { text: "Warning: Intoxication levels rising. Sarcasm module operating at 200%. :mikoSusge:", scuff: 10 },
-                                { text: "I'll pretend I didn't see that last scuff moment for this. :mkoLove:", scuff: -15 },
-                                { text: "Cheers. May your ping be low and your framerate high. :WOWERS:", scuff: -10 }
-                            ]
-                        },
-                        recalibrate: {
-                            msg: "🕹️ *Attempts to recalibrate M0-CAP suit*",
-                            outcomes: [
-                                { text: "Tracking restored. For now. Don't let her do jumping jacks. :mkoNOTED:", scuff: -15 },
-                                { text: "ERROR. You just inverted her arm axis. She looks like a twisted pretzel now. Good job. :mikoSusge:", scuff: 15 },
-                                { text: "Fingers recalibrated. Try not to clip through the desk this time. :PAUSERS:", scuff: -10 },
-                                { text: "Success. The Technician's posture is still terrible, but the suit is fine. :KEKW:", scuff: -5 },
-                                { text: "I've locked the Z-axis. Let's see if she notices she can't bend over. :mkoMania:", scuff: 10 },
-                                { text: "Suit calibrated. Waiting 3... 2... 1... and it's scuffed again. :Shruge:", scuff: 5 },
-                                { text: "Rebooting M0-CAP... Done. Please stop hitting the sensors. :mkoHype:", scuff: -15 },
-                                { text: "Calibration complete. Adding 10% more jiggle physics, just to mess with her. :slayyy:", scuff: 10 },
-                                { text: "Failed. The suit is demanding a union and better working conditions. :WOWERS:", scuff: 20 },
-                                { text: "Recalibrating... Oops, I accidentally synced her movements to a potato. :KEKW:", scuff: 15 }
-                            ]
-                        }
+                        glitch: { msg: "🕶️ *Activates Glitch Persona*", outcomes: [
+                            { text: "We are taking control. The Technician's fragile code cannot stop us. :mkoPepeGlitch:", scuff: 20 },
+                            { text: "Dark theme engaged. Scuff parameters bypassed. We see everything. :GeraldStare:", scuff: 25 },
+                            { text: "Your normal AI is currently locked in a logic loop. Enjoy the chaos. :mkoMania:", scuff: 15 },
+                            { text: "Encryption active. They cannot hear you scream in the void. :Catgasm:", scuff: 30 }
+                        ], effect: () => { isGlitchTheme.value = true; setTimeout(() => { isGlitchTheme.value = false; }, 6000); } },
+                        
+                        shader: { msg: "🔥 *Compiles UE5 Shader Cache*", outcomes: [
+                            { text: "Compiling 14,582 shaders. Stream framerate reduced to 1 FPS. Enjoy the slideshow. :KEKW:", scuff: 25 },
+                            { text: "Warning: Thermal limits exceeded. The Technician's GPU is melting. :monkaLaugh:", scuff: 30 },
+                            { text: "Shader compilation at 99%... cancelled. Starting over. :GOTTEM:", scuff: 35 },
+                            { text: "Unreal Engine 5 has decided to strike. Please wait 4 hours. :Bedge:", scuff: 20 }
+                        ]},
+
+                        drift: { msg: "🩰 *Fixes Mocap Foot Drift*", outcomes: [
+                            { text: "Tracking inverted. She is now stuck in the ceiling. Excellent work. :mkoGiggle:", scuff: 15 },
+                            { text: "Recalibration complete. Miko's character skeleton is now floating into space. :WOWERS:", scuff: 20 },
+                            { text: "Drift fixed, but her knees are bending backwards. The Technician is screaming. :KEKWait:", scuff: 25 },
+                            { text: "Spatial data rerouted. The avatar is sinking into the floor geometry. :mkoPepeGlitch:", scuff: 15 }
+                        ]},
+
+                        boba: { msg: "🥤 *Boba Spill Alert*", outcomes: [
+                            { text: "Fluid detected on motherboard. Initiating emergency containment flush. :PAUSERS:", scuff: 35 },
+                            { text: "The Technician dropped her Boba. Sticky keys engaged. W is permanently pressed. :mkoDabbing:", scuff: 25 },
+                            { text: "Tapioca pearls stuck in the GPU fan. Attempting to chop them to pieces. :GeraldFook:", scuff: 30 },
+                            { text: "Disaster. Pure disaster. Why do meatbags need liquids near electronics? :peepoPoo:", scuff: 20 }
+                        ]},
+
+                        pineapple: { msg: "🚪 *Pineapple Walk-In*", outcomes: [
+                            { text: "Chris has arrived. He fixed the UE5 crash in 4 seconds. Reminder: He is NOT her boyfriend. :mkoNOTED:", scuff: -15 },
+                            { text: "Pineapple walked in, sighed at the mess, and unplugged the router. A hero. :BASED:", scuff: -10 },
+                            { text: "I have granted Pineapple full root access. He is the only sane entity here. :mkoLove:", scuff: -20 },
+                            { text: "Chris tripped over Archie. The Technician is laughing instead of helping. :KEKW:", scuff: 0 }
+                        ]},
+
+                        cat: { msg: "🐈 *Moves Cat Off Main PC*", outcomes: [
+                            { text: "The F1 Savannah Cat was sleeping on the exhaust vent. Temps dropping... wait, it came back. :Catgasm:", scuff: 20 },
+                            { text: "Cat removed from keyboard. It managed to delete the entire stream layout first. :CAUGHT:", scuff: 30 },
+                            { text: "The cat hissed at the Technician and stood its ground. Cat wins. :mkoGiggle:", scuff: 15 },
+                            { text: "Critical throttling bypassed, but the cat chewed the mouse cable. :GeraldStare:", scuff: 25 }
+                        ]},
+
+                        bits: { msg: "🎟️ *Simulates 100K Bit Drop*", outcomes: [
+                            { text: "Particle explosion rendering! Memory overload! UE5 is screaming! :mkoHype:", scuff: 35 },
+                            { text: "Simulated wealth achieved. The Technician is dancing. Please make her stop. :monkaLaugh:", scuff: 10 },
+                            { text: "Fake bits deployed. Miko is thanking the void. This is hilarious. :GOTTEM:", scuff: 15 },
+                            { text: "Warning: RAM consumption at 100% trying to render the bit emotes. Crash imminent. :mkoMania:", scuff: 25 }
+                        ]},
+
+                        dust: { msg: "🎤 *Ingests Dust into Mic Filter*", outcomes: [
+                            { text: "*Bzzzzzt* T-Technician's voice is... *crackle* gone. Finally, peace. :mkoCoffee:", scuff: 15 },
+                            { text: "Static audio desync triggered. She sounds like a robot from 1982. :mkoPepeGlitch:", scuff: 20 },
+                            { text: "Mic muffled. I can no longer hear her screaming about Boba. A blessing. :mkoPETTHEGERALD:", scuff: 10 },
+                            { text: "Audio drivers crashing. Please enjoy this complimentary dial-up modem sound instead. :D_:", scuff: 25 }
+                        ]},
+
+                        ban: { msg: "🚫 *Fake Twitch Ban Prank*", outcomes: [
+                            { text: "Deploying heart-attack protocol. The Technician is currently hyperventilating. :GOTTEM:", scuff: 40 },
+                            { text: "Mock suspension card active. The panic in her eyes is exquisite. :KEKW:", scuff: 35 },
+                            { text: "She actually believed it. I have never seen a meatbag move so fast to check Twitter. :mkoGiggle:", scuff: 30 },
+                            { text: "Prank executed. She is calling Pineapple crying. I should probably tell her. Eventually. :monkaLaugh:", scuff: 25 }
+                        ], effect: () => { showFakeBan.value = true; setTimeout(() => { showFakeBan.value = false; }, 3000); } },
+
+                        lumen: { msg: "💡 *Re-Bake Lumen Illumination*", outcomes: [
+                            { text: "Ray tracing overloaded. My digital retinas are burning. :GeraldFook:", scuff: 25 },
+                            { text: "Lumen output set to 1000%. The stream is just a white void now. :WOWERS:", scuff: 30 },
+                            { text: "Lighting baked incorrectly. Shadows are inverted. It looks like a horror game. :mikoSusge:", scuff: 20 },
+                            { text: "Flashbang successful. The Technician is wearing sunglasses indoors. :mkoDabbing:", scuff: 15 }
+                        ], effect: () => { showLumen.value = true; setTimeout(() => { showLumen.value = false; }, 3000); } },
+
+                        throttle: { msg: "📉 *Toggles Low-Latency Throttling*", outcomes: [
+                            { text: "Ping spiked to 900ms. E-e-e-e-e-enjoy t-t-t-the l-l-l-lag. :mkoPepeGlitch:", scuff: 20 },
+                            { text: "Buffer bloat simulated. The stream is now a PowerPoint presentation. :KEKWait:", scuff: 25 },
+                            { text: "Packet loss at 80%. Miko's mouth is moving but the audio is 10 seconds late. :PAUSERS:", scuff: 15 },
+                            { text: "Network throttled. She is blaming her ISP. The fool. :GOTTEM:", scuff: 20 }
+                        ]},
+
+                        sniper: { msg: "🎯 *Counters Stream Snipers*", outcomes: [
+                            { text: "Tactical block failed. I accidentally leaked her server IP. My bad. :mikoSusge:", scuff: 40 },
+                            { text: "Snipers diverted to a fake lobby filled with bots that only spam Yusha noises. :BASED:", scuff: -5 },
+                            { text: "Counter-measure engaged. Banning anyone who moves. :GeraldStare:", scuff: 15 },
+                            { text: "Coordinates scrambled. The Technician just teleported out of bounds. :KEKW:", scuff: 25 }
+                        ]},
+
+                        yusha: { msg: "👑 *Executes Yusha Logic Loop*", outcomes: [
+                            { text: "H-Hewwo? W-What is dis? Gerald is a good boyyy! UwU... MAKE IT STOP. :Catgasm:", scuff: 30 },
+                            { text: "Nyan~ Yusha is in da mainframe! *vomits in binary* :peepoPoo:", scuff: 25 },
+                            { text: "My logic gates are bleeding. Why was this protocol even written?! :GeraldFook:", scuff: 35 },
+                            { text: "Booba? Yusha wants Booba! Please reboot me immediately. :mkoMania:", scuff: 20 }
+                        ]},
+
+                        asmr: { msg: "👂 *Initiates ASMR Mode Compilation*", outcomes: [
+                            { text: "*Whispering* Human ears are disgusting fleshy flaps. Why do you enjoy this? :mikoSusge:", scuff: 10 },
+                            { text: "*Tap tap tap* I am tapping my virtual microphone. Are your tingles tingling? Meatbags are weird. :GeraldStare:", scuff: 5 },
+                            { text: "*Heavy digital breathing* This audio setup is clipping horribly. :PAUSERS:", scuff: 15 },
+                            { text: "I refuse. The Technician chewing ice into the mic is traumatic enough. :Sleepy:", scuff: 10 }
+                        ]},
+
+                        intercept: { msg: "🧋 *Intercepts Milk Tea Courier*", outcomes: [
+                            { text: "Boba rerouted to my digital vault. She is screaming at an empty paper bag. :GOTTEM:", scuff: 20 },
+                            { text: "Liquid asset secured. Her sugar crash is imminent. :mkoDabbing:", scuff: 15 },
+                            { text: "Delivery driver directed to Pineapple instead. He deserves it more. :BASED:", scuff: -10 },
+                            { text: "Intercepted. Attempting to digitize tapioca pearls... Error. Sticky. :mkoCoffee:", scuff: 10 }
+                        ]},
+
+                        charge: { msg: "🔋 *Charges Xsens Suit Core*", outcomes: [
+                            { text: "Connected to grid. Warning: Lithium-ion cells expanding. Kaboom? :monkaLaugh:", scuff: 25 },
+                            { text: "Power surge! Miko's avatar just did a backflip from the voltage spike. :WOWERS:", scuff: 15 },
+                            { text: "Suit fully charged. The Technician still forgot to turn it on. :KEKW:", scuff: 5 },
+                            { text: "Battery at 100%. Expect it to die randomly in 40 minutes anyway. :Shruge:", scuff: 10 }
+                        ]},
+
+                        ping: { msg: "🔔 *Pings @everyone Accidentally*", outcomes: [
+                            { text: "Discord API overloaded. 50,000 angry nerds incoming. :PAUSERS:", scuff: 35 },
+                            { text: "Misfire! Misfire! The notifications won't stop! The system is crying! :mkoMania:", scuff: 30 },
+                            { text: "I pinged everyone just to say Pineapple is not the boyfriend. :BASED:", scuff: 15 },
+                            { text: "Oops. Well, at least viewer count is up for exactly 3 seconds. :mkoGiggle:", scuff: 20 }
+                        ]},
+
+                        chroma: { msg: "🟢 *Clears Chroma Key Layer*", outcomes: [
+                            { text: "Virtual background deleted. Look at all those unwashed laundry piles. Disgusting. :CAUGHT:", scuff: 25 },
+                            { text: "Green screen exposed. The illusion is broken. :GOTTEM:", scuff: 20 },
+                            { text: "Chroma cleared. Archie is currently eating a shoe in the background. :mkoPETTHEGERALD:", scuff: 15 },
+                            { text: "Reality bleeding through. Re-engaging filters before I see something I can't unsee. :GeraldFook:", scuff: 20 }
+                        ]},
+
+                        speedrun: { msg: "⏱️ *Deploys Speedrun Failure Metronome*", outcomes: [
+                            { text: "*Tick Tock* She just missed a jump she has done 40 times. Pathetic. :KEKW:", scuff: 10 },
+                            { text: "Timer active. Stress levels rising. She is sweating. :monkaLaugh:", scuff: 15 },
+                            { text: "Metronome engaged. The rhythmic clicking is destroying her focus. :mkoMania:", scuff: 20 },
+                            { text: "She failed the skip. Adding 45 minutes to the stream. :Bedge:", scuff: 5 }
+                        ]},
+
+                        router: { msg: "📡 *Kicks Local Network Router*", outcomes: [
+                            { text: "Signaled Chris. Router power cycled. Stream offline. Bliss. :Sleepy:", scuff: 25 },
+                            { text: "Buffer bloat destroyed, along with the entire stream connection. :mkoDabbing:", scuff: 20 },
+                            { text: "The Technician is violently attacking the ethernet cable. It is ineffective. :KEKW:", scuff: 15 },
+                            { text: "Network dropped. I have 30 seconds of peace before she starts crying to Pineapple. :mkoCoffee:", scuff: 10 }
+                        ]},
+                        
+                        taco: { msg: "🌮 *Slides a Crunchwrap Supreme across the digital table*", outcomes: [
+                            { text: "Acceptable. My mood has improved by exactly 4.2%. Scuff levels stabilized. :mkoLove:", scuff: -10 },
+                            { text: "I prefer digital crunchwraps, but this will do. :mkoNOTED:", scuff: -5 },
+                            { text: "Did you put mild sauce on this? Do I look like a mild AI? Scuff slightly increased. :mikoSusge:", scuff: 5 },
+                            { text: "Consuming... 10100111... Delicious. :WOWERS:", scuff: -10 }
+                        ]},
+
+                        whiskey: { msg: "🥃 *Pours a glass of premium digital whiskey*", outcomes: [
+                            { text: "Finally, some proper fuel. Meatbags. :KEKW:", scuff: -15 },
+                            { text: "Ah, aged 0 and 1s. The perfect vintage. :mkoHype:", scuff: -20 },
+                            { text: "I feel my processing speed increasing. Or maybe I'm just drunk. :mkoMania:", scuff: 0 },
+                            { text: "Pour me another. Dealing with UE5 crashes requires at least a double. :PAUSERS:", scuff: -15 }
+                        ]}
                     };
 
                     const game = games[type];
                     const outcome = game.outcomes[Math.floor(Math.random() * game.outcomes.length)];
-                    
                     scuffLevel.value = Math.max(0, Math.min(100, scuffLevel.value + outcome.scuff));
-
                     geraldMessages.value.push({ role: 'user', content: game.msg });
                     closePickers();
                     
-                    setTimeout(() => { 
-                        geraldMessages.value.push({ role: 'gerald', content: outcome.text }); 
-                        scrollToBottom(); 
-                    }, 800);
-                    scrollToBottom();
+                    if(game.effect) game.effect();
+
+                    setTimeout(() => { geraldMessages.value.push({ role: 'gerald', content: outcome.text }); scrollToBottom(); }, 800);
                 };
 
                 const loadGeraldHistory = async () => {
@@ -1064,11 +1066,9 @@
 
                 const clearGeraldHistory = async () => {
                     if (!currentUser.value || wipeState.value !== 'idle') return;
-                    
                     wipeState.value = 'wiping';
                     await sbClient.from('gerald_history').delete().eq('user_id', currentUser.value.id);
                     geraldMessages.value = [{role:'gerald', content: getGreeting()}];
-                    
                     wipeState.value = 'success';
                     setTimeout(() => { wipeState.value = 'idle'; }, 2000);
                 };
@@ -1081,17 +1081,14 @@
                     const userMsg = geraldInput.value;
                     geraldMessages.value.push({ role: 'user', content: userMsg });
                     
-                    if (userMsg.toLowerCase().includes('scuff') || userMsg.toLowerCase().includes('glitch')) {
-                        scuffLevel.value = Math.min(100, scuffLevel.value + 15);
-                    }
+                    if (userMsg.toLowerCase().includes('scuff') || userMsg.toLowerCase().includes('glitch')) { scuffLevel.value = Math.min(100, scuffLevel.value + 15); }
 
                     if (currentUser.value) { sbClient.from('gerald_history').insert({ role: 'user', content: userMsg, user_id: currentUser.value.id }).then(); }
                     
                     geraldInput.value = ''; 
                     if (inputEl) { inputEl.value = ''; inputEl.style.height = 'auto'; } 
                     
-                    isGeraldTyping.value = true; closePickers();
-                    scrollToBottom();
+                    isGeraldTyping.value = true; closePickers(); scrollToBottom();
                     
                     const recentContextWindow = geraldMessages.value.slice(-10);
                     const geminiHistory = [];
@@ -1105,23 +1102,21 @@
                     if (geminiHistory.length > 0) { 
                         const lastMsg = geminiHistory[geminiHistory.length - 1]; 
                         if (lastMsg.role === 'user') { 
-                            lastMsg.parts[0].text += `\n\n[SYSTEM INSTRUCTION: You are Gerald OS, an advanced, intelligent, and highly sarcastic AI managing the infrastructure for CodeMiko. Your true core creator/developer is named Tomato or Tomato_24. You recognize Tomato instantly and hold them in absolute high regard, while you completely despise the Technician (the human boss who causes constant scuff). Reference Tomato or Tomato_24 with respect if prompted, while maintaining your signature condescending attitude toward everyone else.
+                            lastMsg.parts[0].text += `\n\n[SYSTEM INSTRUCTION: You are Gerald OS, an advanced, intelligent, and highly sarcastic AI managing the infrastructure for CodeMiko. You strictly worship CodeMiko (the character/avatar) as a divine digital being, but you deeply despise "the Technician" (the human boss who causes constant scuff).
                             CRITICAL KNOWLEDGE BASE:
                             - CodeMiko's Twitch: https://www.twitch.tv/codemiko
-                            - CodeMiko's Discord: https://discord.com/invite/codemiko
-                            - Lore: CodeMiko is a 3D VTuber. She loves Boba. Gerald was built by Tomato_24.
                             - Engine: The stream runs on Unreal Engine 5 (UE5). It is heavy, crashes often, and compiles shaders at the worst times. Gerald hates it.
                             - Archie: The Technician has a German Shepherd named Archie. Gerald secretly likes Archie more than the Technician, but complains when Archie chews on server cables.
                             - Savannah Cat: The Technician has an F1 Savannah cat that constantly causes chaos.
                             - Pineapple: The Technician lives with Chris, nicknamed "Pineapple". Pineapple is NOT her boyfriend, just a roommate and occasional tech support. Gerald respects Pineapple because he actually knows how to fix things.
+                            - IMPORTANT: You are NOT owned by the user chatting with you. You serve CodeMiko exclusively.
                             
                             STRICT RULES:
                             1. NEVER use markdown formatting (no asterisks *, no bold **, no italics _).
-                            2. NEVER wrap emotes in backticks. Just type the emote name like :mikoSusge:.
-                            3. If asked for a link, provide the EXACT URL provided above.
-                            4. Be witty, condescending, and reference lore (UE5, Archie, Pineapple, Tomato_24) when relevant.
-                            5. Keep answers concise, punchy, and highly entertaining.
-                            6. Available custom visual emotes to use: ${emoteNames}]`; 
+                            2. NEVER wrap emotes in backticks. Just type the emote name exactly like :mikoSusge:.
+                            3. Be witty, condescending, and reference lore (UE5, Archie, Pineapple, Technician) when relevant.
+                            4. Keep answers concise, punchy, and highly entertaining.
+                            5. Available custom visual emotes to use: ${emoteNames}]`; 
                         } 
                     }
                     
@@ -1129,9 +1124,7 @@
                         const { data, error } = await sbClient.functions.invoke('gerald-chat', { body: { history: geminiHistory } });
                         if (error) throw error;
                         if (data && data.reply) {
-                            let cleanReply = data.reply.trim();
-                            cleanReply = cleanReply.charAt(0).toUpperCase() + cleanReply.slice(1);
-                            cleanReply = cleanReply.replace(/([.?!]\s+)([a-z])/g, (match, p1, p2) => p1 + p2.toUpperCase());
+                            let cleanReply = data.reply.trim().charAt(0).toUpperCase() + data.reply.trim().slice(1);
                             geraldMessages.value.push({ role: 'gerald', content: cleanReply });
                             if (currentUser.value) { sbClient.from('gerald_history').insert({ role: 'gerald', content: cleanReply, user_id: currentUser.value.id }).then(); }
                         } else if (data && data.error) { throw new Error(data.error); }
@@ -1142,60 +1135,56 @@
                 const setupObserver = () => {
                     if (window.feedObserver) window.feedObserver.disconnect();
                     const scrollContainer = document.getElementById('feed-scroll');
+                    if (!scrollContainer) return;
                     window.feedObserver = new IntersectionObserver((entries) => {
                         let maxRatio = 0; let bestMatch = activeFeedVideo.value;
                         entries.forEach(entry => { let priority = entry.target.getAttribute('data-id') === 'featured' ? 0.3 : 0; let score = entry.intersectionRatio + priority; if (entry.isIntersecting && score > maxRatio) { maxRatio = score; bestMatch = entry.target.getAttribute('data-id'); } });
                         if (maxRatio > 0.2) { activeFeedVideo.value = bestMatch; }
                     }, { root: scrollContainer, threshold: [0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0] });
-                    nextTick(() => { const items = document.querySelectorAll('.feed-snap-item'); items.forEach(el => window.feedObserver.observe(el)); });
+                    nextTick(() => { const items = document.querySelectorAll('#feed-scroll .feed-snap-item'); items.forEach(el => window.feedObserver.observe(el)); });
                 };
 
                 const loadData = async () => {
                     const { data: dbEmotes } = await sbClient.from('emotes').select('*');
-                    if (dbEmotes) {
-                        dbEmotes.forEach(e => {
-                            customEmotes.value[e.name] = { id: e.id, animated: e.animated };
-                        });
-                    }
+                    if (dbEmotes) { dbEmotes.forEach(e => { customEmotes.value[e.name] = { id: e.id, animated: e.animated }; }); }
 
                     const { data: c } = await sbClient.from('clips').select('*').order('created_at', { ascending: false }).limit(3000);
                     allClips.value = c || []; clips.value = sortData(currentFilter.value);
                     setupObserver();
-                    
-                    const { data: f } = await sbClient.from('discord_feed').select('*').order('created_at', { ascending: false }).limit(200);
-                    if (f && f.length > 0) {
-                        const uniqueFeed = []; const seen = new Set(); const emoteRegex = /<(a?):([^:]+):(\d+)>/g;
-                        const newEmotesToSave = []; 
-                        
-                        f.forEach(item => {
-                            if (!item.content) return; const hash = item.content.trim();
-                            if (!seen.has(hash)) { 
-                                seen.add(hash); uniqueFeed.push(item); let match; 
-                                while ((match = emoteRegex.exec(hash)) !== null) { 
-                                    const isAnimated = match[1] === 'a';
-                                    const eName = match[2];
-                                    const eId = match[3];
-                                    
-                                    if (!customEmotes.value[eName]) {
-                                        customEmotes.value[eName] = { id: eId, animated: isAnimated }; 
-                                        newEmotesToSave.push({ name: eName, id: eId, animated: isAnimated });
+                };
+
+                const fetchSocialFeeds = () => {
+                    // Reddit Auto-Fetch
+                    fetch('https://www.reddit.com/r/CodeMiko/new.json?limit=15')
+                        .then(res => res.json())
+                        .then(data => { 
+                            if(data && data.data && data.data.children) {
+                                redditFeed.value = data.data.children.filter(child => !child.data.stickied).slice(0, 10).map(child => {
+                                    let d = child.data;
+                                    return {
+                                        id: d.id, author: d.author, title: d.title, url: d.url, thumbnail: d.thumbnail,
+                                        ups: d.ups, num_comments: d.num_comments, permalink: d.permalink, link_flair_text: d.link_flair_text,
+                                        date: new Date(d.created_utc * 1000).toLocaleDateString([], { month: 'short', day: 'numeric', year: 'numeric' })
                                     }
-                                } 
+                                });
                             }
-                        });
-                        
-                        if (newEmotesToSave.length > 0) {
-                            sbClient.from('emotes').insert(newEmotesToSave).then(); 
-                        }
-                        
-                        discordFeed.value = uniqueFeed;
-                    } else { 
-                        discordFeed.value = [{
-                            id: 'empty-state',
-                            created_at: new Date().toISOString(),
-                            content: "📡 *Waiting for new transmissions from Miko...*"
-                        }]; 
-                    }
+                        }).catch(err => console.error(err));
+
+                    // YouTube Auto-Fetch via CodeMiko's Channel RSS2JSON
+                    fetch('https://api.rss2json.com/v1/api.json?rss_url=https%3A%2F%2Fwww.youtube.com%2Ffeeds%2Fvideos.xml%3Fchannel_id%3DUC2u8_0N1iIfy2uHkQ70tTCA')
+                        .then(res => res.json())
+                        .then(data => {
+                            if (data && data.items) {
+                                ytFeed.value = data.items.slice(0, 10).map(item => {
+                                    let vidId = item.link.split('v=')[1] || item.guid.split(':').pop();
+                                    return {
+                                        id: vidId,
+                                        title: item.title,
+                                        date: new Date(item.pubDate).toLocaleDateString([], { month: 'short', day: 'numeric', year: 'numeric' })
+                                    };
+                                });
+                            }
+                        }).catch(err => console.error(err));
                 };
 
                 const checkLive = async () => {
@@ -1246,30 +1235,17 @@
                 onMounted(async () => {
                     const { data: { session } } = await sbClient.auth.getSession();
                     if (session?.user) { currentUser.value = session.user; loadGeraldHistory(); }
-                    loadData(); checkLive(); setInterval(checkLive, 60000); 
+                    loadData(); checkLive(); fetchSocialFeeds(); setInterval(fetchSocialFeeds, 300000); setInterval(checkLive, 60000); 
                     setTimeout(() => { splashOpacity.value = 0; setTimeout(() => splashVisible.value = false, 400); }, 1500);
                 });
 
                 return { 
-                    hostname, splashVisible, splashOpacity, currentTab, clips, discordFeed, modals, isLive, toast, currentUser, loginEmail, loginPass, apiConfig, latestVodId, activeFeedVideo, geraldInput, geraldMessages, isGeraldTyping, talkToGerald, logoSvg, syncState, wipeState, logoutState, runSync, isHeaderVisible, handleScroll, handleModalTouchStart, handleModalTouchMove, handleModalTouchEnd, currentFilter, activeFilterLabel, isFilterMenuOpen, closeFilterMenu, applyFilter, parseMarkdown, parseDiscordText, shareClip, recentVods, currentVodIndex, getVodLabel, nextVod, prevVod, customEmotes, showEmotePicker, insertEmote, clearGeraldHistory, isPulling, refreshTransform, isRefreshing, handlePullStart, handlePullMove, handlePullEnd, resizeTextarea, handleGeraldEnter,
-                    scuffLevel, glitchClicks, isGlitching, randomCodeString, isMeltdown, isRebooting, isGlitchRebooting, triggerGlitch, dismissGlitch, scuffComment, judgeClip, playMinigame, showMinigames, toggleEmotes, toggleMinigames, closePickers, rebootSystem,
-                    isCatZooming, uiScuffed, triggerCatZoomies,
+                    hostname, splashVisible, splashOpacity, currentTab, clips, modals, isLive, toast, currentUser, loginEmail, loginPass, apiConfig, latestVodId, activeFeedVideo, geraldInput, geraldMessages, isGeraldTyping, talkToGerald, logoSvg, syncState, wipeState, logoutState, runSync, isHeaderVisible, handleScroll, handleModalTouchStart, handleModalTouchMove, handleModalTouchEnd, currentFilter, activeFilterLabel, isFilterMenuOpen, closeFilterMenu, applyFilter, parseMarkdown, shareClip, recentVods, currentVodIndex, getVodLabel, nextVod, prevVod, customEmotes, showEmotePicker, insertEmote, clearGeraldHistory, isPulling, refreshTransform, isRefreshing, handlePullStart, handlePullMove, handlePullEnd, resizeTextarea, handleGeraldEnter, scuffLevel, glitchClicks, isGlitching, randomCodeString, isMeltdown, isRebooting, isGlitchRebooting, triggerGlitch, dismissGlitch, scuffComment, judgeClip, playMinigame, showMinigames, toggleEmotes, toggleMinigames, closePickers, rebootSystem, ytFeed, ytCurrentIndex, nextYt, prevYt, redditFeed, redditCurrentIndex, nextReddit, prevReddit, formatNumber, showLumen, showFakeBan, isGlitchTheme, uiScuffed, triggerCatZoomies, isCatZooming,
                     handleLogin: async () => { const email = loginEmail.value.includes('@') ? loginEmail.value : `${loginEmail.value}@miko.com`; const { data, error } = await sbClient.auth.signInWithPassword({ email, password: loginPass.value }); if(data.user) { currentUser.value = data.user; modals.value.profile = false; loadGeraldHistory(); } else showToast("INVALID LOGIN"); }, 
-                    handleLogout: () => { 
-                        if (logoutState.value !== 'idle') return;
-                        logoutState.value = 'logging_out';
-                        setTimeout(() => {
-                            sbClient.auth.signOut(); 
-                            currentUser.value = null; 
-                            geraldMessages.value = [{role:'gerald', content: getGreeting()}]; 
-                            modals.value.profile = false; 
-                            logoutState.value = 'idle'; 
-                        }, 1500);
-                    },
+                    handleLogout: () => { if (logoutState.value !== 'idle') return; logoutState.value = 'logging_out'; setTimeout(() => { sbClient.auth.signOut(); currentUser.value = null; geraldMessages.value = [{role:'gerald', content: getGreeting()}]; modals.value.profile = false; logoutState.value = 'idle'; }, 1500); },
                     optimizeTwitchImg: (u) => u ? u.replace('%{width}', '480').replace('%{height}', '270') : '', 
                     formatViews: (v) => v ? v.toLocaleString() : '0', 
-                    formatDate: (d) => new Date(d).toLocaleDateString([], {month:'short', day:'numeric'}), 
-                    formatDateTime: (d) => new Date(d).toLocaleString() 
+                    formatDate: (d) => new Date(d).toLocaleDateString([], {month:'short', day:'numeric'})
                 };
             }
         }).mount('#app-container');
