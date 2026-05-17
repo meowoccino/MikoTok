@@ -127,11 +127,11 @@
         .scroll-area { height: 100%; width: 100%; overflow-y: auto; scroll-behavior: smooth; padding-bottom: 80px; }
         .scroll-area::-webkit-scrollbar { display: none; }
         
-        /* 🚨 Home Clips Scroll Snap */
+        /* Home Clips Snap Setup */
         #feed-scroll { padding-bottom: 0; scroll-snap-type: y mandatory; }
         .feed-snap-item { width: 100%; height: 100%; flex-shrink: 0; display: flex; flex-direction: column; justify-content: center; position: relative; padding: 0 15px 80px; scroll-snap-align: start; scroll-snap-stop: always; }
         
-        /* 🚨 Social Tab Layout */
+        /* New Feed Compact Rules (No full screen scroll snap) */
         #social-scroll { padding: 90px 15px 90px; display: flex; flex-direction: column; justify-content: space-evenly; gap: 25px; height: 100%; overflow-y: auto; }
         .social-card-wrapper { display: flex; flex-direction: column; width: 100%; }
 
@@ -461,8 +461,8 @@
                                 </div>
                                 
                                 <div style="display: flex; flex-direction: column;">
-                                    <div v-if="redditFeed[redditCurrentIndex].thumbnail && redditFeed[redditCurrentIndex].thumbnail.startsWith('http')" style="width: 100%; aspect-ratio: 16/9; border-radius: 8px; overflow: hidden; background: #000; margin-bottom: 12px; border: 1px solid #27272a;">
-                                        <img :src="redditFeed[redditCurrentIndex].thumbnail" style="width: 100%; height: 100%; object-fit: cover;" onerror="this.closest('div').style.display='none'" alt="Reddit Media">
+                                    <div v-if="redditFeed[redditCurrentIndex].thumbnail && redditFeed[redditCurrentIndex].thumbnail.startsWith('http')" style="width: 100%; max-height: 250px; border-radius: 8px; overflow: hidden; background: #000; margin-bottom: 12px; border: 1px solid #27272a;">
+                                        <img :src="redditFeed[redditCurrentIndex].thumbnail" style="width: 100%; height: auto; max-height: 250px; object-fit: cover;" onerror="this.closest('div').style.display='none'" alt="Reddit Media">
                                     </div>
                                     <div class="reddit-post-title" style="flex: 1;">{{ redditFeed[redditCurrentIndex].title }}</div>
                                 </div>
@@ -654,7 +654,6 @@
             <div class="nav-item" :class="{ 'active-gerald': currentTab === 'gerald' }" @click="currentTab = 'gerald'; isHeaderVisible = true"><span class="material-symbols-rounded">smart_toy</span>Gerald</div>
         </nav>
     </div>
-
     <script>
       if ('serviceWorker' in navigator) {
         window.addEventListener('load', () => {
@@ -773,7 +772,7 @@
                 };
 
                 const applyFilter = (filterKey, label) => {
-                    currentFilter.value = filterKey; activeFilterLabel.value = label; isFilterMenuOpen = false; runNeonAnimation();
+                    currentFilter.value = filterKey; activeFilterLabel.value = label; isFilterMenuOpen.value = false; runNeonAnimation();
                     const feedContainer = document.getElementById('feed-scroll');
                     if(feedContainer) {
                         clips.value = sortData(filterKey);
@@ -1154,9 +1153,16 @@
                 };
 
                 const fetchSocialFeeds = () => {
+                    // Set a strict 5-second timeout so the app NEVER freezes again
+                    const abortController = new AbortController();
+                    setTimeout(() => abortController.abort(), 5000);
+
                     // Reddit Auto-Fetch
-                    fetch('https://www.reddit.com/r/CodeMiko/new.json?limit=15')
-                        .then(res => res.json())
+                    fetch('https://www.reddit.com/r/CodeMiko/new.json?limit=15', { signal: abortController.signal })
+                        .then(res => {
+                            if (!res.ok) throw new Error("Reddit API blocked.");
+                            return res.json();
+                        })
                         .then(data => { 
                             if(data && data.data && data.data.children) {
                                 redditFeed.value = data.data.children.filter(child => !child.data.stickied).slice(0, 10).map(child => {
@@ -1168,11 +1174,19 @@
                                     }
                                 });
                             }
-                        }).catch(err => console.error(err));
+                        })
+                        .catch(err => {
+                            console.error("Reddit fetch failed:", err);
+                            redditFeed.value = [{ permalink: '/r/CodeMiko', author: 'System Error', title: "Reddit connection timed out or blocked.", thumbnail: '', ups: 0, num_comments: 0, date: "Just now" }];
+                        });
 
-                    // YouTube Auto-Fetch via CodeMiko's Channel RSS2JSON
-                    fetch('https://api.rss2json.com/v1/api.json?rss_url=https%3A%2F%2Fwww.youtube.com%2Ffeeds%2Fvideos.xml%3Fchannel_id%3DUC2u8_0N1iIfy2uHkQ70tTCA')
-                        .then(res => res.json())
+                    // REAL YouTube Auto-Fetch via RSS2JSON mapping CodeMiko's channel
+                    const ytRssUrl = encodeURIComponent('https://www.youtube.com/feeds/videos.xml?channel_id=UC2uvBvD5z4tSqa-0B_PHEAw');
+                    fetch(`https://api.rss2json.com/v1/api.json?rss_url=${ytRssUrl}`, { signal: abortController.signal })
+                        .then(res => {
+                            if (!res.ok) throw new Error("YouTube RSS failed.");
+                            return res.json();
+                        })
                         .then(data => {
                             if (data && data.items) {
                                 ytFeed.value = data.items.slice(0, 10).map(item => {
@@ -1184,7 +1198,11 @@
                                     };
                                 });
                             }
-                        }).catch(err => console.error(err));
+                        })
+                        .catch(err => {
+                            console.error("YouTube fetch failed:", err);
+                            ytFeed.value = [{ id: 'dQw4w9WgXcQ', title: "YouTube connection timed out.", date: "Just now" }];
+                        });
                 };
 
                 const checkLive = async () => {
