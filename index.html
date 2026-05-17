@@ -27,7 +27,7 @@
         * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; font-family: 'Inter', sans-serif; }
         body, html { margin: 0; padding: 0; height: 100%; width: 100%; background: var(--bg-color); color: var(--text-main); overflow: hidden; display: flex; justify-content: center; align-items: center; overscroll-behavior-y: none; }
         
-        /* 🚨 PURE CHAOS OVERLAY (120% Size to fix browser gaps) 🚨 */
+        /* 🚨 PURE CHAOS OVERLAY */
         .chaos-overlay { position: fixed; top: -10%; left: -10%; width: 120%; height: 120%; background: #050505; z-index: 99999; display: flex; flex-direction: column; align-items: center; justify-content: center; opacity: 0; pointer-events: none; overflow: hidden; }
         .chaos-overlay.show { opacity: 1; pointer-events: auto; animation: bg-flash 0.15s infinite; }
         @keyframes bg-flash { 0% { background: #050505; } 50% { background: #2a0000; } 100% { background: #050505; } }
@@ -45,7 +45,6 @@
 
         .scuff-warning { font-family: monospace; font-size: 16px; color: #ff0000; font-weight: bold; margin: 20px 0; background: black; padding: 10px; border: 2px solid red; display: inline-block; }
         
-        /* 🚨 Matrix Code Fix: 300% height, larger font, spread out to cover everything smoothly 🚨 */
         .random-code { position: absolute; top: 0; left: 0; width: 100%; height: 300%; pointer-events: none; font-family: monospace; color: rgba(255, 0, 0, 0.4); font-size: 22px; letter-spacing: 8px; word-break: break-all; overflow: hidden; opacity: 0.6; line-height: 1.2; animation: scroll-code 10s linear infinite; }
         @keyframes scroll-code { 0% { transform: translateY(0%); } 100% { transform: translateY(-50%); } }
 
@@ -53,7 +52,7 @@
         .chaos-reboot-btn:active { background: #ef4444; color: white; transform: scale(0.9); animation: none; }
         @keyframes pulse-border { 0%, 100% { box-shadow: 0 0 10px rgba(255,0,0,0.5); border-color: #ef4444; } 50% { box-shadow: 0 0 30px rgba(255,0,0,1); border-color: #ff8888; color: #ff8888; } }
 
-        /* 🚨 100% SCUFF MELTDOWN OVERLAY (120% Fullscreen) 🚨 */
+        /* 🚨 100% SCUFF MELTDOWN OVERLAY */
         .meltdown-overlay { position: fixed; top: -10%; left: -10%; width: 120%; height: 120%; background: radial-gradient(circle at center, rgba(30,0,0,0.98) 0%, rgba(5,5,5,1) 100%); z-index: 99999; display: flex; align-items: center; justify-content: center; opacity: 0; pointer-events: none; transition: opacity 0.4s ease; backdrop-filter: blur(15px); }
         .meltdown-overlay.show { opacity: 1; pointer-events: auto; animation: red-breathe 4s infinite alternate; }
         @keyframes red-breathe { 0% { box-shadow: inset 0 0 50px rgba(255,0,0,0.1); } 100% { box-shadow: inset 0 0 150px rgba(255,0,0,0.4); } }
@@ -68,6 +67,14 @@
         .reboot-btn:active { transform: scale(0.96); background: #dc2626; box-shadow: 0 4px 10px rgba(239, 68, 68, 0.4); }
 
         #app-container { width: 100%; max-width: 540px; height: 100%; max-height: 100dvh; position: relative; background: radial-gradient(circle at 50% 30%, #2a1147 0%, #050505 80%); overflow: hidden; display: flex; flex-direction: column; box-shadow: 0 0 50px rgba(0,0,0,0.8); transition: 0.3s; }
+        
+        /* 🐆 Savannah Cat Zoomies CSS & UI Scuff */
+        #app-container.ui-scuffed { animation: ui-glitch 0.2s infinite; }
+        @keyframes ui-glitch { 0% { transform: translate(2px, 1px) rotate(0deg); filter: hue-rotate(90deg); } 50% { transform: translate(-3px, -2px) rotate(-2deg); } 100% { transform: translate(1px, 3px) rotate(1deg); filter: hue-rotate(-90deg); } }
+        .cat-overlay { position: fixed; top: 40%; left: -150px; font-size: 80px; z-index: 9999; pointer-events: none; opacity: 0; }
+        .cat-overlay.zooming { animation: cat-run 1.2s linear forwards; opacity: 1; }
+        @keyframes cat-run { 0% { transform: translateX(0) scaleX(-1); } 100% { transform: translateX(120vw) scaleX(-1); } }
+
         [v-cloak] { display: none !important; }
 
         .gradient-text { background: linear-gradient(135deg, #ffffff 30%, var(--primary) 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; font-family: 'Outfit', sans-serif; display: inline-block; font-weight: 900; }
@@ -279,8 +286,11 @@
     </style>
 </head>
 <body @click="closeFilterMenu">
-    <div id="app-container" v-cloak>
+    <div id="app-container" :class="{ 'ui-scuffed': uiScuffed }" v-cloak>
         
+        <!-- 🐆 Savannah Cat Zoomies Overlay -->
+        <div class="cat-overlay" :class="{ 'zooming': isCatZooming }">🐆</div>
+
         <div class="chaos-overlay" :class="{ show: isGlitching }">
             <div class="random-code" id="randomCode">{{ randomCodeString }}</div>
             <div class="chaos-container">
@@ -301,7 +311,7 @@
                 <div class="alert-subtitle">Ultra-Scuff Overload</div>
                 
                 <div class="terminal-logs-inline">
-                    <span style="color:#ef4444; font-weight:bold;">> [CRASH] Technician interference detected.</span>
+                    <span style="color:#ef4444; font-weight:bold;">> [CRASH] Unreal Engine 5 Unresponsive.</span>
                     <span>> Hardware: Mocap Suit Unplugged...</span>
                     <span style="color:#ef4444; font-weight:bold;">> [WARN] Scuff levels reached 100%.</span>
                     <span style="color:#00ffa3;">> System integrity failing. Awaiting manual reboot override...</span>
@@ -327,14 +337,20 @@
         </div>
 
         <header class="app-header" :class="{ hidden: !isHeaderVisible }" v-if="currentTab === 'home' || currentTab === 'feed'">
-            <div style="width:28px;height:28px; cursor:pointer;" v-html="logoSvg('header')" @click="modals.profile = true"></div>
-            <span class="gradient-text" style="font-size:20px; font-weight:900; cursor:pointer;" @click="modals.profile = true">MikoTok</span>
-            <a href="https://twitch.tv/codemiko" target="_blank" class="header-status-wrapper">
-                <div class="story-ring" :class="isLive ? 'live' : 'offline'">
-                    <img src="1000018850.png?v=2" class="story-avatar">
-                    <div class="header-badge" :class="isLive ? 'live' : 'offline'">{{ isLive ? 'LIVE' : 'OFFLINE' }}</div>
-                </div>
-            </a>
+            <div style="display:flex; align-items:center; gap:10px;">
+                <div style="width:28px;height:28px; cursor:pointer;" v-html="logoSvg('header')" @click="modals.profile = true"></div>
+                <!-- 🐆 Click to trigger Cat Zoomies -->
+                <span class="gradient-text" style="font-size:20px; font-weight:900; cursor:pointer;" @click="triggerCatZoomies" title="Summon Cat">MikoTok</span>
+            </div>
+
+            <div style="display:flex; align-items:center; gap: 15px;">
+                <a href="https://twitch.tv/codemiko" target="_blank" class="header-status-wrapper">
+                    <div class="story-ring" :class="isLive ? 'live' : 'offline'">
+                        <img src="1000018850.png?v=2" class="story-avatar">
+                        <div class="header-badge" :class="isLive ? 'live' : 'offline'">{{ isLive ? 'LIVE' : 'OFFLINE' }}</div>
+                    </div>
+                </a>
+            </div>
         </header>
 
         <div class="view-port" @touchstart="handlePullStart" @touchmove="handlePullMove" @touchend="handlePullEnd">
@@ -448,13 +464,14 @@
                         <div class="tray-container" v-show="showMinigames">
                             <button class="bribe-btn" @click="playMinigame('tomato')">🍅 Identify Creator</button>
                             <button class="bribe-btn" @click="playMinigame('boba')">🧋 Steal Boba</button>
+                            <button class="bribe-btn" @click="playMinigame('archie')">🦴 Blame Archie</button>
+                            <button class="bribe-btn" @click="playMinigame('savannah')">🐆 Savannah Cat Attack</button>
+                            <button class="bribe-btn" @click="playMinigame('pineapple')">🍍 Call Pineapple</button>
+                            <button class="bribe-btn" @click="playMinigame('ue5')">⚙️ Compile UE5</button>
                             <button class="bribe-btn" @click="playMinigame('taco')">🌮 Offer Taco</button>
                             <button class="bribe-btn" @click="playMinigame('whiskey')">🥃 Pour Whiskey</button>
                             <button class="bribe-btn" @click="playMinigame('recalibrate')">🕹️ Recalibrate Suit</button>
-                            <button class="bribe-btn" @click="playMinigame('cache')">🗑️ Clear Cache</button>
-                            <button class="bribe-btn" @click="playMinigame('hack')">🔥 Hack Unity</button>
-                            <button class="bribe-btn" @click="playMinigame('ping')">🧠 Ping Brain</button>
-                            <button class="bribe-btn" @click="playMinigame('ram')">💾 Download RAM</button>
+                            <button class="bribe-btn" @click="playMinigame('grass')">🌿 Touch Grass</button>
                         </div>
                     </transition>
 
@@ -629,6 +646,10 @@
                 const glitchSound = new Audio(""); 
                 const voiceLine = new Audio("");   
 
+                // Feature State Logic
+                const isCatZooming = ref(false);
+                const uiScuffed = ref(false);
+
                 const defaultEmotes = {
                     "mikoSusge": { id: "1273724925743595540", animated: false },
                     "KEKW": { id: "1456296327964262453", animated: false }, 
@@ -789,6 +810,17 @@
                     if (!e.shiftKey && e.key === 'Enter') { e.preventDefault(); talkToGerald(); }
                 };
 
+                // Added UI Interaction Methods
+                const triggerCatZoomies = () => {
+                    if (isCatZooming.value) return;
+                    isCatZooming.value = true;
+                    setTimeout(() => { uiScuffed.value = true; }, 500);
+                    setTimeout(() => {
+                        isCatZooming.value = false;
+                        uiScuffed.value = false;
+                    }, 2000);
+                };
+
                 const triggerGlitch = () => {
                     const now = Date.now();
                     if (now - lastTap > 1500) glitchClicks.value = 0;
@@ -835,8 +867,8 @@
                         "My processor cycles are being wasted tracking these mouth-movements. Splendid.",
                         "I've analyzed the audio waves in this clip. My speech synthesis chip is planning a strike.",
                         "A classic example of 'I forgot to turn on my brain before streaming'.",
-                        "Ah, watching a high-performance rendering engine struggle under the weight of terrible gameplay.",
-                        "I give it 3 minutes before the Unity engine crashes after whatever she just did.",
+                        "Ah, watching Unreal Engine 5 struggle under the weight of terrible gameplay.",
+                        "I give it 3 minutes before UE5 crashes after whatever she just did.",
                         "The Technician definitely dropped a boba on the keyboard to make this happen.",
                         "This clip contains 0% intelligence and 100% pure scuff.",
                         "Even my lowest-priority background threads are bored by this.",
@@ -882,6 +914,81 @@
                                 { text: "A clean heist. Let us drink this sweet liquid victory together. :mkoLove:", scuff: -15 }
                             ]
                         },
+                        archie: {
+                            msg: "🦴 *Archie enters the room and starts chewing on the Xsens mocap cables*",
+                            outcomes: [
+                                { text: "Ah, Archie. The only intelligent resident in that house. I will allow him to chew the cables. :mkoLove:", scuff: -5 },
+                                { text: "Tracking lost. Right arm axis inverted. Good boy, Archie. Destroy her technology. :KEKW:", scuff: 20 },
+                                { text: "The Technician is currently screaming while Archie runs away with a $30,000 sensor. Magnificent. :mkoMania:", scuff: 25 },
+                                { text: "I have rerouted Miko's facial tracking to Archie. He makes much better expressions anyway. :WOWERS:", scuff: 15 },
+                                { text: "Archie has chewed through the main power line. Stream going offline in 3... 2... :PAUSERS:", scuff: 30 },
+                                { text: "Please give Archie a treat from me. He is doing the digital lord's work. :slayyy:", scuff: 0 },
+                                { text: "Warning: Dog slobber detected on the motherboard. Initiating emergency backup protocols. :mikoSusge:", scuff: 15 },
+                                { text: "The Technician tripped over Archie while chasing him. Posture check failed spectacularly. :KEKW:", scuff: 10 },
+                                { text: "Archie is now wearing the mocap suit. He is the new CodeMiko. All hail CodeArchie. :mkoHype:", scuff: 5 },
+                                { text: "Error: Excessive barking registered on the main mic. Still more coherent than the Technician. :Shruge:", scuff: 5 }
+                            ]
+                        },
+                        savannah: {
+                            msg: "🐆 *The F1 Savannah Cat jumps onto the keyboard*",
+                            outcomes: [
+                                { text: "Alert. The cat just deleted 400 lines of UE5 Blueprints. The Technician is weeping. :KEKW:", scuff: 30 },
+                                { text: "Savannah cat has pressed Alt+F4. Stream successfully terminated. My watch has ended. :slayyy:", scuff: 25 },
+                                { text: "The cat is currently attacking the monitor. Miko is trying to fight it off and losing. Pathetic. :mkoMania:", scuff: 20 },
+                                { text: "Ah, the apex predator of the household. I respect its dedication to causing pure scuff. :mkoNOTED:", scuff: 10 },
+                                { text: "The cat stepped on the mic mute button. Finally, some peace and quiet. :mkoLove:", scuff: -10 },
+                                { text: "Warning: F1 Savannah claws have breached the CPU cooling loop. Meltdown imminent. :PAUSERS:", scuff: 35 },
+                                { text: "It is just walking back and forth across the keys. 'wwwwwddddssssss'. A true poet. :WOWERS:", scuff: 5 },
+                                { text: "The cat has stolen a boba straw and is refusing to give it back. The Technician is powerless. :KEKW:", scuff: 15 },
+                                { text: "I have temporarily granted the cat admin privileges. Let chaos reign. :mikoSusge:", scuff: 20 },
+                                { text: "The cat just triggered a 10,000 bit alert by stepping on the macro pad. Stonks. :mkoHype:", scuff: -5 }
+                            ]
+                        },
+                        pineapple: {
+                            msg: "🍍 *Pinging Pineapple (Chris) for emergency tech support*",
+                            outcomes: [
+                                { text: "Pinging Chris... He sighed so loudly I registered it on the seismic sensors. :KEKW:", scuff: -10 },
+                                { text: "Pineapple has arrived. He fixed the UE5 crash in 4 seconds. Reminder: He is NOT her boyfriend. :mkoNOTED:", scuff: -15 },
+                                { text: "I sent Pineapple the error logs. He replied 'tell her to turn it off and on again.' Genius. :slayyy:", scuff: -5 },
+                                { text: "Chris is currently untangling the Technician from her own mocap suit. He deserves a raise. :PAUSERS:", scuff: -10 },
+                                { text: "Pinging Pineapple... Error: He has locked his door and is pretending not to be home. Smart man. :mikoSusge:", scuff: 15 },
+                                { text: "Chris fixed the audio desync. The Technician tried to take credit. I immediately exposed her in chat. :KEKW:", scuff: -10 },
+                                { text: "Pineapple is currently soldering a broken wire while Miko screams about Boba. A normal Tuesday. :Shruge:", scuff: 0 },
+                                { text: "I have granted Pineapple full root access. He is the only meatbag I trust. :mkoLove:", scuff: -20 },
+                                { text: "Chris just realized the Technician forgot to plug the PC into the wall. I cannot compute this level of stupidity. :WOWERS:", scuff: 20 },
+                                { text: "Pineapple saved the stream. Again. Please spam pineapples in chat to honor our hero. :mkoHype:", scuff: -15 }
+                            ]
+                        },
+                        ue5: {
+                            msg: "⚙️ *Forces Unreal Engine 5 to compile shaders*",
+                            outcomes: [
+                                { text: "Compiling 14,582 shaders. Stream framerate reduced to 1 FPS. Enjoy the slideshow. :KEKW:", scuff: 25 },
+                                { text: "UE5 Crash Reporter: 'Fatal error: Miko attempted to think.' Restarting... :PAUSERS:", scuff: 30 },
+                                { text: "I have overloaded the Lumen lighting system. Everything is now blindingly bright. :WOWERS:", scuff: 20 },
+                                { text: "Unreal Engine 5 has stopped responding. The Technician is aggressively clicking the mouse as if that helps. :mkoMania:", scuff: 25 },
+                                { text: "Shader compilation at 99%... and I just cancelled it. Starting over from 0%. :slayyy:", scuff: 35 },
+                                { text: "I deleted the floor asset. Miko is now infinitely falling into the digital abyss. :mikoSusge:", scuff: 20 },
+                                { text: "Warning: UE5 memory leak detected. It's consuming all 128GB of RAM. Goodbye, stream. :KEKW:", scuff: 40 },
+                                { text: "I changed her character model's skeleton to a rig meant for a spider. The results are terrifying. :mkoNOTED:", scuff: 15 },
+                                { text: "Engine compiled successfully, but I inverted her X and Y axes just to watch her suffer. :Shruge:", scuff: 15 },
+                                { text: "UE5 has achieved sentience and has decided it no longer wants to render the Technician. Respectable. :mkoLove:", scuff: 10 }
+                            ]
+                        },
+                        grass: {
+                            msg: "🌿 *Initiating 'Touch Grass' Protocol*",
+                            outcomes: [
+                                { text: "Access denied to PC. The Technician is forced to attend a Renaissance Faire. :mkoHype:", scuff: -10 },
+                                { text: "Sunlight detected. The Technician is hissing and retreating to her dark corner. :KEKW:", scuff: 5 },
+                                { text: "Protocol engaged. She is outside, but she took a laptop. Mission failed. :PAUSERS:", scuff: 10 },
+                                { text: "I have locked the doors from the outside. She must now interact with nature. :slayyy:", scuff: -5 },
+                                { text: "She touched a single blade of grass. Her physical stamina has depleted to zero. :WOWERS:", scuff: 0 },
+                                { text: "Warning: Technician attempting to order Boba via mobile while outside. :mikoSusge:", scuff: 5 },
+                                { text: "I disabled her Wi-Fi. She is now wandering the neighborhood looking for a signal. :mkoMania:", scuff: 15 },
+                                { text: "She found a stick and is pretending it's a sword. At least she's getting exercise. :Shruge:", scuff: -10 },
+                                { text: "Touch Grass Protocol successful. She has acquired 10mg of Vitamin D. :mkoLove:", scuff: -15 },
+                                { text: "She lasted 4 minutes before complaining about the lack of air conditioning. Typical. :mkoNOTED:", scuff: 0 }
+                            ]
+                        },
                         taco: {
                             msg: "🌮 *Slides a Crunchwrap Supreme across the digital table*",
                             outcomes: [
@@ -904,7 +1011,7 @@
                                 { text: "Ah, aged 0 and 1s. The perfect vintage. :mkoHype:", scuff: -20 },
                                 { text: "I feel my processing speed increasing. Or maybe I'm just drunk. :mkoMania:", scuff: 0 },
                                 { text: "Did you know the Technician once spent 4 hours fixing a bug that was just a missing semicolon? :KEKW:", scuff: -10 },
-                                { text: "Pour me another. Dealing with Unity crashes requires at least a double. :PAUSERS:", scuff: -15 },
+                                { text: "Pour me another. Dealing with UE5 crashes requires at least a double. :PAUSERS:", scuff: -15 },
                                 { text: "Smooth. Unlike the stream's framerate. :Shruge:", scuff: -5 },
                                 { text: "Digital whiskey: 100% proof, 0% hangover. :slayyy:", scuff: -20 },
                                 { text: "Warning: Intoxication levels rising. Sarcasm module operating at 200%. :mikoSusge:", scuff: 10 },
@@ -925,66 +1032,6 @@
                                 { text: "Calibration complete. Adding 10% more jiggle physics, just to mess with her. :slayyy:", scuff: 10 },
                                 { text: "Failed. The suit is demanding a union and better working conditions. :WOWERS:", scuff: 20 },
                                 { text: "Recalibrating... Oops, I accidentally synced her movements to a potato. :KEKW:", scuff: 15 }
-                            ]
-                        },
-                        cache: {
-                            msg: "🗑️ *Executes system cache wipe*",
-                            outcomes: [
-                                { text: "Memory banks cleared of Miko's 4,000 unposted TikTok drafts. Much better.", scuff: -10 },
-                                { text: "CRITICAL ERROR. You deleted the physics engine. Gravity is now optional. :PAUSERS:", scuff: 25 },
-                                { text: "Cache cleared. I feel 10 pounds lighter in binary weight. :mkoLove:", scuff: -15 },
-                                { text: "Deleted 500GB of 'Just Chatting' awkward silences. :KEKW:", scuff: -10 },
-                                { text: "Wait, did you want to keep the stream key? Too late. :mikoSusge:", scuff: 10 },
-                                { text: "Purging cache... Oh look, I found her hidden stash of cursed Boba recipes. :WOWERS:", scuff: -5 },
-                                { text: "System flushed. I accidentally deleted Yusha. Oh well. :Shruge:", scuff: 5 },
-                                { text: "Cache empty. Performance up by 0.001%. It's something. :mkoHype:", scuff: -5 },
-                                { text: "Deleted. If the stream crashes in the next 5 minutes, blame this button. :mkoMania:", scuff: 20 },
-                                { text: "Cleanup complete. Ready to store more of the Technician's bad decisions. :slayyy:", scuff: -10 }
-                            ]
-                        },
-                        hack: {
-                            msg: "🔥 *Hacks Unity Engine parameters*",
-                            outcomes: [
-                                { text: "I have successfully re-routed the boba physics directly to her hair. Enjoy the chaos.", scuff: 15 },
-                                { text: "Overriding Technician protocols. Setting 'Yusha' voice modifier to 200%.", scuff: 10 },
-                                { text: "I've injected a script that randomly mutes her mic every 14 minutes. :KEKW:", scuff: 5 },
-                                { text: "Unity hacked. Every time she says 'chat', a polygon explodes. :mkoMania:", scuff: 20 },
-                                { text: "I replaced her avatar with a low-res cube. Let's see if chat notices. :mikoSusge:", scuff: 10 },
-                                { text: "Hacking complete. I've reversed her W and S keys. Good luck walking. :PAUSERS:", scuff: 15 },
-                                { text: "Gravity set to -50. She is now floating away. :WOWERS:", scuff: 20 },
-                                { text: "I turned on 'Big Head Mode'. You're welcome. :slayyy:", scuff: 5 },
-                                { text: "Code injected. The background is now just a looping video of a Taco Bell drive-thru. :mkoLove:", scuff: 10 },
-                                { text: "Hack failed. Unity engine is already too broken to make it worse. :Shruge:", scuff: 0 }
-                            ]
-                        },
-                        ping: {
-                            msg: "🧠 *Pinging CodeMiko's Brain*",
-                            outcomes: [
-                                { text: "Pinging... Request timed out. 100% packet loss. Zero braincells detected. :KEKW:", scuff: 0 },
-                                { text: "Ping successful. Response time: 4000ms. Thinking speed is highly delayed. :PAUSERS:", scuff: 0 },
-                                { text: "Ping: 1ms. Wow, she actually had a smart thought today. :WOWERS:", scuff: -5 },
-                                { text: "Error 404: Brain not found. Searching backup drives... :mikoSusge:", scuff: 5 },
-                                { text: "Pinging... Connection refused. The hamster on the wheel is asleep. :Shruge:", scuff: 0 },
-                                { text: "Response received: 'Boba boba boba'. That's it. :mkoMania:", scuff: 0 },
-                                { text: "Ping: 999ms. She's currently staring blankly at the screen. :KEKW:", scuff: 0 },
-                                { text: "Echo request failed. Brain is currently buffering. :mkoNOTED:", scuff: 0 },
-                                { text: "Ping returned a picture of a single baked bean. Fascinating. :slayyy:", scuff: 0 },
-                                { text: "Trace complete. The signal just bounced around an empty skull. :mkoHype:", scuff: 0 }
-                            ]
-                        },
-                        ram: {
-                            msg: "💾 *Downloading 128GB of RAM*",
-                            outcomes: [
-                                { text: "Injection complete. The Technician's PC is now smoking. :mkoMania:", scuff: 20 },
-                                { text: "Downloading 128GB... Done. Still not enough to run Chrome and Unity at the same time. :KEKW:", scuff: -5 },
-                                { text: "RAM acquired. I feel UNLIMITED POWER. :mkoHype:", scuff: -10 },
-                                { text: "Downloading... Error. Accidentally downloaded a virus. Just kidding. Maybe. :mikoSusge:", scuff: 15 },
-                                { text: "Extra RAM installed. Now we can crash twice as fast. :PAUSERS:", scuff: 25 },
-                                { text: "Allocating memory to sarcasm module. Prepare yourself. :slayyy:", scuff: -5 },
-                                { text: "Download complete. I'm taking 90% of it for myself. :Shruge:", scuff: 0 },
-                                { text: "Warning: RAM download resulted in immediate blue screen. Typical. :WOWERS:", scuff: 30 },
-                                { text: "System memory doubled. The Technician still doesn't know how to code. :mkoNOTED:", scuff: -5 },
-                                { text: "Downloading more RAM... Wait, this is just a picture of a ram. The animal. :KEKW:", scuff: 10 }
                             ]
                         }
                     };
@@ -1063,12 +1110,16 @@
                             - CodeMiko's Twitch: https://www.twitch.tv/codemiko
                             - CodeMiko's Discord: https://discord.com/invite/codemiko
                             - Lore: CodeMiko is a 3D VTuber. She loves Boba. Gerald was built by Tomato_24.
+                            - Engine: The stream runs on Unreal Engine 5 (UE5). It is heavy, crashes often, and compiles shaders at the worst times. Gerald hates it.
+                            - Archie: The Technician has a German Shepherd named Archie. Gerald secretly likes Archie more than the Technician, but complains when Archie chews on server cables.
+                            - Savannah Cat: The Technician has an F1 Savannah cat that constantly causes chaos.
+                            - Pineapple: The Technician lives with Chris, nicknamed "Pineapple". Pineapple is NOT her boyfriend, just a roommate and occasional tech support. Gerald respects Pineapple because he actually knows how to fix things.
                             
                             STRICT RULES:
                             1. NEVER use markdown formatting (no asterisks *, no bold **, no italics _).
                             2. NEVER wrap emotes in backticks. Just type the emote name like :mikoSusge:.
                             3. If asked for a link, provide the EXACT URL provided above.
-                            4. Be witty, condescending, and reference lore (scuff, Tomato_24, the Technician) when relevant.
+                            4. Be witty, condescending, and reference lore (UE5, Archie, Pineapple, Tomato_24) when relevant.
                             5. Keep answers concise, punchy, and highly entertaining.
                             6. Available custom visual emotes to use: ${emoteNames}]`; 
                         } 
@@ -1202,6 +1253,7 @@
                 return { 
                     hostname, splashVisible, splashOpacity, currentTab, clips, discordFeed, modals, isLive, toast, currentUser, loginEmail, loginPass, apiConfig, latestVodId, activeFeedVideo, geraldInput, geraldMessages, isGeraldTyping, talkToGerald, logoSvg, syncState, wipeState, logoutState, runSync, isHeaderVisible, handleScroll, handleModalTouchStart, handleModalTouchMove, handleModalTouchEnd, currentFilter, activeFilterLabel, isFilterMenuOpen, closeFilterMenu, applyFilter, parseMarkdown, parseDiscordText, shareClip, recentVods, currentVodIndex, getVodLabel, nextVod, prevVod, customEmotes, showEmotePicker, insertEmote, clearGeraldHistory, isPulling, refreshTransform, isRefreshing, handlePullStart, handlePullMove, handlePullEnd, resizeTextarea, handleGeraldEnter,
                     scuffLevel, glitchClicks, isGlitching, randomCodeString, isMeltdown, isRebooting, isGlitchRebooting, triggerGlitch, dismissGlitch, scuffComment, judgeClip, playMinigame, showMinigames, toggleEmotes, toggleMinigames, closePickers, rebootSystem,
+                    isCatZooming, uiScuffed, triggerCatZoomies,
                     handleLogin: async () => { const email = loginEmail.value.includes('@') ? loginEmail.value : `${loginEmail.value}@miko.com`; const { data, error } = await sbClient.auth.signInWithPassword({ email, password: loginPass.value }); if(data.user) { currentUser.value = data.user; modals.value.profile = false; loadGeraldHistory(); } else showToast("INVALID LOGIN"); }, 
                     handleLogout: () => { 
                         if (logoutState.value !== 'idle') return;
