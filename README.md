@@ -93,5 +93,8 @@ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLI
 
 ---
 
-> *"Built by Tomato_24. Gerald OS is running flawlessly. Please keep the Technician away from the cables."*
 
+>*"Built by Tomato_24. Gerald OS is running flawlessly. Please keep the Technician away from the cables."*
+
+
+---
