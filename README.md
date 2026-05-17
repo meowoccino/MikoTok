@@ -4,7 +4,7 @@ The ultimate, all-in-one mobile Progressive Web App (PWA) built exclusively for 
 
 MikoTok brings the Twitch stream, YouTube uploads, Reddit memes, and the scuff directly to your pocket. It features a fully integrated, lore-accurate AI chatbot named **Gerald OS**, who worships Miko, hates the Technician, and allows you to trigger virtual meltdowns.
 
-🔗 **[Launch MikoTok](https://meowoccino.github.io/MikoTok/)**
+🔗 **[MikoTok](https://meowoccino.github.io/MikoTok/)**
 
 ---
 
