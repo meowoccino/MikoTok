@@ -4,8 +4,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
     
-    <meta name="theme-color" content="#0a0514" media="(prefers-color-scheme: dark)">
-    <meta name="theme-color" content="#0a0514" media="(prefers-color-scheme: light)">
+    <meta name="theme-color" content="#050505" media="(prefers-color-scheme: dark)">
+    <meta name="theme-color" content="#050505" media="(prefers-color-scheme: light)">
     
     <title>MikoTok</title>
     
@@ -28,9 +28,11 @@
 
         * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; font-family: 'Inter', sans-serif; }
         
-        /* 🚨 FIXED: Full screen dark purple gradient matching the Android buttons */
-        body, html { margin: 0; padding: 0; height: 100dvh; width: 100%; background: radial-gradient(circle at 50% 0%, #2a1147 0%, #0a0514 100%); color: var(--text-main); overflow: hidden; display: flex; justify-content: center; align-items: center; overscroll-behavior-y: none; }
+            body, html { margin: 0; padding: 0; height: 100dvh; width: 100%; background: #050505; color: var(--text-main); overflow: hidden; display: flex; justify-content: center; align-items: center; overscroll-behavior-y: none; }
         
+        #app-container { width: 100%; max-width: 540px; height: 100%; position: relative; background: radial-gradient(circle at 50% 30%, #2a1147 0%, #050505 80%); overflow: hidden; display: flex; flex-direction: column; box-shadow: 0 0 50px rgba(0,0,0,0.8); transition: 0.3s; }
+
+
         .chaos-overlay { position: fixed; top: -10%; left: -10%; width: 120%; height: 120%; background: #050505; z-index: 99999; display: flex; flex-direction: column; align-items: center; justify-content: center; opacity: 0; pointer-events: none; overflow: hidden; }
         .chaos-overlay.show { opacity: 1; pointer-events: auto; animation: bg-flash 0.15s infinite; }
         @keyframes bg-flash { 0% { background: #050505; } 50% { background: #2a0000; } 100% { background: #050505; } }
@@ -70,8 +72,6 @@
         .fake-ban-overlay { position: fixed; inset: 0; background: #050505; color: white; z-index: 100000; display: flex; flex-direction: column; align-items: center; justify-content: center; opacity: 0; pointer-events: none; transition: 0.2s; text-align: center; padding: 20px; }
         .fake-ban-overlay.show { opacity: 1; pointer-events: auto; }
 
-        #app-container { width: 100%; max-width: 540px; height: 100%; max-height: 100dvh; position: relative; background: transparent; overflow: hidden; display: flex; flex-direction: column; box-shadow: 0 0 50px rgba(0,0,0,0.8); transition: 0.3s; }
-        
         #app-container.ui-scuffed { animation: ui-glitch 0.2s infinite; }
         @keyframes ui-glitch { 0% { transform: translate(2px, 1px) rotate(0deg); filter: hue-rotate(90deg); } 50% { transform: translate(-3px, -2px) rotate(-2deg); } 100% { transform: translate(1px, 3px) rotate(1deg); filter: hue-rotate(-90deg); } }
         .cat-overlay { position: fixed; top: 40%; left: -150px; font-size: 80px; z-index: 9999; pointer-events: none; opacity: 0; }
@@ -129,36 +129,32 @@
         #feed-scroll { padding-bottom: 0; scroll-snap-type: y mandatory; }
         .feed-snap-item { width: 100%; height: 100%; flex-shrink: 0; display: flex; flex-direction: column; justify-content: center; position: relative; padding: 0 15px 80px; scroll-snap-align: start; scroll-snap-stop: always; }
         
-        /* 🚨 FIXED: STRICT DASHBOARD LAYOUT (No giant stretching, No scrolling) */
+        /* 🚨 STRICT FEED LAYOUT */
         .feed-layout { 
             position: absolute; 
-            top: 90px; /* Clears header */
-            bottom: 85px; /* Clears bottom nav */
+            top: 110px; 
+            bottom: 85px; 
             left: 0; right: 0; 
             padding: 0 15px; 
             display: flex; 
             flex-direction: column; 
-            gap: 15px; 
-            overflow: hidden; /* ABSOLUTELY NO SCROLLING */
+            gap: 20px; 
+            overflow: hidden; 
         }
         
-        #yt-wrapper {
-            flex-shrink: 0; /* YouTube Player never shrinks */
-            display: flex; 
-            flex-direction: column;
-        }
+        #yt-wrapper { flex-shrink: 0; display: flex; flex-direction: column; }
 
         #reddit-wrapper {
-            flex: 1; /* Reddit takes the remaining space perfectly */
-            min-height: 0; /* Important: Allows flexbox to shrink the container */
+            flex: 1; 
+            min-height: 0; 
             display: flex; 
             flex-direction: column; 
-            justify-content: flex-end; /* Locks arrows to bottom */
+            justify-content: flex-start; 
+            gap: 15px; 
         }
 
         .reddit-compact-card { 
-            flex: 1; 
-            min-height: 0; /* Allows content inside to dynamically shrink */
+            flex: 0 1 auto; 
             display: flex; 
             flex-direction: column; 
             box-shadow: 0 5px 20px rgba(0,0,0,0.4); 
@@ -169,14 +165,11 @@
             text-decoration: none; 
             color: inherit; 
             transition: transform 0.2s;
-            overflow: hidden; /* Stops internal elements from breaking out */
+            overflow: hidden; 
         }
         .reddit-compact-card:active { transform: scale(0.98); }
 
-        /* 🚨 Dynamically shrinks Reddit Image so text/buttons never get pushed off screen */
         .reddit-img-container {
-            flex: 1; 
-            min-height: 0; 
             width: 100%; 
             border-radius: 8px; 
             overflow: hidden; 
@@ -187,9 +180,9 @@
             justify-content: center;
             align-items: center;
         }
-        .reddit-img-container img { width: 100%; height: 100%; object-fit: cover; }
+        .reddit-img-container img { width: 100%; height: auto; max-height: 200px; object-fit: cover; }
 
-        .carousel-controls { flex-shrink: 0; display: flex; justify-content: space-between; align-items: center; width: 100%; margin-top: 10px; z-index: 40; padding: 0; }
+        .carousel-controls { flex-shrink: 0; display: flex; justify-content: space-between; align-items: center; width: 100%; margin-top: 5px; z-index: 40; padding: 0; }
         .carousel-btn { background: #111113; border: 1px solid var(--border-color); color: white; width: 40px; height: 40px; border-radius: 50%; display: flex; align-items: center; justify-content: center; cursor: pointer; transition: 0.1s; outline: none; }
         .carousel-btn:active:not(.hidden-arrow) { transform: scale(0.9); border-color: var(--primary); color: var(--primary); }
         .carousel-btn.hidden-arrow { opacity: 0; pointer-events: none; } 
@@ -253,7 +246,6 @@
         .external-link-btn { background: var(--card-bg); border: 1px solid var(--border-color); padding: 15px; border-radius: 14px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 8px; color: var(--text-main); text-decoration: none; font-weight: 800; font-size: 11px; text-transform: uppercase; transition: 0.2s; }
         .external-link-btn:active { transform: scale(0.95); border-color: var(--primary); }
 
-        /* 🚨 BOTTOM NAV padding ensures it sits above Android swipe indicator */
         .bottom-nav { position: absolute; bottom: calc(20px + env(safe-area-inset-bottom, 0px)); left: 50%; transform: translateX(-50%); width: calc(100% - 20px); background: var(--nav-bg); backdrop-filter: blur(20px); border-radius: 30px; border: 1px solid rgba(255, 255, 255, 0.1); display: flex; justify-content: space-between; align-items: center; padding: 10px 5px; z-index: 1000; box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
         .nav-item { display: flex; flex-direction: column; align-items: center; flex: 1; color: var(--text-muted); font-size: 9px; gap: 4px; cursor: pointer; text-decoration: none; font-weight: 700; transition: 0.2s; }
         .nav-item.active { color: var(--text-main); }
@@ -303,7 +295,30 @@
         @keyframes shake { 0%, 100% { transform: rotate(0deg); } 25% { transform: rotate(-10deg); } 50% { transform: rotate(10deg); } 75% { transform: rotate(-10deg); } }
         .shake-anim { animation: shake 0.4s ease-in-out infinite; }
 
+        .msg-enter-active, .msg-leave-active { transition: all 0.3s cubic-bezier(0.2, 0.8, 0.2, 1); }
+        .msg-enter-from, .msg-leave-to { opacity: 0; transform: translateY(15px); }
+
+        .tray-enter-active, .tray-leave-active { transition: all 0.2s ease-out; }
+        .tray-enter-from, .tray-leave-to { opacity: 0; transform: translateY(10px); }
+
         .typing-indicator { display: flex; align-items: center; gap: 8px; font-size: 11px; color: var(--gerald); padding: 5px 20px; font-weight: 800; text-transform: uppercase; letter-spacing: 1px; }
+
+        .miko-metadata { display: flex; align-items: flex-start; justify-content: space-between; padding: 12px 5px 0; background: transparent; width: 100%; gap: 10px; }
+        .miko-metadata .author-info { display: flex; align-items: center; min-width: 0; flex: 1; }
+        .miko-metadata img { width: 44px; height: 44px; border-radius: 50%; border: 2px solid var(--primary); margin-right: 12px; box-shadow: 0 2px 10px rgba(0,0,0,0.5); flex-shrink: 0; }
+        .miko-metadata .author-text-block { min-width: 0; flex: 1; }
+        .miko-metadata .author-name { font-weight: 800; font-size: 14px; color: white; display: -webkit-box; -webkit-line-clamp: 2; overflow: hidden; }
+        .miko-metadata .clip-stats { font-size: 11px; font-weight: 700; color: var(--text-muted); display: flex; align-items: center; gap: 6px; margin-top: 5px; text-transform: uppercase; }
+
+        .action-buttons { display: flex; align-items: center; gap: 5px; }
+        .share-btn { background: transparent; border: none; display: flex; align-items: center; justify-content: center; cursor: pointer; transition: 0.2s; flex-shrink: 0; padding: 8px; width: 40px; height: 40px; color: var(--text-muted); }
+        .share-btn:active { color: white; }
+        .share-btn .gradient-icon { background: linear-gradient(135deg, var(--primary), #ff4685); -webkit-background-clip: text; -webkit-text-fill-color: transparent; display: inline-block; }
+
+        .premium-badge { display: inline-flex; align-items: center; justify-content: center; gap: 8px; background: rgba(0, 0, 0, 0.7); backdrop-filter: blur(10px); border: 1px solid rgba(255, 255, 255, 0.15); padding: 6px 14px; border-radius: 30px; color: #fff; font-size: 10px; font-weight: 900; text-transform: uppercase; }
+        .premium-badge .dot { width: 6px; height: 6px; border-radius: 50%; box-shadow: 0 0 8px currentColor; }
+        .premium-badge.live .dot { background: var(--danger); color: var(--danger); animation: heartbeat 1.5s infinite; }
+        .premium-badge.vod .dot { background: var(--primary); color: var(--primary); animation: heartbeat 1.5s infinite; }
 
         .reddit-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 12px; flex-shrink: 0; }
         .reddit-author { font-size: 11px; color: #a1a1aa; font-weight: 600; display: flex; flex-direction: column; gap: 3px;}
@@ -663,14 +678,6 @@
                 </div>
             </div>
         </div>
-
-        <nav class="bottom-nav">
-            <div class="nav-item" :class="{ active: currentTab === 'home' }" @click="currentTab = 'home'; isHeaderVisible = true"><span class="material-symbols-rounded">home</span>Home</div>
-            <div class="nav-item" :class="{ active: currentTab === 'chat' }" @click="currentTab = 'chat'; isHeaderVisible = true"><span class="material-symbols-rounded">chat</span>Chat</div>
-            <div class="nav-item" :class="{ active: currentTab === 'feed' }" @click="currentTab = 'feed'; isHeaderVisible = true"><span class="material-symbols-rounded">forum</span>Feed</div>
-            <div class="nav-item" @click="modals.discord = true"><svg viewBox="0 0 24 24" width="24" height="24" fill="currentColor" style="margin-bottom:4px"><path d="M20.317 4.3698a19.7913 19.7913 0 00-4.8851-1.5152.0741.0741 0 00-.0785.0371c-.211.3753-.4447.8648-.6083 1.2495-1.8447-.2762-3.68-.2762-5.4868 0-.1636-.3933-.4058-.8742-.6177-1.2495a.077.077 0 00-.0785-.037 19.7363 19.7363 0 00-4.8852 1.515.0699.0699 0 00-.0321.0277C.5334 9.0458-.319 13.5799.0992 18.0578a.0824.0824 0 00.0312.0561c2.0528 1.5076 4.0413 2.4228 5.9929 3.0294a.0777.0777 0 00.0842-.0276c.4616-.6304.8731-1.2952 1.226-1.9942a.076.076 0 00-.0416-.1057c-.6528-.2476-1.2743-.5495-1.8722-.8923a.077.077 0 01-.0076-.1277c.1258-.0943.2517-.1923.3718-.2914a.0743.0743 0 01.0776-.0105c3.9278 1.7933 8.18 1.7933 12.0614 0a.0739.0739 0 01.0785.0095c.1202.099.246.1981.3728.2924a.077.077 0 01-.0066.1276 12.2986 12.2986 0 01-1.873.8914.0766.0766 0 00-.0407.1067c.3604.698.7719 1.3628 1.225 1.9932a.076.076 0 00.0842.0286c1.961-.6067 3.9495-1.5219 6.0023-3.0314a.077.077 0 00.0313-.0552c.5004-5.177-.8382-9.6739-3.5485-13.6604a.061.061 0 00-.0312-.0286zM8.02 15.3312c-1.1825 0-2.1569-1.0857-2.1569-2.419 0-1.3332.9555-2.4189 2.157-2.4189 1.2108 0 2.1757 1.0952 2.1568 2.419 0 1.3332-.9555 2.4189-2.1569 2.4189zm7.9748 0c-1.1825 0-2.1569-1.0857-2.1569-2.419 0-1.3332.9554-2.4189 2.1569-2.4189 1.2108 0 2.1757 1.0952 2.1568 2.419 0 1.3332-.946 2.4189-2.1568 2.4189Z"/></svg>Discord</div>
-            <div class="nav-item" :class="{ 'active-gerald': currentTab === 'gerald' }" @click="currentTab = 'gerald'; isHeaderVisible = true"><span class="material-symbols-rounded">smart_toy</span>Gerald</div>
-        </nav>
     </div>
 
     <script>
@@ -1173,7 +1180,6 @@
                     const abortController = new AbortController();
                     setTimeout(() => abortController.abort(), 5000);
 
-                    // Reddit Auto-Fetch
                     fetch('https://www.reddit.com/r/CodeMiko/new.json?limit=15', { signal: abortController.signal })
                         .then(res => {
                             if (!res.ok) throw new Error("Reddit API blocked.");
@@ -1196,7 +1202,7 @@
                             redditFeed.value = [{ permalink: '/r/CodeMiko', author: 'System Error', title: "Reddit connection timed out or blocked.", thumbnail: '', ups: 0, num_comments: 0, date: "Just now" }];
                         });
 
-                    // 🚨 REAL YouTube Auto-Fetch via RSS2JSON explicitly mapping CodeMiko's Channel ID
+                    // 🚨 REAL YouTube Auto-Fetch via CodeMiko Official RSS Feed
                     const ytRssUrl = encodeURIComponent('https://www.youtube.com/feeds/videos.xml?channel_id=UCO9kIeDrtsX0j83HbVljzSQ');
                     fetch(`https://api.rss2json.com/v1/api.json?rss_url=${ytRssUrl}`, { signal: abortController.signal })
                         .then(res => {
