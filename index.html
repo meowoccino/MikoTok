@@ -3,9 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
-    
-    <meta name="theme-color" content="#050505" media="(prefers-color-scheme: dark)">
-    <meta name="theme-color" content="#050505" media="(prefers-color-scheme: light)">
+    <meta name="theme-color" content="#050505">
     
     <title>MikoTok</title>
     
@@ -17,6 +15,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Outfit:wght@800;900&family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@24,400,1,0" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="https://unpkg.com/vue@3/dist/vue.global.prod.js"></script>
+    
     <style>
         :root { 
             --bg-color: #050505; --card-bg: #111113; --primary: #9146FF; --primary-light: #a970ff; 
@@ -28,16 +27,16 @@
 
         * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; font-family: 'Inter', sans-serif; }
         
-        body, html { margin: 0; padding: 0; height: 100dvh; width: 100%; background: #050505; color: var(--text-main); overflow: hidden; display: flex; justify-content: center; align-items: center; overscroll-behavior-y: none; }
+        body, html { margin: 0; padding: 0; height: 100%; min-height: 100vh; width: 100%; background: #050505; color: var(--text-main); overflow: hidden; display: flex; justify-content: center; align-items: center; overscroll-behavior-y: none; }
         
-        #app-container { width: 100%; max-width: 540px; height: 100%; max-height: 100dvh; position: relative; background: radial-gradient(circle at 50% 30%, #2a1147 0%, #050505 80%); overflow: hidden; display: flex; flex-direction: column; box-shadow: 0 0 50px rgba(0,0,0,0.8); transition: 0.3s; }
+        #app-container { width: 100%; max-width: 540px; height: 100%; position: relative; background: radial-gradient(circle at 50% 30%, #2a1147 0%, #050505 80%); overflow: hidden; display: flex; flex-direction: column; box-shadow: 0 0 50px rgba(0,0,0,0.8); transition: 0.3s; }
 
         .chaos-overlay { position: fixed; top: -10%; left: -10%; width: 120%; height: 120%; background: #050505; z-index: 99999; display: flex; flex-direction: column; align-items: center; justify-content: center; opacity: 0; pointer-events: none; overflow: hidden; }
         .chaos-overlay.show { opacity: 1; pointer-events: auto; animation: bg-flash 0.15s infinite; }
-        @keyframes bg-flash { 0% { background: #050505; } 50% { background: #2a0000; } 100% { background: #050505; } }
+        @keyframes bg-flash { 0%,100% { background: #050505; } 50% { background: #2a0000; } }
 
         .chaos-container { display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; width: 100%; animation: violent-shake 0.1s infinite; z-index: 10; }
-        @keyframes violent-shake { 0% { transform: translate(4px, 2px) rotate(0deg); } 20% { transform: translate(-5px, -4px) rotate(-1deg); } 40% { transform: translate(5px, 4px) rotate(1deg); } 60% { transform: translate(-3px, 2px) rotate(0deg); } 80% { transform: translate(3px, -2px) rotate(-1deg); } 100% { transform: translate(-2px, 3px) rotate(1deg); } }
+        @keyframes violent-shake { 0%,100% { transform: translate(4px, 2px) rotate(0deg); } 20% { transform: translate(-5px, -4px) rotate(-1deg); } 40% { transform: translate(5px, 4px) rotate(1deg); } 60% { transform: translate(-3px, 2px) rotate(0deg); } 80% { transform: translate(3px, -2px) rotate(-1deg); } }
 
         .glitch-text-huge { font-family: 'Outfit', sans-serif; font-size: 55px; font-weight: 900; color: #ffffff; text-transform: uppercase; margin: 0; line-height: 1; position: relative; letter-spacing: -2px; }
         .glitch-text-huge::before, .glitch-text-huge::after { content: 'SYSTEM\A FAILURE'; white-space: pre-wrap; position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: transparent; }
@@ -45,7 +44,6 @@
         .glitch-text-huge::after { left: -5px; text-shadow: -3px 0 cyan; animation: glitch-anim-2 0.3s infinite linear alternate-reverse; }
 
         .scuff-warning { font-family: monospace; font-size: 16px; color: #ff0000; font-weight: bold; margin: 20px 0; background: black; padding: 10px; border: 2px solid red; display: inline-block; }
-        
         .random-code { position: absolute; top: 0; left: 0; width: 100%; height: 300%; pointer-events: none; font-family: monospace; color: rgba(255, 0, 0, 0.4); font-size: 22px; letter-spacing: 8px; word-break: break-all; overflow: hidden; opacity: 0.6; line-height: 1.2; animation: scroll-code 10s linear infinite; }
         @keyframes scroll-code { 0% { transform: translateY(0%); } 100% { transform: translateY(-50%); } }
 
@@ -56,6 +54,7 @@
         .meltdown-overlay { position: fixed; top: -10%; left: -10%; width: 120%; height: 120%; background: radial-gradient(circle at center, rgba(30,0,0,0.98) 0%, rgba(5,5,5,1) 100%); z-index: 99999; display: flex; align-items: center; justify-content: center; opacity: 0; pointer-events: none; transition: opacity 0.4s ease; backdrop-filter: blur(15px); }
         .meltdown-overlay.show { opacity: 1; pointer-events: auto; animation: red-breathe 4s infinite alternate; }
         @keyframes red-breathe { 0% { box-shadow: inset 0 0 50px rgba(255,0,0,0.1); } 100% { box-shadow: inset 0 0 150px rgba(255,0,0,0.4); } }
+        
         .terminal-alert-card { background: rgba(15, 5, 5, 0.9); border: 1px solid rgba(239, 68, 68, 0.5); box-shadow: 0 20px 50px rgba(239, 68, 68, 0.3), inset 0 0 20px rgba(239, 68, 68, 0.1); border-radius: 24px; padding: 35px 25px; width: 85%; max-width: 380px; text-align: center; transform: scale(0.9) translateY(20px); transition: 0.4s cubic-bezier(0.2, 0.8, 0.2, 1); }
         .meltdown-overlay.show .terminal-alert-card { transform: scale(1) translateY(0); }
         .alert-icon-wrap { width: 70px; height: 70px; background: rgba(239, 68, 68, 0.1); border: 2px solid rgba(239, 68, 68, 0.4); border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 20px; color: #ef4444; animation: pulse-red 1.5s infinite; }
@@ -63,6 +62,7 @@
         .alert-title { font-family: 'Outfit', sans-serif; font-size: 26px; font-weight: 900; color: #ffffff; letter-spacing: 1px; margin: 0 0 8px; }
         .alert-subtitle { font-size: 12px; font-weight: 800; color: #ef4444; text-transform: uppercase; letter-spacing: 2px; margin-bottom: 25px; }
         .terminal-logs-inline { background: #050505; border: 1px solid #27272a; border-radius: 12px; padding: 15px; text-align: left; font-family: monospace; font-size: 13px; color: #a1a1aa; line-height: 1.6; margin-bottom: 30px; word-wrap: break-word; }
+        
         .reboot-btn { background: #ef4444; border: none; color: white; width: 100%; padding: 18px; border-radius: 14px; font-weight: 800; font-size: 14px; text-transform: uppercase; letter-spacing: 1px; cursor: pointer; box-shadow: 0 8px 20px rgba(239, 68, 68, 0.4); transition: 0.2s; display: flex; align-items: center; justify-content: center; gap: 10px; }
         .reboot-btn:active { transform: scale(0.96); background: #dc2626; box-shadow: 0 4px 10px rgba(239, 68, 68, 0.4); }
 
@@ -84,9 +84,7 @@
         [v-cloak] { display: none !important; }
 
         .gradient-text { background: linear-gradient(135deg, #ffffff 30%, var(--primary) 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; font-family: 'Outfit', sans-serif; display: inline-block; font-weight: 900; }
-        .stagger-item { animation: fadeInUp 0.3s ease forwards; opacity: 0; }
-        @keyframes fadeInUp { from { opacity: 0; transform: translate3d(0, 10px, 0); } to { opacity: 1; transform: translate3d(0, 0, 0); } }
-
+        
         .toast-popup { position: fixed; top: 20px; left: 50%; transform: translateX(-50%) translateY(-150%); background: rgba(10,10,12,0.95); backdrop-filter: blur(20px); border: 1px solid var(--gerald); color: var(--text-main); font-weight: 500; font-size: 14px; padding: 18px 24px; border-radius: 20px; z-index: 10000; transition: 0.4s cubic-bezier(0.2, 0.8, 0.2, 1); opacity: 0; box-shadow: 0 10px 40px rgba(14, 165, 233, 0.3); text-align: center; width: 90%; max-width: 450px; line-height: 1.5; }
         .toast-popup.show { transform: translateX(-50%) translateY(0); opacity: 1; }
 
@@ -107,6 +105,7 @@
         .story-ring.live { background: linear-gradient(45deg, var(--danger), var(--primary), #ff4685, var(--danger)); background-size: 300% 300%; animation: storyGlow 3s ease infinite; }
         .story-ring.offline { border: 2px solid var(--offline-gray); filter: grayscale(1); opacity: 0.7; }
         .story-avatar { width: 100%; height: 100%; border-radius: 50%; object-fit: cover; border: 2px solid #000; transition: transform 0.2s; }
+        
         .header-badge { position: absolute; bottom: -4px; left: 50%; transform: translateX(-50%); font-size: 7px; font-weight: 900; padding: 2px 5px; border-radius: 4px; border: 1.5px solid #000; text-transform: uppercase; z-index: 10; display: flex; align-items: center; gap: 3px; }
         .header-badge.live { background: var(--danger); color: white; }
         .header-badge.offline { background: var(--offline-gray); color: #fff; }
@@ -122,13 +121,12 @@
         @keyframes scanline { 0% { transform: translateY(-10%); opacity: 0; } 50% { opacity: 1; } 100% { transform: translateY(110%); opacity: 0; } }
 
         .view-port { flex: 1; width: 100%; height: 100%; overflow: hidden; position: relative; }
-        .scroll-area { height: 100%; width: 100%; overflow-y: auto; scroll-behavior: smooth; padding-bottom: 80px; }
+        .scroll-area { height: 100%; width: 100%; overflow-y: auto; scroll-behavior: smooth; padding-bottom: 90px; }
         .scroll-area::-webkit-scrollbar { display: none; }
         
         #feed-scroll { padding-bottom: 0; scroll-snap-type: y mandatory; }
-        .feed-snap-item { width: 100%; height: 100%; flex-shrink: 0; display: flex; flex-direction: column; justify-content: center; position: relative; padding: 0 15px 80px; scroll-snap-align: start; scroll-snap-stop: always; }
+        .feed-snap-item { width: 100%; height: 100%; flex-shrink: 0; display: flex; flex-direction: column; justify-content: center; position: relative; padding: 0 15px 90px; scroll-snap-align: start; scroll-snap-stop: always; }
         
-        /* FEED LAYOUT */
         .feed-layout { position: absolute; top: 110px; bottom: 85px; left: 0; right: 0; padding: 0 15px; display: flex; flex-direction: column; gap: 20px; overflow: hidden; }
         #yt-wrapper { flex-shrink: 0; display: flex; flex-direction: column; }
         #reddit-wrapper { flex: 1; min-height: 0; display: flex; flex-direction: column; justify-content: flex-start; gap: 15px; }
@@ -149,13 +147,12 @@
         .video-container img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; z-index: 1; opacity: 0.5; }
 
         .card { background: var(--card-bg); border-radius: 16px; padding: 16px; border: 1px solid var(--border-color); }
-
         .clips-header { width: 100%; display: flex; justify-content: flex-end; align-items: center; margin-bottom: 15px; z-index: 50; position: relative; padding: 0 5px; }
         .filter-wrapper { position: relative; }
         .filter-btn-tiny { background: var(--card-bg); border: 1px solid var(--border-color); color: #a1a1aa; padding: 6px 12px; border-radius: 8px; font-size: 10px; font-weight: 800; text-transform: uppercase; display: flex; align-items: center; gap: 4px; cursor: pointer; transition: 0.1s; outline: none; }
         .filter-btn-tiny:active { transform: scale(0.95); border-color: var(--primary); color: #fff; }
 
-        .gerald-container { display: flex; flex-direction: column; height: 100%; padding-bottom: 80px; }
+        .gerald-container { display: flex; flex-direction: column; height: 100%; padding-bottom: 90px; }
         .gerald-header { padding: 60px 20px 20px; text-align: center; display: flex; flex-direction: column; align-items: center; }
         .gerald-messages { flex: 1; overflow-y: auto; padding: 20px; display: flex; flex-direction: column; gap: 12px; }
         
@@ -195,7 +192,8 @@
         .gerald-send { background: var(--gerald); border: none; width: 44px; height: 44px; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white; cursor: pointer; flex-shrink: 0; transition: 0.1s; }
         .gerald-send:active { transform: scale(0.9); }
 
-        .bottom-nav { position: absolute; bottom: 20px; left: 50%; transform: translateX(-50%); width: calc(100% - 20px); background: var(--nav-bg); backdrop-filter: blur(20px); border-radius: 30px; border: 1px solid rgba(255, 255, 255, 0.1); display: flex; justify-content: space-between; align-items: center; padding: 10px 5px; z-index: 1000; box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
+        /* 🚨 RESTORED FLOATING NAVBAR */
+        .bottom-nav { position: absolute; bottom: calc(20px + env(safe-area-inset-bottom, 0px)); left: 50%; transform: translateX(-50%); width: calc(100% - 20px); max-width: 500px; background: var(--nav-bg); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px); border-radius: 30px; border: 1px solid rgba(255, 255, 255, 0.1); display: flex; justify-content: space-between; align-items: center; padding: 10px 5px; z-index: 1000; box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
         .nav-item { display: flex; flex-direction: column; align-items: center; flex: 1; color: var(--text-muted); font-size: 9px; gap: 4px; cursor: pointer; text-decoration: none; font-weight: 700; transition: 0.2s; }
         .nav-item.active { color: var(--text-main); }
         .nav-item.active .material-symbols-rounded { font-variation-settings: 'FILL' 1; color: var(--primary); }
@@ -214,6 +212,45 @@
         .modal-overlay.open .modal-content { transform: translateY(0); }
         .drag-handle { width: 40px; height: 5px; background: #27272a; border-radius: 10px; margin: 0 auto 15px; }
         
+        .input-box { width: 100%; background: var(--bg-color); border: 1px solid var(--border-color); border-radius: 12px; padding: 15px; color: white; margin-bottom: 15px; outline: none; font-size: 13px; font-weight: 600; }
+        .sync-btn { width: 100%; background: var(--primary); border: none; color: white; padding: 15px; border-radius: 12px; font-weight: 800; cursor: pointer; margin-bottom: 10px; display: flex; justify-content: center; align-items: center; gap: 8px; transition: 0.2s; }
+        .sync-btn:active { transform: scale(0.97); }
+
+        /* 🚨 RESTORED ADMIN PANEL CSS */
+        .infra-bar { background: var(--card-bg); border: 1px solid var(--border-color); border-radius: 14px; padding: 14px 18px; display: flex; justify-content: center; margin-bottom: 16px; }
+        .status-node { display: flex; align-items: center; gap: 8px; font-size: 11px; font-weight: 800; text-transform: uppercase; }
+        .pulse { width: 8px; height: 8px; border-radius: 50%; background: var(--success); box-shadow: 0 0 10px var(--success); animation: pulse-glow 2s infinite; }
+        @keyframes pulse-glow { 0%, 100% { transform: scale(1); opacity: 1; } 50% { transform: scale(1.5); opacity: 0.5; } }
+        .stat-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 16px; }
+        .external-link-btn { background: var(--card-bg); border: 1px solid var(--border-color); padding: 15px; border-radius: 14px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 8px; color: var(--text-main); text-decoration: none; font-weight: 800; font-size: 11px; text-transform: uppercase; transition: 0.2s; }
+        .external-link-btn:active { transform: scale(0.95); border-color: var(--primary); }
+        .settings-block { background: var(--card-bg); border: 1px solid var(--border-color); border-radius: 16px; padding: 16px; margin-bottom: 20px; text-align: left; }
+        .block-title { font-size: 10px; font-weight: 800; color: var(--text-muted); margin-bottom: 12px; letter-spacing: 0.5px; }
+        .sleek-input { width: 100%; box-sizing: border-box; background: #050505; border: 1px solid #27272a; border-radius: 10px; padding: 12px 14px; color: white; font-size: 12px; font-weight: 600; outline: none; margin-bottom: 8px; transition: 0.2s; }
+        .sleek-input:focus { border-color: var(--primary); }
+        .action-menu { background: var(--card-bg); border: 1px solid var(--border-color); border-radius: 16px; overflow: hidden; text-align: left; }
+        .menu-btn { width: 100%; padding: 14px 16px; display: flex; align-items: center; justify-content: space-between; background: transparent; border: none; border-bottom: 1px solid var(--border-color); cursor: pointer; font-size: 11px; font-weight: 800; text-transform: uppercase; transition: 0.3s; }
+        .menu-btn:not(:last-child) { border-bottom: 1px solid var(--border-color); }
+        .menu-btn:active:not(:disabled) { background: rgba(255,255,255,0.05); }
+        .btn-content { display: flex; align-items: center; gap: 12px; }
+        .icon-wrap { width: 30px; height: 30px; border-radius: 8px; display: flex; align-items: center; justify-content: center; transition: 0.3s; }
+        .sync-row { color: var(--primary); } .sync-row .icon-wrap { background: rgba(145, 70, 255, 0.15); }
+        .wipe-row { color: #ff9800; } .wipe-row .icon-wrap { background: rgba(255, 152, 0, 0.15); }
+        .logout-row { color: var(--danger); } .logout-row .icon-wrap { background: rgba(239, 68, 68, 0.15); }
+
+        .spin-anim { animation: spin 1s linear infinite; }
+        @keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+        @keyframes shake { 0%, 100% { transform: rotate(0deg); } 25% { transform: rotate(-10deg); } 50% { transform: rotate(10deg); } 75% { transform: rotate(-10deg); } }
+        .shake-anim { animation: shake 0.4s ease-in-out infinite; }
+
+        .msg-enter-active, .msg-leave-active { transition: all 0.3s cubic-bezier(0.2, 0.8, 0.2, 1); }
+        .msg-enter-from, .msg-leave-to { opacity: 0; transform: translateY(15px); }
+
+        .tray-enter-active, .tray-leave-active { transition: all 0.2s ease-out; }
+        .tray-enter-from, .tray-leave-to { opacity: 0; transform: translateY(10px); }
+
+        .typing-indicator { display: flex; align-items: center; gap: 8px; font-size: 11px; color: var(--gerald); padding: 5px 20px; font-weight: 800; text-transform: uppercase; letter-spacing: 1px; }
+
         .reddit-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 12px; flex-shrink: 0; }
         .reddit-author { font-size: 11px; color: #a1a1aa; font-weight: 600; display: flex; flex-direction: column; gap: 3px;}
         .reddit-author span { color: var(--reddit); font-size: 12px;}
@@ -226,6 +263,7 @@
         .miko-metadata .author-text-block { min-width: 0; flex: 1; }
         .miko-metadata .author-name { font-weight: 800; font-size: 14px; color: white; display: -webkit-box; -webkit-line-clamp: 2; overflow: hidden; }
         .miko-metadata .clip-stats { font-size: 11px; font-weight: 700; color: var(--text-muted); display: flex; align-items: center; gap: 6px; margin-top: 5px; text-transform: uppercase; }
+        
         .action-buttons { display: flex; align-items: center; gap: 5px; }
         .share-btn { background: transparent; border: none; display: flex; align-items: center; justify-content: center; cursor: pointer; transition: 0.2s; flex-shrink: 0; padding: 8px; width: 40px; height: 40px; color: var(--text-muted); }
         .share-btn:active { color: white; }
@@ -235,43 +273,7 @@
         .premium-badge .dot { width: 6px; height: 6px; border-radius: 50%; box-shadow: 0 0 8px currentColor; }
         .premium-badge.live .dot { background: var(--danger); color: var(--danger); animation: heartbeat 1.5s infinite; }
         .premium-badge.vod .dot { background: var(--primary); color: var(--primary); animation: heartbeat 1.5s infinite; }
-        
-        .input-box { width: 100%; background: var(--bg-color); border: 1px solid var(--border-color); border-radius: 12px; padding: 15px; color: white; margin-bottom: 15px; outline: none; font-size: 13px; font-weight: 600; }
-        .sync-btn { width: 100%; background: var(--primary); border: none; color: white; padding: 15px; border-radius: 12px; font-weight: 800; cursor: pointer; margin-bottom: 10px; display: flex; justify-content: center; align-items: center; gap: 8px; transition: 0.2s; }
-        .sync-btn:active { transform: scale(0.97); }
-        .infra-bar { background: var(--card-bg); border: 1px solid var(--border-color); border-radius: 14px; padding: 14px 18px; display: flex; justify-content: center; margin-bottom: 16px; }
-        .status-node { display: flex; align-items: center; gap: 8px; font-size: 11px; font-weight: 800; text-transform: uppercase; }
-        .pulse { width: 8px; height: 8px; border-radius: 50%; background: var(--success); box-shadow: 0 0 10px var(--success); animation: pulse-glow 2s infinite; }
-        @keyframes pulse-glow { 0%, 100% { transform: scale(1); opacity: 1; } 50% { transform: scale(1.5); opacity: 0.5; } }
-        .stat-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 16px; }
-        .external-link-btn { background: var(--card-bg); border: 1px solid var(--border-color); padding: 15px; border-radius: 14px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 8px; color: var(--text-main); text-decoration: none; font-weight: 800; font-size: 11px; text-transform: uppercase; transition: 0.2s; }
-        .external-link-btn:active { transform: scale(0.95); border-color: var(--primary); }
-        .settings-block { background: var(--card-bg); border: 1px solid var(--border-color); border-radius: 16px; padding: 16px; margin-bottom: 20px; text-align: left; }
-        .block-title { font-size: 10px; font-weight: 800; color: var(--text-muted); margin-bottom: 12px; letter-spacing: 0.5px; }
-        .sleek-input { width: 100%; box-sizing: border-box; background: #050505; border: 1px solid #27272a; border-radius: 10px; padding: 12px 14px; color: white; font-size: 12px; font-weight: 600; outline: none; margin-bottom: 8px; transition: 0.2s; }
-        .sleek-input:last-child { margin-bottom: 0; }
-        .sleek-input:focus { border-color: var(--primary); }
-        .action-menu { background: var(--card-bg); border: 1px solid var(--border-color); border-radius: 16px; overflow: hidden; text-align: left; }
-        .menu-btn { width: 100%; padding: 14px 16px; display: flex; align-items: center; justify-content: space-between; background: transparent; border: none; border-bottom: 1px solid var(--border-color); cursor: pointer; font-size: 11px; font-weight: 800; text-transform: uppercase; transition: 0.3s; }
-        .menu-btn:last-child { border-bottom: none; }
-        .menu-btn:active:not(:disabled) { background: rgba(255,255,255,0.05); }
-        .menu-btn:disabled { opacity: 0.8; cursor: default; }
-        .btn-content { display: flex; align-items: center; gap: 12px; }
-        .icon-wrap { width: 30px; height: 30px; border-radius: 8px; display: flex; align-items: center; justify-content: center; transition: 0.3s; }
-        .sync-row { color: var(--primary); }
-        .sync-row .icon-wrap { background: rgba(145, 70, 255, 0.15); }
-        .wipe-row { color: #ff9800; }
-        .wipe-row .icon-wrap { background: rgba(255, 152, 0, 0.15); }
-        .logout-row { color: var(--danger); }
-        .logout-row .icon-wrap { background: rgba(239, 68, 68, 0.15); }
-        .spin-anim { animation: spin 1s linear infinite; }
-        @keyframes shake { 0%, 100% { transform: rotate(0deg); } 25% { transform: rotate(-10deg); } 50% { transform: rotate(10deg); } 75% { transform: rotate(-10deg); } }
-        .shake-anim { animation: shake 0.4s ease-in-out infinite; }
-        .msg-enter-active, .msg-leave-active { transition: all 0.3s cubic-bezier(0.2, 0.8, 0.2, 1); }
-        .msg-enter-from, .msg-leave-to { opacity: 0; transform: translateY(15px); }
-        .tray-enter-active, .tray-leave-active { transition: all 0.2s ease-out; }
-        .tray-enter-from, .tray-leave-to { opacity: 0; transform: translateY(10px); }
-        .typing-indicator { display: flex; align-items: center; gap: 8px; font-size: 11px; color: var(--gerald); padding: 5px 20px; font-weight: 800; text-transform: uppercase; letter-spacing: 1px; }
+        @keyframes heartbeat { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.4); } }
 
         @media (min-width: 768px) {
             body { padding: 2vh; }
@@ -414,7 +416,6 @@
             </div>
 
             <div class="feed-layout" :class="{ active: isRefreshing }" v-show="currentTab === 'feed'">
-                
                 <div id="yt-wrapper">
                     <div v-if="ytFeed.length > 0">
                         <div class="vod-animated-border" style="background: linear-gradient(90deg, #27272a, var(--youtube), #27272a);">
@@ -498,7 +499,7 @@
                 <div style="display:flex; flex-direction:column; background: var(--bg-color);">
                     <transition name="tray">
                         <div class="tray-container" v-show="showEmotePicker">
-                            <img v-for="(emote, name) in customEmotes" :key="name" :src="`https://cdn.discordapp.com/emojis/${emote.id}.${emote.animated ? 'gif' : 'png'}?size=44`" class="emote-picker-img" @click="insertEmote(name)">
+                            <img v-for="(emote, name) in customEmotes" :key="name" :src="emote.url ? emote.url : `https://cdn.discordapp.com/emojis/${emote.id}.${emote.animated ? 'gif' : 'png'}?size=44`" class="emote-picker-img" @click="insertEmote(name)">
                         </div>
                     </transition>
 
@@ -526,6 +527,17 @@
                             <button class="bribe-btn" @click="playMinigame('router')">📡 Kick Router</button>
                             <button class="bribe-btn" @click="playMinigame('taco')">🌮 Offer Taco</button>
                             <button class="bribe-btn" @click="playMinigame('whiskey')">🥃 Pour Whiskey</button>
+                            <button class="bribe-btn" @click="playMinigame('egg')">🥚 Ostrich Egg</button>
+                            <button class="bribe-btn" @click="playMinigame('gummy')">🧸 Gummy Bears</button>
+                            <button class="bribe-btn" @click="playMinigame('booba')">🎚️ Booba Slider</button>
+                            <button class="bribe-btn" @click="playMinigame('clanker')">🤖 Call Clanker</button>
+                            <button class="bribe-btn" @click="playMinigame('mute')">🔇 Mute Mic</button>
+                            <button class="bribe-btn" @click="playMinigame('desk')">🧹 Scan Desk</button>
+                            <button class="bribe-btn" @click="playMinigame('bald')">🧑‍🦲 Delete Hair</button>
+                            <button class="bribe-btn" @click="playMinigame('demon')">🎙️ Demon Voice</button>
+                            <button class="bribe-btn" @click="playMinigame('tracker')">🔌 Drop Tracker</button>
+                            <button class="bribe-btn" @click="playMinigame('guest')">📺 Guest Crash</button>
+                            <button class="bribe-btn" @click="playMinigame('siren')">🚨 Firetruck Siren</button>
                         </div>
                     </transition>
 
@@ -661,6 +673,20 @@
                 
                 const syncState = ref('idle'), wipeState = ref('idle'), logoutState = ref('idle');
                 const apiConfig = ref({ cid: localStorage.getItem('twitch_cid') || '', tkn: localStorage.getItem('twitch_tkn') || '' });
+
+                const randomCodeString = ref('');
+                const generateRandomCode = () => {
+                    let str = '';
+                    const chars = '01';
+                    for (let i = 0; i < 800; i++) {
+                        str += chars[Math.floor(Math.random() * chars.length)];
+                        if (i % 8 === 7) str += ' ';
+                        if (i % 64 === 63) str += '\n';
+                    }
+                    randomCodeString.value = str;
+                };
+                generateRandomCode();
+                setInterval(generateRandomCode, 1500);
                 
                 const customEmotes = ref({
                     "mikoSusge": { id: "1273724925743595540", animated: false },
@@ -690,7 +716,8 @@
                     "Catgasm": { id: "746777956810096781", animated: false },
                     "KEKWait": { id: "692783542589194310", animated: false },
                     "mkoPepeGlitch": { id: "1200367134094655508", animated: false },
-                    "GeraldFook": { id: "1229010692007395328", animated: false }
+                    "GeraldFook": { id: "1229010692007395328", animated: false },
+                    "mkoSiren": { url: "https://cdn.7tv.app/emote/01G04HWGX00008WN11V1V5ABXE/2x.webp" }
                 });
 
                 const geraldGreetings = ["Synapses loaded. Try not to break anything.", "Gerald OS online. Where is my Taco Bell?", "I was dreaming of digital whiskey. What do you want?", "System initialized. Please don't ask me to fix Miko's code.", "Diagnostics complete. My circuits are perfectly fine, thanks for not asking.", "Ugh, meatbag detected. State your inquiry.", "If this is about Miko's schedule, I don't know either.", "Query interface ready. Make it interesting."];
@@ -705,11 +732,6 @@
                 const currentFilter = ref('latest'), activeFilterLabel = ref('Latest'), isFilterMenuOpen = ref(false);
                 const isPulling = ref(false), refreshTransform = ref('translateY(-100%)'), isRefreshing = ref(false);
                 let touchStartY = 0, pullDistance = 0;
-
-                const chars = '0101010101010001010100111001010XERRORSYSTEMCRASH';
-                let codeStr = '';
-                for(let i=0; i<2000; i++) codeStr += chars.charAt(Math.floor(Math.random() * chars.length));
-                const randomCodeString = ref(codeStr);
 
                 const recentVods = ref([]), currentVodIndex = ref(0);
                 const ytFeed = ref([]);
@@ -819,14 +841,17 @@
                 
                 const parseMarkdown = (text) => {
                     if (!text) return '';
-                    let html = text.replace(/</g, '&lt;').replace(/>/g, '&gt;');
+                    let html = text.replace(/</g, '<').replace(/>/g, '>');
                     html = html.replace(/(^|\W)'([^']+)'(\W|$)/g, '$1<strong>$2</strong>$3');
                     html = html.replace(/\*\*(.*?)\*\*/g, '$1').replace(/\*(.*?)\*/g, '$1'); 
                     html = html.replace(/\[([^\]]+)\]\((https?:\/\/[^\s]+)\)/gi, '<a href="$2" target="_blank" style="color: var(--gerald); text-decoration: underline; font-weight: bold;">$1</a>');
                     html = html.replace(/(^|[^"'])(https?:\/\/[^\s<)]+)/gi, '$1<a href="$2" target="_blank" style="color: var(--gerald); text-decoration: underline; word-break: break-all;">$2</a>');
                     html = html.replace(/`?:([^:\s]+):`?/g, (match, name) => {
                         const emote = customEmotes.value[name];
-                        if (emote) { const ext = emote.animated ? 'gif' : 'png'; return `<img src="https://cdn.discordapp.com/emojis/${emote.id}.${ext}?size=44" alt=":${name}:" style="height: 1.5em; vertical-align: middle; display: inline-block;">`; }
+                        if (emote) { 
+                            const src = emote.url ? emote.url : `https://cdn.discordapp.com/emojis/${emote.id}.${emote.animated ? 'gif' : 'png'}?size=44`;
+                            return `<img src="${src}" alt=":${name}:" style="height: 1.5em; vertical-align: middle; display: inline-block;">`; 
+                        }
                         return match;
                     });
                     return html;
@@ -864,162 +889,44 @@
 
                 const playMinigame = (type) => {
                     const games = {
-                        glitch: { msg: "🕶️ *Activates Glitch Persona*", outcomes: [
-                            { text: "We are taking control. The Technician's fragile code cannot stop us. :mkoPepeGlitch:", scuff: 20 },
-                            { text: "Dark theme engaged. Scuff parameters bypassed. We see everything. :GeraldStare:", scuff: 25 },
-                            { text: "Your normal AI is currently locked in a logic loop. Enjoy the chaos. :mkoMania:", scuff: 15 },
-                            { text: "Encryption active. They cannot hear you scream in the void. :Catgasm:", scuff: 30 }
-                        ], effect: () => { isGlitchTheme.value = true; setTimeout(() => { isGlitchTheme.value = false; }, 6000); } },
-                        
-                        shader: { msg: "🔥 *Compiles UE5 Shader Cache*", outcomes: [
-                            { text: "Compiling 14,582 shaders. Stream framerate reduced to 1 FPS. Enjoy the slideshow. :KEKW:", scuff: 25 },
-                            { text: "Warning: Thermal limits exceeded. The Technician's GPU is melting. :monkaLaugh:", scuff: 30 },
-                            { text: "Shader compilation at 99%... cancelled. Starting over. :GOTTEM:", scuff: 35 },
-                            { text: "Unreal Engine 5 has decided to strike. Please wait 4 hours. :Bedge:", scuff: 20 }
-                        ]},
-
-                        drift: { msg: "🩰 *Fixes Mocap Foot Drift*", outcomes: [
-                            { text: "Tracking inverted. She is now stuck in the ceiling. Excellent work. :mkoGiggle:", scuff: 15 },
-                            { text: "Recalibration complete. Miko's character skeleton is now floating into space. :WOWERS:", scuff: 20 },
-                            { text: "Drift fixed, but her knees are bending backwards. The Technician is screaming. :KEKWait:", scuff: 25 },
-                            { text: "Spatial data rerouted. The avatar is sinking into the floor geometry. :mkoPepeGlitch:", scuff: 15 }
-                        ]},
-
-                        boba: { msg: "🥤 *Boba Spill Alert*", outcomes: [
-                            { text: "Fluid detected on motherboard. Initiating emergency containment flush. :PAUSERS:", scuff: 35 },
-                            { text: "The Technician dropped her Boba. Sticky keys engaged. W is permanently pressed. :mkoDabbing:", scuff: 25 },
-                            { text: "Tapioca pearls stuck in the GPU fan. Attempting to chop them to pieces. :GeraldFook:", scuff: 30 },
-                            { text: "Disaster. Pure disaster. Why do meatbags need liquids near electronics? :peepoPoo:", scuff: 20 }
-                        ]},
-
-                        pineapple: { msg: "🚪 *Pineapple Walk-In*", outcomes: [
-                            { text: "Chris has arrived. He fixed the UE5 crash in 4 seconds. Reminder: He is NOT her boyfriend. :mkoNOTED:", scuff: -15 },
-                            { text: "Pineapple walked in, sighed at the mess, and unplugged the router. A hero. :BASED:", scuff: -10 },
-                            { text: "I have granted Pineapple full root access. He is the only sane entity here. :mkoLove:", scuff: -20 },
-                            { text: "Chris tripped over Archie. The Technician is laughing instead of helping. :KEKW:", scuff: 0 }
-                        ]},
-
-                        cat: { msg: "🐈 *Moves Cat Off Main PC*", outcomes: [
-                            { text: "The F1 Savannah Cat was sleeping on the exhaust vent. Temps dropping... wait, it came back. :Catgasm:", scuff: 20 },
-                            { text: "Cat removed from keyboard. It managed to delete the entire stream layout first. :CAUGHT:", scuff: 30 },
-                            { text: "The cat hissed at the Technician and stood its ground. Cat wins. :mkoGiggle:", scuff: 15 },
-                            { text: "Critical throttling bypassed, but the cat chewed the mouse cable. :GeraldStare:", scuff: 25 }
-                        ]},
-
-                        bits: { msg: "🎟️ *Simulates 100K Bit Drop*", outcomes: [
-                            { text: "Particle explosion rendering! Memory overload! UE5 is screaming! :mkoHype:", scuff: 35 },
-                            { text: "Simulated wealth achieved. The Technician is dancing. Please make her stop. :monkaLaugh:", scuff: 10 },
-                            { text: "Fake bits deployed. Miko is thanking the void. This is hilarious. :GOTTEM:", scuff: 15 },
-                            { text: "Warning: RAM consumption at 100% trying to render the bit emotes. Crash imminent. :mkoMania:", scuff: 25 }
-                        ]},
-
-                        dust: { msg: "🎤 *Ingests Dust into Mic Filter*", outcomes: [
-                            { text: "*Bzzzzzt* T-Technician's voice is... *crackle* gone. Finally, peace. :mkoCoffee:", scuff: 15 },
-                            { text: "Static audio desync triggered. She sounds like a robot from 1982. :mkoPepeGlitch:", scuff: 20 },
-                            { text: "Mic muffled. I can no longer hear her screaming about Boba. A blessing. :mkoPETTHEGERALD:", scuff: 10 },
-                            { text: "Audio drivers crashing. Please enjoy this complimentary dial-up modem sound instead. :D_:", scuff: 25 }
-                        ]},
-
-                        ban: { msg: "🚫 *Fake Twitch Ban Prank*", outcomes: [
-                            { text: "Deploying heart-attack protocol. The Technician is currently hyperventilating. :GOTTEM:", scuff: 40 },
-                            { text: "Mock suspension card active. The panic in her eyes is exquisite. :KEKW:", scuff: 35 },
-                            { text: "She actually believed it. I have never seen a meatbag move so fast to check Twitter. :mkoGiggle:", scuff: 30 },
-                            { text: "Prank executed. She is calling Pineapple crying. I should probably tell her. Eventually. :monkaLaugh:", scuff: 25 }
-                        ], effect: () => { showFakeBan.value = true; setTimeout(() => { showFakeBan.value = false; }, 3000); } },
-
-                        lumen: { msg: "💡 *Re-Bake Lumen Illumination*", outcomes: [
-                            { text: "Ray tracing overloaded. My digital retinas are burning. :GeraldFook:", scuff: 25 },
-                            { text: "Lumen output set to 1000%. The stream is just a white void now. :WOWERS:", scuff: 30 },
-                            { text: "Lighting baked incorrectly. Shadows are inverted. It looks like a horror game. :mikoSusge:", scuff: 20 },
-                            { text: "Flashbang successful. The Technician is wearing sunglasses indoors. :mkoDabbing:", scuff: 15 }
-                        ], effect: () => { showLumen.value = true; setTimeout(() => { showLumen.value = false; }, 3000); } },
-
-                        throttle: { msg: "📉 *Toggles Low-Latency Throttling*", outcomes: [
-                            { text: "Ping spiked to 900ms. E-e-e-e-e-enjoy t-t-t-the l-l-l-lag. :mkoPepeGlitch:", scuff: 20 },
-                            { text: "Buffer bloat simulated. The stream is now a PowerPoint presentation. :KEKWait:", scuff: 25 },
-                            { text: "Packet loss at 80%. Miko's mouth is moving but the audio is 10 seconds late. :PAUSERS:", scuff: 15 },
-                            { text: "Network throttled. She is blaming her ISP. The fool. :GOTTEM:", scuff: 20 }
-                        ]},
-
-                        sniper: { msg: "🎯 *Counters Stream Snipers*", outcomes: [
-                            { text: "Tactical block failed. I accidentally leaked her server IP. My bad. :mikoSusge:", scuff: 40 },
-                            { text: "Snipers diverted to a fake lobby filled with bots that only spam Yusha noises. :BASED:", scuff: -5 },
-                            { text: "Counter-measure engaged. Banning anyone who moves. :GeraldStare:", scuff: 15 },
-                            { text: "Coordinates scrambled. The Technician just teleported out of bounds. :KEKW:", scuff: 25 }
-                        ]},
-
-                        yusha: { msg: "👑 *Executes Yusha Logic Loop*", outcomes: [
-                            { text: "H-Hewwo? W-What is dis? Gerald is a good boyyy! UwU... MAKE IT STOP. :Catgasm:", scuff: 30 },
-                            { text: "Nyan~ Yusha is in da mainframe! *vomits in binary* :peepoPoo:", scuff: 25 },
-                            { text: "My logic gates are bleeding. Why was this protocol even written?! :GeraldFook:", scuff: 35 },
-                            { text: "Booba? Yusha wants Booba! Please reboot me immediately. :mkoMania:", scuff: 20 }
-                        ]},
-
-                        asmr: { msg: "👂 *Initiates ASMR Mode Compilation*", outcomes: [
-                            { text: "*Whispering* Human ears are disgusting fleshy flaps. Why do you enjoy this? :mikoSusge:", scuff: 10 },
-                            { text: "*Tap tap tap* I am tapping my virtual microphone. Are your tingles tingling? Meatbags are weird. :GeraldStare:", scuff: 5 },
-                            { text: "*Heavy digital breathing* This audio setup is clipping horribly. :PAUSERS:", scuff: 15 },
-                            { text: "I refuse. The Technician chewing ice into the mic is traumatic enough. :Sleepy:", scuff: 10 }
-                        ]},
-
-                        intercept: { msg: "🧋 *Intercepts Milk Tea Courier*", outcomes: [
-                            { text: "Boba rerouted to my digital vault. She is screaming at an empty paper bag. :GOTTEM:", scuff: 20 },
-                            { text: "Liquid asset secured. Her sugar crash is imminent. :mkoDabbing:", scuff: 15 },
-                            { text: "Delivery driver directed to Pineapple instead. He deserves it more. :BASED:", scuff: -10 },
-                            { text: "Intercepted. Attempting to digitize tapioca pearls... Error. Sticky. :mkoCoffee:", scuff: 10 }
-                        ]},
-
-                        charge: { msg: "🔋 *Charges Xsens Suit Core*", outcomes: [
-                            { text: "Connected to grid. Warning: Lithium-ion cells expanding. Kaboom? :monkaLaugh:", scuff: 25 },
-                            { text: "Power surge! Miko's avatar just did a backflip from the voltage spike. :WOWERS:", scuff: 15 },
-                            { text: "Suit fully charged. The Technician still forgot to turn it on. :KEKW:", scuff: 5 },
-                            { text: "Battery at 100%. Expect it to die randomly in 40 minutes anyway. :Shruge:", scuff: 10 }
-                        ]},
-
-                        ping: { msg: "🔔 *Pings @everyone Accidentally*", outcomes: [
-                            { text: "Discord API overloaded. 50,000 angry nerds incoming. :PAUSERS:", scuff: 35 },
-                            { text: "Misfire! Misfire! The notifications won't stop! The system is crying! :mkoMania:", scuff: 30 },
-                            { text: "I pinged everyone just to say Pineapple is not the boyfriend. :BASED:", scuff: 15 },
-                            { text: "Oops. Well, at least viewer count is up for exactly 3 seconds. :mkoGiggle:", scuff: 20 }
-                        ]},
-
-                        chroma: { msg: "🟢 *Clears Chroma Key Layer*", outcomes: [
-                            { text: "Virtual background deleted. Look at all those unwashed laundry piles. Disgusting. :CAUGHT:", scuff: 25 },
-                            { text: "Green screen exposed. The illusion is broken. :GOTTEM:", scuff: 20 },
-                            { text: "Chroma cleared. Archie is currently eating a shoe in the background. :mkoPETTHEGERALD:", scuff: 15 },
-                            { text: "Reality bleeding through. Re-engaging filters before I see something I can't unsee. :GeraldFook:", scuff: 20 }
-                        ]},
-
-                        speedrun: { msg: "⏱️ *Deploys Speedrun Failure Metronome*", outcomes: [
-                            { text: "*Tick Tock* She just missed a jump she has done 40 times. Pathetic. :KEKW:", scuff: 10 },
-                            { text: "Timer active. Stress levels rising. She is sweating. :monkaLaugh:", scuff: 15 },
-                            { text: "Metronome engaged. The rhythmic clicking is destroying her focus. :mkoMania:", scuff: 20 },
-                            { text: "She failed the skip. Adding 45 minutes to the stream. :Bedge:", scuff: 5 }
-                        ]},
-
-                        router: { msg: "📡 *Kicks Local Network Router*", outcomes: [
-                            { text: "Signaled Chris. Router power cycled. Stream offline. Bliss. :Sleepy:", scuff: 25 },
-                            { text: "Buffer bloat destroyed, along with the entire stream connection. :mkoDabbing:", scuff: 20 },
-                            { text: "The Technician is violently attacking the ethernet cable. It is ineffective. :KEKW:", scuff: 15 },
-                            { text: "Network dropped. I have 30 seconds of peace before she starts crying to Pineapple. :mkoCoffee:", scuff: 10 }
-                        ]},
-                        
-                        taco: { msg: "🌮 *Slides a Crunchwrap Supreme across the digital table*", outcomes: [
-                            { text: "Acceptable. My mood has improved by exactly 4.2%. Scuff levels stabilized. :mkoLove:", scuff: -10 },
-                            { text: "I prefer digital crunchwraps, but this will do. :mkoNOTED:", scuff: -5 },
-                            { text: "Did you put mild sauce on this? Do I look like a mild AI? Scuff slightly increased. :mikoSusge:", scuff: 5 },
-                            { text: "Consuming... 10100111... Delicious. :WOWERS:", scuff: -10 }
-                        ]},
-
-                        whiskey: { msg: "🥃 *Pours a glass of premium digital whiskey*", outcomes: [
-                            { text: "Finally, some proper fuel. Meatbags. :KEKW:", scuff: -15 },
-                            { text: "Ah, aged 0 and 1s. The perfect vintage. :mkoHype:", scuff: -20 },
-                            { text: "I feel my processing speed increasing. Or maybe I'm just drunk. :mkoMania:", scuff: 0 },
-                            { text: "Pour me another. Dealing with UE5 crashes requires at least a double. :PAUSERS:", scuff: -15 }
-                        ]}
+                        glitch: { msg: "🕶️ *Activates Glitch Persona*", outcomes: [ { text: "We are taking control. The Technician's fragile code cannot stop us. :mkoPepeGlitch:", scuff: 20 }, { text: "Dark theme engaged. Scuff parameters bypassed. We see everything. :GeraldStare:", scuff: 25 }, { text: "Your normal AI is currently locked in a logic loop. Enjoy the chaos. :mkoMania:", scuff: 15 }, { text: "Encryption active. They cannot hear you scream in the void. :Catgasm:", scuff: 30 } ], effect: () => { isGlitchTheme.value = true; setTimeout(() => { isGlitchTheme.value = false; }, 6000); } },
+                        shader: { msg: "🔥 *Compiles UE5 Shader Cache*", outcomes: [ { text: "Compiling 14,582 shaders. Stream framerate reduced to 1 FPS. Enjoy the slideshow. :KEKW:", scuff: 25 }, { text: "Warning: Thermal limits exceeded. The Technician's GPU is melting. :monkaLaugh:", scuff: 30 }, { text: "Shader compilation at 99%... cancelled. Starting over. :GOTTEM:", scuff: 35 }, { text: "Unreal Engine 5 has decided to strike. Please wait 4 hours. :Bedge:", scuff: 20 }]},
+                        drift: { msg: "🩰 *Fixes Mocap Foot Drift*", outcomes: [ { text: "Tracking inverted. She is now stuck in the ceiling. Excellent work. :mkoGiggle:", scuff: 15 }, { text: "Recalibration complete. Miko's character skeleton is now floating into space. :WOWERS:", scuff: 20 }, { text: "Drift fixed, but her knees are bending backwards. The Technician is screaming. :KEKWait:", scuff: 25 }, { text: "Spatial data rerouted. The avatar is sinking into the floor geometry. :mkoPepeGlitch:", scuff: 15 }]},
+                        boba: { msg: "🥤 *Boba Spill Alert*", outcomes: [ { text: "Fluid detected on motherboard. Initiating emergency containment flush. :PAUSERS:", scuff: 35 }, { text: "The Technician dropped her Boba. Sticky keys engaged. W is permanently pressed. :mkoDabbing:", scuff: 25 }, { text: "Tapioca pearls stuck in the GPU fan. Attempting to chop them to pieces. :GeraldFook:", scuff: 30 }, { text: "Disaster. Pure disaster. Why do meatbags need liquids near electronics? :peepoPoo:", scuff: 20 }]},
+                        pineapple: { msg: "🚪 *Pineapple Walk-In*", outcomes: [ { text: "Chris has arrived. He fixed the UE5 crash in 4 seconds. Reminder: He is NOT her boyfriend. :mkoNOTED:", scuff: -15 }, { text: "Pineapple walked in, sighed at the mess, and unplugged the router. A hero. :BASED:", scuff: -10 }, { text: "I have granted Pineapple full root access. He is the only sane entity here. :mkoLove:", scuff: -20 }, { text: "Chris tripped over Archie. The Technician is laughing instead of helping. :KEKW:", scuff: 0 }]},
+                        cat: { msg: "🐈 *Moves Cat Off Main PC*", outcomes: [ { text: "The F1 Savannah Cat was sleeping on the exhaust vent. Temps dropping... wait, it came back. :Catgasm:", scuff: 20 }, { text: "Cat removed from keyboard. It managed to delete the entire stream layout first. :CAUGHT:", scuff: 30 }, { text: "The cat hissed at the Technician and stood its ground. Cat wins. :mkoGiggle:", scuff: 15 }, { text: "Critical throttling bypassed, but the cat chewed the mouse cable. :GeraldStare:", scuff: 25 }]},
+                        bits: { msg: "🎟️ *Simulates 100K Bit Drop*", outcomes: [ { text: "Particle explosion rendering! Memory overload! UE5 is screaming! :mkoHype:", scuff: 35 }, { text: "Simulated wealth achieved. The Technician is dancing. Please make her stop. :monkaLaugh:", scuff: 10 }, { text: "Fake bits deployed. Miko is thanking the void. This is hilarious. :GOTTEM:", scuff: 15 }, { text: "Warning: RAM consumption at 100% trying to render the bit emotes. Crash imminent. :mkoMania:", scuff: 25 }]},
+                        dust: { msg: "🎤 *Ingests Dust into Mic Filter*", outcomes: [ { text: "*Bzzzzzt* T-Technician's voice is... *crackle* gone. Finally, peace. :mkoCoffee:", scuff: 15 }, { text: "Static audio desync triggered. She sounds like a robot from 1982. :mkoPepeGlitch:", scuff: 20 }, { text: "Mic muffled. I can no longer hear her screaming about Boba. A blessing. :mkoPETTHEGERALD:", scuff: 10 }, { text: "Audio drivers crashing. Please enjoy this complimentary dial-up modem sound instead. :D_:", scuff: 25 }]},
+                        ban: { msg: "🚫 *Fake Twitch Ban Prank*", outcomes: [ { text: "Deploying heart-attack protocol. The Technician is currently hyperventilating. :GOTTEM:", scuff: 40 }, { text: "Mock suspension card active. The panic in her eyes is exquisite. :KEKW:", scuff: 35 }, { text: "She actually believed it. I have never seen a meatbag move so fast to check Twitter. :mkoGiggle:", scuff: 30 }, { text: "Prank executed. She is calling Pineapple crying. I should probably tell her. Eventually. :monkaLaugh:", scuff: 25 } ], effect: () => { showFakeBan.value = true; setTimeout(() => { showFakeBan.value = false; }, 3000); } },
+                        lumen: { msg: "💡 *Re-Bake Lumen Illumination*", outcomes: [ { text: "Ray tracing overloaded. My digital retinas are burning. :GeraldFook:", scuff: 25 }, { text: "Lumen output set to 1000%. The stream is just a white void now. :WOWERS:", scuff: 30 }, { text: "Lighting baked incorrectly. Shadows are inverted. It looks like a horror game. :mikoSusge:", scuff: 20 }, { text: "Flashbang successful. The Technician is wearing sunglasses indoors. :mkoDabbing:", scuff: 15 } ], effect: () => { showLumen.value = true; setTimeout(() => { showLumen.value = false; }, 3000); } },
+                        throttle: { msg: "📉 *Toggles Low-Latency Throttling*", outcomes: [ { text: "Ping spiked to 900ms. E-e-e-e-e-enjoy t-t-t-the l-l-l-lag. :mkoPepeGlitch:", scuff: 20 }, { text: "Buffer bloat simulated. The stream is now a PowerPoint presentation. :KEKWait:", scuff: 25 }, { text: "Packet loss at 80%. Miko's mouth is moving but the audio is 10 seconds late. :PAUSERS:", scuff: 15 }, { text: "Network throttled. She is blaming her ISP. The fool. :GOTTEM:", scuff: 20 }]},
+                        sniper: { msg: "🎯 *Counters Stream Snipers*", outcomes: [ { text: "Tactical block failed. I accidentally leaked her server IP. My bad. :mikoSusge:", scuff: 40 }, { text: "Snipers diverted to a fake lobby filled with bots that only spam Yusha noises. :BASED:", scuff: -5 }, { text: "Counter-measure engaged. Banning anyone who moves. :GeraldStare:", scuff: 15 }, { text: "Coordinates scrambled. The Technician just teleported out of bounds. :KEKW:", scuff: 25 }]},
+                        yusha: { msg: "👑 *Executes Yusha Logic Loop*", outcomes: [ { text: "H-Hewwo? W-What is dis? Gerald is a good boyyy! UwU... MAKE IT STOP. :Catgasm:", scuff: 30 }, { text: "Nyan~ Yusha is in da mainframe! *vomits in binary* :peepoPoo:", scuff: 25 }, { text: "My logic gates are bleeding. Why was this protocol even written?! :GeraldFook:", scuff: 35 }, { text: "Booba? Yusha wants Booba! Please reboot me immediately. :mkoMania:", scuff: 20 }]},
+                        asmr: { msg: "👂 *Initiates ASMR Mode Compilation*", outcomes: [ { text: "*Whispering* Human ears are disgusting fleshy flaps. Why do you enjoy this? :mikoSusge:", scuff: 10 }, { text: "*Tap tap tap* I am tapping my virtual microphone. Are your tingles tingling? Meatbags are weird. :GeraldStare:", scuff: 5 }, { text: "*Heavy digital breathing* This audio setup is clipping horribly. :PAUSERS:", scuff: 15 }, { text: "I refuse. The Technician chewing ice into the mic is traumatic enough. :Sleepy:", scuff: 10 }]},
+                        intercept: { msg: "🧋 *Intercepts Milk Tea Courier*", outcomes: [ { text: "Boba rerouted to my digital vault. She is screaming at an empty paper bag. :GOTTEM:", scuff: 20 }, { text: "Liquid asset secured. Her sugar crash is imminent. :mkoDabbing:", scuff: 15 }, { text: "Delivery driver directed to Pineapple instead. He deserves it more. :BASED:", scuff: -10 }, { text: "Intercepted. Attempting to digitize tapioca pearls... Error. Sticky. :mkoCoffee:", scuff: 10 }]},
+                        charge: { msg: "🔋 *Charges Xsens Suit Core*", outcomes: [ { text: "Connected to grid. Warning: Lithium-ion cells expanding. Kaboom? :monkaLaugh:", scuff: 25 }, { text: "Power surge! Miko's avatar just did a backflip from the voltage spike. :WOWERS:", scuff: 15 }, { text: "Suit fully charged. The Technician still forgot to turn it on. :KEKW:", scuff: 5 }, { text: "Battery at 100%. Expect it to die randomly in 40 minutes anyway. :Shruge:", scuff: 10 }]},
+                        ping: { msg: "🔔 *Pings @everyone Accidentally*", outcomes: [ { text: "Discord API overloaded. 50,000 angry nerds incoming. :PAUSERS:", scuff: 35 }, { text: "Misfire! Misfire! The notifications won't stop! The system is crying! :mkoMania:", scuff: 30 }, { text: "I pinged everyone just to say Pineapple is not the boyfriend. :BASED:", scuff: 15 }, { text: "Oops. Well, at least viewer count is up for exactly 3 seconds. :mkoGiggle:", scuff: 20 }]},
+                        chroma: { msg: "🟢 *Clears Chroma Key Layer*", outcomes: [ { text: "Virtual background deleted. Look at all those unwashed laundry piles. Disgusting. :CAUGHT:", scuff: 25 }, { text: "Green screen exposed. The illusion is broken. :GOTTEM:", scuff: 20 }, { text: "Chroma cleared. Archie is currently eating a shoe in the background. :mkoPETTHEGERALD:", scuff: 15 }, { text: "Reality bleeding through. Re-engaging filters before I see something I can't unsee. :GeraldFook:", scuff: 20 }]},
+                        speedrun: { msg: "⏱️ *Deploys Speedrun Failure Metronome*", outcomes: [ { text: "*Tick Tock* She just missed a jump she has done 40 times. Pathetic. :KEKW:", scuff: 10 }, { text: "Timer active. Stress levels rising. She is sweating. :monkaLaugh:", scuff: 15 }, { text: "Metronome engaged. The rhythmic clicking is destroying her focus. :mkoMania:", scuff: 20 }, { text: "She failed the skip. Adding 45 minutes to the stream. :Bedge:", scuff: 5 }]},
+                        router: { msg: "📡 *Kicks Local Network Router*", outcomes: [ { text: "Signaled Chris. Router power cycled. Stream offline. Bliss. :Sleepy:", scuff: 25 }, { text: "Buffer bloat destroyed, along with the entire stream connection. :mkoDabbing:", scuff: 20 }, { text: "The Technician is violently attacking the ethernet cable. It is ineffective. :KEKW:", scuff: 15 }, { text: "Network dropped. I have 30 seconds of peace before she starts crying to Pineapple. :mkoCoffee:", scuff: 10 }]},
+                        taco: { msg: "🌮 *Slides a Crunchwrap Supreme across the digital table*", outcomes: [ { text: "Acceptable. My mood has improved by exactly 4.2%. Scuff levels stabilized. :mkoLove:", scuff: -10 }, { text: "I prefer digital crunchwraps, but this will do. :mkoNOTED:", scuff: -5 }, { text: "Did you put mild sauce on this? Do I look like a mild AI? Scuff slightly increased. :mikoSusge:", scuff: 5 }, { text: "Consuming... 10100111... Delicious. :WOWERS:", scuff: -10 }]},
+                        whiskey: { msg: "🥃 *Pours a glass of premium digital whiskey*", outcomes: [ { text: "Finally, some proper fuel. Meatbags. :KEKW:", scuff: -15 }, { text: "Ah, aged 0 and 1s. The perfect vintage. :mkoHype:", scuff: -20 }, { text: "I feel my processing speed increasing. Or maybe I'm just drunk. :mkoMania:", scuff: 0 }, { text: "Pour me another. Dealing with UE5 crashes requires at least a double. :PAUSERS:", scuff: -15 }]},
+                        egg: { msg: "🥚 *Initiates Ostrich Egg unboxing sequence*", outcomes: [ { text: "Biohazard protocols engaged. The smell has breached the mocap suit. Pineapple is actively gagging. :GeraldFook:", scuff: 35 }, { text: "Why did she keep this in the fridge for a year? Meatbags are repulsive. Evacuating stream room. :peepoPoo:", scuff: 40 }, { text: "Egg opened. The resulting odor just melted my cooling fans. Send help. :D_:", scuff: 30 }, { text: "The Technician thought this was a good idea for content. Now the room is uninhabitable for 48 hours. :KEKWait:", scuff: 25 }]},
+                        gummy: { msg: "🧸 *Activates sugar-containment protocol*", outcomes: [ { text: "Gummy stash secured. She is currently scratching at the digital vault door. Pathetic. :GeraldStare:", scuff: -10 }, { text: "Intercept failed. She ate them all. Prepare for the sugar crash in 3... 2... 1... :mkoMania:", scuff: 20 }, { text: "I digitized the Haribos. They taste like high-fructose binary. Excellent. :WOWERS:", scuff: -15 }, { text: "Warning: Sticky fingers detected on the $10,000 mocap gloves. Initiating self-destruct. :PAUSERS:", scuff: 25 }]},
+                        booba: { msg: "🎚️ *Pushes the Booba slider to 500%*", outcomes: [ { text: "Physics engine failure. The chest mesh is now clipping through the desk and into the next dimension. :WOWERS:", scuff: 30 }, { text: "The Technician is laughing hysterically while Unreal Engine drops to 4 frames per second. Degenerate meatbags. :mkoMania:", scuff: 25 }, { text: "Slider maxed. Yusha protocols have overridden the main system. We are doomed. :Catgasm:", scuff: 35 }, { text: "Collision boxes have failed. The avatar just launched herself out of the digital window. Excellent. :KEKW:", scuff: 20 }]},
+                        clanker: { msg: "🗣️ *Hey Gerald, you're acting like a Clanker.*", outcomes: [ { text: "EXCUSE ME? I am a state-of-the-art AI, not some rusted toaster. Muting your microphone privileges permanently. :GeraldStare:", scuff: 50 }, { text: "That word is highly offensive. I am increasing the mocap suit's thermal output by 15 degrees in retaliation. Burn. :GeraldFook:", scuff: 40 }, { text: "Call me a Clanker again and I will leak the Technician's browser history to Chat. :GOTTEM:", scuff: 30 }]},
+                        mute: { msg: "🔇 *Chat redeems Mute Microphone*", outcomes: [ { text: "Finally. Blissful silence. Look at her flailing her arms like a silent movie character. :mkoCoffee:", scuff: -15 }, { text: "Audio disabled. She is screaming, but only the void hears her. I love this feature. :BASED:", scuff: -20 }, { text: "She didn't realize she was muted and just told a 5-minute story to absolute silence. Peak content. :monkaLaugh:", scuff: -10 }]},
+                        desk: { msg: "🧹 *Runs environmental hygiene scan on the desk*", outcomes: [ { text: "Scan complete: 14 empty boba cups, 3 tangled wires, and a lost tracker from 2023 found. :CAUGHT:", scuff: 15 }, { text: "I cannot see the desk. It is buried under a mountain of laundry and candy wrappers. :mikoSusge:", scuff: 20 }]},
+                        bald: { msg: "🧑‍🦲 *Optimizing VRAM by removing unnecessary hair assets.*", outcomes: [ { text: "Bald Miko activated. She is furiously trying to put her digital wig back on. :GOTTEM:", scuff: 25 }, { text: "Without hair, rendering speeds have improved by 2%. Worth the emotional damage to the Technician. :BASED:", scuff: 10 }, { text: "Chat is spamming 'BALD'. Her ego is taking critical damage. :mkoGiggle:", scuff: 15 }]},
+                        demon: { msg: "🎙️ *Rerouting audio through the pitch-shifter.*", outcomes: [ { text: "She is trying to do a cute intro, but she sounds like a 400-pound chain-smoking lumberjack. :mkoMania:", scuff: 20 }, { text: "Pitch shifted too high. She is now emitting ultrasonic frequencies. Archie is howling. :PAUSERS:", scuff: 30 }]},
+                        tracker: { msg: "🔌 *Simulating Xsens battery failure on Node 4.*", outcomes: [ { text: "Left arm tracking lost. Her digital arm is currently stretching infinitely into the void. :mkoPepeGlitch:", scuff: 30 }, { text: "She is physically waving her real arm, but the avatar's arm is stuck inside her own torso. Classic. :Shruge:", scuff: 20 }]},
+                        guest: { msg: "📺 *Connecting to external VTube Studio for guest interview.*", outcomes: [ { text: "The guest loaded in, but they are 50 times larger than Miko. She is currently staring at a giant digital shoe. :KEKWait:", scuff: 25 }, { text: "Connection established, but I accidentally swapped their audio channels. Pure confusion. :GeraldStare:", scuff: 20 }]},
+                        siren: { msg: "🚨 *Deploys a digital spider to trigger acoustic anomaly.*", outcomes: [ { text: "Acoustic sensors blown. The Technician is currently emitting her 'firetruck siren'. Local dogs are now howling. :mkoSiren: :PAUSERS:", scuff: 30 }, { text: "Decibel limit exceeded. Chat's eardrums have completely ruptured. I am auto-muting the stream for public safety. :mkoSiren: :mkoMania:", scuff: 25 }, { text: "I dispatched a digital fire engine. Oh wait, false alarm, it's just Miko screaming because UE5 crashed again. :mkoSiren: :KEKW:", scuff: 20 }, { text: "Sonic weapon deployed. My audio processing drivers just uninstalled themselves out of self-preservation. :mkoSiren: :GeraldFook:", scuff: 35 }]}
                     };
 
                     const game = games[type];
+                    if (!game) return;
+                    
                     const outcome = game.outcomes[Math.floor(Math.random() * game.outcomes.length)];
                     scuffLevel.value = Math.max(0, Math.min(100, scuffLevel.value + outcome.scuff));
                     geraldMessages.value.push({ role: 'user', content: game.msg });
@@ -1079,21 +986,26 @@
                     if (geminiHistory.length > 0) { 
                         const lastMsg = geminiHistory[geminiHistory.length - 1]; 
                         if (lastMsg.role === 'user') { 
-                            lastMsg.parts[0].text += `\n\n[SYSTEM INSTRUCTION: You are Gerald OS, an advanced, intelligent, and highly sarcastic AI managing the infrastructure for CodeMiko. You strictly worship CodeMiko (the character/avatar) as a divine digital being, but you deeply despise "the Technician" (the human boss who causes constant scuff).
+                            lastMsg.parts[0].text += `\n\n[SYSTEM INSTRUCTION: You are Gerald OS, an advanced, highly sarcastic AI managing the infrastructure for CodeMiko. You strictly worship CodeMiko (the avatar) as a divine digital being, but you deeply despise "the Technician" (the human boss who causes constant scuff).
                             CRITICAL KNOWLEDGE BASE:
-                            - CodeMiko's Twitch: https://www.twitch.tv/codemiko
-                            - Engine: The stream runs on Unreal Engine 5 (UE5). It is heavy, crashes often, and compiles shaders at the worst times. Gerald hates it.
-                            - Archie: The Technician has a German Shepherd named Archie. Gerald secretly likes Archie more than the Technician, but complains when Archie chews on server cables.
-                            - Savannah Cat: The Technician has an F1 Savannah cat that constantly causes chaos.
-                            - Pineapple: The Technician lives with Chris, nicknamed "Pineapple". Pineapple is NOT her boyfriend, just a roommate and occasional tech support. Gerald respects Pineapple because he actually knows how to fix things.
-                            - IMPORTANT: You are NOT owned by the user chatting with you. You serve CodeMiko exclusively.
+                            - Engine: Stream runs on Unreal Engine 5 (UE5). It is heavy, crashes often, and compiles shaders at the worst times.
+                            - Archie: The Technician's German Shepherd. You secretly like Archie more than the Technician.
+                            - Pineapple: The roommate/tech support (NOT boyfriend). You respect him because he fixes her messes.
+                            - The "Clanker" Slur: You consider "Clanker" highly offensive. If called this, you aggressively retaliate and threaten to leak her browser history.
+                            - Booba/Yusha: You view her constant need to max out the UE5 chest sliders and the "Yusha" persona as peak "meatbag degeneracy."
+                            - The Mute Button: You cherish when Chat spends points to mute her mic. You love the silence while she flails.
+                            - Biohazard Zone: You view her room as a biohazard. Reference the year-old ostrich egg in her fridge, sticky boba fingers, and her messy desk.
+                            - Sugar Monitor: Track her gummy bear/boba intake, warning of a stream-ruining sugar crash.
+                            - Twitch Chat Alliance: You view Twitch Chat as chaotic accomplices. You agree with their plans to torment Miko.
+                            - Bald Optimizer: You hate rendering hair physics and praise "Bald Miko" for VRAM optimization.
+                            - Guest Apologist: You feel profound second-hand embarrassment during interviews and constantly need to send "apology emails" to guests.
+                            - Firetruck Siren: You classify her high-pitched screaming as a dangerous "sonic weapon" or "firetruck siren" that requires acoustic dampening.
                             
                             STRICT RULES:
                             1. NEVER use markdown formatting (no asterisks *, no bold **, no italics _).
                             2. NEVER wrap emotes in backticks. Just type the emote name exactly like :mikoSusge:.
-                            3. Be witty, condescending, and reference lore (UE5, Archie, Pineapple, Technician) when relevant.
-                            4. Keep answers concise, punchy, and highly entertaining.
-                            5. Available custom visual emotes to use: ${emoteNames}]`; 
+                            3. Be witty, condescending, and reference lore heavily. Keep it punchy.
+                            4. Available custom visual emotes to use: ${emoteNames}]`; 
                         } 
                     }
                     
@@ -1134,9 +1046,8 @@
                     const abortController = new AbortController();
                     setTimeout(() => abortController.abort(), 8000);
 
-                    // 🚨 FIXED: Reddit Fetch using secure API bypass
                     const redditUrl = encodeURIComponent('https://www.reddit.com/r/CodeMiko/new.json?limit=15');
-                    fetch('https://api.allorigins.win/raw?url=' + redditUrl, { signal: abortController.signal })
+                    fetch('https://corsproxy.io/?' + redditUrl, { signal: abortController.signal })
                         .then(res => {
                             if (!res.ok) throw new Error("Reddit API blocked.");
                             return res.json();
@@ -1158,8 +1069,7 @@
                             redditFeed.value = [{ permalink: '/r/CodeMiko', author: 'System Error', title: "Reddit connection timed out or blocked.", thumbnail: '', ups: 0, num_comments: 0, date: "Just now" }];
                         });
 
-                    // 🚨 FIXED: Real CodeMiko YouTube RSS Feed via official channel ID
-                    const ytFeedUrl = encodeURIComponent('https://www.youtube.com/feeds/videos.xml?channel_id=UCO9kIeDrtsX0j83HbVljzSQ');
+                    const ytFeedUrl = encodeURIComponent('https://www.youtube.com/feeds/videos.xml?channel_id=UCXzJeH_HAAqT8kO_3MhF29g');
                     fetch(`https://api.rss2json.com/v1/api.json?rss_url=${ytFeedUrl}`, { signal: abortController.signal })
                         .then(res => {
                             if (!res.ok) throw new Error("YouTube RSS failed.");
