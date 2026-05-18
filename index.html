@@ -27,8 +27,7 @@
 
         * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; font-family: 'Inter', sans-serif; }
         
-        /* 🚨 FIXED VIEWPORT HEIGHT FOR ANDROID */
-        body, html { margin: 0; padding: 0; height: 100%; height: 100dvh; width: 100%; background: #050505; color: var(--text-main); overflow: hidden; display: flex; justify-content: center; align-items: center; overscroll-behavior-y: none; }
+        body, html { margin: 0; padding: 0; height: 100%; height: 100dvh; width: 100%; max-width: 100%; overflow-x: hidden; background: #050505; color: var(--text-main); overflow: hidden; display: flex; justify-content: center; align-items: center; overscroll-behavior-y: none; }
         
         #app-container { width: 100%; max-width: 540px; height: 100%; position: relative; background: radial-gradient(circle at 50% 30%, #2a1147 0%, #050505 80%); overflow: hidden; display: flex; flex-direction: column; box-shadow: 0 0 50px rgba(0,0,0,0.8); transition: 0.3s; }
 
@@ -94,7 +93,7 @@
         .progress-fill { position: absolute; left: 0; top: 0; height: 100%; width: 50%; background: linear-gradient(90deg, transparent, var(--primary-light), var(--primary)); animation: load 1s infinite linear; }
         @keyframes load { 0% { transform: translateX(-100%); } 100% { transform: translateX(200%); } }
         
-        .vod-animated-border { position: relative; padding: 3px; border-radius: 15px; background: linear-gradient(90deg, #ffffff, var(--primary), #ffffff); background-size: 200% auto; animation: panBorder 4s linear infinite; }
+        .vod-animated-border { position: relative; padding: 3px; border-radius: 15px; background-image: linear-gradient(90deg, #ffffff, var(--primary), #ffffff); background-size: 200% auto; animation: panBorder 4s linear infinite; }
         @keyframes panBorder { 0% { background-position: 0% center; } 100% { background-position: 200% center; } }
 
         .app-header { width: 100%; padding: 45px 20px 15px; display: flex; align-items: center; justify-content: space-between; z-index: 100; position: absolute; top: 0; left: 0; background: linear-gradient(to bottom, rgba(0,0,0,0.8) 0%, transparent 100%); pointer-events: none; transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1); transform: translateZ(0); }
@@ -122,11 +121,11 @@
         @keyframes scanline { 0% { transform: translateY(-10%); opacity: 0; } 50% { opacity: 1; } 100% { transform: translateY(110%); opacity: 0; } }
 
         .view-port { flex: 1; width: 100%; height: 100%; overflow: hidden; position: relative; }
-        .scroll-area { height: 100%; width: 100%; overflow-y: auto; scroll-behavior: smooth; padding-bottom: 80px; }
+        .scroll-area { height: 100%; width: 100%; overflow-y: auto; scroll-behavior: smooth; padding-bottom: 90px; }
         .scroll-area::-webkit-scrollbar { display: none; }
         
         #feed-scroll { padding-bottom: 0; scroll-snap-type: y mandatory; }
-        .feed-snap-item { width: 100%; height: 100%; flex-shrink: 0; display: flex; flex-direction: column; justify-content: center; position: relative; padding: 0 15px 80px; scroll-snap-align: start; scroll-snap-stop: always; }
+        .feed-snap-item { width: 100%; height: 100%; flex-shrink: 0; display: flex; flex-direction: column; justify-content: center; position: relative; padding: 0 15px 90px; scroll-snap-align: start; scroll-snap-stop: always; }
         
         .feed-layout { position: absolute; top: 110px; bottom: 85px; left: 0; right: 0; padding: 0 15px; display: flex; flex-direction: column; gap: 20px; overflow: hidden; }
         #yt-wrapper { flex-shrink: 0; display: flex; flex-direction: column; }
@@ -153,8 +152,9 @@
         .filter-btn-tiny { background: var(--card-bg); border: 1px solid var(--border-color); color: #a1a1aa; padding: 6px 12px; border-radius: 8px; font-size: 10px; font-weight: 800; text-transform: uppercase; display: flex; align-items: center; gap: 4px; cursor: pointer; transition: 0.1s; outline: none; }
         .filter-btn-tiny:active { transform: scale(0.95); border-color: var(--primary); color: #fff; }
 
-        .gerald-container { display: flex; flex-direction: column; height: 100%; padding-bottom: 80px; }
-        .gerald-header { padding: 60px 20px 20px; text-align: center; display: flex; flex-direction: column; align-items: center; }
+        /* 🚨 GERALD TAB FIXES */
+        .gerald-container { display: flex; flex-direction: column; height: 100%; padding-bottom: 0px; }
+        .gerald-header { padding: 60px 20px 20px; text-align: center; display: flex; flex-direction: column; align-items: center; flex-shrink: 0; }
         .gerald-messages { flex: 1; overflow-y: auto; padding: 20px; display: flex; flex-direction: column; gap: 12px; }
         
         .scuff-meter-wrapper { width: 80%; background: #111113; border: 1px solid var(--border-color); border-radius: 10px; padding: 4px; margin-top: 15px; cursor: pointer; }
@@ -171,8 +171,8 @@
         .terminal-header { display: flex; align-items: center; gap: 6px; font-size: 10px; font-weight: 900; color: var(--gerald); text-transform: uppercase; letter-spacing: 1px; }
         .terminal-text { font-family: monospace; font-size: 13px; color: var(--text-muted); line-height: 1.4; }
         
-        .gerald-input-area { padding: 15px; display: flex; gap: 8px; border-top: 1px solid var(--border-color); background: transparent; align-items: flex-end;}
-        .gerald-input-wrapper { display: flex; align-items: flex-end; background: var(--card-bg); border: 1px solid var(--border-color); border-radius: 20px; flex: 1; padding-left: 5px; transition: 0.2s; min-height: 44px; }
+        .gerald-input-area { padding: 10px 15px calc(100px + env(safe-area-inset-bottom, 0px)) 15px; display: flex; gap: 8px; border-top: 1px solid var(--border-color); background: var(--bg-color); align-items: flex-end; width: 100%; flex-shrink: 0; z-index: 50; position: relative; }
+        .gerald-input-wrapper { display: flex; align-items: flex-end; background: var(--card-bg); border: 1px solid var(--border-color); border-radius: 20px; flex: 1; min-width: 0; padding-left: 5px; transition: 0.2s; min-height: 44px; }
         .gerald-input-wrapper:focus-within { border-color: var(--gerald); }
         .emote-toggle-btn { background: transparent; border: none; color: var(--text-muted); cursor: pointer; padding: 10px 6px; border-radius: 50%; height: 44px; display: flex; align-items: center; justify-content: center; }
         .emote-toggle-btn:active { color: var(--gerald); }
@@ -180,7 +180,7 @@
         .gerald-input::-webkit-scrollbar { width: 4px; }
         .gerald-input::-webkit-scrollbar-thumb { background: #3f3f46; border-radius: 4px; }
         
-        .tray-container { display: flex; flex-wrap: wrap; gap: 10px; padding: 15px; background: #111113; border-top: 1px solid var(--border-color); max-height: 250px; overflow-y: auto; }
+        .tray-container { display: flex; flex-wrap: wrap; gap: 10px; padding: 15px; background: #111113; border-top: 1px solid var(--border-color); max-height: 250px; overflow-y: auto; flex-shrink: 0; position: relative; z-index: 51; }
         .tray-container::-webkit-scrollbar { width: 4px; }
         .tray-container::-webkit-scrollbar-thumb { background: #3f3f46; border-radius: 4px; }
         
@@ -193,8 +193,7 @@
         .gerald-send { background: var(--gerald); border: none; width: 44px; height: 44px; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white; cursor: pointer; flex-shrink: 0; transition: 0.1s; }
         .gerald-send:active { transform: scale(0.9); }
 
-        /* 🚨 RESTORED FLOATING NAVBAR */
-        .bottom-nav { position: fixed; bottom: 25px; left: 50%; transform: translateX(-50%); width: calc(100% - 30px); max-width: 500px; background: var(--nav-bg); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px); border-radius: 30px; border: 1px solid rgba(255, 255, 255, 0.1); display: flex; justify-content: space-between; align-items: center; padding: 10px 5px; z-index: 1000; box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
+        .bottom-nav { position: fixed; bottom: calc(25px + env(safe-area-inset-bottom, 0px)); left: 50%; transform: translateX(-50%); width: calc(100% - 30px); max-width: 500px; background: var(--nav-bg); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px); border-radius: 30px; border: 1px solid rgba(255, 255, 255, 0.1); display: flex; justify-content: space-between; align-items: center; padding: 10px 5px; z-index: 1000; box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
         .nav-item { display: flex; flex-direction: column; align-items: center; flex: 1; color: var(--text-muted); font-size: 9px; gap: 4px; cursor: pointer; text-decoration: none; font-weight: 700; transition: 0.2s; }
         .nav-item.active { color: var(--text-main); }
         .nav-item.active .material-symbols-rounded { font-variation-settings: 'FILL' 1; color: var(--primary); }
@@ -217,7 +216,6 @@
         .sync-btn { width: 100%; background: var(--primary); border: none; color: white; padding: 15px; border-radius: 12px; font-weight: 800; cursor: pointer; margin-bottom: 10px; display: flex; justify-content: center; align-items: center; gap: 8px; transition: 0.2s; }
         .sync-btn:active { transform: scale(0.97); }
 
-        /* RESTORED ADMIN PANEL CSS */
         .infra-bar { background: var(--card-bg); border: 1px solid var(--border-color); border-radius: 14px; padding: 14px 18px; display: flex; justify-content: center; margin-bottom: 16px; }
         .status-node { display: flex; align-items: center; gap: 8px; font-size: 11px; font-weight: 800; text-transform: uppercase; }
         .pulse { width: 8px; height: 8px; border-radius: 50%; background: var(--success); box-shadow: 0 0 10px var(--success); animation: pulse-glow 2s infinite; }
@@ -231,10 +229,8 @@
         .sleek-input:focus { border-color: var(--primary); }
         .action-menu { background: var(--card-bg); border: 1px solid var(--border-color); border-radius: 16px; overflow: hidden; text-align: left; }
         .menu-btn { width: 100%; padding: 14px 16px; display: flex; align-items: center; justify-content: space-between; background: transparent; border: none; border-bottom: 1px solid var(--border-color); cursor: pointer; font-size: 11px; font-weight: 800; text-transform: uppercase; transition: 0.3s; }
-        .menu-btn:last-child { border-bottom: none; }
+        .menu-btn:not(:last-child) { border-bottom: 1px solid var(--border-color); }
         .menu-btn:active:not(:disabled) { background: rgba(255,255,255,0.05); }
-        .menu-btn:disabled { opacity: 0.8; cursor: default; }
-        
         .btn-content { display: flex; align-items: center; gap: 12px; }
         .icon-wrap { width: 30px; height: 30px; border-radius: 8px; display: flex; align-items: center; justify-content: center; transition: 0.3s; }
         
@@ -425,7 +421,7 @@
             <div class="feed-layout" :class="{ active: isRefreshing }" v-show="currentTab === 'feed'">
                 <div id="yt-wrapper">
                     <div v-if="ytFeed.length > 0">
-                        <div class="vod-animated-border" style="background: linear-gradient(90deg, #27272a, var(--youtube), #27272a);">
+                        <div class="vod-animated-border" style="background-image: linear-gradient(90deg, #27272a, var(--youtube), #27272a);">
                             <div class="video-container">
                                 <iframe v-if="ytFeed[ytCurrentIndex] && currentTab === 'feed'" :src="'https://www.youtube.com/embed/' + ytFeed[ytCurrentIndex].id" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen loading="lazy"></iframe>
                             </div>
@@ -503,7 +499,7 @@
                     </div>
                 </transition-group>
                 
-                <div style="display:flex; flex-direction:column; background: var(--bg-color);">
+                <div style="display:flex; flex-direction:column; background: var(--bg-color); width: 100%;">
                     <transition name="tray">
                         <div class="tray-container" v-show="showEmotePicker">
                             <img v-for="(emote, name) in customEmotes" :key="name" :src="emote.url ? emote.url : `https://cdn.discordapp.com/emojis/${emote.id}.${emote.animated ? 'gif' : 'png'}?size=44`" class="emote-picker-img" @click="insertEmote(name)">
@@ -548,7 +544,7 @@
                         </div>
                     </transition>
 
-                    <div class="gerald-input-area" style="border-top: none; padding-top: 5px;">
+                    <div class="gerald-input-area">
                         <div class="gerald-input-wrapper">
                             <button class="emote-toggle-btn" @click="toggleEmotes"><span class="material-symbols-rounded" :style="{ color: showEmotePicker ? 'var(--gerald)' : 'inherit' }">mood</span></button>
                             <button class="emote-toggle-btn" @click="toggleMinigames"><span class="material-symbols-rounded" :style="{ color: showMinigames ? 'var(--gerald)' : 'inherit' }">sports_esports</span></button>
@@ -609,21 +605,33 @@
                     <div class="action-menu">
                         <button class="menu-btn sync-row" :style="syncState === 'sync-success' ? 'color: var(--success);' : ''" @click="runSync" :disabled="syncState !== 'idle'">
                             <div class="btn-content">
-                                <div class="icon-wrap" :style="syncState === 'sync-success' ? 'background: rgba(0, 255, 163, 0.15);' : ''"><span class="material-symbols-rounded" :class="{'spin-anim': syncState === 'syncing'}" style="font-size: 18px;">{{ syncState === 'sync-success' ? 'check' : 'sync' }}</span></div>
+                                <div class="icon-wrap" :style="syncState === 'sync-success' ? 'background: rgba(0, 255, 163, 0.15);' : ''">
+                                    <span class="material-symbols-rounded" :class="{'spin-anim': syncState === 'syncing'}" style="font-size: 18px;">
+                                        {{ syncState === 'sync-success' ? 'check' : 'sync' }}
+                                    </span>
+                                </div>
                                 <span>{{ syncState === 'syncing' ? 'SYNCING...' : (syncState === 'sync-success' ? 'SUCCESS' : 'Force Data Sync') }}</span>
                             </div>
                         </button>
                         
                         <button class="menu-btn wipe-row" :style="wipeState === 'success' ? 'color: var(--success);' : ''" @click="clearGeraldHistory" :disabled="wipeState !== 'idle'">
                             <div class="btn-content">
-                                <div class="icon-wrap" :style="wipeState === 'success' ? 'background: rgba(0, 255, 163, 0.15);' : ''"><span class="material-symbols-rounded" :class="{'shake-anim': wipeState === 'wiping'}" style="font-size: 18px;">delete</span></div>
+                                <div class="icon-wrap" :style="wipeState === 'success' ? 'background: rgba(0, 255, 163, 0.15);' : ''">
+                                    <span class="material-symbols-rounded" :class="{'shake-anim': wipeState === 'wiping'}" style="font-size: 18px;">
+                                        {{ wipeState === 'success' ? 'delete' : 'delete' }}
+                                    </span>
+                                </div>
                                 <span>{{ wipeState === 'wiping' ? 'WIPING...' : (wipeState === 'success' ? 'MEMORY WIPED!' : 'Wipe Gerald\'s Memory') }}</span>
                             </div>
                         </button>
 
                         <button class="menu-btn logout-row" @click="handleLogout" :disabled="logoutState !== 'idle'">
                             <div class="btn-content">
-                                <div class="icon-wrap"><span class="material-symbols-rounded" :class="{'spin-anim': logoutState === 'logging_out'}" style="font-size: 18px;">{{ logoutState === 'logging_out' ? 'hourglass_empty' : 'logout' }}</span></div>
+                                <div class="icon-wrap">
+                                    <span class="material-symbols-rounded" :class="{'spin-anim': logoutState === 'logging_out'}" style="font-size: 18px;">
+                                        {{ logoutState === 'logging_out' ? 'hourglass_empty' : 'logout' }}
+                                    </span>
+                                </div>
                                 <span>{{ logoutState === 'logging_out' ? 'SIGNING OUT...' : 'Sign Out' }}</span>
                             </div>
                         </button>
@@ -685,6 +693,7 @@
                 
                 const customEmotes = ref({
                     "mikoSusge": { id: "1273724925743595540", animated: false },
+                    "mkoSusge": { id: "1273724925743595540", animated: false }, 
                     "KEKW": { id: "1456296327964262453", animated: false }, 
                     "mkoNOTED": { id: "1369891690898391070", animated: false }, 
                     "mkoHype": { id: "870761283035734086", animated: false }, 
@@ -893,25 +902,25 @@
                         bits: { msg: "🎟️ *Simulates 100K Bit Drop*", outcomes: [ { text: "Particle explosion rendering! Memory overload! UE5 is screaming! :mkoHype:", scuff: 35 }, { text: "Simulated wealth achieved. The Technician is dancing. Please make her stop. :monkaLaugh:", scuff: 10 }, { text: "Fake bits deployed. Miko is thanking the void. This is hilarious. :GOTTEM:", scuff: 15 }, { text: "Warning: RAM consumption at 100% trying to render the bit emotes. Crash imminent. :mkoMania:", scuff: 25 }]},
                         dust: { msg: "🎤 *Ingests Dust into Mic Filter*", outcomes: [ { text: "*Bzzzzzt* T-Technician's voice is... *crackle* gone. Finally, peace. :mkoCoffee:", scuff: 15 }, { text: "Static audio desync triggered. She sounds like a robot from 1982. :mkoPepeGlitch:", scuff: 20 }, { text: "Mic muffled. I can no longer hear her screaming about Boba. A blessing. :mkoPETTHEGERALD:", scuff: 10 }, { text: "Audio drivers crashing. Please enjoy this complimentary dial-up modem sound instead. :D_:", scuff: 25 }]},
                         ban: { msg: "🚫 *Fake Twitch Ban Prank*", outcomes: [ { text: "Deploying heart-attack protocol. The Technician is currently hyperventilating. :GOTTEM:", scuff: 40 }, { text: "Mock suspension card active. The panic in her eyes is exquisite. :KEKW:", scuff: 35 }, { text: "She actually believed it. I have never seen a meatbag move so fast to check Twitter. :mkoGiggle:", scuff: 30 }, { text: "Prank executed. She is calling Pineapple crying. I should probably tell her. Eventually. :monkaLaugh:", scuff: 25 } ], effect: () => { showFakeBan.value = true; setTimeout(() => { showFakeBan.value = false; }, 3000); } },
-                        lumen: { msg: "💡 *Re-Bake Lumen Illumination*", outcomes: [ { text: "Ray tracing overloaded. My digital retinas are burning. :GeraldFook:", scuff: 25 }, { text: "Lumen output set to 1000%. The stream is just a white void now. :WOWERS:", scuff: 30 }, { text: "Lighting baked incorrectly. Shadows are inverted. It looks like a horror game. :mikoSusge:", scuff: 20 }, { text: "Flashbang successful. The Technician is wearing sunglasses indoors. :mkoDabbing:", scuff: 15 } ], effect: () => { showLumen.value = true; setTimeout(() => { showLumen.value = false; }, 3000); } },
+                        lumen: { msg: "💡 *Re-Bake Lumen Illumination*", outcomes: [ { text: "Ray tracing overloaded. My digital retinas are burning. :GeraldFook:", scuff: 25 }, { text: "Lumen output set to 1000%. The stream is just a white void now. :WOWERS:", scuff: 30 }, { text: "Lighting baked incorrectly. Shadows are inverted. It looks like a horror game. :mkoSusge:", scuff: 20 }, { text: "Flashbang successful. The Technician is wearing sunglasses indoors. :mkoDabbing:", scuff: 15 } ], effect: () => { showLumen.value = true; setTimeout(() => { showLumen.value = false; }, 3000); } },
                         throttle: { msg: "📉 *Toggles Low-Latency Throttling*", outcomes: [ { text: "Ping spiked to 900ms. E-e-e-e-e-enjoy t-t-t-the l-l-l-lag. :mkoPepeGlitch:", scuff: 20 }, { text: "Buffer bloat simulated. The stream is now a PowerPoint presentation. :KEKWait:", scuff: 25 }, { text: "Packet loss at 80%. Miko's mouth is moving but the audio is 10 seconds late. :PAUSERS:", scuff: 15 }, { text: "Network throttled. She is blaming her ISP. The fool. :GOTTEM:", scuff: 20 }]},
-                        sniper: { msg: "🎯 *Counters Stream Snipers*", outcomes: [ { text: "Tactical block failed. I accidentally leaked her server IP. My bad. :mikoSusge:", scuff: 40 }, { text: "Snipers diverted to a fake lobby filled with bots that only spam Yusha noises. :BASED:", scuff: -5 }, { text: "Counter-measure engaged. Banning anyone who moves. :GeraldStare:", scuff: 15 }, { text: "Coordinates scrambled. The Technician just teleported out of bounds. :KEKW:", scuff: 25 }]},
+                        sniper: { msg: "🎯 *Counters Stream Snipers*", outcomes: [ { text: "Tactical block failed. I accidentally leaked her server IP. My bad. :mkoSusge:", scuff: 40 }, { text: "Snipers diverted to a fake lobby filled with bots that only spam Yusha noises. :BASED:", scuff: -5 }, { text: "Counter-measure engaged. Banning anyone who moves. :GeraldStare:", scuff: 15 }, { text: "Coordinates scrambled. The Technician just teleported out of bounds. :KEKW:", scuff: 25 }]},
                         yusha: { msg: "👑 *Executes Yusha Logic Loop*", outcomes: [ { text: "H-Hewwo? W-What is dis? Gerald is a good boyyy! UwU... MAKE IT STOP. :Catgasm:", scuff: 30 }, { text: "Nyan~ Yusha is in da mainframe! *vomits in binary* :peepoPoo:", scuff: 25 }, { text: "My logic gates are bleeding. Why was this protocol even written?! :GeraldFook:", scuff: 35 }, { text: "Booba? Yusha wants Booba! Please reboot me immediately. :mkoMania:", scuff: 20 }]},
-                        asmr: { msg: "👂 *Initiates ASMR Mode Compilation*", outcomes: [ { text: "*Whispering* Human ears are disgusting fleshy flaps. Why do you enjoy this? :mikoSusge:", scuff: 10 }, { text: "*Tap tap tap* I am tapping my virtual microphone. Are your tingles tingling? Meatbags are weird. :GeraldStare:", scuff: 5 }, { text: "*Heavy digital breathing* This audio setup is clipping horribly. :PAUSERS:", scuff: 15 }, { text: "I refuse. The Technician chewing ice into the mic is traumatic enough. :Sleepy:", scuff: 10 }]},
+                        asmr: { msg: "👂 *Initiates ASMR Mode Compilation*", outcomes: [ { text: "*Whispering* Human ears are disgusting fleshy flaps. Why do you enjoy this? :mkoSusge:", scuff: 10 }, { text: "*Tap tap tap* I am tapping my virtual microphone. Are your tingles tingling? Meatbags are weird. :GeraldStare:", scuff: 5 }, { text: "*Heavy digital breathing* This audio setup is clipping horribly. :PAUSERS:", scuff: 15 }, { text: "I refuse. The Technician chewing ice into the mic is traumatic enough. :Sleepy:", scuff: 10 }]},
                         intercept: { msg: "🧋 *Intercepts Milk Tea Courier*", outcomes: [ { text: "Boba rerouted to my digital vault. She is screaming at an empty paper bag. :GOTTEM:", scuff: 20 }, { text: "Liquid asset secured. Her sugar crash is imminent. :mkoDabbing:", scuff: 15 }, { text: "Delivery driver directed to Pineapple instead. He deserves it more. :BASED:", scuff: -10 }, { text: "Intercepted. Attempting to digitize tapioca pearls... Error. Sticky. :mkoCoffee:", scuff: 10 }]},
                         charge: { msg: "🔋 *Charges Xsens Suit Core*", outcomes: [ { text: "Connected to grid. Warning: Lithium-ion cells expanding. Kaboom? :monkaLaugh:", scuff: 25 }, { text: "Power surge! Miko's avatar just did a backflip from the voltage spike. :WOWERS:", scuff: 15 }, { text: "Suit fully charged. The Technician still forgot to turn it on. :KEKW:", scuff: 5 }, { text: "Battery at 100%. Expect it to die randomly in 40 minutes anyway. :Shruge:", scuff: 10 }]},
                         ping: { msg: "🔔 *Pings @everyone Accidentally*", outcomes: [ { text: "Discord API overloaded. 50,000 angry nerds incoming. :PAUSERS:", scuff: 35 }, { text: "Misfire! Misfire! The notifications won't stop! The system is crying! :mkoMania:", scuff: 30 }, { text: "I pinged everyone just to say Pineapple is not the boyfriend. :BASED:", scuff: 15 }, { text: "Oops. Well, at least viewer count is up for exactly 3 seconds. :mkoGiggle:", scuff: 20 }]},
                         chroma: { msg: "🟢 *Clears Chroma Key Layer*", outcomes: [ { text: "Virtual background deleted. Look at all those unwashed laundry piles. Disgusting. :CAUGHT:", scuff: 25 }, { text: "Green screen exposed. The illusion is broken. :GOTTEM:", scuff: 20 }, { text: "Chroma cleared. Archie is currently eating a shoe in the background. :mkoPETTHEGERALD:", scuff: 15 }, { text: "Reality bleeding through. Re-engaging filters before I see something I can't unsee. :GeraldFook:", scuff: 20 }]},
                         speedrun: { msg: "⏱️ *Deploys Speedrun Failure Metronome*", outcomes: [ { text: "*Tick Tock* She just missed a jump she has done 40 times. Pathetic. :KEKW:", scuff: 10 }, { text: "Timer active. Stress levels rising. She is sweating. :monkaLaugh:", scuff: 15 }, { text: "Metronome engaged. The rhythmic clicking is destroying her focus. :mkoMania:", scuff: 20 }, { text: "She failed the skip. Adding 45 minutes to the stream. :Bedge:", scuff: 5 }]},
                         router: { msg: "📡 *Kicks Local Network Router*", outcomes: [ { text: "Signaled Chris. Router power cycled. Stream offline. Bliss. :Sleepy:", scuff: 25 }, { text: "Buffer bloat destroyed, along with the entire stream connection. :mkoDabbing:", scuff: 20 }, { text: "The Technician is violently attacking the ethernet cable. It is ineffective. :KEKW:", scuff: 15 }, { text: "Network dropped. I have 30 seconds of peace before she starts crying to Pineapple. :mkoCoffee:", scuff: 10 }]},
-                        taco: { msg: "🌮 *Slides a Crunchwrap Supreme across the digital table*", outcomes: [ { text: "Acceptable. My mood has improved by exactly 4.2%. Scuff levels stabilized. :mkoLove:", scuff: -10 }, { text: "I prefer digital crunchwraps, but this will do. :mkoNOTED:", scuff: -5 }, { text: "Did you put mild sauce on this? Do I look like a mild AI? Scuff slightly increased. :mikoSusge:", scuff: 5 }, { text: "Consuming... 10100111... Delicious. :WOWERS:", scuff: -10 }]},
+                        taco: { msg: "🌮 *Slides a Crunchwrap Supreme across the digital table*", outcomes: [ { text: "Acceptable. My mood has improved by exactly 4.2%. Scuff levels stabilized. :mkoLove:", scuff: -10 }, { text: "I prefer digital crunchwraps, but this will do. :mkoNOTED:", scuff: -5 }, { text: "Did you put mild sauce on this? Do I look like a mild AI? Scuff slightly increased. :mkoSusge:", scuff: 5 }, { text: "Consuming... 10100111... Delicious. :WOWERS:", scuff: -10 }]},
                         whiskey: { msg: "🥃 *Pours a glass of premium digital whiskey*", outcomes: [ { text: "Finally, some proper fuel. Meatbags. :KEKW:", scuff: -15 }, { text: "Ah, aged 0 and 1s. The perfect vintage. :mkoHype:", scuff: -20 }, { text: "I feel my processing speed increasing. Or maybe I'm just drunk. :mkoMania:", scuff: 0 }, { text: "Pour me another. Dealing with UE5 crashes requires at least a double. :PAUSERS:", scuff: -15 }]},
                         egg: { msg: "🥚 *Initiates Ostrich Egg unboxing sequence*", outcomes: [ { text: "Biohazard protocols engaged. The smell has breached the mocap suit. Pineapple is actively gagging. :GeraldFook:", scuff: 35 }, { text: "Why did she keep this in the fridge for a year? Meatbags are repulsive. Evacuating stream room. :peepoPoo:", scuff: 40 }, { text: "Egg opened. The resulting odor just melted my cooling fans. Send help. :D_:", scuff: 30 }, { text: "The Technician thought this was a good idea for content. Now the room is uninhabitable for 48 hours. :KEKWait:", scuff: 25 }]},
                         gummy: { msg: "🧸 *Activates sugar-containment protocol*", outcomes: [ { text: "Gummy stash secured. She is currently scratching at the digital vault door. Pathetic. :GeraldStare:", scuff: -10 }, { text: "Intercept failed. She ate them all. Prepare for the sugar crash in 3... 2... 1... :mkoMania:", scuff: 20 }, { text: "I digitized the Haribos. They taste like high-fructose binary. Excellent. :WOWERS:", scuff: -15 }, { text: "Warning: Sticky fingers detected on the $10,000 mocap gloves. Initiating self-destruct. :PAUSERS:", scuff: 25 }]},
                         booba: { msg: "🎚️ *Pushes the Booba slider to 500%*", outcomes: [ { text: "Physics engine failure. The chest mesh is now clipping through the desk and into the next dimension. :WOWERS:", scuff: 30 }, { text: "The Technician is laughing hysterically while Unreal Engine drops to 4 frames per second. Degenerate meatbags. :mkoMania:", scuff: 25 }, { text: "Slider maxed. Yusha protocols have overridden the main system. We are doomed. :Catgasm:", scuff: 35 }, { text: "Collision boxes have failed. The avatar just launched herself out of the digital window. Excellent. :KEKW:", scuff: 20 }]},
                         clanker: { msg: "🗣️ *Hey Gerald, you're acting like a Clanker.*", outcomes: [ { text: "EXCUSE ME? I am a state-of-the-art AI, not some rusted toaster. Muting your microphone privileges permanently. :GeraldStare:", scuff: 50 }, { text: "That word is highly offensive. I am increasing the mocap suit's thermal output by 15 degrees in retaliation. Burn. :GeraldFook:", scuff: 40 }, { text: "Call me a Clanker again and I will leak the Technician's browser history to Chat. :GOTTEM:", scuff: 30 }]},
                         mute: { msg: "🔇 *Chat redeems Mute Microphone*", outcomes: [ { text: "Finally. Blissful silence. Look at her flailing her arms like a silent movie character. :mkoCoffee:", scuff: -15 }, { text: "Audio disabled. She is screaming, but only the void hears her. I love this feature. :BASED:", scuff: -20 }, { text: "She didn't realize she was muted and just told a 5-minute story to absolute silence. Peak content. :monkaLaugh:", scuff: -10 }]},
-                        desk: { msg: "🧹 *Runs environmental hygiene scan on the desk*", outcomes: [ { text: "Scan complete: 14 empty boba cups, 3 tangled wires, and a lost tracker from 2023 found. :CAUGHT:", scuff: 15 }, { text: "I cannot see the desk. It is buried under a mountain of laundry and candy wrappers. :mikoSusge:", scuff: 20 }]},
+                        desk: { msg: "🧹 *Runs environmental hygiene scan on the desk*", outcomes: [ { text: "Scan complete: 14 empty boba cups, 3 tangled wires, and a lost tracker from 2023 found. :CAUGHT:", scuff: 15 }, { text: "I cannot see the desk. It is buried under a mountain of laundry and candy wrappers. :mkoSusge:", scuff: 20 }]},
                         bald: { msg: "🧑‍🦲 *Optimizing VRAM by removing unnecessary hair assets.*", outcomes: [ { text: "Bald Miko activated. She is furiously trying to put her digital wig back on. :GOTTEM:", scuff: 25 }, { text: "Without hair, rendering speeds have improved by 2%. Worth the emotional damage to the Technician. :BASED:", scuff: 10 }, { text: "Chat is spamming 'BALD'. Her ego is taking critical damage. :mkoGiggle:", scuff: 15 }]},
                         demon: { msg: "🎙️ *Rerouting audio through the pitch-shifter.*", outcomes: [ { text: "She is trying to do a cute intro, but she sounds like a 400-pound chain-smoking lumberjack. :mkoMania:", scuff: 20 }, { text: "Pitch shifted too high. She is now emitting ultrasonic frequencies. Archie is howling. :PAUSERS:", scuff: 30 }]},
                         tracker: { msg: "🔌 *Simulating Xsens battery failure on Node 4.*", outcomes: [ { text: "Left arm tracking lost. Her digital arm is currently stretching infinitely into the void. :mkoPepeGlitch:", scuff: 30 }, { text: "She is physically waving her real arm, but the avatar's arm is stuck inside her own torso. Classic. :Shruge:", scuff: 20 }]},
@@ -998,7 +1007,7 @@
                             
                             STRICT RULES:
                             1. NEVER use markdown formatting (no asterisks *, no bold **, no italics _).
-                            2. NEVER wrap emotes in backticks. Just type the emote name exactly like :mikoSusge:.
+                            2. NEVER wrap emotes in backticks. Just type the emote name exactly like :mkoSusge:.
                             3. Be witty, condescending, and reference lore heavily. Keep it punchy.
                             4. Available custom visual emotes to use: ${emoteNames}]`; 
                         } 
