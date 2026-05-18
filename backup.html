@@ -1,10 +1,13 @@
+
 <!DOCTYPE html>
 <html lang="en" data-theme="dark">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
+    
     <meta name="theme-color" content="#050505" media="(prefers-color-scheme: dark)">
     <meta name="theme-color" content="#050505" media="(prefers-color-scheme: light)">
+    
     <title>MikoTok</title>
     
     <link rel="manifest" href="manifest.json">
@@ -25,9 +28,11 @@
         }
 
         * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; font-family: 'Inter', sans-serif; }
-        body, html { margin: 0; padding: 0; height: 100%; width: 100%; background: var(--bg-color); color: var(--text-main); overflow: hidden; display: flex; justify-content: center; align-items: center; overscroll-behavior-y: none; }
         
-        /* 🚨 PURE CHAOS OVERLAY */
+        body, html { margin: 0; padding: 0; height: 100dvh; width: 100%; background: #050505; color: var(--text-main); overflow: hidden; display: flex; justify-content: center; align-items: center; overscroll-behavior-y: none; }
+        
+        #app-container { width: 100%; max-width: 540px; height: 100%; max-height: 100dvh; position: relative; background: radial-gradient(circle at 50% 30%, #2a1147 0%, #050505 80%); overflow: hidden; display: flex; flex-direction: column; box-shadow: 0 0 50px rgba(0,0,0,0.8); transition: 0.3s; }
+
         .chaos-overlay { position: fixed; top: -10%; left: -10%; width: 120%; height: 120%; background: #050505; z-index: 99999; display: flex; flex-direction: column; align-items: center; justify-content: center; opacity: 0; pointer-events: none; overflow: hidden; }
         .chaos-overlay.show { opacity: 1; pointer-events: auto; animation: bg-flash 0.15s infinite; }
         @keyframes bg-flash { 0% { background: #050505; } 50% { background: #2a0000; } 100% { background: #050505; } }
@@ -49,7 +54,6 @@
         .chaos-reboot-btn:active { background: #ef4444; color: white; transform: scale(0.9); animation: none; }
         @keyframes pulse-border { 0%, 100% { box-shadow: 0 0 10px rgba(255,0,0,0.5); border-color: #ef4444; } 50% { box-shadow: 0 0 30px rgba(255,0,0,1); border-color: #ff8888; color: #ff8888; } }
 
-        /* 🚨 100% SCUFF MELTDOWN OVERLAY */
         .meltdown-overlay { position: fixed; top: -10%; left: -10%; width: 120%; height: 120%; background: radial-gradient(circle at center, rgba(30,0,0,0.98) 0%, rgba(5,5,5,1) 100%); z-index: 99999; display: flex; align-items: center; justify-content: center; opacity: 0; pointer-events: none; transition: opacity 0.4s ease; backdrop-filter: blur(15px); }
         .meltdown-overlay.show { opacity: 1; pointer-events: auto; animation: red-breathe 4s infinite alternate; }
         @keyframes red-breathe { 0% { box-shadow: inset 0 0 50px rgba(255,0,0,0.1); } 100% { box-shadow: inset 0 0 150px rgba(255,0,0,0.4); } }
@@ -63,22 +67,17 @@
         .reboot-btn { background: #ef4444; border: none; color: white; width: 100%; padding: 18px; border-radius: 14px; font-weight: 800; font-size: 14px; text-transform: uppercase; letter-spacing: 1px; cursor: pointer; box-shadow: 0 8px 20px rgba(239, 68, 68, 0.4); transition: 0.2s; display: flex; align-items: center; justify-content: center; gap: 10px; }
         .reboot-btn:active { transform: scale(0.96); background: #dc2626; box-shadow: 0 4px 10px rgba(239, 68, 68, 0.4); }
 
-        /* MINIGAME VISUAL EFFECTS */
         .lumen-overload { position: fixed; inset: 0; background: #ffffff; z-index: 100000; animation: flash-bang 3s forwards; pointer-events: none; opacity: 0; }
         @keyframes flash-bang { 0% { opacity: 1; } 100% { opacity: 0; } }
         .fake-ban-overlay { position: fixed; inset: 0; background: #050505; color: white; z-index: 100000; display: flex; flex-direction: column; align-items: center; justify-content: center; opacity: 0; pointer-events: none; transition: 0.2s; text-align: center; padding: 20px; }
         .fake-ban-overlay.show { opacity: 1; pointer-events: auto; }
 
-        #app-container { width: 100%; max-width: 540px; height: 100%; max-height: 100dvh; position: relative; background: radial-gradient(circle at 50% 30%, #2a1147 0%, #050505 80%); overflow: hidden; display: flex; flex-direction: column; box-shadow: 0 0 50px rgba(0,0,0,0.8); transition: 0.3s; }
-        
-        /* 🐆 Savannah Cat Zoomies CSS & UI Scuff */
         #app-container.ui-scuffed { animation: ui-glitch 0.2s infinite; }
         @keyframes ui-glitch { 0% { transform: translate(2px, 1px) rotate(0deg); filter: hue-rotate(90deg); } 50% { transform: translate(-3px, -2px) rotate(-2deg); } 100% { transform: translate(1px, 3px) rotate(1deg); filter: hue-rotate(-90deg); } }
         .cat-overlay { position: fixed; top: 40%; left: -150px; font-size: 80px; z-index: 9999; pointer-events: none; opacity: 0; }
         .cat-overlay.zooming { animation: cat-run 1.2s linear forwards; opacity: 1; }
         @keyframes cat-run { 0% { transform: translateX(0) scaleX(-1); } 100% { transform: translateX(120vw) scaleX(-1); } }
 
-        /* Glitch Theme Variable Swaps */
         #app-container.glitch-theme { background: #000; }
         #app-container.glitch-theme .card, #app-container.glitch-theme .gerald-input-wrapper { border-color: #00ff00; background: rgba(0,255,0,0.05); color: #00ff00; font-family: monospace; }
         #app-container.glitch-theme .chat-bubble { border-color: #00ff00; background: #000; color: #00ff00; font-family: monospace; text-shadow: 0 0 5px #00ff00; }
@@ -127,15 +126,21 @@
         .scroll-area { height: 100%; width: 100%; overflow-y: auto; scroll-behavior: smooth; padding-bottom: 80px; }
         .scroll-area::-webkit-scrollbar { display: none; }
         
-        /* Home Clips Snap Setup */
         #feed-scroll { padding-bottom: 0; scroll-snap-type: y mandatory; }
         .feed-snap-item { width: 100%; height: 100%; flex-shrink: 0; display: flex; flex-direction: column; justify-content: center; position: relative; padding: 0 15px 80px; scroll-snap-align: start; scroll-snap-stop: always; }
         
-        /* New Feed Compact Rules (No full screen scroll snap) */
-        #social-scroll { padding: 90px 15px 90px; display: flex; flex-direction: column; justify-content: space-evenly; gap: 25px; height: 100%; overflow-y: auto; }
-        .social-card-wrapper { display: flex; flex-direction: column; width: 100%; }
+        /* FEED LAYOUT */
+        .feed-layout { position: absolute; top: 110px; bottom: 85px; left: 0; right: 0; padding: 0 15px; display: flex; flex-direction: column; gap: 20px; overflow: hidden; }
+        #yt-wrapper { flex-shrink: 0; display: flex; flex-direction: column; }
+        #reddit-wrapper { flex: 1; min-height: 0; display: flex; flex-direction: column; justify-content: flex-start; gap: 15px; }
 
-        .carousel-controls { display: flex; justify-content: space-between; align-items: center; width: 100%; margin-top: 10px; z-index: 40; padding: 0; }
+        .reddit-compact-card { flex: 0 1 auto; display: flex; flex-direction: column; box-shadow: 0 5px 20px rgba(0,0,0,0.4); padding: 12px 15px; border-radius: 16px; border: 1px solid var(--border-color); background: var(--card-bg); text-decoration: none; color: inherit; transition: transform 0.2s; overflow: hidden; }
+        .reddit-compact-card:active { transform: scale(0.98); }
+
+        .reddit-img-container { width: 100%; border-radius: 8px; overflow: hidden; background: #000; margin-bottom: 10px; border: 1px solid #27272a; display: flex; justify-content: center; align-items: center; }
+        .reddit-img-container img { width: 100%; height: auto; max-height: 200px; object-fit: cover; }
+
+        .carousel-controls { flex-shrink: 0; display: flex; justify-content: space-between; align-items: center; width: 100%; margin-top: 5px; z-index: 40; padding: 0; }
         .carousel-btn { background: #111113; border: 1px solid var(--border-color); color: white; width: 40px; height: 40px; border-radius: 50%; display: flex; align-items: center; justify-content: center; cursor: pointer; transition: 0.1s; outline: none; }
         .carousel-btn:active:not(.hidden-arrow) { transform: scale(0.9); border-color: var(--primary); color: var(--primary); }
         .carousel-btn.hidden-arrow { opacity: 0; pointer-events: none; } 
@@ -169,7 +174,7 @@
         .terminal-header { display: flex; align-items: center; gap: 6px; font-size: 10px; font-weight: 900; color: var(--gerald); text-transform: uppercase; letter-spacing: 1px; }
         .terminal-text { font-family: monospace; font-size: 13px; color: var(--text-muted); line-height: 1.4; }
         
-        .gerald-input-area { padding: 15px; display: flex; gap: 8px; border-top: 1px solid var(--border-color); background: var(--bg-color); align-items: flex-end;}
+        .gerald-input-area { padding: 15px; display: flex; gap: 8px; border-top: 1px solid var(--border-color); background: transparent; align-items: flex-end;}
         .gerald-input-wrapper { display: flex; align-items: flex-end; background: var(--card-bg); border: 1px solid var(--border-color); border-radius: 20px; flex: 1; padding-left: 5px; transition: 0.2s; min-height: 44px; }
         .gerald-input-wrapper:focus-within { border-color: var(--gerald); }
         .emote-toggle-btn { background: transparent; border: none; color: var(--text-muted); cursor: pointer; padding: 10px 6px; border-radius: 50%; height: 44px; display: flex; align-items: center; justify-content: center; }
@@ -178,7 +183,6 @@
         .gerald-input::-webkit-scrollbar { width: 4px; }
         .gerald-input::-webkit-scrollbar-thumb { background: #3f3f46; border-radius: 4px; }
         
-        /* 🚨 TRAY REDESIGN: Flex Wrap for multi-line display */
         .tray-container { display: flex; flex-wrap: wrap; gap: 10px; padding: 15px; background: #111113; border-top: 1px solid var(--border-color); max-height: 250px; overflow-y: auto; }
         .tray-container::-webkit-scrollbar { width: 4px; }
         .tray-container::-webkit-scrollbar-thumb { background: #3f3f46; border-radius: 4px; }
@@ -186,20 +190,11 @@
         .emote-picker-img { height: 36px; cursor: pointer; transition: transform 0.1s; }
         .emote-picker-img:active { transform: scale(0.8); }
         
-        /* Buttons span half the container minus gap */
         .bribe-btn { flex: 1 1 calc(50% - 10px); min-width: 140px; background: #1a1a1c; border: 1px solid var(--border-color); color: var(--text-main); font-size: 11px; font-weight: 800; text-transform: uppercase; padding: 10px 12px; border-radius: 12px; display: flex; align-items: center; justify-content: center; gap: 6px; cursor: pointer; transition: 0.1s; white-space: nowrap; }
         .bribe-btn:active { transform: scale(0.95); border-color: var(--gerald); color: white; }
 
         .gerald-send { background: var(--gerald); border: none; width: 44px; height: 44px; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white; cursor: pointer; flex-shrink: 0; transition: 0.1s; }
         .gerald-send:active { transform: scale(0.9); }
-
-        .infra-bar { background: var(--card-bg); border: 1px solid var(--border-color); border-radius: 14px; padding: 14px 18px; display: flex; justify-content: center; margin-bottom: 16px; }
-        .status-node { display: flex; align-items: center; gap: 8px; font-size: 11px; font-weight: 800; text-transform: uppercase; }
-        .pulse { width: 8px; height: 8px; border-radius: 50%; background: var(--success); box-shadow: 0 0 10px var(--success); animation: pulse-glow 2s infinite; }
-        .stat-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 16px; }
-        
-        .external-link-btn { background: var(--card-bg); border: 1px solid var(--border-color); padding: 15px; border-radius: 14px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 8px; color: var(--text-main); text-decoration: none; font-weight: 800; font-size: 11px; text-transform: uppercase; transition: 0.2s; }
-        .external-link-btn:active { transform: scale(0.95); border-color: var(--primary); }
 
         .bottom-nav { position: absolute; bottom: 20px; left: 50%; transform: translateX(-50%); width: calc(100% - 20px); background: var(--nav-bg); backdrop-filter: blur(20px); border-radius: 30px; border: 1px solid rgba(255, 255, 255, 0.1); display: flex; justify-content: space-between; align-items: center; padding: 10px 5px; z-index: 1000; box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
         .nav-item { display: flex; flex-direction: column; align-items: center; flex: 1; color: var(--text-muted); font-size: 9px; gap: 4px; cursor: pointer; text-decoration: none; font-weight: 700; transition: 0.2s; }
@@ -220,51 +215,18 @@
         .modal-overlay.open .modal-content { transform: translateY(0); }
         .drag-handle { width: 40px; height: 5px; background: #27272a; border-radius: 10px; margin: 0 auto 15px; }
         
-        .input-box { width: 100%; background: var(--bg-color); border: 1px solid var(--border-color); border-radius: 12px; padding: 15px; color: white; margin-bottom: 15px; outline: none; font-size: 13px; font-weight: 600; }
-        .sync-btn { width: 100%; background: var(--primary); border: none; color: white; padding: 15px; border-radius: 12px; font-weight: 800; cursor: pointer; margin-bottom: 10px; display: flex; justify-content: center; align-items: center; gap: 8px; transition: 0.2s; }
-        .sync-btn:active { transform: scale(0.97); }
-
-        .settings-block { background: var(--card-bg); border: 1px solid var(--border-color); border-radius: 16px; padding: 16px; margin-bottom: 20px; text-align: left; }
-        .block-title { font-size: 10px; font-weight: 800; color: var(--text-muted); margin-bottom: 12px; letter-spacing: 0.5px; }
-        .sleek-input { width: 100%; box-sizing: border-box; background: #050505; border: 1px solid #27272a; border-radius: 10px; padding: 12px 14px; color: white; font-size: 12px; font-weight: 600; outline: none; margin-bottom: 8px; transition: 0.2s; }
-        .sleek-input:last-child { margin-bottom: 0; }
-        .sleek-input:focus { border-color: var(--primary); }
-
-        .action-menu { background: var(--card-bg); border: 1px solid var(--border-color); border-radius: 16px; overflow: hidden; text-align: left; }
-        .menu-btn { width: 100%; padding: 14px 16px; display: flex; align-items: center; justify-content: space-between; background: transparent; border: none; border-bottom: 1px solid var(--border-color); cursor: pointer; font-size: 11px; font-weight: 800; text-transform: uppercase; transition: 0.3s; }
-        .menu-btn:last-child { border-bottom: none; }
-        .menu-btn:active:not(:disabled) { background: rgba(255,255,255,0.05); }
-        .menu-btn:disabled { opacity: 0.8; cursor: default; }
+        .reddit-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 12px; flex-shrink: 0; }
+        .reddit-author { font-size: 11px; color: #a1a1aa; font-weight: 600; display: flex; flex-direction: column; gap: 3px;}
+        .reddit-author span { color: var(--reddit); font-size: 12px;}
+        .reddit-post-title { font-size: 15px; font-weight: 700; line-height: 1.4; color: #fff; margin-bottom: 5px; display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; flex-shrink: 0; }
+        .reddit-actions { display: flex; gap: 16px; border-top: 1px solid #27272a; padding-top: 12px; margin-top: 10px; color: #a1a1aa; font-size: 12px; font-weight: 800; flex-shrink: 0; }
         
-        .btn-content { display: flex; align-items: center; gap: 12px; }
-        .icon-wrap { width: 30px; height: 30px; border-radius: 8px; display: flex; align-items: center; justify-content: center; transition: 0.3s; }
-        
-        .sync-row { color: var(--primary); }
-        .sync-row .icon-wrap { background: rgba(145, 70, 255, 0.15); }
-        .wipe-row { color: #ff9800; }
-        .wipe-row .icon-wrap { background: rgba(255, 152, 0, 0.15); }
-        .logout-row { color: var(--danger); }
-        .logout-row .icon-wrap { background: rgba(239, 68, 68, 0.15); }
-
-        .spin-anim { animation: spin 1s linear infinite; }
-        @keyframes shake { 0%, 100% { transform: rotate(0deg); } 25% { transform: rotate(-10deg); } 50% { transform: rotate(10deg); } 75% { transform: rotate(-10deg); } }
-        .shake-anim { animation: shake 0.4s ease-in-out infinite; }
-
-        .msg-enter-active, .msg-leave-active { transition: all 0.3s cubic-bezier(0.2, 0.8, 0.2, 1); }
-        .msg-enter-from, .msg-leave-to { opacity: 0; transform: translateY(15px); }
-
-        .tray-enter-active, .tray-leave-active { transition: all 0.2s ease-out; }
-        .tray-enter-from, .tray-leave-to { opacity: 0; transform: translateY(10px); }
-
-        .typing-indicator { display: flex; align-items: center; gap: 8px; font-size: 11px; color: var(--gerald); padding: 5px 20px; font-weight: 800; text-transform: uppercase; letter-spacing: 1px; }
-
         .miko-metadata { display: flex; align-items: flex-start; justify-content: space-between; padding: 12px 5px 0; background: transparent; width: 100%; gap: 10px; }
         .miko-metadata .author-info { display: flex; align-items: center; min-width: 0; flex: 1; }
         .miko-metadata img { width: 44px; height: 44px; border-radius: 50%; border: 2px solid var(--primary); margin-right: 12px; box-shadow: 0 2px 10px rgba(0,0,0,0.5); flex-shrink: 0; }
         .miko-metadata .author-text-block { min-width: 0; flex: 1; }
         .miko-metadata .author-name { font-weight: 800; font-size: 14px; color: white; display: -webkit-box; -webkit-line-clamp: 2; overflow: hidden; }
         .miko-metadata .clip-stats { font-size: 11px; font-weight: 700; color: var(--text-muted); display: flex; align-items: center; gap: 6px; margin-top: 5px; text-transform: uppercase; }
-
         .action-buttons { display: flex; align-items: center; gap: 5px; }
         .share-btn { background: transparent; border: none; display: flex; align-items: center; justify-content: center; cursor: pointer; transition: 0.2s; flex-shrink: 0; padding: 8px; width: 40px; height: 40px; color: var(--text-muted); }
         .share-btn:active { color: white; }
@@ -274,15 +236,43 @@
         .premium-badge .dot { width: 6px; height: 6px; border-radius: 50%; box-shadow: 0 0 8px currentColor; }
         .premium-badge.live .dot { background: var(--danger); color: var(--danger); animation: heartbeat 1.5s infinite; }
         .premium-badge.vod .dot { background: var(--primary); color: var(--primary); animation: heartbeat 1.5s infinite; }
-
-        /* Reddit external link card styles */
-        .reddit-link { text-decoration: none; color: inherit; display: block; transition: transform 0.2s; }
-        .reddit-link:active { transform: scale(0.98); }
-        .reddit-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 12px; }
-        .reddit-author { font-size: 11px; color: #a1a1aa; font-weight: 600; display: flex; flex-direction: column; gap: 3px;}
-        .reddit-author span { color: var(--reddit); font-size: 12px;}
-        .reddit-post-title { font-size: 15px; font-weight: 700; line-height: 1.4; color: #fff; margin-bottom: 5px;}
-        .reddit-actions { display: flex; gap: 16px; margin-top: 15px; border-top: 1px solid #27272a; padding-top: 12px; color: #a1a1aa; font-size: 12px; font-weight: 800; }
+        
+        .input-box { width: 100%; background: var(--bg-color); border: 1px solid var(--border-color); border-radius: 12px; padding: 15px; color: white; margin-bottom: 15px; outline: none; font-size: 13px; font-weight: 600; }
+        .sync-btn { width: 100%; background: var(--primary); border: none; color: white; padding: 15px; border-radius: 12px; font-weight: 800; cursor: pointer; margin-bottom: 10px; display: flex; justify-content: center; align-items: center; gap: 8px; transition: 0.2s; }
+        .sync-btn:active { transform: scale(0.97); }
+        .infra-bar { background: var(--card-bg); border: 1px solid var(--border-color); border-radius: 14px; padding: 14px 18px; display: flex; justify-content: center; margin-bottom: 16px; }
+        .status-node { display: flex; align-items: center; gap: 8px; font-size: 11px; font-weight: 800; text-transform: uppercase; }
+        .pulse { width: 8px; height: 8px; border-radius: 50%; background: var(--success); box-shadow: 0 0 10px var(--success); animation: pulse-glow 2s infinite; }
+        @keyframes pulse-glow { 0%, 100% { transform: scale(1); opacity: 1; } 50% { transform: scale(1.5); opacity: 0.5; } }
+        .stat-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 16px; }
+        .external-link-btn { background: var(--card-bg); border: 1px solid var(--border-color); padding: 15px; border-radius: 14px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 8px; color: var(--text-main); text-decoration: none; font-weight: 800; font-size: 11px; text-transform: uppercase; transition: 0.2s; }
+        .external-link-btn:active { transform: scale(0.95); border-color: var(--primary); }
+        .settings-block { background: var(--card-bg); border: 1px solid var(--border-color); border-radius: 16px; padding: 16px; margin-bottom: 20px; text-align: left; }
+        .block-title { font-size: 10px; font-weight: 800; color: var(--text-muted); margin-bottom: 12px; letter-spacing: 0.5px; }
+        .sleek-input { width: 100%; box-sizing: border-box; background: #050505; border: 1px solid #27272a; border-radius: 10px; padding: 12px 14px; color: white; font-size: 12px; font-weight: 600; outline: none; margin-bottom: 8px; transition: 0.2s; }
+        .sleek-input:last-child { margin-bottom: 0; }
+        .sleek-input:focus { border-color: var(--primary); }
+        .action-menu { background: var(--card-bg); border: 1px solid var(--border-color); border-radius: 16px; overflow: hidden; text-align: left; }
+        .menu-btn { width: 100%; padding: 14px 16px; display: flex; align-items: center; justify-content: space-between; background: transparent; border: none; border-bottom: 1px solid var(--border-color); cursor: pointer; font-size: 11px; font-weight: 800; text-transform: uppercase; transition: 0.3s; }
+        .menu-btn:last-child { border-bottom: none; }
+        .menu-btn:active:not(:disabled) { background: rgba(255,255,255,0.05); }
+        .menu-btn:disabled { opacity: 0.8; cursor: default; }
+        .btn-content { display: flex; align-items: center; gap: 12px; }
+        .icon-wrap { width: 30px; height: 30px; border-radius: 8px; display: flex; align-items: center; justify-content: center; transition: 0.3s; }
+        .sync-row { color: var(--primary); }
+        .sync-row .icon-wrap { background: rgba(145, 70, 255, 0.15); }
+        .wipe-row { color: #ff9800; }
+        .wipe-row .icon-wrap { background: rgba(255, 152, 0, 0.15); }
+        .logout-row { color: var(--danger); }
+        .logout-row .icon-wrap { background: rgba(239, 68, 68, 0.15); }
+        .spin-anim { animation: spin 1s linear infinite; }
+        @keyframes shake { 0%, 100% { transform: rotate(0deg); } 25% { transform: rotate(-10deg); } 50% { transform: rotate(10deg); } 75% { transform: rotate(-10deg); } }
+        .shake-anim { animation: shake 0.4s ease-in-out infinite; }
+        .msg-enter-active, .msg-leave-active { transition: all 0.3s cubic-bezier(0.2, 0.8, 0.2, 1); }
+        .msg-enter-from, .msg-leave-to { opacity: 0; transform: translateY(15px); }
+        .tray-enter-active, .tray-leave-active { transition: all 0.2s ease-out; }
+        .tray-enter-from, .tray-leave-to { opacity: 0; transform: translateY(10px); }
+        .typing-indicator { display: flex; align-items: center; gap: 8px; font-size: 11px; color: var(--gerald); padding: 5px 20px; font-weight: 800; text-transform: uppercase; letter-spacing: 1px; }
 
         @media (min-width: 768px) {
             body { padding: 2vh; }
@@ -301,8 +291,8 @@
     <div id="app-container" :class="{'glitch-theme': isGlitchTheme, 'ui-scuffed': uiScuffed}" v-cloak>
         
         <div class="cat-overlay" :class="{ 'zooming': isCatZooming }">🐆</div>
-
         <div class="lumen-overload" v-if="showLumen"></div>
+        
         <div class="fake-ban-overlay" :class="{'show': showFakeBan}">
             <span class="material-symbols-rounded" style="font-size: 60px; color: var(--danger); margin-bottom: 15px;">gavel</span>
             <h1 style="font-family: 'Outfit'; font-size: 28px; margin: 0 0 10px;">CHANNEL SUSPENDED</h1>
@@ -329,9 +319,9 @@
                 <div class="alert-subtitle">Ultra-Scuff Overload</div>
                 
                 <div class="terminal-logs-inline">
-                    <span style="color:#ef4444; font-weight:bold;">> [CRASH] Unreal Engine 5 Unresponsive.</span>
-                    <span>> Hardware: Mocap Suit Unplugged...</span>
-                    <span style="color:#ef4444; font-weight:bold;">> [WARN] Scuff levels reached 100%.</span>
+                    <span style="color:#ef4444; font-weight:bold;">> [CRASH] Unreal Engine 5 Unresponsive.</span><br>
+                    <span>> Hardware: Mocap Suit Unplugged...</span><br>
+                    <span style="color:#ef4444; font-weight:bold;">> [WARN] Scuff levels reached 100%.</span><br>
                     <span style="color:#00ffa3;">> System integrity failing. Awaiting manual reboot override...</span>
                 </div>
 
@@ -381,7 +371,7 @@
                     
                     <div class="vod-animated-border">
                         <div class="video-container">
-                            <template v-if="activeFeedVideo === 'featured'">
+                            <template v-if="activeFeedVideo === 'featured' && currentTab === 'home'">
                                 <iframe v-if="currentVodIndex === -1" :src="'https://player.twitch.tv/?channel=codemiko&parent=' + hostname + '&autoplay=true&muted=false'" allow="autoplay; fullscreen" allowfullscreen loading="lazy"></iframe>
                                 <iframe v-else-if="recentVods[currentVodIndex]" :src="'https://player.twitch.tv/?video=' + recentVods[currentVodIndex].id + '&parent=' + hostname + '&autoplay=true&muted=false'" allow="autoplay; fullscreen" allowfullscreen loading="lazy"></iframe>
                             </template>
@@ -402,7 +392,7 @@
                     </div>
                     <div class="video-container">
                         <img :src="clip.thumbnail_url ? optimizeTwitchImg(clip.thumbnail_url) : ''" loading="lazy" alt="Clip Thumbnail">
-                        <iframe v-if="activeFeedVideo === clip.id" :src="'https://clips.twitch.tv/embed?clip=' + clip.id + '&parent=' + hostname + '&autoplay=true&muted=false'" allow="autoplay; fullscreen" allowfullscreen loading="lazy"></iframe>
+                        <iframe v-if="activeFeedVideo === clip.id && currentTab === 'home'" :src="'https://clips.twitch.tv/embed?clip=' + clip.id + '&parent=' + hostname + '&autoplay=true&muted=false'" allow="autoplay; fullscreen" allowfullscreen loading="lazy"></iframe>
                     </div>
                     <div class="miko-metadata">
                         <div class="author-info">
@@ -424,24 +414,18 @@
                 <iframe :src="'https://www.twitch.tv/embed/codemiko/chat?parent=' + hostname + '&darkpopout'" style="width: 100%; height: 100%; border: none;" loading="lazy"></iframe>
             </div>
 
-            <div class="content-shimmer" :class="{ active: isRefreshing }" id="social-scroll" v-show="currentTab === 'feed'">
+            <div class="feed-layout" :class="{ active: isRefreshing }" v-show="currentTab === 'feed'">
                 
-                <div class="social-card-wrapper">
+                <div id="yt-wrapper">
                     <div v-if="ytFeed.length > 0">
                         <div class="vod-animated-border" style="background: linear-gradient(90deg, #27272a, var(--youtube), #27272a);">
                             <div class="video-container">
-                                <iframe :src="'https://www.youtube.com/embed/' + ytFeed[ytCurrentIndex].id + '?rel=0'" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen loading="lazy"></iframe>
+                                <iframe v-if="ytFeed[ytCurrentIndex] && currentTab === 'feed'" :src="'https://www.youtube.com/embed/' + ytFeed[ytCurrentIndex].id + '?rel=0'" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen loading="lazy"></iframe>
                             </div>
                         </div>
-                        
-                        <div class="carousel-controls" style="margin-top: 15px;">
+                        <div class="carousel-controls">
                             <button class="carousel-btn" :class="{ 'hidden-arrow': ytCurrentIndex <= 0 }" @click.stop="prevYt"><span class="material-symbols-rounded">chevron_left</span></button>
                             <button class="carousel-btn" :class="{ 'hidden-arrow': ytCurrentIndex >= ytFeed.length - 1 }" @click.stop="nextYt"><span class="material-symbols-rounded">chevron_right</span></button>
-                        </div>
-                        
-                        <div style="padding: 12px 5px 0; text-align: center;">
-                            <div style="font-size: 14px; font-weight: 700; line-height: 1.4; color: #fff; margin-bottom: 4px;">{{ ytFeed[ytCurrentIndex].title }}</div>
-                            <div style="font-size: 11px; color: #a1a1aa; font-weight: 600;">Uploaded • {{ ytFeed[ytCurrentIndex].date }}</div>
                         </div>
                     </div>
                     <div v-else style="display: flex; justify-content: center; padding: 40px; color: var(--text-muted); font-size: 12px; font-style: italic;">
@@ -449,32 +433,29 @@
                     </div>
                 </div>
 
-                <div class="social-card-wrapper" style="margin-top: 10px;">
-                    <div v-if="redditFeed.length > 0">
-                        <a :href="'https://reddit.com' + redditFeed[redditCurrentIndex].permalink" target="_blank" class="reddit-link">
-                            <div class="card" style="box-shadow: 0 5px 20px rgba(0,0,0,0.4); padding: 15px;">
-                                <div class="reddit-header">
-                                    <div class="reddit-author">Posted • {{ redditFeed[redditCurrentIndex].date }}<br><span>u/{{ redditFeed[redditCurrentIndex].author }}</span></div>
-                                    <span v-if="redditFeed[redditCurrentIndex].link_flair_text" style="background: rgba(255, 69, 0, 0.15); border: 1px solid rgba(255, 69, 0, 0.3); color: var(--reddit); font-size: 9px; font-weight: 800; padding: 3px 6px; border-radius: 6px; text-transform: uppercase;">
-                                        {{ redditFeed[redditCurrentIndex].link_flair_text }}
-                                    </span>
-                                </div>
-                                
-                                <div style="display: flex; flex-direction: column;">
-                                    <div v-if="redditFeed[redditCurrentIndex].thumbnail && redditFeed[redditCurrentIndex].thumbnail.startsWith('http')" style="width: 100%; max-height: 250px; border-radius: 8px; overflow: hidden; background: #000; margin-bottom: 12px; border: 1px solid #27272a;">
-                                        <img :src="redditFeed[redditCurrentIndex].thumbnail" style="width: 100%; height: auto; max-height: 250px; object-fit: cover;" onerror="this.closest('div').style.display='none'" alt="Reddit Media">
-                                    </div>
-                                    <div class="reddit-post-title" style="flex: 1;">{{ redditFeed[redditCurrentIndex].title }}</div>
-                                </div>
-                                
-                                <div class="reddit-actions">
-                                    <div style="display: flex; align-items: center; gap: 4px; color: var(--reddit);"><span class="material-symbols-rounded" style="font-size: 16px;">arrow_upward</span> {{ formatNumber(redditFeed[redditCurrentIndex].ups) }}</div>
-                                    <div style="display: flex; align-items: center; gap: 4px;"><span class="material-symbols-rounded" style="font-size: 16px;">chat_bubble</span> {{ redditFeed[redditCurrentIndex].num_comments }}</div>
-                                    <div style="margin-left: auto; color: #a1a1aa; display: flex; align-items: center; gap: 4px; font-size: 11px; text-transform: uppercase;">Open <span class="material-symbols-rounded" style="font-size: 14px;">open_in_new</span></div>
-                                </div>
+                <div id="reddit-wrapper">
+                    <div v-if="redditFeed.length > 0" style="display:flex; flex-direction:column; height:100%;">
+                        <a :href="'https://reddit.com' + redditFeed[redditCurrentIndex].permalink" target="_blank" class="reddit-compact-card">
+                            <div class="reddit-header">
+                                <div class="reddit-author">Posted • {{ redditFeed[redditCurrentIndex].date }}<br><span>u/{{ redditFeed[redditCurrentIndex].author }}</span></div>
+                                <span v-if="redditFeed[redditCurrentIndex].link_flair_text" style="background: rgba(255, 69, 0, 0.15); border: 1px solid rgba(255, 69, 0, 0.3); color: var(--reddit); font-size: 9px; font-weight: 800; padding: 3px 6px; border-radius: 6px; text-transform: uppercase;">
+                                    {{ redditFeed[redditCurrentIndex].link_flair_text }}
+                                </span>
+                            </div>
+                            
+                            <div v-if="redditFeed[redditCurrentIndex] && redditFeed[redditCurrentIndex].thumbnail && redditFeed[redditCurrentIndex].thumbnail.startsWith('http')" class="reddit-img-container">
+                                <img :src="redditFeed[redditCurrentIndex].thumbnail" onerror="this.closest('div').style.display='none'" alt="Reddit Media">
+                            </div>
+                            
+                            <div class="reddit-post-title" :style="redditFeed[redditCurrentIndex] && redditFeed[redditCurrentIndex].thumbnail && redditFeed[redditCurrentIndex].thumbnail.startsWith('http') ? '' : 'flex: 1;'">{{ redditFeed[redditCurrentIndex].title }}</div>
+                            
+                            <div class="reddit-actions">
+                                <div style="display: flex; align-items: center; gap: 4px; color: var(--reddit);"><span class="material-symbols-rounded" style="font-size: 16px;">arrow_upward</span> {{ formatNumber(redditFeed[redditCurrentIndex].ups) }}</div>
+                                <div style="display: flex; align-items: center; gap: 4px;"><span class="material-symbols-rounded" style="font-size: 16px;">chat_bubble</span> {{ redditFeed[redditCurrentIndex].num_comments }}</div>
+                                <div style="margin-left: auto; color: #a1a1aa; display: flex; align-items: center; gap: 4px; font-size: 11px; text-transform: uppercase;">Open <span class="material-symbols-rounded" style="font-size: 14px;">open_in_new</span></div>
                             </div>
                         </a>
-                        <div class="carousel-controls" style="margin-top: 15px;">
+                        <div class="carousel-controls">
                             <button class="carousel-btn" :class="{ 'hidden-arrow': redditCurrentIndex <= 0 }" @click.stop="prevReddit"><span class="material-symbols-rounded">chevron_left</span></button>
                             <button class="carousel-btn" :class="{ 'hidden-arrow': redditCurrentIndex >= redditFeed.length - 1 }" @click.stop="nextReddit"><span class="material-symbols-rounded">chevron_right</span></button>
                         </div>
@@ -654,6 +635,7 @@
             <div class="nav-item" :class="{ 'active-gerald': currentTab === 'gerald' }" @click="currentTab = 'gerald'; isHeaderVisible = true"><span class="material-symbols-rounded">smart_toy</span>Gerald</div>
         </nav>
     </div>
+
     <script>
       if ('serviceWorker' in navigator) {
         window.addEventListener('load', () => {
@@ -681,7 +663,6 @@
                 const syncState = ref('idle'), wipeState = ref('idle'), logoutState = ref('idle');
                 const apiConfig = ref({ cid: localStorage.getItem('twitch_cid') || '', tkn: localStorage.getItem('twitch_tkn') || '' });
                 
-                // Emotes List With ALL New Custom Emotes
                 const customEmotes = ref({
                     "mikoSusge": { id: "1273724925743595540", animated: false },
                     "KEKW": { id: "1456296327964262453", animated: false }, 
@@ -732,8 +713,6 @@
                 const randomCodeString = ref(codeStr);
 
                 const recentVods = ref([]), currentVodIndex = ref(0);
-
-                // Feed Carousel States
                 const ytFeed = ref([]);
                 const ytCurrentIndex = ref(0);
                 const redditFeed = ref([]);
@@ -784,10 +763,10 @@
                     }
                 };
 
-                const getActiveScrollEl = () => currentTab.value === 'home' ? document.getElementById('feed-scroll') : document.getElementById('social-scroll');
+                const getActiveScrollEl = () => currentTab.value === 'home' ? document.getElementById('feed-scroll') : null;
 
                 const handlePullStart = (e) => {
-                    if (currentTab.value === 'home' || currentTab.value === 'feed') {
+                    if (currentTab.value === 'home') {
                         const activeScroll = getActiveScrollEl();
                         if (activeScroll && typeof activeScroll.scrollTop !== 'undefined' && activeScroll.scrollTop <= 0 && !isRefreshing.value) {
                             touchStartY = e.touches[0].clientY; isPulling.value = true;
@@ -841,7 +820,7 @@
                 
                 const parseMarkdown = (text) => {
                     if (!text) return '';
-                    let html = text.replace(/</g, '<').replace(/>/g, '>');
+                    let html = text.replace(/</g, '&lt;').replace(/>/g, '&gt;');
                     html = html.replace(/(^|\W)'([^']+)'(\W|$)/g, '$1<strong>$2</strong>$3');
                     html = html.replace(/\*\*(.*?)\*\*/g, '$1').replace(/\*(.*?)\*/g, '$1'); 
                     html = html.replace(/\[([^\]]+)\]\((https?:\/\/[^\s]+)\)/gi, '<a href="$2" target="_blank" style="color: var(--gerald); text-decoration: underline; font-weight: bold;">$1</a>');
@@ -1153,12 +1132,12 @@
                 };
 
                 const fetchSocialFeeds = () => {
-                    // Set a strict 5-second timeout so the app NEVER freezes again
                     const abortController = new AbortController();
-                    setTimeout(() => abortController.abort(), 5000);
+                    setTimeout(() => abortController.abort(), 8000);
 
-                    // Reddit Auto-Fetch
-                    fetch('https://www.reddit.com/r/CodeMiko/new.json?limit=15', { signal: abortController.signal })
+                    // 🚨 FIXED: Reddit Fetch using secure API bypass
+                    const redditUrl = encodeURIComponent('https://www.reddit.com/r/CodeMiko/new.json?limit=15');
+                    fetch('https://api.allorigins.win/raw?url=' + redditUrl, { signal: abortController.signal })
                         .then(res => {
                             if (!res.ok) throw new Error("Reddit API blocked.");
                             return res.json();
@@ -1180,15 +1159,15 @@
                             redditFeed.value = [{ permalink: '/r/CodeMiko', author: 'System Error', title: "Reddit connection timed out or blocked.", thumbnail: '', ups: 0, num_comments: 0, date: "Just now" }];
                         });
 
-                    // REAL YouTube Auto-Fetch via RSS2JSON mapping CodeMiko's channel
-                    const ytRssUrl = encodeURIComponent('https://www.youtube.com/feeds/videos.xml?channel_id=UC2uvBvD5z4tSqa-0B_PHEAw');
-                    fetch(`https://api.rss2json.com/v1/api.json?rss_url=${ytRssUrl}`, { signal: abortController.signal })
+                    // 🚨 FIXED: Real CodeMiko YouTube RSS Feed via official channel ID
+                    const ytFeedUrl = encodeURIComponent('https://www.youtube.com/feeds/videos.xml?channel_id=UCO9kIeDrtsX0j83HbVljzSQ');
+                    fetch(`https://api.rss2json.com/v1/api.json?rss_url=${ytFeedUrl}`, { signal: abortController.signal })
                         .then(res => {
                             if (!res.ok) throw new Error("YouTube RSS failed.");
                             return res.json();
                         })
                         .then(data => {
-                            if (data && data.items) {
+                            if (data && data.items && data.items.length > 0) {
                                 ytFeed.value = data.items.slice(0, 10).map(item => {
                                     let vidId = item.link.split('v=')[1] || item.guid.split(':').pop();
                                     return {
@@ -1197,11 +1176,13 @@
                                         date: new Date(item.pubDate).toLocaleDateString([], { month: 'short', day: 'numeric', year: 'numeric' })
                                     };
                                 });
+                            } else {
+                                throw new Error("No videos found.");
                             }
                         })
                         .catch(err => {
                             console.error("YouTube fetch failed:", err);
-                            ytFeed.value = [{ id: 'dQw4w9WgXcQ', title: "YouTube connection timed out.", date: "Just now" }];
+                            ytFeed.value = [{ id: 'NlRcbGkXy2A', title: "YouTube connection timed out. Showing backup video.", date: "Just now" }];
                         });
                 };
 
