@@ -131,9 +131,47 @@
         #feed-scroll { padding-bottom: 0; scroll-snap-type: y mandatory; }
         .feed-snap-item { width: 100%; height: 100%; flex-shrink: 0; display: flex; flex-direction: column; justify-content: center; position: relative; padding: 0 15px 80px; scroll-snap-align: start; scroll-snap-stop: always; }
         
-        /* 🚨 Social Tab Layout */
-        #social-scroll { padding: 90px 15px 90px; display: flex; flex-direction: column; justify-content: space-evenly; gap: 25px; height: 100%; overflow-y: auto; }
-        .social-card-wrapper { display: flex; flex-direction: column; width: 100%; }
+        /* 🚨 NEW STRICT FEED LAYOUT (No Scrolling, Fits perfectly) */
+        .feed-layout { 
+            position: absolute; 
+            top: 85px; /* Safely below app header */
+            bottom: 85px; /* Safely above bottom nav */
+            left: 0; right: 0; 
+            padding: 0 15px; 
+            display: flex; 
+            flex-direction: column; 
+            gap: 15px; 
+            overflow: hidden; /* STOPS SCROLLING */
+        }
+
+        #yt-wrapper {
+            flex-shrink: 0; 
+            display: flex; 
+            flex-direction: column;
+        }
+
+        #reddit-wrapper {
+            flex: 1; 
+            display: flex; 
+            flex-direction: column; 
+            min-height: 0; /* Allows Reddit card to shrink dynamically */
+        }
+
+        .reddit-fixed-card { 
+            flex: 1; 
+            display: flex; 
+            flex-direction: column; 
+            box-shadow: 0 5px 20px rgba(0,0,0,0.4); 
+            padding: 12px 15px; 
+            min-height: 0; 
+            border-radius: 16px; 
+            border: 1px solid var(--border-color); 
+            background: var(--card-bg);
+            text-decoration: none; 
+            color: inherit; 
+            transition: transform 0.2s;
+        }
+        .reddit-fixed-card:active { transform: scale(0.98); }
 
         .carousel-controls { display: flex; justify-content: space-between; align-items: center; width: 100%; margin-top: 10px; z-index: 40; padding: 0; }
         .carousel-btn { background: #111113; border: 1px solid var(--border-color); color: white; width: 40px; height: 40px; border-radius: 50%; display: flex; align-items: center; justify-content: center; cursor: pointer; transition: 0.1s; outline: none; }
@@ -178,7 +216,6 @@
         .gerald-input::-webkit-scrollbar { width: 4px; }
         .gerald-input::-webkit-scrollbar-thumb { background: #3f3f46; border-radius: 4px; }
         
-        /* 🚨 TRAY REDESIGN: Flex Wrap for multi-line display */
         .tray-container { display: flex; flex-wrap: wrap; gap: 10px; padding: 15px; background: #111113; border-top: 1px solid var(--border-color); max-height: 250px; overflow-y: auto; }
         .tray-container::-webkit-scrollbar { width: 4px; }
         .tray-container::-webkit-scrollbar-thumb { background: #3f3f46; border-radius: 4px; }
@@ -274,16 +311,10 @@
         .premium-badge.live .dot { background: var(--danger); color: var(--danger); animation: heartbeat 1.5s infinite; }
         .premium-badge.vod .dot { background: var(--primary); color: var(--primary); animation: heartbeat 1.5s infinite; }
 
-        /* Reddit external link card styles */
-        .reddit-link { text-decoration: none; color: inherit; display: block; transition: transform 0.2s; }
-        .reddit-link:active { transform: scale(0.98); }
         .reddit-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 12px; }
         .reddit-author { font-size: 11px; color: #a1a1aa; font-weight: 600; display: flex; flex-direction: column; gap: 3px;}
         .reddit-author span { color: var(--reddit); font-size: 12px;}
-        
-        /* 🚨 STRICT REDDIT CARD HEIGHT FIX (Prevents arrow jumping) */
-        .reddit-fixed-card { height: 380px; display: flex; flex-direction: column; justify-content: space-between; box-shadow: 0 5px 20px rgba(0,0,0,0.4); padding: 15px; }
-        .reddit-post-title { font-size: 15px; font-weight: 700; line-height: 1.4; color: #fff; margin-bottom: 5px; display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; }
+        .reddit-post-title { font-size: 15px; font-weight: 700; line-height: 1.4; color: #fff; margin-bottom: 5px; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
         .reddit-actions { display: flex; gap: 16px; border-top: 1px solid #27272a; padding-top: 12px; color: #a1a1aa; font-size: 12px; font-weight: 800; flex-shrink: 0; }
 
         @media (min-width: 768px) {
@@ -303,8 +334,8 @@
     <div id="app-container" :class="{'glitch-theme': isGlitchTheme, 'ui-scuffed': uiScuffed}" v-cloak>
         
         <div class="cat-overlay" :class="{ 'zooming': isCatZooming }">🐆</div>
-
         <div class="lumen-overload" v-if="showLumen"></div>
+        
         <div class="fake-ban-overlay" :class="{'show': showFakeBan}">
             <span class="material-symbols-rounded" style="font-size: 60px; color: var(--danger); margin-bottom: 15px;">gavel</span>
             <h1 style="font-family: 'Outfit'; font-size: 28px; margin: 0 0 10px;">CHANNEL SUSPENDED</h1>
@@ -426,9 +457,9 @@
                 <iframe :src="'https://www.twitch.tv/embed/codemiko/chat?parent=' + hostname + '&darkpopout'" style="width: 100%; height: 100%; border: none;" loading="lazy"></iframe>
             </div>
 
-            <div class="content-shimmer" :class="{ active: isRefreshing }" id="social-scroll" v-show="currentTab === 'feed'">
+            <div class="feed-layout" :class="{ active: isRefreshing }" v-show="currentTab === 'feed'">
                 
-                <div class="social-card-wrapper">
+                <div id="yt-wrapper">
                     <div v-if="ytFeed.length > 0">
                         <div class="vod-animated-border" style="background: linear-gradient(90deg, #27272a, var(--youtube), #27272a);">
                             <div class="video-container">
@@ -436,7 +467,7 @@
                             </div>
                         </div>
                         
-                        <div class="carousel-controls" style="margin-top: 15px;">
+                        <div class="carousel-controls">
                             <button class="carousel-btn" :class="{ 'hidden-arrow': ytCurrentIndex <= 0 }" @click.stop="prevYt"><span class="material-symbols-rounded">chevron_left</span></button>
                             <button class="carousel-btn" :class="{ 'hidden-arrow': ytCurrentIndex >= ytFeed.length - 1 }" @click.stop="nextYt"><span class="material-symbols-rounded">chevron_right</span></button>
                         </div>
@@ -446,32 +477,29 @@
                     </div>
                 </div>
 
-                <div class="social-card-wrapper">
-                    <div v-if="redditFeed.length > 0">
-                        <a :href="'https://reddit.com' + redditFeed[redditCurrentIndex].permalink" target="_blank" class="reddit-link">
-                            <div class="card reddit-fixed-card">
-                                <div class="reddit-header" style="flex-shrink: 0;">
-                                    <div class="reddit-author">Posted • {{ redditFeed[redditCurrentIndex].date }}<br><span>u/{{ redditFeed[redditCurrentIndex].author }}</span></div>
-                                    <span v-if="redditFeed[redditCurrentIndex].link_flair_text" style="background: rgba(255, 69, 0, 0.15); border: 1px solid rgba(255, 69, 0, 0.3); color: var(--reddit); font-size: 9px; font-weight: 800; padding: 3px 6px; border-radius: 6px; text-transform: uppercase;">
-                                        {{ redditFeed[redditCurrentIndex].link_flair_text }}
-                                    </span>
-                                </div>
-                                
-                                <div style="flex: 1; display: flex; flex-direction: column; overflow: hidden; justify-content: center;">
-                                    <div v-if="redditFeed[redditCurrentIndex].thumbnail && redditFeed[redditCurrentIndex].thumbnail.startsWith('http')" style="width: 100%; max-height: 180px; border-radius: 8px; overflow: hidden; background: #000; margin-bottom: 12px; border: 1px solid #27272a; flex-shrink: 0;">
-                                        <img :src="redditFeed[redditCurrentIndex].thumbnail" style="width: 100%; height: 100%; object-fit: cover;" onerror="this.closest('div').style.display='none'" alt="Reddit Media">
-                                    </div>
-                                    <div class="reddit-post-title">{{ redditFeed[redditCurrentIndex].title }}</div>
-                                </div>
-                                
-                                <div class="reddit-actions">
-                                    <div style="display: flex; align-items: center; gap: 4px; color: var(--reddit);"><span class="material-symbols-rounded" style="font-size: 16px;">arrow_upward</span> {{ formatNumber(redditFeed[redditCurrentIndex].ups) }}</div>
-                                    <div style="display: flex; align-items: center; gap: 4px;"><span class="material-symbols-rounded" style="font-size: 16px;">chat_bubble</span> {{ redditFeed[redditCurrentIndex].num_comments }}</div>
-                                    <div style="margin-left: auto; color: #a1a1aa; display: flex; align-items: center; gap: 4px; font-size: 11px; text-transform: uppercase;">Open <span class="material-symbols-rounded" style="font-size: 14px;">open_in_new</span></div>
-                                </div>
+                <div id="reddit-wrapper">
+                    <div v-if="redditFeed.length > 0" style="display:flex; flex-direction:column; height: 100%;">
+                        <a :href="'https://reddit.com' + redditFeed[redditCurrentIndex].permalink" target="_blank" class="reddit-fixed-card">
+                            <div class="reddit-header">
+                                <div class="reddit-author">Posted • {{ redditFeed[redditCurrentIndex].date }}<br><span>u/{{ redditFeed[redditCurrentIndex].author }}</span></div>
+                                <span v-if="redditFeed[redditCurrentIndex].link_flair_text" style="background: rgba(255, 69, 0, 0.15); border: 1px solid rgba(255, 69, 0, 0.3); color: var(--reddit); font-size: 9px; font-weight: 800; padding: 3px 6px; border-radius: 6px; text-transform: uppercase;">
+                                    {{ redditFeed[redditCurrentIndex].link_flair_text }}
+                                </span>
+                            </div>
+                            
+                            <div v-if="redditFeed[redditCurrentIndex].thumbnail && redditFeed[redditCurrentIndex].thumbnail.startsWith('http')" style="flex: 1; min-height: 0; width: 100%; border-radius: 8px; overflow: hidden; background: #000; margin-bottom: 10px; border: 1px solid #27272a;">
+                                <img :src="redditFeed[redditCurrentIndex].thumbnail" style="width: 100%; height: 100%; object-fit: cover;" onerror="this.closest('div').style.display='none'" alt="Reddit Media">
+                            </div>
+                            
+                            <div class="reddit-post-title" :style="redditFeed[redditCurrentIndex].thumbnail && redditFeed[redditCurrentIndex].thumbnail.startsWith('http') ? '' : 'flex: 1;'">{{ redditFeed[redditCurrentIndex].title }}</div>
+                            
+                            <div class="reddit-actions">
+                                <div style="display: flex; align-items: center; gap: 4px; color: var(--reddit);"><span class="material-symbols-rounded" style="font-size: 16px;">arrow_upward</span> {{ formatNumber(redditFeed[redditCurrentIndex].ups) }}</div>
+                                <div style="display: flex; align-items: center; gap: 4px;"><span class="material-symbols-rounded" style="font-size: 16px;">chat_bubble</span> {{ redditFeed[redditCurrentIndex].num_comments }}</div>
+                                <div style="margin-left: auto; color: #a1a1aa; display: flex; align-items: center; gap: 4px; font-size: 11px; text-transform: uppercase;">Open <span class="material-symbols-rounded" style="font-size: 14px;">open_in_new</span></div>
                             </div>
                         </a>
-                        <div class="carousel-controls" style="margin-top: 15px;">
+                        <div class="carousel-controls">
                             <button class="carousel-btn" :class="{ 'hidden-arrow': redditCurrentIndex <= 0 }" @click.stop="prevReddit"><span class="material-symbols-rounded">chevron_left</span></button>
                             <button class="carousel-btn" :class="{ 'hidden-arrow': redditCurrentIndex >= redditFeed.length - 1 }" @click.stop="nextReddit"><span class="material-symbols-rounded">chevron_right</span></button>
                         </div>
@@ -678,7 +706,7 @@
                 const syncState = ref('idle'), wipeState = ref('idle'), logoutState = ref('idle');
                 const apiConfig = ref({ cid: localStorage.getItem('twitch_cid') || '', tkn: localStorage.getItem('twitch_tkn') || '' });
                 
-                // Emotes List With ALL New Custom Emotes
+                // Emotes List
                 const customEmotes = ref({
                     "mikoSusge": { id: "1273724925743595540", animated: false },
                     "KEKW": { id: "1456296327964262453", animated: false }, 
@@ -781,10 +809,10 @@
                     }
                 };
 
-                const getActiveScrollEl = () => currentTab.value === 'home' ? document.getElementById('feed-scroll') : document.getElementById('social-scroll');
+                const getActiveScrollEl = () => currentTab.value === 'home' ? document.getElementById('feed-scroll') : null;
 
                 const handlePullStart = (e) => {
-                    if (currentTab.value === 'home' || currentTab.value === 'feed') {
+                    if (currentTab.value === 'home') {
                         const activeScroll = getActiveScrollEl();
                         if (activeScroll && typeof activeScroll.scrollTop !== 'undefined' && activeScroll.scrollTop <= 0 && !isRefreshing.value) {
                             touchStartY = e.touches[0].clientY; isPulling.value = true;
@@ -1022,7 +1050,7 @@
                             { text: "The Technician is violently attacking the ethernet cable. It is ineffective. :KEKW:", scuff: 15 },
                             { text: "Network dropped. I have 30 seconds of peace before she starts crying to Pineapple. :mkoCoffee:", scuff: 10 }
                         ]},
-
+                        
                         taco: { msg: "🌮 *Slides a Crunchwrap Supreme across the digital table*", outcomes: [
                             { text: "Acceptable. My mood has improved by exactly 4.2%. Scuff levels stabilized. :mkoLove:", scuff: -10 },
                             { text: "I prefer digital crunchwraps, but this will do. :mkoNOTED:", scuff: -5 },
@@ -1177,8 +1205,8 @@
                             redditFeed.value = [{ permalink: '/r/CodeMiko', author: 'System Error', title: "Reddit connection timed out or blocked.", thumbnail: '', ups: 0, num_comments: 0, date: "Just now" }];
                         });
 
-                    // REAL YouTube Auto-Fetch via RSS2JSON (Pointing to CodeMiko's UC2uXo7AATmFpYjF9Sj678Qw feed)
-                    const ytRssUrl = encodeURIComponent('https://www.youtube.com/feeds/videos.xml?channel_id=UC2uXo7AATmFpYjF9Sj678Qw');
+                    // REAL YouTube Auto-Fetch via RSS2JSON mapping CodeMiko's channel
+                    const ytRssUrl = encodeURIComponent('https://www.youtube.com/feeds/videos.xml?channel_id=UCO9kIeDrtsX0j83HbVljzSQ');
                     fetch(`https://api.rss2json.com/v1/api.json?rss_url=${ytRssUrl}`, { signal: abortController.signal })
                         .then(res => {
                             if (!res.ok) throw new Error("YouTube RSS failed.");
@@ -1198,7 +1226,8 @@
                         })
                         .catch(err => {
                             console.error("YouTube fetch failed:", err);
-                            ytFeed.value = [{ id: 'dQw4w9WgXcQ', title: "YouTube connection timed out.", date: "Just now" }];
+                            // Real CodeMiko video fallback just in case the RSS fetcher times out temporarily
+                            ytFeed.value = [{ id: 'NlRcbGkXy2A', title: "YouTube connection timed out. Showing backup video.", date: "Just now" }];
                         });
                 };
 
