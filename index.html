@@ -127,11 +127,11 @@
         .scroll-area { height: 100%; width: 100%; overflow-y: auto; scroll-behavior: smooth; padding-bottom: 80px; }
         .scroll-area::-webkit-scrollbar { display: none; }
         
-        /* Home Clips Snap Setup */
+        /* 🚨 Home Clips Scroll Snap */
         #feed-scroll { padding-bottom: 0; scroll-snap-type: y mandatory; }
         .feed-snap-item { width: 100%; height: 100%; flex-shrink: 0; display: flex; flex-direction: column; justify-content: center; position: relative; padding: 0 15px 80px; scroll-snap-align: start; scroll-snap-stop: always; }
         
-        /* New Feed Compact Rules (No full screen scroll snap) */
+        /* 🚨 Social Tab Layout */
         #social-scroll { padding: 90px 15px 90px; display: flex; flex-direction: column; justify-content: space-evenly; gap: 25px; height: 100%; overflow-y: auto; }
         .social-card-wrapper { display: flex; flex-direction: column; width: 100%; }
 
@@ -186,7 +186,6 @@
         .emote-picker-img { height: 36px; cursor: pointer; transition: transform 0.1s; }
         .emote-picker-img:active { transform: scale(0.8); }
         
-        /* Buttons span half the container minus gap */
         .bribe-btn { flex: 1 1 calc(50% - 10px); min-width: 140px; background: #1a1a1c; border: 1px solid var(--border-color); color: var(--text-main); font-size: 11px; font-weight: 800; text-transform: uppercase; padding: 10px 12px; border-radius: 12px; display: flex; align-items: center; justify-content: center; gap: 6px; cursor: pointer; transition: 0.1s; white-space: nowrap; }
         .bribe-btn:active { transform: scale(0.95); border-color: var(--gerald); color: white; }
 
@@ -281,8 +280,11 @@
         .reddit-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 12px; }
         .reddit-author { font-size: 11px; color: #a1a1aa; font-weight: 600; display: flex; flex-direction: column; gap: 3px;}
         .reddit-author span { color: var(--reddit); font-size: 12px;}
-        .reddit-post-title { font-size: 15px; font-weight: 700; line-height: 1.4; color: #fff; margin-bottom: 5px;}
-        .reddit-actions { display: flex; gap: 16px; margin-top: 15px; border-top: 1px solid #27272a; padding-top: 12px; color: #a1a1aa; font-size: 12px; font-weight: 800; }
+        
+        /* 🚨 STRICT REDDIT CARD HEIGHT FIX (Prevents arrow jumping) */
+        .reddit-fixed-card { height: 380px; display: flex; flex-direction: column; justify-content: space-between; box-shadow: 0 5px 20px rgba(0,0,0,0.4); padding: 15px; }
+        .reddit-post-title { font-size: 15px; font-weight: 700; line-height: 1.4; color: #fff; margin-bottom: 5px; display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; }
+        .reddit-actions { display: flex; gap: 16px; border-top: 1px solid #27272a; padding-top: 12px; color: #a1a1aa; font-size: 12px; font-weight: 800; flex-shrink: 0; }
 
         @media (min-width: 768px) {
             body { padding: 2vh; }
@@ -438,33 +440,28 @@
                             <button class="carousel-btn" :class="{ 'hidden-arrow': ytCurrentIndex <= 0 }" @click.stop="prevYt"><span class="material-symbols-rounded">chevron_left</span></button>
                             <button class="carousel-btn" :class="{ 'hidden-arrow': ytCurrentIndex >= ytFeed.length - 1 }" @click.stop="nextYt"><span class="material-symbols-rounded">chevron_right</span></button>
                         </div>
-                        
-                        <div style="padding: 12px 5px 0; text-align: center;">
-                            <div style="font-size: 14px; font-weight: 700; line-height: 1.4; color: #fff; margin-bottom: 4px;">{{ ytFeed[ytCurrentIndex].title }}</div>
-                            <div style="font-size: 11px; color: #a1a1aa; font-weight: 600;">Uploaded • {{ ytFeed[ytCurrentIndex].date }}</div>
-                        </div>
                     </div>
                     <div v-else style="display: flex; justify-content: center; padding: 40px; color: var(--text-muted); font-size: 12px; font-style: italic;">
                         <span class="material-symbols-rounded spin-anim" style="margin-right: 8px;">sync</span> Fetching from YouTube...
                     </div>
                 </div>
 
-                <div class="social-card-wrapper" style="margin-top: 10px;">
+                <div class="social-card-wrapper">
                     <div v-if="redditFeed.length > 0">
                         <a :href="'https://reddit.com' + redditFeed[redditCurrentIndex].permalink" target="_blank" class="reddit-link">
-                            <div class="card" style="box-shadow: 0 5px 20px rgba(0,0,0,0.4); padding: 15px;">
-                                <div class="reddit-header">
+                            <div class="card reddit-fixed-card">
+                                <div class="reddit-header" style="flex-shrink: 0;">
                                     <div class="reddit-author">Posted • {{ redditFeed[redditCurrentIndex].date }}<br><span>u/{{ redditFeed[redditCurrentIndex].author }}</span></div>
                                     <span v-if="redditFeed[redditCurrentIndex].link_flair_text" style="background: rgba(255, 69, 0, 0.15); border: 1px solid rgba(255, 69, 0, 0.3); color: var(--reddit); font-size: 9px; font-weight: 800; padding: 3px 6px; border-radius: 6px; text-transform: uppercase;">
                                         {{ redditFeed[redditCurrentIndex].link_flair_text }}
                                     </span>
                                 </div>
                                 
-                                <div style="display: flex; flex-direction: column;">
-                                    <div v-if="redditFeed[redditCurrentIndex].thumbnail && redditFeed[redditCurrentIndex].thumbnail.startsWith('http')" style="width: 100%; max-height: 250px; border-radius: 8px; overflow: hidden; background: #000; margin-bottom: 12px; border: 1px solid #27272a;">
-                                        <img :src="redditFeed[redditCurrentIndex].thumbnail" style="width: 100%; height: auto; max-height: 250px; object-fit: cover;" onerror="this.closest('div').style.display='none'" alt="Reddit Media">
+                                <div style="flex: 1; display: flex; flex-direction: column; overflow: hidden; justify-content: center;">
+                                    <div v-if="redditFeed[redditCurrentIndex].thumbnail && redditFeed[redditCurrentIndex].thumbnail.startsWith('http')" style="width: 100%; max-height: 180px; border-radius: 8px; overflow: hidden; background: #000; margin-bottom: 12px; border: 1px solid #27272a; flex-shrink: 0;">
+                                        <img :src="redditFeed[redditCurrentIndex].thumbnail" style="width: 100%; height: 100%; object-fit: cover;" onerror="this.closest('div').style.display='none'" alt="Reddit Media">
                                     </div>
-                                    <div class="reddit-post-title" style="flex: 1;">{{ redditFeed[redditCurrentIndex].title }}</div>
+                                    <div class="reddit-post-title">{{ redditFeed[redditCurrentIndex].title }}</div>
                                 </div>
                                 
                                 <div class="reddit-actions">
@@ -1025,7 +1022,7 @@
                             { text: "The Technician is violently attacking the ethernet cable. It is ineffective. :KEKW:", scuff: 15 },
                             { text: "Network dropped. I have 30 seconds of peace before she starts crying to Pineapple. :mkoCoffee:", scuff: 10 }
                         ]},
-                        
+
                         taco: { msg: "🌮 *Slides a Crunchwrap Supreme across the digital table*", outcomes: [
                             { text: "Acceptable. My mood has improved by exactly 4.2%. Scuff levels stabilized. :mkoLove:", scuff: -10 },
                             { text: "I prefer digital crunchwraps, but this will do. :mkoNOTED:", scuff: -5 },
@@ -1180,8 +1177,8 @@
                             redditFeed.value = [{ permalink: '/r/CodeMiko', author: 'System Error', title: "Reddit connection timed out or blocked.", thumbnail: '', ups: 0, num_comments: 0, date: "Just now" }];
                         });
 
-                    // REAL YouTube Auto-Fetch via RSS2JSON mapping CodeMiko's channel
-                    const ytRssUrl = encodeURIComponent('https://www.youtube.com/feeds/videos.xml?channel_id=UC2uvBvD5z4tSqa-0B_PHEAw');
+                    // REAL YouTube Auto-Fetch via RSS2JSON (Pointing to CodeMiko's UC2uXo7AATmFpYjF9Sj678Qw feed)
+                    const ytRssUrl = encodeURIComponent('https://www.youtube.com/feeds/videos.xml?channel_id=UC2uXo7AATmFpYjF9Sj678Qw');
                     fetch(`https://api.rss2json.com/v1/api.json?rss_url=${ytRssUrl}`, { signal: abortController.signal })
                         .then(res => {
                             if (!res.ok) throw new Error("YouTube RSS failed.");
