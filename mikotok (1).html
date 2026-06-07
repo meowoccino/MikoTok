@@ -1,0 +1,872 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MikoTok</title>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+/* ── Design Tokens ── */
+:root {
+  --primary: #7C4DFF;
+  --secondary: #FF4FD8;
+  --accent: #00E5FF;
+  --bg: #0D0D12;
+  --surface: #17171F;
+  --surface2: #20202A;
+  --text: #FFFFFF;
+  --subtext: #A6A6B2;
+  --s1: 4px; --s2: 8px; --s3: 12px; --s4: 16px; --s5: 24px; --s6: 32px;
+  --r1: 12px; --r2: 20px; --r3: 28px; --r4: 36px;
+  --e1: 0 2px 10px rgba(0,0,0,.25);
+  --e2: 0 10px 30px rgba(0,0,0,.4);
+  --fast: 120ms; --med: 200ms; --slow: 400ms;
+  --shadow: 0 8px 32px rgba(0,0,0,.35);
+}
+
+/* ── Reset ── */
+* { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Space Grotesk', sans-serif; }
+body { background: var(--bg); color: var(--text); overflow-x: hidden; }
+a { text-decoration: none; color: inherit; }
+button { cursor: pointer; font-family: inherit; }
+
+/* ── Accessibility ── */
+:focus-visible { outline: 3px solid var(--accent); outline-offset: 3px; }
+
+/* ── Reduced Motion ── */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation: none !important; transition: none !important; }
+}
+
+/* ── Splash ── */
+#splash {
+  position: fixed; inset: 0;
+  background: radial-gradient(circle at top, rgba(124,77,255,.25), transparent 60%), var(--bg);
+  display: flex; flex-direction: column; justify-content: center; align-items: center;
+  z-index: 9999; transition: opacity 0.6s ease;
+}
+.logo-wrap {
+  width: 120px; height: 120px; border-radius: 36px;
+  background: linear-gradient(135deg, var(--primary), var(--secondary));
+  display: flex; justify-content: center; align-items: center;
+  font-size: 3rem; font-weight: 800; box-shadow: 0 0 50px rgba(124,77,255,.5);
+}
+.app-name { margin-top: 24px; font-size: 2rem; font-weight: 800; }
+.tagline { margin-top: 8px; color: var(--subtext); }
+.loader { margin-top: 30px; width: 220px; height: 8px; background: #222; border-radius: 999px; overflow: hidden; }
+.loader::before {
+  content: ''; display: block; height: 100%; width: 45%;
+  background: linear-gradient(90deg, var(--primary), var(--secondary));
+  animation: load 2s infinite;
+}
+@keyframes load { 0% { transform: translateX(-100%); } 100% { transform: translateX(400%); } }
+
+/* ── Pages ── */
+.page {
+  display: none; padding-bottom: 110px;
+  opacity: 0; transform: translateY(10px);
+  transition: opacity var(--med) ease, transform var(--med) ease;
+  will-change: transform, opacity;
+}
+.page.active { display: block; opacity: 1; transform: translateY(0); }
+
+.container { padding: 18px; }
+.section { margin-top: 28px; }
+.section-title { font-size: 1.2rem; font-weight: 700; margin-bottom: 16px; }
+
+/* ── Hero ── */
+.hero-card {
+  position: relative; height: 280px; border-radius: var(--r4);
+  overflow: hidden; background: linear-gradient(135deg, #35206f, #10101a);
+  box-shadow: var(--shadow);
+}
+.hero-image {
+  position: absolute; inset: 0;
+  background: url('https://images.unsplash.com/photo-1542751371-adc38448a05e') center/cover;
+  opacity: .45;
+}
+.hero-overlay { position: absolute; inset: 0; background: linear-gradient(180deg, transparent, rgba(0,0,0,.7)); }
+.live-pill {
+  position: absolute; top: 18px; left: 18px;
+  padding: 8px 14px; background: red; border-radius: 999px; font-size: .8rem; font-weight: 700;
+}
+.hero-content { position: absolute; left: 24px; bottom: 24px; }
+.hero-content h1 { font-size: 2rem; font-weight: 800; }
+.hero-content p { margin-top: 6px; color: #ddd; }
+.watch-btn {
+  margin-top: 16px; padding: 14px 20px; border: none; border-radius: 18px;
+  background: linear-gradient(135deg, var(--primary), var(--secondary));
+  color: white; font-weight: 700; transition: transform var(--fast) ease;
+}
+.watch-btn:active { transform: scale(0.95); }
+
+/* ── Category Grid ── */
+.category-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 14px; }
+.category { height: 120px; border-radius: 24px; background: var(--surface); position: relative; overflow: hidden; box-shadow: var(--shadow); }
+.category img { width: 100%; height: 100%; object-fit: cover; opacity: .5; }
+.category span { position: absolute; left: 16px; bottom: 16px; font-weight: 700; font-size: 1rem; }
+
+/* ── Clip Cards ── */
+.horizontal-scroll { display: flex; gap: 16px; overflow-x: auto; padding-bottom: 8px; scrollbar-width: none; }
+.horizontal-scroll::-webkit-scrollbar { display: none; }
+.clip-card { flex: 0 0 220px; background: var(--surface); border-radius: 20px; overflow: hidden; }
+.clip-thumb img { width: 100%; height: 130px; object-fit: cover; display: block; }
+.clip-info { padding: 12px; }
+.clip-info h3 { font-size: .95rem; font-weight: 600; margin-bottom: 4px; }
+.clip-info p { font-size: .8rem; color: var(--subtext); }
+
+/* ── Stream List ── */
+.stream-list { display: flex; flex-direction: column; gap: 16px; }
+.stream-card { background: var(--surface); border-radius: 20px; overflow: hidden; }
+.stream-card img { width: 100%; height: 160px; object-fit: cover; display: block; }
+.stream-body { padding: 14px; }
+.stream-body h3 { font-size: 1rem; font-weight: 600; margin-bottom: 4px; }
+.stream-body p { font-size: .85rem; color: var(--subtext); }
+
+/* ── Community ── */
+.community-card { background: var(--surface); border-radius: 24px; padding: 20px; box-shadow: var(--shadow); }
+.community-header { display: flex; align-items: center; gap: 14px; margin-bottom: 16px; }
+.avatar {
+  width: 48px; height: 48px; border-radius: 50%;
+  background: linear-gradient(135deg, var(--primary), var(--secondary));
+  display: flex; align-items: center; justify-content: center; font-weight: 800; font-size: 1.2rem;
+}
+.community-header h4 { font-weight: 700; }
+.community-header p { font-size: .85rem; color: var(--subtext); }
+.community-post { color: #ccc; line-height: 1.5; margin-bottom: 14px; }
+.community-stats { display: flex; gap: 16px; color: var(--subtext); font-size: .9rem; }
+
+/* ── Gerald Card (Home) ── */
+.gerald-card {
+  background: var(--surface); border-radius: var(--r3); padding: 24px;
+  display: flex; gap: 20px; align-items: center; box-shadow: var(--shadow);
+}
+.orb {
+  width: 60px; height: 60px; border-radius: 50%; flex-shrink: 0;
+  background: radial-gradient(circle at 35% 35%, var(--accent), var(--primary));
+  animation: pulse 2.5s ease-in-out infinite;
+}
+@keyframes pulse {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(0,229,255,.3); }
+  50% { box-shadow: 0 0 0 14px rgba(0,229,255,0); }
+}
+.gerald-content h3 { font-weight: 700; margin-bottom: 8px; }
+.gerald-content p { font-size: .85rem; color: var(--subtext); line-height: 1.5; margin-bottom: 14px; }
+.gerald-btn {
+  padding: 10px 18px; border: none; border-radius: 14px;
+  background: var(--primary); color: white; font-weight: 600;
+  transition: transform var(--fast) ease;
+}
+.gerald-btn:active { transform: scale(0.95); }
+
+/* ── Profile Card ── */
+.profile-card { background: var(--surface); border-radius: var(--r3); padding: 20px; box-shadow: var(--shadow); }
+.profile-top { display: flex; align-items: center; gap: 16px; margin-bottom: 18px; }
+.profile-avatar {
+  width: 60px; height: 60px; border-radius: 50%;
+  background: linear-gradient(135deg, var(--primary), var(--secondary));
+  display: flex; align-items: center; justify-content: center; font-weight: 800; font-size: 1.4rem;
+}
+.profile-top h3 { margin-bottom: 4px; }
+.profile-top p { color: var(--subtext); font-size: .9rem; }
+.profile-stats { display: flex; justify-content: space-between; margin-bottom: 18px; }
+.profile-stats div { text-align: center; }
+.profile-stats strong { display: block; font-size: 1.2rem; }
+.profile-stats span { color: var(--subtext); font-size: .8rem; }
+.profile-btn {
+  width: 100%; padding: 12px; border: none; border-radius: 18px;
+  background: var(--primary); color: white; font-weight: 700;
+  transition: transform var(--fast) ease;
+}
+.profile-btn:active { transform: scale(0.95); }
+
+/* ── Bottom Nav ── */
+.bottom-nav {
+  position: fixed; bottom: 12px; left: 12px; right: 12px;
+  display: flex; justify-content: space-between; padding: 10px 6px;
+  background: rgba(23,23,31,.75); backdrop-filter: blur(20px);
+  border-radius: 28px; box-shadow: 0 10px 40px rgba(0,0,0,.4);
+  border: 1px solid rgba(255,255,255,.06); z-index: 1000;
+}
+.nav-item {
+  flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center;
+  gap: 4px; padding: 10px 0; border-radius: 20px;
+  background: transparent; color: var(--subtext); border: none;
+  font-size: .75rem; font-family: inherit;
+  transition: all 180ms ease; position: relative; overflow: hidden;
+}
+.nav-item .icon { font-size: 1.2rem; transition: transform 180ms ease; }
+.nav-item.active {
+  background: linear-gradient(135deg, rgba(124,77,255,.25), rgba(255,79,216,.12));
+  color: white;
+}
+.nav-item.active .icon { transform: translateY(-2px) scale(1.1); }
+.nav-item:active { transform: scale(.92); }
+
+/* ── Ripple ── */
+.ripple {
+  position: absolute; width: 10px; height: 10px; border-radius: 50%;
+  background: rgba(255,255,255,.3); pointer-events: none;
+  animation: rippleAnim .6s ease-out forwards;
+}
+@keyframes rippleAnim {
+  from { transform: scale(1); opacity: 1; }
+  to { transform: scale(12); opacity: 0; }
+}
+
+/* ── Live Page ── */
+.video-frame { position: relative; border-radius: 24px; overflow: hidden; background: #000; }
+.video-frame img { width: 100%; display: block; }
+.live-badge {
+  position: absolute; top: 12px; left: 12px;
+  background: red; padding: 6px 12px; border-radius: 999px; font-size: .8rem; font-weight: 700;
+}
+.live-info { margin-top: 16px; }
+.live-info h2 { font-size: 1.4rem; font-weight: 700; }
+.live-info p { margin-top: 4px; color: var(--subtext); }
+.follow-btn {
+  margin-top: 12px; padding: 10px 20px; border: none;
+  border-radius: 14px; background: var(--primary); color: white; font-weight: 700;
+  transition: transform var(--fast) ease;
+}
+.follow-btn:active { transform: scale(0.95); }
+.chat-box { margin-top: 20px; background: var(--surface); padding: 14px; border-radius: 20px; }
+.chat-box h4 { font-size: .9rem; font-weight: 600; margin-bottom: 10px; color: var(--subtext); }
+.chat-msg { padding: 6px 0; color: var(--subtext); font-size: .9rem; border-bottom: 1px solid rgba(255,255,255,.04); }
+.chat-msg:last-child { border-bottom: none; }
+.chat-msg strong { color: var(--primary); }
+
+/* ── Clips Page ── */
+.clip-feed-full {
+  height: calc(100vh - 106px); overflow-y: auto;
+  scroll-snap-type: y mandatory; scrollbar-width: none; padding-bottom: 0;
+}
+.clip-feed-full::-webkit-scrollbar { display: none; }
+.clip-full { height: calc(100vh - 106px); position: relative; scroll-snap-align: start; overflow: hidden; background: #000; }
+.clip-full img { width: 100%; height: 100%; object-fit: cover; display: block; }
+.clip-overlay {
+  position: absolute; bottom: 0; left: 0; right: 0;
+  padding: 40px 20px 30px; background: linear-gradient(transparent, rgba(0,0,0,.7));
+}
+.clip-overlay h3 { font-size: 1.1rem; font-weight: 700; margin-bottom: 4px; }
+.clip-overlay p { color: #ddd; font-size: .9rem; }
+
+/* ── Gerald Page ── */
+.gerald-page { display: flex; flex-direction: column; height: calc(100vh - 106px); }
+.gerald-header { padding: 20px 18px 0; display: flex; align-items: center; gap: 14px; }
+.gerald-header .orb-sm {
+  width: 44px; height: 44px; border-radius: 50%; flex-shrink: 0;
+  background: radial-gradient(circle at 35% 35%, var(--accent), var(--primary));
+  animation: pulse 2.5s ease-in-out infinite;
+}
+.gerald-header h2 { font-size: 1.2rem; font-weight: 700; }
+.gerald-header p { font-size: .8rem; color: var(--subtext); }
+.gerald-chat { flex: 1; overflow-y: auto; padding: 18px; display: flex; flex-direction: column; gap: 12px; }
+.g-msg { max-width: 80%; padding: 12px 16px; border-radius: 20px; font-size: .9rem; line-height: 1.5; }
+.g-msg.bot { background: var(--surface); color: var(--text); align-self: flex-start; border-bottom-left-radius: 6px; }
+.g-msg.user { background: var(--primary); color: white; align-self: flex-end; border-bottom-right-radius: 6px; }
+.gerald-input-bar {
+  display: flex; gap: 10px; padding: 14px 18px;
+  background: rgba(23,23,31,.95); border-top: 1px solid rgba(255,255,255,.05);
+}
+.gerald-input {
+  flex: 1; background: var(--surface2); border: 1px solid rgba(255,255,255,.1);
+  border-radius: 18px; padding: 12px 16px; color: var(--text); font-size: .9rem;
+  outline: none; font-family: inherit;
+}
+.gerald-input::placeholder { color: var(--subtext); }
+.gerald-send {
+  width: 44px; height: 44px; border-radius: 50%; border: none;
+  background: var(--primary); color: white; font-size: 1.2rem;
+  display: flex; align-items: center; justify-content: center;
+  transition: transform var(--fast) ease;
+}
+.gerald-send:active { transform: scale(0.9); }
+
+/* ── Theme Picker (fixed top-right) ── */
+.theme-picker { position: fixed; top: 12px; right: 12px; display: flex; gap: 8px; z-index: 9998; }
+.theme-picker button {
+  border: none; padding: 8px 10px; border-radius: 999px;
+  background: var(--surface); color: white; font-size: .75rem;
+  font-family: inherit; transition: transform var(--fast);
+}
+.theme-picker button:active { transform: scale(0.95); }
+</style>
+</head>
+<body>
+
+<!-- Splash -->
+<div id="splash" role="status" aria-label="Loading MikoTok">
+  <div class="logo-wrap" aria-hidden="true">M</div>
+  <div class="app-name">MIKOTOK</div>
+  <div class="tagline">WATCH • CLIP • CHAOS</div>
+  <div class="loader" aria-hidden="true"></div>
+</div>
+
+<!-- Theme Picker -->
+<div class="theme-picker" aria-label="Theme selector">
+  <button onclick="setTheme('violet')" aria-label="Violet theme">Violet</button>
+  <button onclick="setTheme('pink')" aria-label="Pink theme">Pink</button>
+  <button onclick="setTheme('cyan')" aria-label="Cyan theme">Cyan</button>
+</div>
+
+<!-- ══════════════════ HOME ══════════════════ -->
+<div id="home" class="page" role="main" aria-label="Home">
+  <div class="container">
+
+    <div class="hero-card">
+      <div class="hero-image" aria-hidden="true"></div>
+      <div class="hero-overlay" aria-hidden="true"></div>
+      <div class="live-pill" aria-label="Currently live">🔴 LIVE NOW</div>
+      <div class="hero-content">
+        <h1>CodeMiko</h1>
+        <p>18.4K watching now</p>
+        <button class="watch-btn" onclick="navigate('live')">Watch Stream</button>
+      </div>
+    </div>
+
+    <section class="section" aria-labelledby="explore-title">
+      <h2 class="section-title" id="explore-title">Explore</h2>
+      <div class="category-grid">
+        <div class="category" onclick="navigate('live')" style="cursor:pointer" role="button" tabindex="0" aria-label="Go to Live">
+          <img src="https://placehold.co/600x400/1a0a2e/ffffff?text=Live" alt="">
+          <span>🔴 Live</span>
+        </div>
+        <div class="category" style="cursor:pointer" role="button" tabindex="0" aria-label="VODs">
+          <img src="https://placehold.co/600x400/0a1a2e/ffffff?text=VODs" alt="">
+          <span>🎥 VODs</span>
+        </div>
+        <div class="category" onclick="navigate('clips')" style="cursor:pointer" role="button" tabindex="0" aria-label="Go to Clips">
+          <img src="https://placehold.co/600x400/1a2e0a/ffffff?text=Clips" alt="">
+          <span>✂️ Clips</span>
+        </div>
+        <div class="category" style="cursor:pointer" role="button" tabindex="0" aria-label="Community">
+          <img src="https://placehold.co/600x400/2e0a1a/ffffff?text=Community" alt="">
+          <span>🌐 Community</span>
+        </div>
+      </div>
+    </section>
+
+    <section class="section" aria-labelledby="trending-title">
+      <h2 class="section-title" id="trending-title">Trending Clips</h2>
+      <div class="horizontal-scroll" id="trendingFeed" aria-label="Trending clips"></div>
+    </section>
+
+    <section class="section" aria-labelledby="streams-title">
+      <h2 class="section-title" id="streams-title">Recent Streams</h2>
+      <div class="stream-list">
+        <div class="stream-card">
+          <img src="https://placehold.co/600x340/1a0a2e/ffffff?text=Stream+1" alt="Building a Robot Empire stream">
+          <div class="stream-body"><h3>Building a Robot Empire</h3><p>3h 42m</p></div>
+        </div>
+        <div class="stream-card">
+          <img src="https://placehold.co/600x340/0a1a2e/ffffff?text=Stream+2" alt="Miko vs AI stream">
+          <div class="stream-body"><h3>Miko vs AI</h3><p>4h 12m</p></div>
+        </div>
+        <div class="stream-card">
+          <img src="https://placehold.co/600x340/2e1a0a/ffffff?text=Stream+3" alt="Tech Support Nightmare stream">
+          <div class="stream-body"><h3>Tech Support Nightmare</h3><p>2h 55m</p></div>
+        </div>
+      </div>
+    </section>
+
+    <section class="section" aria-labelledby="community-title">
+      <h2 class="section-title" id="community-title">Community Highlights</h2>
+      <div class="community-card">
+        <div class="community-header">
+          <div class="avatar" aria-hidden="true">R</div>
+          <div><h4>r/CodeMiko</h4><p>12K members online</p></div>
+        </div>
+        <div class="community-post">Why does every stream end in complete technological collapse?</div>
+        <div class="community-stats"><span>▲ 4.2K</span><span>💬 438</span></div>
+      </div>
+    </section>
+
+    <section class="section" aria-labelledby="gerald-home-title">
+      <h2 class="section-title" id="gerald-home-title">Gerald AI</h2>
+      <div class="gerald-card">
+        <div class="orb" aria-hidden="true"></div>
+        <div class="gerald-content">
+          <h3>Talk with Gerald</h3>
+          <p>Need lore? Recommendations? Explanations for whatever just happened?</p>
+          <button class="gerald-btn" onclick="navigate('gerald')">Open Gerald</button>
+        </div>
+      </div>
+    </section>
+
+    <section class="section" aria-labelledby="profile-home-title">
+      <h2 class="section-title" id="profile-home-title">Your Profile</h2>
+      <div class="profile-card">
+        <div class="profile-top">
+          <div class="profile-avatar" aria-hidden="true">M</div>
+          <div><h3>Matúš</h3><p>@mikouser</p></div>
+        </div>
+        <div class="profile-stats">
+          <div><strong>128</strong><span>Watched</span></div>
+          <div><strong>42</strong><span>Saved</span></div>
+          <div><strong>9</strong><span>Clips</span></div>
+        </div>
+        <button class="profile-btn" onclick="navigate('profile')">Open Profile</button>
+      </div>
+    </section>
+
+  </div>
+</div>
+
+<!-- ══════════════════ LIVE ══════════════════ -->
+<div id="live" class="page" role="main" aria-label="Live stream">
+  <div class="container">
+    <div class="video-frame">
+      <img src="https://placehold.co/1080x600/0a0a1a/ffffff?text=LIVE+STREAM" alt="CodeMiko live stream placeholder">
+      <div class="live-badge" aria-label="Live now">🔴 LIVE</div>
+    </div>
+    <div class="live-info">
+      <h2>CodeMiko</h2>
+      <p>18.4K watching • Just chatting chaos</p>
+      <button class="follow-btn">+ Follow</button>
+    </div>
+    <div class="chat-box" aria-label="Live chat">
+      <h4>Live Chat</h4>
+      <div class="chat-msg"><strong>User1:</strong> WHAT IS HAPPENING</div>
+      <div class="chat-msg"><strong>User2:</strong> this is fine 🔥</div>
+      <div class="chat-msg"><strong>User3:</strong> chat broke reality again</div>
+      <div class="chat-msg"><strong>MikoFan42:</strong> GERALD HELP US</div>
+      <div class="chat-msg"><strong>xXChaoticXx:</strong> every stream LUL</div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════ CLIPS ══════════════════ -->
+<div id="clips" class="page" style="padding-bottom:0" role="main" aria-label="Clips feed">
+  <div class="clip-feed-full" id="clipFeed">
+    <!-- Populated by ClipEngine -->
+  </div>
+</div>
+
+<!-- ══════════════════ GERALD ══════════════════ -->
+<div id="gerald" class="page" style="padding-bottom:0" role="main" aria-label="Gerald AI chat">
+  <div class="gerald-page">
+    <div class="gerald-header">
+      <div class="orb-sm" aria-hidden="true"></div>
+      <div><h2>Gerald AI</h2><p>Observing the timeline</p></div>
+    </div>
+    <div class="gerald-chat" id="geraldChat" role="log" aria-live="polite" aria-label="Chat messages">
+      <div class="g-msg bot">I am Gerald. I observe. I process. I occasionally spiral. How can I assist you today?</div>
+      <div class="g-msg bot">Do you require lore, recommendations, or explanations for whatever just occurred on stream?</div>
+    </div>
+    <div class="gerald-input-bar">
+      <label for="geraldInput" class="sr-only">Message Gerald</label>
+      <input class="gerald-input" id="geraldInput" placeholder="Ask Gerald..." type="text" aria-label="Message input">
+      <button class="gerald-send" onclick="Gerald.send()" aria-label="Send message">➤</button>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════ PROFILE ══════════════════ -->
+<div id="profile" class="page" role="main" aria-label="Your profile">
+  <div class="container">
+    <section class="section">
+      <div class="profile-card">
+        <div class="profile-top">
+          <div class="profile-avatar" aria-hidden="true">M</div>
+          <div><h3>Matúš</h3><p>@mikouser</p></div>
+        </div>
+        <div class="profile-stats">
+          <div><strong>128</strong><span>Watched</span></div>
+          <div><strong>42</strong><span>Saved</span></div>
+          <div><strong>9</strong><span>Clips</span></div>
+        </div>
+        <button class="profile-btn">Edit Profile</button>
+      </div>
+    </section>
+
+    <section class="section" aria-labelledby="theme-title">
+      <h2 class="section-title" id="theme-title">Theme</h2>
+      <div style="display:flex;gap:12px;flex-wrap:wrap">
+        <button onclick="setTheme('violet')" style="padding:12px 20px;border:none;border-radius:14px;background:var(--surface);color:white;font-weight:600;font-family:inherit">🟣 Violet</button>
+        <button onclick="setTheme('pink')" style="padding:12px 20px;border:none;border-radius:14px;background:var(--surface);color:white;font-weight:600;font-family:inherit">🩷 Pink</button>
+        <button onclick="setTheme('cyan')" style="padding:12px 20px;border:none;border-radius:14px;background:var(--surface);color:white;font-weight:600;font-family:inherit">🩵 Cyan</button>
+      </div>
+    </section>
+
+    <section class="section" aria-labelledby="saved-title">
+      <h2 class="section-title" id="saved-title">Saved Clips</h2>
+      <div class="stream-list">
+        <div class="stream-card">
+          <img src="https://placehold.co/600x340/1a0a2e/ffffff?text=Saved+1" alt="Miko breaks physics again">
+          <div class="stream-body"><h3>Miko breaks physics again</h3><p>Saved 3 days ago</p></div>
+        </div>
+        <div class="stream-card">
+          <img src="https://placehold.co/600x340/0a1a2e/ffffff?text=Saved+2" alt="Gerald becomes self-aware">
+          <div class="stream-body"><h3>Gerald becomes self-aware</h3><p>Saved 1 week ago</p></div>
+        </div>
+      </div>
+    </section>
+  </div>
+</div>
+
+<!-- ══════════════════ NAV ══════════════════ -->
+<nav class="bottom-nav" aria-label="Main navigation">
+  <button class="nav-item active" data-page="home" onclick="navigate('home')" aria-label="Home" aria-current="page">
+    <span class="icon" aria-hidden="true">🏠</span><span>Home</span>
+  </button>
+  <button class="nav-item" data-page="live" onclick="navigate('live')" aria-label="Live stream">
+    <span class="icon" aria-hidden="true">🔴</span><span>Live</span>
+  </button>
+  <button class="nav-item" data-page="clips" onclick="navigate('clips')" aria-label="Clips feed">
+    <span class="icon" aria-hidden="true">✂️</span><span>Clips</span>
+  </button>
+  <button class="nav-item" data-page="gerald" onclick="navigate('gerald')" aria-label="Gerald AI">
+    <span class="icon" aria-hidden="true">🤖</span><span>AI</span>
+  </button>
+  <button class="nav-item" data-page="profile" onclick="navigate('profile')" aria-label="Your profile">
+    <span class="icon" aria-hidden="true">👤</span><span>Me</span>
+  </button>
+</nav>
+
+<script>
+/* ════════════════════════════════════
+   EVENT BUS
+════════════════════════════════════ */
+const Bus = {
+  events: {},
+  on(event, fn) {
+    if (!this.events[event]) this.events[event] = [];
+    this.events[event].push(fn);
+  },
+  emit(event, data) {
+    (this.events[event] || []).forEach(fn => fn(data));
+  }
+};
+
+/* ════════════════════════════════════
+   STORE (localStorage abstraction)
+════════════════════════════════════ */
+const Store = {
+  set(key, value) { try { localStorage.setItem(key, JSON.stringify(value)); } catch(e) {} },
+  get(key, fallback = null) {
+    try { const v = localStorage.getItem(key); return v ? JSON.parse(v) : fallback; }
+    catch(e) { return fallback; }
+  }
+};
+
+/* ════════════════════════════════════
+   MOTION UTILITIES
+════════════════════════════════════ */
+const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+const Motion = {
+  fadeIn(el, duration = 200) {
+    if (prefersReducedMotion) return;
+    el.animate([
+      { opacity: 0, transform: 'translateY(10px)' },
+      { opacity: 1, transform: 'translateY(0)' }
+    ], { duration, easing: 'ease-out' });
+  },
+  fadeOut(el, duration = 150) {
+    if (prefersReducedMotion) return Promise.resolve();
+    return el.animate([{ opacity: 1 }, { opacity: 0 }], { duration }).finished;
+  },
+  scaleIn(el, duration = 180) {
+    if (prefersReducedMotion) return;
+    el.animate([
+      { transform: 'scale(0.95)', opacity: 0 },
+      { transform: 'scale(1)', opacity: 1 }
+    ], { duration, easing: 'ease-out' });
+  }
+};
+
+/* ════════════════════════════════════
+   APP STATE
+════════════════════════════════════ */
+const state = {
+  currentPage: 'home',
+  likes: {},
+  saved: {}
+};
+
+/* ════════════════════════════════════
+   NAVIGATION
+════════════════════════════════════ */
+function navigate(page) {
+  if (state.currentPage === page) return;
+
+  const fromEl = document.getElementById(state.currentPage);
+  const toEl = document.getElementById(page);
+
+  if (fromEl) {
+    fromEl.style.opacity = '0';
+    fromEl.style.transform = 'translateY(10px)';
+    setTimeout(() => {
+      fromEl.classList.remove('active');
+      fromEl.removeAttribute('style');
+    }, 200);
+  }
+
+  if (toEl) {
+    setTimeout(() => {
+      toEl.classList.add('active');
+      Motion.fadeIn(toEl);
+    }, 60);
+  }
+
+  state.currentPage = page;
+  window.location.hash = page;
+
+  // Update nav items
+  document.querySelectorAll('.nav-item').forEach(n => {
+    const isActive = n.dataset.page === page;
+    n.classList.toggle('active', isActive);
+    n.setAttribute('aria-current', isActive ? 'page' : 'false');
+  });
+
+  Bus.emit('pageChange', page);
+}
+
+/* ════════════════════════════════════
+   RIPPLE EFFECT ON NAV
+════════════════════════════════════ */
+document.querySelectorAll('.nav-item').forEach(btn => {
+  btn.addEventListener('click', () => {
+    if (prefersReducedMotion) return;
+    const ripple = document.createElement('span');
+    ripple.className = 'ripple';
+    btn.appendChild(ripple);
+    setTimeout(() => ripple.remove(), 600);
+  });
+});
+
+/* ════════════════════════════════════
+   SWIPE GESTURES
+════════════════════════════════════ */
+const pages = ['home', 'live', 'clips', 'gerald', 'profile'];
+let gestureStartX = 0;
+
+window.addEventListener('touchstart', e => { gestureStartX = e.touches[0].clientX; }, { passive: true });
+window.addEventListener('touchend', e => {
+  const diff = gestureStartX - e.changedTouches[0].clientX;
+  if (Math.abs(diff) < 80) return;
+  const idx = pages.indexOf(state.currentPage);
+  if (diff > 0 && idx < pages.length - 1) navigate(pages[idx + 1]);
+  else if (diff < 0 && idx > 0) navigate(pages[idx - 1]);
+}, { passive: true });
+
+/* ════════════════════════════════════
+   FEED GENERATOR
+════════════════════════════════════ */
+const clipTitles = [
+  'Miko breaks physics', 'Chat causes chaos', 'Gerald glitches reality',
+  'Unexpected lore drop', 'Stream collapses again', 'Server room incident',
+  'Gerald becomes self-aware', 'Reality.exe has stopped working'
+];
+const colors = ['1a0a2e', '0a1a2e', '2e0a1a', '0a2e1a', '2e1a0a', '1a2e0a'];
+
+function getFeed(count = 8) {
+  return Array.from({ length: count }, (_, i) => ({
+    title: clipTitles[i % clipTitles.length],
+    views: Math.floor(Math.random() * 180 + 20) + 'K',
+    color: colors[i % colors.length]
+  }));
+}
+
+/* ════════════════════════════════════
+   CLIP ENGINE
+════════════════════════════════════ */
+const ClipEngine = {
+  index: 0,
+  clips: [],
+
+  init() {
+    const feed = document.getElementById('clipFeed');
+    const data = getFeed(6);
+    feed.innerHTML = data.map((c, i) => `
+      <div class="clip-full" data-index="${i}">
+        <img src="https://placehold.co/1080x1920/${c.color}/ffffff?text=Clip+${i + 1}" alt="${c.title}">
+        <div class="clip-overlay">
+          <h3>${c.title}</h3>
+          <p>🔥 ${c.views} views</p>
+        </div>
+      </div>
+    `).join('');
+
+    this.clips = document.querySelectorAll('.clip-full');
+    this._setupObserver();
+  },
+
+  _setupObserver() {
+    const observer = new IntersectionObserver(entries => {
+      entries.forEach(entry => {
+        if (entry.isIntersecting) {
+          const i = parseInt(entry.target.dataset.index);
+          this.index = i;
+          Bus.emit('clipChanged', i);
+        }
+      });
+    }, { threshold: 0.7 });
+    this.clips.forEach(c => observer.observe(c));
+  },
+
+  scrollTo(index) {
+    if (index < 0 || index >= this.clips.length) return;
+    this.index = index;
+    this.clips[index].scrollIntoView({ behavior: 'smooth' });
+    Bus.emit('clipChanged', index);
+  },
+
+  next() { this.scrollTo(this.index + 1); },
+  prev() { this.scrollTo(this.index - 1); }
+};
+
+Bus.on('clipChanged', i => console.log('[ClipEngine] clip:', i));
+
+/* ════════════════════════════════════
+   TRENDING FEED
+════════════════════════════════════ */
+function initTrendingFeed() {
+  const container = document.getElementById('trendingFeed');
+  const data = getFeed(5);
+  container.innerHTML = data.map((c, i) => `
+    <div class="clip-card">
+      <div class="clip-thumb">
+        <img src="https://placehold.co/800x450/${c.color}/ffffff?text=Clip+${i + 1}" alt="${c.title}">
+      </div>
+      <div class="clip-info">
+        <h3>${c.title}</h3>
+        <p>${c.views} views • ${i + 1}h ago</p>
+      </div>
+    </div>
+  `).join('');
+}
+
+/* ════════════════════════════════════
+   GERALD MODULE
+════════════════════════════════════ */
+const Gerald = {
+  history: [],
+
+  responses: {
+    miko: 'Miko is currently destabilizing reality again. This is standard procedure — I have logged it.',
+    chat: 'Chat is statistically responsible for 73% of all anomalies. The other 27% is Gerald-induced.',
+    gerald: 'I am Gerald. I exist to process chaos. I am doing my best.',
+    stream: 'The stream is simultaneously live, broken, and somehow more entertaining for it.',
+    help: 'I can provide lore, stream summaries, or moral support during reality collapses.',
+    clip: 'I have catalogued all clips. The most viewed involve things that should not be possible.',
+    live: 'The live stream is a controlled experiment in entropy. The controls have been removed.',
+    lore: 'The lore is extensive. The timeline is unstable. I recommend not thinking about it too hard.',
+    default: [
+      'Processing existential request... outcome uncertain.',
+      'I have observed this pattern before. It did not end well.',
+      "Interesting. I will file this under 'things that cannot be explained'.",
+      'The timeline is unstable. Your question contributes to this.',
+      'I am computing. Please hold. The answer may surprise you.',
+      'Gerald.exe has encountered a philosophical error. Rebooting...'
+    ]
+  },
+
+  generate(input) {
+    const lower = input.toLowerCase();
+    for (const [key, val] of Object.entries(this.responses)) {
+      if (key !== 'default' && lower.includes(key)) return val;
+    }
+    const arr = this.responses.default;
+    return arr[Math.floor(Math.random() * arr.length)];
+  },
+
+  respond(input) {
+    const reply = this.generate(input);
+    this.history.push({ input, reply, time: Date.now() });
+    Store.set('gerald_history', this.history.slice(-50));
+    return reply;
+  },
+
+  render(text, role) {
+    const chat = document.getElementById('geraldChat');
+    const msg = document.createElement('div');
+    msg.className = `g-msg ${role}`;
+    msg.textContent = text;
+    chat.appendChild(msg);
+    Motion.scaleIn(msg);
+    chat.scrollTop = chat.scrollHeight;
+  },
+
+  send() {
+    const inputEl = document.getElementById('geraldInput');
+    const text = inputEl.value.trim();
+    if (!text) return;
+    this.render(text, 'user');
+    inputEl.value = '';
+    setTimeout(() => {
+      this.render(this.respond(text), 'bot');
+    }, 600);
+  }
+};
+
+// Expose sendGerald globally for the button
+function sendGerald() { Gerald.send(); }
+
+document.getElementById('geraldInput').addEventListener('keydown', e => {
+  if (e.key === 'Enter') Gerald.send();
+});
+
+/* ════════════════════════════════════
+   THEMES
+════════════════════════════════════ */
+const themes = {
+  violet: { primary: '#7C4DFF', secondary: '#FF4FD8', accent: '#00E5FF' },
+  pink:   { primary: '#FF4FD8', secondary: '#7C4DFF', accent: '#00E5FF' },
+  cyan:   { primary: '#00E5FF', secondary: '#FF4FD8', accent: '#7C4DFF' }
+};
+
+function setTheme(name) {
+  const t = themes[name] || themes.violet;
+  document.documentElement.style.setProperty('--primary', t.primary);
+  document.documentElement.style.setProperty('--secondary', t.secondary);
+  document.documentElement.style.setProperty('--accent', t.accent);
+  Store.set('mikotok_theme', name);
+  Bus.emit('themeChange', name);
+}
+
+/* ════════════════════════════════════
+   BOOT
+════════════════════════════════════ */
+function boot() {
+  // Restore theme
+  const savedTheme = Store.get('mikotok_theme', 'violet');
+  setTheme(savedTheme);
+
+  // Restore Gerald history
+  const savedHistory = Store.get('gerald_history', []);
+  Gerald.history = savedHistory;
+
+  // Initialize feeds
+  initTrendingFeed();
+  ClipEngine.init();
+
+  // Start on correct page
+  const hash = window.location.hash.replace('#', '');
+  const startPage = (hash && document.getElementById(hash)) ? hash : 'home';
+  state.currentPage = startPage;
+  document.getElementById(startPage).classList.add('active');
+  const activeNav = document.querySelector(`.nav-item[data-page="${startPage}"]`);
+  if (activeNav) {
+    document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+    activeNav.classList.add('active');
+    activeNav.setAttribute('aria-current', 'page');
+  }
+
+  // Hide splash
+  setTimeout(() => {
+    const splash = document.getElementById('splash');
+    splash.style.opacity = '0';
+    splash.style.pointerEvents = 'none';
+    setTimeout(() => splash.style.display = 'none', 600);
+  }, 2000);
+
+  Bus.emit('boot');
+  console.log('[MikoTok] initialized');
+}
+
+window.addEventListener('load', boot);
+</script>
+</body>
+</html>
