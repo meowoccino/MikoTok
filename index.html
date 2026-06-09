@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <meta name="theme-color" content="#050505">
+    <meta name="theme-color" content="#18181b">
     
     <title>MikoTok</title>
     
@@ -65,8 +65,8 @@
                 @share-clip="shareClip">
             </home-view>
 
-            <div class="chat-container" style="height: calc(100% - 85px); width: 100%;" v-if="currentTab === 'chat'">
-                <iframe :src="'https://www.twitch.tv/embed/codemiko/chat?parent=' + hostname + '&darkpopout'" style="width: 100%; height: 100%; border: none;" loading="lazy"></iframe>
+            <div class="chat-container" style="height: calc(100% - 75px); width: 100%; display: flex; background: #09090b;" v-if="currentTab === 'chat'">
+                <iframe :src="'https://www.twitch.tv/embed/codemiko/chat?parent=' + hostname + '&darkpopout'" style="width: 100%; height: 100%; border: none; outline: none;" allowfullscreen="false" scrolling="no" loading="lazy"></iframe>
             </div>
 
             <feed-view
