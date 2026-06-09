@@ -16,139 +16,377 @@
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="https://unpkg.com/vue@3/dist/vue.global.prod.js"></script>
     
-    <link rel="stylesheet" href="./styles.css?v=22">
+    <link rel="stylesheet" href="./styles.css?v=23">
 </head>
-<body @click="isFilterMenuOpen = false">
-    <div id="app-container" v-cloak>
+<body @click="closeFilterMenu">
+    <div id="app-container" :class="{'glitch-theme': isGlitchTheme, 'ui-scuffed': uiScuffed}" v-cloak>
         
-        <toast-popup :toast="toast"></toast-popup>
+        <div class="cat-overlay" :class="{ 'zooming': isCatZooming }">🐆</div>
+        <div class="lumen-overload" v-if="showLumen"></div>
+        
+        <div class="fake-ban-overlay" :class="{'show': showFakeBan}">
+            <span class="material-symbols-rounded" style="font-size: 60px; color: var(--danger); margin-bottom: 15px;">gavel</span>
+            <h1 style="font-family: 'Outfit'; font-size: 28px; margin: 0 0 10px;">CHANNEL SUSPENDED</h1>
+            <p style="color: var(--text-muted); font-size: 14px;">This channel is temporarily unavailable due to a violation of Twitch's Community Guidelines or Terms of Service.</p>
+        </div>
 
-        <splash-screen 
-            :splash-visible="splashVisible" 
-            :splash-opacity="splashOpacity" 
-            :logo-svg="logoSvg">
-        </splash-screen>
+        <div class="chaos-overlay" :class="{ show: isGlitching }">
+            <div class="random-code" id="randomCode">{{ randomCodeString }}</div>
+            <div class="chaos-container">
+                <div class="glitch-text-huge">SYSTEM<br>FAILURE</div>
+                <div class="scuff-warning">ERR: TECHNICIAN INTERFERENCE</div>
+                <br>
+                <button class="chaos-reboot-btn" @click="dismissGlitch">
+                    <span class="material-symbols-rounded" :class="{'spin-anim': isGlitchRebooting}" style="font-size: 22px;">restart_alt</span>
+                    <span>[ FORCE REBOOT ]</span>
+                </button>
+            </div>
+        </div>
 
-        <pull-to-refresh 
-            :is-pulling="isPulling" 
-            :refresh-transform="refreshTransform" 
-            :is-refreshing="isRefreshing">
-        </pull-to-refresh>
+        <div class="meltdown-overlay" :class="{ show: isMeltdown }">
+            <div class="terminal-alert-card">
+                <div class="alert-icon-wrap"><span class="material-symbols-rounded" style="font-size: 32px;">terminal</span></div>
+                <div class="alert-title">CRITICAL FAILURE</div>
+                <div class="alert-subtitle">Ultra-Scuff Overload</div>
+                
+                <div class="terminal-logs-inline">
+                    <span style="color:#ef4444; font-weight:bold;">> [CRASH] Unreal Engine 5 Unresponsive.</span><br>
+                    <span>> Hardware: Mocap Suit Unplugged...</span><br>
+                    <span style="color:#ef4444; font-weight:bold;">> [WARN] Scuff levels reached 100%.</span><br>
+                    <span style="color:#00ffa3;">> System integrity failing. Awaiting manual reboot override...</span>
+                </div>
 
-        <app-header 
-            :is-header-visible="isHeaderVisible" 
-            :current-tab="currentTab" 
-            :is-live="isLive" 
-            :logo-svg="logoSvg"
-            @open-profile="modals.profile = true">
-        </app-header>
+                <button class="reboot-btn" @click="rebootSystem">
+                    <span class="material-symbols-rounded" :class="{'spin-anim': isRebooting}" style="font-size: 18px;">restart_alt</span>
+                    <span>{{ isRebooting ? 'REBOOTING...' : 'Force System Reboot' }}</span>
+                </button>
+            </div>
+        </div>
+
+        <div class="toast-popup" :class="{ show: toast.visible }" v-html="toast.message"></div>
+
+        <div id="splash-screen" v-if="splashVisible" :style="{ opacity: splashOpacity }">
+            <div style="width:100px;height:100px;margin-bottom:20px;" v-html="logoSvg('splash')"></div>
+            <div class="gradient-text" style="font-size: 32px; font-weight: 900;">MikoTok</div>
+            <div class="progress-bar"><div class="progress-fill"></div></div>
+        </div>
+
+        <div class="pull-refresh-indicator" :class="{ pulling: isPulling }" :style="{ transform: refreshTransform }">
+            <span class="material-symbols-rounded" :class="{ 'refresh-spinning': isRefreshing }">sync</span>
+        </div>
+
+        <header class="app-header" :class="{ hidden: !isHeaderVisible }" v-if="currentTab === 'home' || currentTab === 'feed'">
+            <div style="display:flex; align-items:center; gap:10px;">
+                <div style="width:28px;height:28px; cursor:pointer;" v-html="logoSvg('header')" @click="modals.profile = true"></div>
+                <span class="gradient-text" style="font-size:20px; font-weight:900; cursor:pointer;" @click="triggerCatZoomies" title="Summon Cat">MikoTok</span>
+            </div>
+
+            <div style="display:flex; align-items:center; gap: 15px;">
+                <a href="https://twitch.tv/codemiko" target="_blank" class="header-status-wrapper">
+                    <div class="story-ring" :class="isLive ? 'live' : 'offline'">
+                        <img src="1000018850.png?v=2" class="story-avatar" alt="Miko">
+                        <div class="header-badge" :class="isLive ? 'live' : 'offline'">{{ isLive ? 'LIVE' : 'OFFLINE' }}</div>
+                    </div>
+                </a>
+            </div>
+        </header>
 
         <div class="view-port" @touchstart="handlePullStart" @touchmove="handlePullMove" @touchend="handlePullEnd">
             
-            <home-view
-                :current-tab="currentTab"
-                :is-refreshing="isRefreshing"
-                :current-vod-index="currentVodIndex"
-                :recent-vods="recentVods"
-                :is-live="isLive"
-                :active-feed-video="activeFeedVideo"
-                :hostname="hostname"
-                :clips="clips"
-                :active-filter-label="activeFilterLabel"
-                :optimize-twitch-img="optimizeTwitchImg"
-                :format-views="formatViews"
-                :format-date="formatDate"
-                @scroll="handleScroll"
-                @prev-vod="prevVod"
-                @next-vod="nextVod"
-                @open-filter="isFilterMenuOpen = true"
-                @share-clip="shareClip">
-            </home-view>
-
-            <div class="chat-container" style="height: calc(100% - 76px); width: 100%; display: flex; background: #050505;" v-if="currentTab === 'chat'">
-                <iframe :src="'https://www.twitch.tv/embed/codemiko/chat?parent=' + hostname + '&darkpopout'" style="width: 100%; height: 100%; border: none; outline: none;" allowfullscreen="false" scrolling="no" loading="lazy"></iframe>
+            <div class="scroll-area content-shimmer" :class="{ active: isRefreshing }" id="feed-scroll" v-show="currentTab === 'home'" @scroll="handleScroll">
+                <div class="feed-snap-item" data-id="featured" style="padding-top: 110px;">
+                    <div class="header-controls" style="margin-bottom: 20px; min-height: 28px; display: flex; justify-content: flex-start;">
+                        <div class="premium-badge live" v-if="currentVodIndex === -1"><div class="dot"></div><span>LIVE NOW</span></div>
+                        <div class="premium-badge vod" v-else-if="recentVods.length > 0"><div class="dot"></div><span>{{ getVodLabel(currentVodIndex) }}</span></div>
+                    </div>
+                    
+                    <div class="vod-animated-border">
+                        <div class="video-container">
+                            <template v-if="activeFeedVideo === 'featured' && currentTab === 'home'">
+                                <iframe v-if="currentVodIndex === -1" :src="'https://player.twitch.tv/?channel=codemiko&parent=' + hostname + '&autoplay=true&muted=false'" allow="autoplay; fullscreen" allowfullscreen loading="lazy"></iframe>
+                                <iframe v-else-if="recentVods[currentVodIndex]" :src="'https://player.twitch.tv/?video=' + recentVods[currentVodIndex].id + '&parent=' + hostname + '&autoplay=true&muted=false'" allow="autoplay; fullscreen" allowfullscreen loading="lazy"></iframe>
+                            </template>
+                        </div>
+                    </div>
+                    
+                    <div class="carousel-controls" v-if="recentVods.length > 0 && !isLive">
+                        <button class="carousel-btn" :class="{ 'hidden-arrow': currentVodIndex <= 0 }" @click.stop="prevVod"><span class="material-symbols-rounded">chevron_left</span></button>
+                        <button class="carousel-btn" :class="{ 'hidden-arrow': currentVodIndex >= recentVods.length - 1 }" @click.stop="nextVod"><span class="material-symbols-rounded">chevron_right</span></button>
+                    </div>
+                </div>
+                
+                <div class="feed-snap-item" v-for="(clip, index) in clips" :key="clip.id" :data-id="clip.id">
+                    <div v-if="index === 0" class="clips-header">
+                        <div class="filter-wrapper" @click.stop>
+                            <button class="filter-btn-tiny" @click="isFilterMenuOpen = true"><span class="material-symbols-rounded" style="font-size: 14px;">sort</span><span>{{ activeFilterLabel }}</span></button>
+                        </div>
+                    </div>
+                    <div class="video-container">
+                        <img :src="clip.thumbnail_url ? optimizeTwitchImg(clip.thumbnail_url) : ''" loading="lazy" alt="Clip Thumbnail">
+                        <iframe v-if="activeFeedVideo === clip.id && currentTab === 'home'" :src="'https://clips.twitch.tv/embed?clip=' + clip.id + '&parent=' + hostname + '&autoplay=true&muted=false'" allow="autoplay; fullscreen" allowfullscreen loading="lazy"></iframe>
+                    </div>
+                    <div class="miko-metadata">
+                        <div class="author-info">
+                            <img src="1000018850.png?v=2" loading="lazy" alt="Miko">
+                            <div class="author-text-block">
+                                <span class="author-name">{{ clip.title }}</span>
+                                <div class="clip-stats">{{ formatViews(clip.view_count) }} views • {{ formatDate(clip.created_at) }}</div>
+                            </div>
+                        </div>
+                        <div class="action-buttons">
+                            <button class="share-btn" @click.stop="judgeClip(clip)" title="Ask Gerald"><span class="material-symbols-rounded" style="color: var(--gerald);">smart_toy</span></button>
+                            <button class="share-btn" @click.stop="shareClip(clip)" title="Share"><span class="material-symbols-rounded gradient-icon" style="font-size: 22px;">send</span></button>
+                        </div>
+                    </div>
+                </div>
             </div>
 
-            <feed-view
-                :current-tab="currentTab"
-                :is-refreshing="isRefreshing"
-                :yt-feed="ytFeed"
-                :yt-current-index="ytCurrentIndex"
-                :reddit-feed="redditFeed"
-                :reddit-current-index="redditCurrentIndex"
-                :format-number="formatNumber"
-                @prev-yt="prevYt"
-                @next-yt="nextYt"
-                @prev-reddit="prevReddit"
-                @next-reddit="nextReddit">
-            </feed-view>
+            <div class="chat-container" style="height: calc(100% - 85px); width: 100%;" v-if="currentTab === 'chat'">
+                <iframe :src="'https://www.twitch.tv/embed/codemiko/chat?parent=' + hostname + '&darkpopout'" style="width: 100%; height: 100%; border: none;" loading="lazy"></iframe>
+            </div>
 
-            <gerald-view
-                :current-tab="currentTab"
-                :gerald-messages="geraldMessages"
-                :is-gerald-typing="isGeraldTyping"
-                :gerald-input="geraldInput"
-                :show-emote-picker="showEmotePicker"
-                :show-minigames="showMinigames"
-                :custom-emotes="customEmotes"
-                :parse-markdown="parseMarkdown"
-                @close-pickers="closePickers"
-                @insert-emote="insertEmote"
-                @play-game="playMinigame"
-                @toggle-emotes="toggleEmotes"
-                @toggle-minigames="toggleMinigames"
-                @update-input="e => geraldInput = e"
-                @key-down="handleGeraldEnter"
-                @send="talkToGerald">
-            </gerald-view>
+            <div class="feed-layout" :class="{ active: isRefreshing }" v-show="currentTab === 'feed'">
+                <div id="yt-wrapper">
+                    <div v-if="ytFeed.length > 0">
+                        <div class="vod-animated-border" style="background-image: linear-gradient(90deg, #27272a, var(--youtube), #27272a);">
+                            <div class="video-container">
+                                <iframe v-if="ytFeed[ytCurrentIndex] && currentTab === 'feed'" :src="'https://www.youtube.com/embed/' + ytFeed[ytCurrentIndex].id" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen loading="lazy"></iframe>
+                            </div>
+                        </div>
+                        <div class="carousel-controls">
+                            <button class="carousel-btn" :class="{ 'hidden-arrow': ytCurrentIndex <= 0 }" @click.stop="prevYt"><span class="material-symbols-rounded">chevron_left</span></button>
+                            <button class="carousel-btn" :class="{ 'hidden-arrow': ytCurrentIndex >= ytFeed.length - 1 }" @click.stop="nextYt"><span class="material-symbols-rounded">chevron_right</span></button>
+                        </div>
+                    </div>
+                    <div v-else style="display: flex; justify-content: center; padding: 40px; color: var(--text-muted); font-size: 12px; font-style: italic;">
+                        <span class="material-symbols-rounded spin-anim" style="margin-right: 8px;">sync</span> Fetching from YouTube...
+                    </div>
+                </div>
 
+                <div id="reddit-wrapper">
+                    <div v-if="redditFeed.length > 0" style="display:flex; flex-direction:column; height:100%;">
+                        <a :href="'https://reddit.com' + redditFeed[redditCurrentIndex].permalink" target="_blank" class="reddit-compact-card">
+                            <div class="reddit-header">
+                                <div class="reddit-author">Posted • {{ redditFeed[redditCurrentIndex].date }}<br><span>u/{{ redditFeed[redditCurrentIndex].author }}</span></div>
+                                <span v-if="redditFeed[redditCurrentIndex].link_flair_text" style="background: rgba(255, 69, 0, 0.15); border: 1px solid rgba(255, 69, 0, 0.3); color: var(--reddit); font-size: 9px; font-weight: 800; padding: 3px 6px; border-radius: 6px; text-transform: uppercase;">
+                                    {{ redditFeed[redditCurrentIndex].link_flair_text }}
+                                </span>
+                            </div>
+                            
+                            <div v-if="redditFeed[redditCurrentIndex] && redditFeed[redditCurrentIndex].thumbnail && redditFeed[redditCurrentIndex].thumbnail.startsWith('http')" class="reddit-img-container">
+                                <img :src="redditFeed[redditCurrentIndex].thumbnail" onerror="this.closest('div').style.display='none'" alt="Reddit Media">
+                            </div>
+                            
+                            <div class="reddit-post-title" :style="redditFeed[redditCurrentIndex].thumbnail && redditFeed[redditCurrentIndex].thumbnail.startsWith('http') ? '' : 'flex: 1;'">{{ redditFeed[redditCurrentIndex].title }}</div>
+                            
+                            <div class="reddit-actions">
+                                <div style="display: flex; align-items: center; gap: 4px; color: var(--reddit);"><span class="material-symbols-rounded" style="font-size: 16px;">arrow_upward</span> {{ formatNumber(redditFeed[redditCurrentIndex].ups) }}</div>
+                                <div style="display: flex; align-items: center; gap: 4px;"><span class="material-symbols-rounded" style="font-size: 16px;">chat_bubble</span> {{ redditFeed[redditCurrentIndex].num_comments }}</div>
+                                <div style="margin-left: auto; color: #a1a1aa; display: flex; align-items: center; gap: 4px; font-size: 11px; text-transform: uppercase;">Open <span class="material-symbols-rounded" style="font-size: 14px;">open_in_new</span></div>
+                            </div>
+                        </a>
+                        <div class="carousel-controls">
+                            <button class="carousel-btn" :class="{ 'hidden-arrow': redditCurrentIndex <= 0 }" @click.stop="prevReddit"><span class="material-symbols-rounded">chevron_left</span></button>
+                            <button class="carousel-btn" :class="{ 'hidden-arrow': redditCurrentIndex >= redditFeed.length - 1 }" @click.stop="nextReddit"><span class="material-symbols-rounded">chevron_right</span></button>
+                        </div>
+                    </div>
+                    <div v-else style="display: flex; justify-content: center; padding: 40px; color: var(--text-muted); font-size: 12px; font-style: italic;">
+                        <span class="material-symbols-rounded spin-anim" style="margin-right: 8px;">sync</span> Fetching from Reddit...
+                    </div>
+                </div>
+            </div>
+
+            <div class="gerald-container" v-show="currentTab === 'gerald'">
+                <div class="gerald-header" @click="closePickers">
+                    <div @click.stop="triggerGlitch" style="position:relative; z-index: 10;">
+                        <div style="width: 70px; height: 70px; border-radius: 50%; border: 2px solid var(--gerald); box-shadow: 0 0 20px rgba(14, 165, 233, 0.3); overflow: hidden; margin-bottom: 6px; background-color: #111; display: flex; align-items: center; justify-content: center; cursor: pointer;">
+                            <img src="gerald.png" style="width: 100%; height: 100%; object-fit: cover;" alt="G">
+                        </div>
+                    </div>
+                    <div style="display:flex; align-items:center; gap:8px; margin-top:0px;">
+                        <div class="pulse" style="background:var(--gerald); box-shadow:0 0 10px var(--gerald);"></div>
+                        <div style="font-size:11px; color:var(--text-muted); font-weight:800; letter-spacing:1px; text-transform: uppercase;">System Online</div>
+                    </div>
+                    <div class="scuff-meter-wrapper" @click="scuffComment">
+                        <div class="scuff-meter-label">Scuff Level: {{ scuffLevel }}%</div>
+                        <div class="scuff-bar-bg"><div class="scuff-bar-fill" :style="{ width: scuffLevel + '%' }"></div></div>
+                    </div>
+                </div>
+                
+                <transition-group name="msg" tag="div" class="gerald-messages" id="gerald-msgs" @click="closePickers">
+                    <template v-for="(m, i) in geraldMessages" :key="i">
+                        <div v-if="i === 0 && m.role === 'gerald'" class="terminal-intro">
+                            <div class="terminal-header"><span class="material-symbols-rounded" style="font-size: 14px;">terminal</span> Session Initialized</div>
+                            <div class="terminal-text">> Loading synapses...<br>> "{{ m.content }}"</div>
+                        </div>
+                        <div v-else class="chat-bubble" :class="m.role" v-html="parseMarkdown(m.content)"></div>
+                    </template>
+                    <div v-if="isGeraldTyping" key="typing" class="typing-indicator">
+                        <div class="pulse" style="background:var(--gerald); box-shadow:0 0 10px var(--gerald);"></div>COMPUTING...
+                    </div>
+                </transition-group>
+                
+                <div style="display:flex; flex-direction:column; background: var(--bg-color); width: 100%;">
+                    <transition name="tray">
+                        <div class="tray-container" v-show="showEmotePicker">
+                            <img v-for="(emote, name) in customEmotes" :key="name" :src="emote.url ? emote.url : `https://cdn.discordapp.com/emojis/${emote.id}.${emote.animated ? 'gif' : 'png'}?size=44`" class="emote-picker-img" @click="insertEmote(name)">
+                        </div>
+                    </transition>
+
+                    <transition name="tray">
+                        <div class="tray-container" v-show="showMinigames">
+                            <button class="bribe-btn" @click="playMinigame('glitch')">🕶️ Glitch Persona</button>
+                            <button class="bribe-btn" @click="playMinigame('shader')">🔥 Compile UE5</button>
+                            <button class="bribe-btn" @click="playMinigame('drift')">🩰 Fix Foot Drift</button>
+                            <button class="bribe-btn" @click="playMinigame('boba')">🥤 Boba Spill</button>
+                            <button class="bribe-btn" @click="playMinigame('pineapple')">🚪 Pineapple Walk-In</button>
+                            <button class="bribe-btn" @click="playMinigame('cat')">🐈 Cat on PC</button>
+                            <button class="bribe-btn" @click="playMinigame('bits')">🎟️ 100K Bits</button>
+                            <button class="bribe-btn" @click="playMinigame('dust')">🎤 Dusty Mic</button>
+                            <button class="bribe-btn" @click="playMinigame('ban')">🚫 Fake Ban</button>
+                            <button class="bribe-btn" @click="playMinigame('lumen')">💡 Re-Bake Lumen</button>
+                            <button class="bribe-btn" @click="playMinigame('throttle')">📉 Throttling</button>
+                            <button class="bribe-btn" @click="playMinigame('sniper')">🎯 Counter Snipers</button>
+                            <button class="bribe-btn" @click="playMinigame('yusha')">👑 Yusha Logic</button>
+                            <button class="bribe-btn" @click="playMinigame('asmr')">👂 ASMR Mode</button>
+                            <button class="bribe-btn" @click="playMinigame('intercept')">🧋 Intercept Tea</button>
+                            <button class="bribe-btn" @click="playMinigame('charge')">🔋 Charge Xsens</button>
+                            <button class="bribe-btn" @click="playMinigame('ping')">🔔 Ping @everyone</button>
+                            <button class="bribe-btn" @click="playMinigame('chroma')">🟢 Clear Chroma</button>
+                            <button class="bribe-btn" @click="playMinigame('speedrun')">⏱️ Speedrun Fail</button>
+                            <button class="bribe-btn" @click="playMinigame('router')">📡 Kick Router</button>
+                            <button class="bribe-btn" @click="playMinigame('taco')">🌮 Offer Taco</button>
+                            <button class="bribe-btn" @click="playMinigame('whiskey')">🥃 Pour Whiskey</button>
+                            <button class="bribe-btn" @click="playMinigame('egg')">🥚 Ostrich Egg</button>
+                            <button class="bribe-btn" @click="playMinigame('gummy')">🧸 Gummy Bears</button>
+                            <button class="bribe-btn" @click="playMinigame('booba')">🎚️ Booba Slider</button>
+                            <button class="bribe-btn" @click="playMinigame('clanker')">🤖 Call Clanker</button>
+                            <button class="bribe-btn" @click="playMinigame('mute')">🔇 Mute Mic</button>
+                            <button class="bribe-btn" @click="playMinigame('desk')">🧹 Scan Desk</button>
+                            <button class="bribe-btn" @click="playMinigame('bald')">🧑‍🦲 Delete Hair</button>
+                            <button class="bribe-btn" @click="playMinigame('demon')">🎙️ Demon Voice</button>
+                            <button class="bribe-btn" @click="playMinigame('tracker')">🔌 Drop Tracker</button>
+                            <button class="bribe-btn" @click="playMinigame('guest')">📺 Guest Crash</button>
+                            <button class="bribe-btn" @click="playMinigame('siren')">🚨 Firetruck Siren</button>
+                        </div>
+                    </transition>
+
+                    <div class="gerald-input-area">
+                        <div class="gerald-input-wrapper">
+                            <button class="emote-toggle-btn" @click="toggleEmotes"><span class="material-symbols-rounded" :style="{ color: showEmotePicker ? 'var(--gerald)' : 'inherit' }">mood</span></button>
+                            <button class="emote-toggle-btn" @click="toggleMinigames"><span class="material-symbols-rounded" :style="{ color: showMinigames ? 'var(--gerald)' : 'inherit' }">sports_esports</span></button>
+                            <textarea class="gerald-input" rows="1" placeholder="Query the system..." v-model.lazy="geraldInput" @keydown="handleGeraldEnter" id="gerald-txt-input" @focus="closePickers" @input="resizeTextarea"></textarea>
+                        </div>
+                        <button class="gerald-send" @click="talkToGerald"><span class="material-symbols-rounded">send</span></button>
+                    </div>
+                </div>
+            </div>
         </div>
 
-        <filter-menu
-            :is-open="isFilterMenuOpen"
-            :current-filter="currentFilter"
-            @close="isFilterMenuOpen = false"
-            @apply="applyFilter">
-        </filter-menu>
+        <div class="sheet-overlay" :class="{ open: isFilterMenuOpen }" @click.self="isFilterMenuOpen = false">
+            <div class="bottom-sheet" @click.stop>
+                <div class="drag-handle"></div>
+                <button class="sheet-option" :class="{ active: currentFilter === 'latest' }" @click="applyFilter('latest', 'Latest')">Latest</button>
+                <button class="sheet-option" :class="{ active: currentFilter === 'weekly' }" @click="applyFilter('weekly', 'Weekly')">Weekly</button>
+                <button class="sheet-option" :class="{ active: currentFilter === 'month' }" @click="applyFilter('month', 'Monthly')">Monthly</button>
+                <button class="sheet-option" :class="{ active: currentFilter === '6months' }" @click="applyFilter('6months', '6 Months')">6 Months</button>
+                <button class="sheet-option" :class="{ active: currentFilter === 'alltime' }" @click="applyFilter('alltime', 'All Time')">All Time</button>
+            </div>
+        </div>
 
-        <discord-modal
-            :is-open="modals.discord"
-            @close="modals.discord = false"
-            @touch-start="handleModalTouchStart"
-            @touch-move="handleModalTouchMove"
-            @touch-end="handleModalTouchEnd">
-        </discord-modal>
+        <div class="modal-overlay" :class="{ open: modals.discord }" @click.self="modals.discord = false">
+            <div class="modal-content" style="text-align: center; align-items: center;" @touchstart="handleModalTouchStart" @touchmove="handleModalTouchMove" @touchend="handleModalTouchEnd">
+                <div class="drag-handle"></div>
+                <div style="width: 64px; height: 64px; background: rgba(88, 101, 242, 0.15); border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 15px;">
+                    <svg viewBox="0 0 24 24" width="36" height="36" fill="var(--discord)"><path d="M20.317 4.3698a19.7913 19.7913 0 00-4.8851-1.5152.0741.0741 0 00-.0785.0371c-.211.3753-.4447.8648-.6083 1.2495-1.8447-.2762-3.68-.2762-5.4868 0-.1636-.3933-.4058-.8742-.6177-1.2495a.077.077 0 00-.0785-.037 19.7363 19.7363 0 00-4.8852 1.515.0699.0699 0 00-.0321.0277C.5334 9.0458-.319 13.5799.0992 18.0578a.0824.0824 0 00.0312.0561c2.0528 1.5076 4.0413 2.4228 5.9929 3.0294a.0777.0777 0 00.0842-.0276c.4616-.6304.8731-1.2952 1.226-1.9942a.076.076 0 00-.0416-.1057c-.6528-.2476-1.2743-.5495-1.8722-.8923a.077.077 0 01-.0076-.1277c.1258-.0943.2517-.1923.3718-.2914a.0743.0743 0 01.0776-.0105c3.9278 1.7933 8.18 1.7933 12.0614 0a.0739.0739 0 01.0785.0095c.1202.099.246.1981.3728.2924a.077.077 0 01-.0066.1276 12.2986 12.2986 0 01-1.873.8914.0766.0766 0 00-.0407.1067c.3604.698.7719 1.3628 1.225 1.9932a.076.076 0 00.0842.0286c1.961-.6067 3.9495-1.5219 6.0023-3.0314a.077.077 0 00.0313-.0552c.5004-5.177-.8382-9.6739-3.5485-13.6604a.061.061 0 00-.0312-.0286zM8.02 15.3312c-1.1825 0-2.1569-1.0857-2.1569-2.419 0-1.3332.9555-2.4189 2.157-2.4189 1.2108 0 2.1757 1.0952 2.1568 2.419 0 1.3332-.9555 2.4189-2.1569 2.4189zm7.9748 0c-1.1825 0-2.1569-1.0857-2.1569-2.419 0-1.3332.9554-2.4189 2.1569-2.4189 1.2108 0 2.1757 1.0952 2.1568 2.419 0 1.3332-.946 2.4189-2.1568 2.4189Z"/></svg></div>
+                <h2 style="font-size: 24px; font-family: 'Outfit'; font-weight: 900; margin: 0 0 10px;">Join the Community</h2>
+                <p style="color: var(--text-muted); font-size: 14px; margin: 0 0 30px; line-height: 1.6;">You are about to leave MikoTok and open CodeMiko's official Discord server.</p>
+                <div style="display: flex; flex-direction: column; gap: 12px; width: 100%;">
+                    <a href="https://discord.com/invite/codemiko" target="_blank" @click="modals.discord = false" style="background: var(--discord); color: white; padding: 18px; border-radius: 16px; text-decoration: none; font-weight: 800; font-size: 14px; display: flex; align-items: center; justify-content: center; gap: 8px;">LAUNCH DISCORD</a>
+                    <button @click="modals.discord = false" style="background: transparent; border: none; color: var(--text-muted); padding: 16px; font-weight: 700;">CANCEL</button>
+                </div>
+            </div>
+        </div>
 
-        <profile-modal
-            :is-open="modals.profile"
-            :current-user="currentUser"
-            :login-email="loginEmail"
-            :login-pass="loginPass"
-            :api-config="apiConfig"
-            :sync-state="syncState"
-            :wipe-state="wipeState"
-            :logout-state="logoutState"
-            @close="modals.profile = false"
-            @touch-start="handleModalTouchStart"
-            @touch-move="handleModalTouchMove"
-            @touch-end="handleModalTouchEnd"
-            @update-email="e => loginEmail = e"
-            @update-pass="e => loginPass = e"
-            @login="handleLogin"
-            @update-api="(k, v) => apiConfig[k] = v"
-            @sync="runSync"
-            @wipe="clearGeraldHistory"
-            @logout="handleLogout">
-        </profile-modal>
+        <div class="modal-overlay" :class="{ open: modals.profile }" @click.self="modals.profile = false">
+            <div class="modal-content" @touchstart="handleModalTouchStart" @touchmove="handleModalTouchMove" @touchend="handleModalTouchEnd">
+                <div class="drag-handle"></div>
+                <div v-if="!currentUser">
+                    <input type="text" v-model.lazy="loginEmail" class="input-box" style="margin-top: 10px;" placeholder="Email">
+                    <input type="password" v-model.lazy="loginPass" class="input-box" @keyup.enter="handleLogin" placeholder="Password">
+                    <button class="sync-btn" @click="handleLogin">LOGIN</button>
+                </div>
+                <div v-else>
+                    <div class="infra-bar"><div class="status-node"><div class="pulse"></div> SYSTEM: READY</div></div>
+                    <div class="stat-grid">
+                        <a href="https://github.com/meowoccino/MikoTok" target="_blank" class="external-link-btn"><span class="material-symbols-rounded">code</span>GitHub Repo</a>
+                        <a href="https://supabase.com/dashboard/project/yhxcuayiwqpjvalyrcqv" target="_blank" class="external-link-btn"><span class="material-symbols-rounded">database</span>Supabase DB</a>
+                    </div>
+                    
+                    <div class="settings-block">
+                        <div class="block-title">TWITCH API CONFIG</div>
+                        <input type="text" class="sleek-input" v-model.lazy="apiConfig.cid" placeholder="Client ID">
+                        <input type="password" class="sleek-input" v-model.lazy="apiConfig.tkn" placeholder="Access Token">
+                    </div>
 
-        <bottom-nav
-            :current-tab="currentTab"
-            @change-tab="tab => { currentTab = tab; isHeaderVisible = true; }"
-            @open-discord="modals.discord = true">
-        </bottom-nav>
+                    <div class="action-menu">
+                        <button class="menu-btn sync-row" :style="syncState === 'sync-success' ? 'color: var(--success);' : ''" @click="runSync" :disabled="syncState !== 'idle'">
+                            <div class="btn-content">
+                                <div class="icon-wrap" :style="syncState === 'sync-success' ? 'background: rgba(0, 255, 163, 0.15);' : ''">
+                                    <span class="material-symbols-rounded" :class="{'spin-anim': syncState === 'syncing'}" style="font-size: 18px;">
+                                        {{ syncState === 'sync-success' ? 'check' : 'sync' }}
+                                    </span>
+                                </div>
+                                <span>{{ syncState === 'syncing' ? 'SYNCING...' : (syncState === 'sync-success' ? 'SUCCESS' : 'Force Data Sync') }}</span>
+                            </div>
+                        </button>
+                        
+                        <button class="menu-btn wipe-row" :style="wipeState === 'success' ? 'color: var(--success);' : ''" @click="clearGeraldHistory" :disabled="wipeState !== 'idle'">
+                            <div class="btn-content">
+                                <div class="icon-wrap" :style="wipeState === 'success' ? 'background: rgba(0, 255, 163, 0.15);' : ''">
+                                    <span class="material-symbols-rounded" :class="{'shake-anim': wipeState === 'wiping'}" style="font-size: 18px;">
+                                        delete
+                                    </span>
+                                </div>
+                                <span>{{ wipeState === 'wiping' ? 'WIPING...' : (wipeState === 'success' ? 'MEMORY WIPED!' : 'Wipe Gerald\\'s Memory') }}</span>
+                            </div>
+                        </button>
 
+                        <button class="menu-btn logout-row" @click="handleLogout" :disabled="logoutState !== 'idle'">
+                            <div class="btn-content">
+                                <div class="icon-wrap">
+                                    <span class="material-symbols-rounded" :class="{'spin-anim': logoutState === 'logging_out'}" style="font-size: 18px;">
+                                        {{ logoutState === 'logging_out' ? 'hourglass_empty' : 'logout' }}
+                                    </span>
+                                </div>
+                                <span>{{ logoutState === 'logging_out' ? 'SIGNING OUT...' : 'Sign Out' }}</span>
+                            </div>
+                        </button>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+
+        <nav class="bottom-nav">
+            <div class="nav-item" :class="{ active: currentTab === 'home' }" @click="currentTab = 'home'; isHeaderVisible = true"><span class="material-symbols-rounded">home</span>Home</div>
+            <div class="nav-item" :class="{ active: currentTab === 'chat' }" @click="currentTab = 'chat'; isHeaderVisible = true"><span class="material-symbols-rounded">chat</span>Chat</div>
+            <div class="nav-item" :class="{ active: currentTab === 'feed' }" @click="currentTab = 'feed'; isHeaderVisible = true"><span class="material-symbols-rounded">forum</span>Feed</div>
+            <div class="nav-item" @click="modals.discord = true"><svg viewBox="0 0 24 24" width="24" height="24" fill="currentColor" style="margin-bottom:4px"><path d="M20.317 4.3698a19.7913 19.7913 0 00-4.8851-1.5152.0741.0741 0 00-.0785.0371c-.211.3753-.4447.8648-.6083 1.2495-1.8447-.2762-3.68-.2762-5.4868 0-.1636-.3933-.4058-.8742-.6177-1.2495a.077.077 0 00-.0785-.037 19.7363 19.7363 0 00-4.8852 1.515.0699.0699 0 00-.0321.0277C.5334 9.0458-.319 13.5799.0992 18.0578a.0824.0824 0 00.0312.0561c2.0528 1.5076 4.0413 2.4228 5.9929 3.0294a.0777.0777 0 00.0842-.0276c.4616-.6304.8731-1.2952 1.226-1.9942a.076.076 0 00-.0416-.1057c-.6528-.2476-1.2743-.5495-1.8722-.8923a.077.077 0 01-.0076-.1277c.1258-.0943.2517-.1923.3718-.2914a.0743.0743 0 01.0776-.0105c3.9278 1.7933 8.18 1.7933 12.0614 0a.0739.0739 0 01.0785.0095c.1202.099.246.1981.3728.2924a.077.077 0 01-.0066.1276 12.2986 12.2986 0 01-1.873.8914.0766.0766 0 00-.0407.1067c.3604.698.7719 1.3628 1.225 1.9932a.076.076 0 00.0842.0286c1.961-.6067 3.9495-1.5219 6.0023-3.0314a.077.077 0 00.0313-.0552c.5004-5.177-.8382-9.6739-3.5485-13.6604a.061.061 0 00-.0312-.0286zM8.02 15.3312c-1.1825 0-2.1569-1.0857-2.1569-2.419 0-1.3332.9555-2.4189 2.157-2.4189 1.2108 0 2.1757 1.0952 2.1568 2.419 0 1.3332-.9555 2.4189-2.1569 2.4189zm7.9748 0c-1.1825 0-2.1569-1.0857-2.1569-2.419 0-1.3332.9554-2.4189 2.1569-2.4189 1.2108 0 2.1757 1.0952 2.1568 2.419 0 1.3332-.946 2.4189-2.1568 2.4189Z"/></svg>Discord</div>
+            <div class="nav-item" :class="{ 'active-gerald': currentTab === 'gerald' }" @click="currentTab = 'gerald'; isHeaderVisible = true"><span class="material-symbols-rounded">smart_toy</span>Gerald</div>
+        </nav>
     </div>
-
-    <script src="./app.js?v=22"></script>
+    <script src="./app.js?v=23"></script>
+    <script>
+      if ('serviceWorker' in navigator) {
+        window.addEventListener('load', () => {
+          navigator.serviceWorker.register('sw.js').then(reg => {
+            console.log('Service Worker registered successfully.');
+          }).catch(err => {
+            console.log('Service Worker registration failed:', err);
+          });
+        });
+      }
+    </script>
 </body>
 </html>
