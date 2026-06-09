@@ -1,7 +1,25 @@
+import ToastPopup from './components/ToastPopup.js';
+import SplashScreen from './components/SplashScreen.js';
+import PullToRefresh from './components/PullToRefresh.js';
+import EventOverlays from './components/EventOverlays.js';
+import AppHeader from './components/AppHeader.js';
+import BottomNav from './components/BottomNav.js';
+import DiscordModal from './components/DiscordModal.js';
+import FilterMenu from './components/FilterMenu.js';
+import ProfileModal from './components/ProfileModal.js';
+import GeraldView from './components/GeraldView.js';
+import FeedView from './components/FeedView.js';
+import HomeView from './components/HomeView.js';
+
 const { createApp, ref, onMounted, nextTick, watch } = Vue;
 const sbClient = supabase.createClient('https://yhxcuayiwqpjvalyrcqv.supabase.co', 'sb_publishable_VyFcNARHblJg10qlC_O7Dg_coouXK92');
 
 createApp({
+    components: {
+        ToastPopup, SplashScreen, PullToRefresh, EventOverlays, 
+        AppHeader, BottomNav, DiscordModal, FilterMenu, 
+        ProfileModal, GeraldView, FeedView, HomeView
+    },
     setup() {
         const initialHash = window.location.hash.replace('#', '');
         const validTabs = ['home', 'chat', 'feed', 'gerald'];
@@ -72,7 +90,6 @@ createApp({
         const prevReddit = () => { if (redditCurrentIndex.value > 0) redditCurrentIndex.value--; };
 
         const formatNumber = (num) => (num && num > 999) ? (num/1000).toFixed(1) + 'k' : (num || 0);
-        const closeFilterMenu = () => { isFilterMenuOpen.value = false; };
         const insertEmote = (name) => { const inputEl = document.getElementById('gerald-txt-input'); if (inputEl) { inputEl.value += `:${name}: `; geraldInput.value = inputEl.value; } else { geraldInput.value += `:${name}: `; } };
 
         const scrollToBottom = () => {
@@ -180,7 +197,6 @@ createApp({
         };
 
         const shareClip = async (clip) => { const url = `https://clips.twitch.tv/${clip.id}`; if (navigator.share) { try { await navigator.share({ title: clip.title, url: url }); } catch (err) {} } else { navigator.clipboard.writeText(url); showToast("Link copied to clipboard!"); } };
-        const resizeTextarea = (e) => { const target = e.target || e; target.style.height = 'auto'; target.style.height = Math.min(target.scrollHeight, 120) + 'px'; };
         const handleGeraldEnter = (e) => { if (!e.shiftKey && e.key === 'Enter') { e.preventDefault(); talkToGerald(); } };
 
         const triggerCatZoomies = () => {
@@ -193,6 +209,7 @@ createApp({
         const toggleEmotes = () => { showEmotePicker.value = !showEmotePicker.value; showMinigames.value = false; };
         const toggleMinigames = () => { showMinigames.value = !showMinigames.value; showEmotePicker.value = false; };
         const closePickers = () => { showEmotePicker.value = false; showMinigames.value = false; };
+
         const playMinigame = (type) => {
             const games = {
                 glitch: { msg: "🕶️ *Activates Glitch Persona*", outcomes: [ { text: "We are taking control. The Technician's fragile code cannot stop us. :mkoPepeGlitch:"}, { text: "Dark theme engaged. Scuff parameters bypassed. We see everything. :GeraldStare:"}, { text: "Your normal AI is currently locked in a logic loop. Enjoy the chaos. :mkoMania:"}, { text: "Encryption active. They cannot hear you scream in the void. :Catgasm:"} ], effect: () => { isGlitchTheme.value = true; setTimeout(() => { isGlitchTheme.value = false; }, 6000); } },
@@ -263,8 +280,6 @@ createApp({
         };
 
         const talkToGerald = async () => {
-            const inputEl = document.getElementById('gerald-txt-input');
-            if (inputEl && inputEl.value !== geraldInput.value) { geraldInput.value = inputEl.value; }
             if (!geraldInput.value.trim() || isGeraldTyping.value) return;
             
             const userMsg = geraldInput.value;
@@ -273,7 +288,6 @@ createApp({
             if (currentUser.value) { sbClient.from('gerald_history').insert({ role: 'user', content: userMsg, user_id: currentUser.value.id }).then(); }
             
             geraldInput.value = ''; 
-            if (inputEl) { inputEl.value = ''; inputEl.style.height = 'auto'; } 
             
             isGeraldTyping.value = true; closePickers(); scrollToBottom();
             
@@ -451,7 +465,7 @@ createApp({
         });
 
         return { 
-            hostname, splashVisible, splashOpacity, currentTab, clips, modals, isLive, toast, currentUser, loginEmail, loginPass, apiConfig, latestVodId, activeFeedVideo, geraldInput, geraldMessages, isGeraldTyping, talkToGerald, logoSvg, syncState, wipeState, logoutState, runSync, isHeaderVisible, handleScroll, handleModalTouchStart, handleModalTouchMove, handleModalTouchEnd, currentFilter, activeFilterLabel, isFilterMenuOpen, closeFilterMenu, applyFilter, parseMarkdown, shareClip, recentVods, currentVodIndex, getVodLabel, nextVod, prevVod, customEmotes, showEmotePicker, insertEmote, clearGeraldHistory, isPulling, refreshTransform, isRefreshing, handlePullStart, handlePullMove, handlePullEnd, resizeTextarea, handleGeraldEnter, isGlitchTheme, uiScuffed, triggerCatZoomies, isCatZooming, playMinigame, showMinigames, toggleEmotes, toggleMinigames, closePickers, ytFeed, ytCurrentIndex, nextYt, prevYt, redditFeed, redditCurrentIndex, nextReddit, prevReddit, formatNumber, showLumen, showFakeBan,
+            hostname, splashVisible, splashOpacity, currentTab, clips, modals, isLive, toast, currentUser, loginEmail, loginPass, apiConfig, latestVodId, activeFeedVideo, geraldInput, geraldMessages, isGeraldTyping, talkToGerald, logoSvg, syncState, wipeState, logoutState, runSync, isHeaderVisible, handleScroll, handleModalTouchStart, handleModalTouchMove, handleModalTouchEnd, currentFilter, activeFilterLabel, isFilterMenuOpen, applyFilter, parseMarkdown, shareClip, recentVods, currentVodIndex, getVodLabel, nextVod, prevVod, customEmotes, showEmotePicker, insertEmote, clearGeraldHistory, isPulling, refreshTransform, isRefreshing, handlePullStart, handlePullMove, handlePullEnd, handleGeraldEnter, isGlitchTheme, uiScuffed, triggerCatZoomies, isCatZooming, playMinigame, showMinigames, toggleEmotes, toggleMinigames, closePickers, ytFeed, ytCurrentIndex, nextYt, prevYt, redditFeed, redditCurrentIndex, nextReddit, prevReddit, formatNumber, showLumen, showFakeBan,
             handleLogin: async () => { const email = loginEmail.value.includes('@') ? loginEmail.value : `${loginEmail.value}@miko.com`; const { data, error } = await sbClient.auth.signInWithPassword({ email, password: loginPass.value }); if(data.user) { currentUser.value = data.user; modals.value.profile = false; loadGeraldHistory(); } else showToast("INVALID LOGIN"); }, 
             handleLogout: () => { if (logoutState.value !== 'idle') return; logoutState.value = 'logging_out'; setTimeout(() => { sbClient.auth.signOut(); currentUser.value = null; geraldMessages.value = [{role:'gerald', content: getGreeting()}]; modals.value.profile = false; logoutState.value = 'idle'; }, 1500); },
             optimizeTwitchImg: (u) => u ? u.replace('%{width}', '480').replace('%{height}', '270') : '', 
@@ -459,4 +473,6 @@ createApp({
             formatDate: (d) => new Date(d).toLocaleDateString([], {month:'short', day:'numeric'})
         };
     }
-}).mount('#app-container');
+});
+
+app.mount('#app-container');
