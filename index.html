@@ -14,10 +14,29 @@
 
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Outfit:wght@800;900&family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@24,400,1,0" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="https://unpkg.com/vue@3/dist/vue.global.prod.js"></script>
     
     <link rel="stylesheet" href="./styles.css">
 </head>
 <body @click="isFilterMenuOpen = false">
+
+    <div id="debug-error" style="display:none; position:fixed; z-index:999999; background:#111; color:#ff4444; font-family:monospace; font-size:14px; padding:20px; inset:0; overflow:auto;">
+        <h3 style="color:white; margin-top:0;">⚠️ App Crashed! Error Log:</h3>
+        <div id="error-text"></div>
+        <p style="color:#a1a1aa; margin-top:20px; font-size:12px;">(Tell Gemini what this says so we can fix it!)</p>
+    </div>
+
+    <script>
+        // This script catches background errors and prints them to the screen
+        window.onerror = function(message, source, lineno, colno, error) {
+            document.getElementById('debug-error').style.display = 'block';
+            document.getElementById('error-text').innerHTML += '<p style="border-bottom:1px solid #333; padding-bottom:10px;"><strong>Error:</strong> ' + message + '<br><strong>File:</strong> ' + source + '<br><strong>Line:</strong> ' + lineno + '</p>';
+        };
+        window.addEventListener('unhandledrejection', function(event) {
+            document.getElementById('debug-error').style.display = 'block';
+            document.getElementById('error-text').innerHTML += '<p style="border-bottom:1px solid #333; padding-bottom:10px;"><strong>Promise Rejection:</strong> ' + (event.reason.message || event.reason) + '</p>';
+        });
+    </script>
     <div id="app-container" :class="{'glitch-theme': isGlitchTheme, 'ui-scuffed': uiScuffed}" v-cloak>
         
         <event-overlays 
