@@ -350,7 +350,7 @@ createApp({
             setTimeout(() => abortController.abort(), 8000);
 
             const redditUrl = encodeURIComponent('https://www.reddit.com/r/CodeMiko/new.json?limit=15');
-            fetch('https://corsproxy.io/?' + redditUrl, { signal: abortController.signal })
+            fetch('https://api.allorigins.win/raw?url=' + redditUrl, { signal: abortController.signal })
                 .then(res => {
                     if (!res.ok) throw new Error("Reddit API blocked.");
                     return res.json();
