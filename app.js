@@ -414,13 +414,10 @@ createApp({
             const abortController = new AbortController();
             setTimeout(() => abortController.abort(), 8000);
 
-            fetch('https://api.allorigins.win/raw?url=' + encodeURIComponent('https://www.reddit.com/r/CodeMiko/new.json?limit=15'), { 
-                headers: { 'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) MikoTok/2.0' },
-                signal: abortController.signal 
-            })
-                .then(res => { if (!res.ok) throw new Error("Blocked"); return res.text(); })
-                .then(text => {
-                    const data = JSON.parse(text);
+            // Bypass system directly parses layout nodes without allorigins proxy bottlenecks
+            fetch('https://corsproxy.io/?' + encodeURIComponent('https://www.reddit.com/r/CodeMiko/new.json?limit=10'), { signal: abortController.signal })
+                .then(res => { if (!res.ok) throw new Error("Blocked"); return res.json(); })
+                .then(data => {
                     if (data && data.data && data.data.children) {
                         redditFeed.value = data.data.children.filter(child => !child.data.stickied).slice(0, 10).map(child => {
                             let d = child.data;
@@ -433,8 +430,7 @@ createApp({
                     }
                 })
                 .catch(err => {
-                    console.error("Reddit fallback initiated:", err);
-                    redditFeed.value = [{ permalink: '/r/CodeMiko', author: 'Twitch Chat', title: 'Reddit tracking system online. Tap to surf r/CodeMiko manually!', thumbnail: '', ups: 42, num_comments: 7, date: 'Sync Active' }];
+                    console.error("Reddit fetch block detected:", err);
                 });
 
             fetch('https://api.rss2json.com/v1/api.json?rss_url=' + encodeURIComponent('https://www.youtube.com/feeds/videos.xml?channel_id=UCO9kIeDrtsX0j83HbVljzSQ'), { signal: abortController.signal })
