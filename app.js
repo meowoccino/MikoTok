@@ -44,7 +44,7 @@ const GeraldView = {
 };
 
 const FeedView = {
-    props: ['currentTab', 'isRefreshing', 'ytFeed', 'ytCurrentIndex', 'redditFeed', 'redditCurrentIndex', 'formatNumber'],
+    props: ['currentTab', 'isRefreshing', 'ytFeed', 'redditFeed', 'formatNumber'],
     data() { return { feedSegment: 'youtube' } },
     template: `
     <div class="view-port" v-show="currentTab === 'feed'">
@@ -141,7 +141,7 @@ createApp({
         const validTabs = ['home', 'chat', 'feed', 'gerald'];
         const currentTab = ref(validTabs.includes(initialHash) ? initialHash : 'home');
         
-        const splashVisible = ref(true), splashOpacity = ref(1), clips = ref([]), allClips = ref([]), modals = ref({profile: false, discord: false}), isLive = ref(false), currentUser = ref(null), loginEmail = ref(''), loginPass = ref(''), toast = ref({visible: false, message: ''}), latestVodId = ref(null), hostname = window.location.hostname || 'meowoccino.github.io', activeFeedVideo = ref('featured');
+        const splashVisible = ref(true), splashOpacity = ref(1), clips = ref([]), allClips = ref([]), modals = ref({profile: false, discord: false}), isLive = ref(false), currentUser = ref(null), loginEmail = ref(''), loginPass = ref(''), toast = ref({visible: false, message: ''}), latestVodId = ref(null), hostname = window.location.hostname || 'meowoccino.github.io';
         
         const syncState = ref('idle'), wipeState = ref('idle'), logoutState = ref('idle');
         const apiConfig = ref({ cid: localStorage.getItem('twitch_cid') || '', tkn: localStorage.getItem('twitch_tkn') || '' });
@@ -188,15 +188,13 @@ createApp({
 
         const recentVods = ref([]), currentVodIndex = ref(0);
         const ytFeed = ref([]);
-        const ytCurrentIndex = ref(0);
         const redditFeed = ref([]);
-        const redditCurrentIndex = ref(0);
 
         const getVodLabel = (index) => { if (index === -1) return 'LIVE NOW'; if (index === 0) return 'LATEST VOD'; if (recentVods.value && recentVods.value[index]) return `VOD • ${recentVods.value[index].date}`; return 'PAST BROADCAST'; };
         const nextVod = () => { if (recentVods.value && currentVodIndex.value < recentVods.value.length - 1) currentVodIndex.value++; };
         const prevVod = () => { const minIndex = isLive.value ? -1 : 0; if (currentVodIndex.value > minIndex) currentVodIndex.value--; };
         
-        const playYt = (index) => { ytCurrentIndex.value = index; showToast("Playing video..."); };
+        const playYt = (index) => { window.open('https://youtube.com/watch?v=' + ytFeed.value[index].id, '_blank'); };
 
         const formatNumber = (num) => (num && num > 999) ? (num/1000).toFixed(1) + 'k' : (num || 0);
         const insertEmote = (name) => { 
@@ -380,7 +378,8 @@ createApp({
                     }
                 }).catch(() => {});
 
-            fetch('https://api.rss2json.com/v1/api.json?rss_url=' + encodeURIComponent('https://www.youtube.com/feeds/videos.xml?channel_id=UCwX993DUCwXo9E3dKipGAmYg'))
+            // Clean RSS pull targeting CodeMiko's confirmed YouTube channel ID
+            fetch('https://api.rss2json.com/v1/api.json?rss_url=' + encodeURIComponent('https://www.youtube.com/feeds/videos.xml?channel_id=UCwX993DUC_wXo9E3dKipGAmYg'))
                 .then(res => res.json())
                 .then(data => {
                     if (data && data.items) {
@@ -441,7 +440,7 @@ createApp({
         });
 
         return { 
-            hostname, splashVisible, splashOpacity, currentTab, clips, modals, isLive, toast, currentUser, loginEmail, loginPass, apiConfig, latestVodId, activeFeedVideo, geraldInput, geraldMessages, isGeraldTyping, talkToGerald, logoSvg, syncState, wipeState, logoutState, runSync, isHeaderVisible, handleScroll, handleModalTouchStart, handleModalTouchMove, handleModalTouchEnd, currentFilter, activeFilterLabel, isFilterMenuOpen, applyFilter, parseMarkdown, shareClip, recentVods, currentVodIndex, getVodLabel, nextVod, prevVod, customEmotes, showEmotePicker, showMinigames, insertEmote, clearGeraldHistory, isPulling, refreshTransform, isRefreshing, handlePullStart, handlePullMove, handlePullEnd, handleGeraldEnter, toggleEmotes, toggleMinigames, closePickers, ytFeed, ytCurrentIndex, nextYt, prevYt, redditFeed, redditCurrentIndex, nextReddit, prevReddit, formatNumber, handleLogin, handleLogout, playMinigame, playYt,
+            hostname, splashVisible, splashOpacity, currentTab, clips, modals, isLive, toast, currentUser, loginEmail, loginPass, apiConfig, latestVodId, geraldInput, geraldMessages, isGeraldTyping, talkToGerald, logoSvg, syncState, wipeState, logoutState, runSync, isHeaderVisible, handleScroll, handleModalTouchStart, handleModalTouchMove, handleModalTouchEnd, currentFilter, activeFilterLabel, isFilterMenuOpen, applyFilter, parseMarkdown, shareClip, recentVods, currentVodIndex, getVodLabel, nextVod, prevVod, customEmotes, showEmotePicker, showMinigames, insertEmote, clearGeraldHistory, isPulling, refreshTransform, isRefreshing, handlePullStart, handlePullMove, handlePullEnd, handleGeraldEnter, toggleEmotes, toggleMinigames, closePickers, ytFeed, redditFeed, formatNumber, handleLogin, handleLogout, playMinigame, playYt,
             optimizeTwitchImg: (u) => u ? u.replace('%{width}', '480').replace('%{height}', '270') : '', 
             formatViews: (v) => v ? v.toLocaleString() : '0', 
             formatDate: (d) => new Date(d).toLocaleDateString([], {month:'short', day:'numeric'})
