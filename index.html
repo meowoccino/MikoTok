@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <meta name="theme-color" content="#0e0e10">
+    <meta name="theme-color" content="#050505">
     
     <title>MikoTok</title>
     
@@ -16,7 +16,7 @@
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="https://unpkg.com/vue@3/dist/vue.global.prod.js"></script>
     
-    <link rel="stylesheet" href="./styles.css?v=20">
+    <link rel="stylesheet" href="./styles.css?v=16">
 </head>
 <body @click="isFilterMenuOpen = false">
     <div id="app-container" v-cloak>
@@ -51,6 +51,7 @@
                 :current-vod-index="currentVodIndex"
                 :recent-vods="recentVods"
                 :is-live="isLive"
+                :active-feed-video="activeFeedVideo"
                 :hostname="hostname"
                 :clips="clips"
                 :active-filter-label="activeFilterLabel"
@@ -64,7 +65,7 @@
                 @share-clip="shareClip">
             </home-view>
 
-            <div class="chat-container" style="height: 100%; width: 100%; display: flex; background: #0e0e10;" v-if="currentTab === 'chat'">
+            <div class="chat-container" style="height: calc(100% - 85px); width: 100%; display: flex; background: #050505;" v-if="currentTab === 'chat'">
                 <iframe :src="'https://www.twitch.tv/embed/codemiko/chat?parent=' + hostname + '&darkpopout'" style="width: 100%; height: 100%; border: none; outline: none;" allowfullscreen="false" scrolling="no" loading="lazy"></iframe>
             </div>
 
@@ -72,9 +73,14 @@
                 :current-tab="currentTab"
                 :is-refreshing="isRefreshing"
                 :yt-feed="ytFeed"
+                :yt-current-index="ytCurrentIndex"
                 :reddit-feed="redditFeed"
+                :reddit-current-index="redditCurrentIndex"
                 :format-number="formatNumber"
-                @play-yt="playYt">
+                @prev-yt="prevYt"
+                @next-yt="nextYt"
+                @prev-reddit="prevReddit"
+                @next-reddit="nextReddit">
             </feed-view>
 
             <gerald-view
@@ -143,6 +149,6 @@
 
     </div>
 
-    <script src="./app.js?v=20"></script>
+    <script src="./app.js?v=16"></script>
 </body>
 </html>
