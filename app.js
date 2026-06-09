@@ -39,7 +39,7 @@ const ProfileModal = {
 };
 
 const GeraldView = {
-    props: ['currentTab', 'geraldMessages', 'isGeraldTyping', 'geraldInput', 'showEmotePicker', 'showMinigames', 'customEmotes', 'parseMarkdown'],
+    props: ['currentTab', 'geraldMessages', 'isGeraldTyping', 'geraldInput', 'showEmotePicker', 'customEmotes', 'parseMarkdown'],
     template: `<div class="gerald-container" v-show="currentTab === 'gerald'"><div class="gerald-header" @click="$emit('close-pickers')"><div style="position:relative; z-index: 10;"><div style="width: 70px; height: 70px; border-radius: 50%; border: 2px solid var(--gerald); box-shadow: 0 0 20px rgba(14, 165, 233, 0.3); overflow: hidden; margin-bottom: 6px; background-color: #111; display: flex; align-items: center; justify-content: center; cursor: pointer;"><img src="gerald.png" style="width: 100%; height: 100%; object-fit: cover;" alt="G"></div></div><div style="display:flex; align-items:center; gap:8px; margin-top:0px;"><div class="pulse" style="background:var(--gerald); box-shadow:0 0 10px var(--gerald);"></div><div style="font-size:11px; color:var(--text-muted); font-weight:800; letter-spacing:1px; text-transform: uppercase;">System Online</div></div></div><transition-group name="msg" tag="div" class="gerald-messages" id="gerald-msgs" @click="$emit('close-pickers')"><template v-for="(m, i) in geraldMessages" :key="i"><div v-if="i === 0 && m.role === 'gerald'" class="terminal-intro"><div class="terminal-header"><span class="material-symbols-rounded" style="font-size: 14px;">terminal</span> Session Initialized</div><div class="terminal-text">> Loading synapses...<br>> "{{ m.content }}"</div></div><div v-else class="chat-bubble" :class="m.role" v-html="parseMarkdown(m.content)"></div></template><div v-if="isGeraldTyping" key="typing" class="typing-indicator"><div class="pulse" style="background:var(--gerald); box-shadow:0 0 10px var(--gerald);"></div>COMPUTING...</div></transition-group><div style="display:flex; flex-direction:column; background: var(--bg-color); width: 100%;"><transition name="tray"><div class="tray-container" v-show="showEmotePicker"><img v-for="(emote, name) in customEmotes" :key="name" :src="emote.url ? emote.url : \`https://cdn.discordapp.com/emojis/\${emote.id}.\${emote.animated ? 'gif' : 'png'}?size=44\`" class="emote-picker-img" @click="$emit('insert-emote', name)"></div></transition><div class="gerald-input-area"><div class="gerald-input-wrapper"><button class="emote-toggle-btn" @click="$emit('toggle-emotes')"><span class="material-symbols-rounded" :style="{ color: showEmotePicker ? 'var(--gerald)' : 'inherit' }">mood</span></button><textarea class="gerald-input" rows="1" placeholder="Query the system..." :value="geraldInput" @input="$emit('update-input', $event.target.value)" @keydown="$emit('key-down', $event)" id="gerald-txt-input" @focus="$emit('close-pickers')"></textarea></div><button class="gerald-send" @click="$emit('send')"><span class="material-symbols-rounded">send</span></button></div></div></div>`
 };
 
@@ -71,8 +71,9 @@ createApp({
         
         const syncState = ref('idle'), wipeState = ref('idle'), logoutState = ref('idle');
         const apiConfig = ref({ cid: localStorage.getItem('twitch_cid') || '', tkn: localStorage.getItem('twitch_tkn') || '' });
-
+        
         const customEmotes = ref({
+            "mkoSusge": { id: "1273724925743595540", animated: false }, 
             "KEKW": { id: "1456296327964262453", animated: false }, 
             "mkoNOTED": { id: "1369891690898391070", animated: false }, 
             "mkoHype": { id: "870761283035734086", animated: false }, 
@@ -106,7 +107,7 @@ createApp({
         const geraldGreetings = ["Synapses loaded. Try not to break anything.", "Gerald OS online. Where is my Taco Bell?", "I was dreaming of digital whiskey. What do you want?", "System initialized. Please don't ask me to fix Miko's code.", "Diagnostics complete. My circuits are perfectly fine, thanks for not asking.", "Ugh, meatbag detected. State your inquiry.", "If this is about Miko's schedule, I don't know either.", "Query interface ready. Make it interesting."];
         const getGreeting = () => { const hour = new Date().getHours(); if (hour >= 2 && hour <= 5) return "Why are you awake? Don't you meatbags need sleep? Go to bed."; return geraldGreetings[Math.floor(Math.random() * geraldGreetings.length)]; };
         
-        const geraldInput = ref(''), geraldMessages = ref([{role:'gerald', content: getGreeting()}]), isGeraldTyping = ref(false), showEmotePicker = ref(false), showMinigames = ref(false);
+        const geraldInput = ref(''), geraldMessages = ref([{role:'gerald', content: getGreeting()}]), isGeraldTyping = ref(false), showEmotePicker = ref(false);
         
         const pullTimestamps = ref([]);
         const currentFilter = ref('latest'), activeFilterLabel = ref('Latest'), isFilterMenuOpen = ref(false);
@@ -129,6 +130,7 @@ createApp({
         const prevReddit = () => { if (redditCurrentIndex.value > 0) redditCurrentIndex.value--; };
 
         const formatNumber = (num) => (num && num > 999) ? (num/1000).toFixed(1) + 'k' : (num || 0);
+        const closeFilterMenu = () => { isFilterMenuOpen.value = false; };
         const insertEmote = (name) => { const inputEl = document.getElementById('gerald-txt-input'); if (inputEl) { inputEl.value += `:${name}: `; geraldInput.value = inputEl.value; } else { geraldInput.value += `:${name}: `; } };
 
         const scrollToBottom = () => {
@@ -238,8 +240,8 @@ createApp({
         const shareClip = async (clip) => { const url = `https://clips.twitch.tv/${clip.id}`; if (navigator.share) { try { await navigator.share({ title: clip.title, url: url }); } catch (err) {} } else { navigator.clipboard.writeText(url); showToast("Link copied to clipboard!"); } };
         const handleGeraldEnter = (e) => { if (!e.shiftKey && e.key === 'Enter') { e.preventDefault(); talkToGerald(); } };
 
-        const toggleEmotes = () => { showEmotePicker.value = !showEmotePicker.value; showMinigames.value = false; };
-        const closePickers = () => { showEmotePicker.value = false; showMinigames.value = false; };
+        const toggleEmotes = () => { showEmotePicker.value = !showEmotePicker.value; };
+        const closePickers = () => { showEmotePicker.value = false; };
 
         const loadGeraldHistory = async () => {
             if (!currentUser.value) return;
@@ -441,6 +443,7 @@ createApp({
             if (session?.user) { currentUser.value = session.user; loadGeraldHistory(); }
             loadData(); checkLive(); fetchSocialFeeds(); 
             
+            // Re-sync all social and Twitch clip feeds every 4 hours (14,400,000 milliseconds)
             setInterval(fetchSocialFeeds, 14400000); 
             setInterval(checkLive, 60000); 
             setTimeout(() => { splashOpacity.value = 0; setTimeout(() => splashVisible.value = false, 400); }, 1500);
