@@ -19,14 +19,8 @@
     <link rel="stylesheet" href="./styles.css">
 </head>
 <body @click="isFilterMenuOpen = false">
-    <div id="app-container" :class="{'glitch-theme': isGlitchTheme, 'ui-scuffed': uiScuffed}" v-cloak>
+    <div id="app-container" v-cloak>
         
-        <event-overlays 
-            :is-cat-zooming="isCatZooming" 
-            :show-lumen="showLumen" 
-            :show-fake-ban="showFakeBan">
-        </event-overlays>
-
         <toast-popup :toast="toast"></toast-popup>
 
         <splash-screen 
@@ -46,8 +40,7 @@
             :current-tab="currentTab" 
             :is-live="isLive" 
             :logo-svg="logoSvg"
-            @open-profile="modals.profile = true"
-            @trigger-cat="triggerCatZoomies">
+            @open-profile="modals.profile = true">
         </app-header>
 
         <div class="view-port" @touchstart="handlePullStart" @touchmove="handlePullMove" @touchend="handlePullEnd">
@@ -96,14 +89,11 @@
                 :is-gerald-typing="isGeraldTyping"
                 :gerald-input="geraldInput"
                 :show-emote-picker="showEmotePicker"
-                :show-minigames="showMinigames"
                 :custom-emotes="customEmotes"
                 :parse-markdown="parseMarkdown"
                 @close-pickers="closePickers"
                 @insert-emote="insertEmote"
-                @play-game="playMinigame"
                 @toggle-emotes="toggleEmotes"
-                @toggle-minigames="toggleMinigames"
                 @update-input="e => geraldInput = e"
                 @key-down="handleGeraldEnter"
                 @send="talkToGerald">
@@ -168,6 +158,6 @@
       }
     </script>
 
-    <script src="./app.js?v=7"></script>
+    <script src="./app.js?v=8"></script>
 </body>
 </html>
