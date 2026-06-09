@@ -471,8 +471,6 @@ createApp({
             optimizeTwitchImg: (u) => u ? u.replace('%{width}', '480').replace('%{height}', '270') : '', 
             formatViews: (v) => v ? v.toLocaleString() : '0', 
             formatDate: (d) => new Date(d).toLocaleDateString([], {month:'short', day:'numeric'})
-        };
+};
     }
-});
-
-app.mount('#app-container');
+}).mount('#app-container');
