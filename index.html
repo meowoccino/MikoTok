@@ -3,7 +3,6 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <!-- Updated theme color to match the new Twitch-dark background -->
     <meta name="theme-color" content="#0e0e10">
     
     <title>MikoTok</title>
@@ -17,8 +16,7 @@
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="https://unpkg.com/vue@3/dist/vue.global.prod.js"></script>
     
-    <!-- Bumped to v=19 to pull the fresh card-based styling -->
-    <link rel="stylesheet" href="./styles.css?v=19">
+    <link rel="stylesheet" href="./styles.css?v=20">
 </head>
 <body @click="isFilterMenuOpen = false">
     <div id="app-container" v-cloak>
@@ -53,7 +51,6 @@
                 :current-vod-index="currentVodIndex"
                 :recent-vods="recentVods"
                 :is-live="isLive"
-                :active-feed-video="activeFeedVideo"
                 :hostname="hostname"
                 :clips="clips"
                 :active-filter-label="activeFilterLabel"
@@ -67,7 +64,6 @@
                 @share-clip="shareClip">
             </home-view>
 
-            <!-- Adjusted chat height to perfectly slot between the new solid navbars -->
             <div class="chat-container" style="height: 100%; width: 100%; display: flex; background: #0e0e10;" v-if="currentTab === 'chat'">
                 <iframe :src="'https://www.twitch.tv/embed/codemiko/chat?parent=' + hostname + '&darkpopout'" style="width: 100%; height: 100%; border: none; outline: none;" allowfullscreen="false" scrolling="no" loading="lazy"></iframe>
             </div>
@@ -76,14 +72,8 @@
                 :current-tab="currentTab"
                 :is-refreshing="isRefreshing"
                 :yt-feed="ytFeed"
-                :yt-current-index="ytCurrentIndex"
                 :reddit-feed="redditFeed"
-                :reddit-current-index="redditCurrentIndex"
                 :format-number="formatNumber"
-                @prev-yt="prevYt"
-                @next-yt="nextYt"
-                @prev-reddit="prevReddit"
-                @next-reddit="nextReddit"
                 @play-yt="playYt">
             </feed-view>
 
@@ -153,7 +143,6 @@
 
     </div>
 
-    <!-- Bumped to v=19 for synchronized cache wipe -->
-    <script src="./app.js?v=19"></script>
+    <script src="./app.js?v=20"></script>
 </body>
 </html>
