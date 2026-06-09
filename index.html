@@ -16,7 +16,7 @@
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="https://unpkg.com/vue@3/dist/vue.global.prod.js"></script>
     
-    <link rel="stylesheet" href="./styles.css?v=27">
+    <link rel="stylesheet" href="./styles.css?v=28">
 </head>
 <body @click="closeFilterMenu">
     <div id="app-container" v-cloak>
@@ -89,11 +89,14 @@
                 :is-gerald-typing="isGeraldTyping"
                 :gerald-input="geraldInput"
                 :show-emote-picker="showEmotePicker"
+                :show-minigames="showMinigames"
                 :custom-emotes="customEmotes"
                 :parse-markdown="parseMarkdown"
                 @close-pickers="closePickers"
                 @insert-emote="insertEmote"
+                @play-game="playMinigame"
                 @toggle-emotes="toggleEmotes"
+                @toggle-minigames="toggleMinigames"
                 @update-input="e => geraldInput = e"
                 @key-down="handleGeraldEnter"
                 @send="talkToGerald">
@@ -146,6 +149,17 @@
 
     </div>
 
-    <script src="./app.js?v=30"></script>
+    <script src="./app.js?v=28"></script>
+    <script>
+      if ('serviceWorker' in navigator) {
+        window.addEventListener('load', () => {
+          navigator.serviceWorker.register('sw.js').then(reg => {
+            console.log('Service Worker registered successfully.');
+          }).catch(err => {
+            console.log('Service Worker registration failed:', err);
+          });
+        });
+      }
+    </script>
 </body>
 </html>
