@@ -16,7 +16,7 @@
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="https://unpkg.com/vue@3/dist/vue.global.prod.js"></script>
     
-    <link rel="stylesheet" href="./styles.css?v=23">
+    <link rel="stylesheet" href="./styles.css?v=25">
 </head>
 <body @click="closeFilterMenu">
     <div id="app-container" :class="{'glitch-theme': isGlitchTheme, 'ui-scuffed': uiScuffed}" v-cloak>
@@ -177,7 +177,7 @@
                                 <img :src="redditFeed[redditCurrentIndex].thumbnail" onerror="this.closest('div').style.display='none'" alt="Reddit Media">
                             </div>
                             
-                            <div class="reddit-post-title" :style="redditFeed[redditCurrentIndex].thumbnail && redditFeed[redditCurrentIndex].thumbnail.startsWith('http') ? '' : 'flex: 1;'">{{ redditFeed[redditCurrentIndex].title }}</div>
+                            <div class="reddit-post-title" :style="redditFeed[redditCurrentIndex] && redditFeed[redditCurrentIndex].thumbnail && redditFeed[redditCurrentIndex].thumbnail.startsWith('http') ? '' : 'flex: 1;'">{{ redditFeed[redditCurrentIndex].title }}</div>
                             
                             <div class="reddit-actions">
                                 <div style="display: flex; align-items: center; gap: 4px; color: var(--reddit);"><span class="material-symbols-rounded" style="font-size: 16px;">arrow_upward</span> {{ formatNumber(redditFeed[redditCurrentIndex].ups) }}</div>
@@ -229,7 +229,7 @@
                 <div style="display:flex; flex-direction:column; background: var(--bg-color); width: 100%;">
                     <transition name="tray">
                         <div class="tray-container" v-show="showEmotePicker">
-                            <img v-for="(emote, name) in customEmotes" :key="name" :src="emote.url ? emote.url : `https://cdn.discordapp.com/emojis/${emote.id}.${emote.animated ? 'gif' : 'png'}?size=44`" class="emote-picker-img" @click="insertEmote(name)">
+                            <img v-for="(emote, name) in customEmotes" :key="name" :src="emote.url ? emote.url : 'https://cdn.discordapp.com/emojis/' + emote.id + '.' + (emote.animated ? 'gif' : 'png') + '?size=44'" class="emote-picker-img" @click="insertEmote(name)">
                         </div>
                     </transition>
 
@@ -348,7 +348,7 @@
                                         delete
                                     </span>
                                 </div>
-                                <span>{{ wipeState === 'wiping' ? 'WIPING...' : (wipeState === 'success' ? 'MEMORY WIPED!' : 'Wipe Gerald\\'s Memory') }}</span>
+                                <span>{{ wipeState === 'wiping' ? 'WIPING...' : (wipeState === 'success' ? 'MEMORY WIPED!' : 'Wipe Gerald Memory') }}</span>
                             </div>
                         </button>
 
@@ -376,7 +376,7 @@
             <div class="nav-item" :class="{ 'active-gerald': currentTab === 'gerald' }" @click="currentTab = 'gerald'; isHeaderVisible = true"><span class="material-symbols-rounded">smart_toy</span>Gerald</div>
         </nav>
     </div>
-    <script src="./app.js?v=24"></script>
+    <script src="./app.js?v=25"></script>
     <script>
       if ('serviceWorker' in navigator) {
         window.addEventListener('load', () => {
