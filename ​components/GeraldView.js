@@ -76,7 +76,7 @@ export default {
                     <div class="gerald-input-wrapper">
                         <button class="emote-toggle-btn" @click="$emit('toggle-emotes')"><span class="material-symbols-rounded" :style="{ color: showEmotePicker ? 'var(--gerald)' : 'inherit' }">mood</span></button>
                         <button class="emote-toggle-btn" @click="$emit('toggle-minigames')"><span class="material-symbols-rounded" :style="{ color: showMinigames ? 'var(--gerald)' : 'inherit' }">sports_esports</span></button>
-                        <textarea class="gerald-input" rows="1" placeholder="Query the system..." :value="geraldInput" @input="$emit('update-input', $event)" @keydown="$emit('key-down', $event)" id="gerald-txt-input" @focus="$emit('close-pickers')"></textarea>
+                        <textarea class="gerald-input" rows="1" placeholder="Query the system..." :value="geraldInput" @input="$emit('update-input', $event.target.value)" @keydown="$emit('key-down', $event)" id="gerald-txt-input" @focus="$emit('close-pickers')"></textarea>
                     </div>
                     <button class="gerald-send" @click="$emit('send')"><span class="material-symbols-rounded">send</span></button>
                 </div>
