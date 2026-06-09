@@ -1,188 +1,40 @@
-/* Core Viewport Settings */
-:root {
-  --bg-color: #050505;
-  --glass-bg: rgba(10, 10, 12, 0.45);
-  --glass-border: rgba(255, 255, 255, 0.06);
-  --glass-blur: blur(25px);
-}
-
-#app-container {
-  background-color: var(--bg-color);
-  overflow: hidden;
-}
-
-/* Glass Header System */
-.app-header {
-  background: var(--glass-bg) !important;
-  backdrop-filter: var(--glass-blur) !important;
-  -webkit-backdrop-filter: var(--glass-blur) !important;
-  border-bottom: 1px solid var(--glass-border) !important;
-  box-shadow: none !important;
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100%;
-  z-index: 200;
-  height: 64px;
-}
-
-/* Glass Navigation System */
-.bottom-nav {
-  background: var(--glass-bg) !important;
-  backdrop-filter: var(--glass-blur) !important;
-  -webkit-backdrop-filter: var(--glass-blur) !important;
-  border-top: 1px solid var(--glass-border) !important;
-  box-shadow: none !important;
-  position: fixed;
-  bottom: 0;
-  left: 0;
-  width: 100%;
-  z-index: 200;
-  height: 76px;
-  padding-bottom: env(safe-area-inset-bottom);
-}
-
-/* Full-Bleed Media OS Stages */
-#feed-scroll {
-  scroll-snap-type: y mandatory;
-  height: 100vh !important;
-  width: 100vw !important;
-  position: absolute;
-  top: 0;
-  left: 0;
-  padding: 0 !important;
-  margin: 0 !important;
-  z-index: 10;
-}
-
-.feed-snap-item {
-  height: 100vh !important;
-  width: 100vw !important;
-  position: relative;
-  scroll-snap-align: start;
-  padding: 0 !important;
-  margin: 0 !important;
-  overflow: hidden;
-  background-color: #000;
-}
-
-/* Erases rigid borders around iframes and stretches content edge-to-edge */
-.vod-animated-border,
+/* Fixes the monstrous image blow-up on the Home View feed cards */
 .video-container {
-  border: none !important;
-  border-radius: 0 !important;
-  box-shadow: none !important;
-  padding: 0 !important;
-  margin: 0 !important;
-  width: 100vw !important;
-  height: 100vh !important;
-  position: absolute;
-  top: 0;
-  left: 0;
-  z-index: 1;
+    position: absolute !important;
+    top: 0 !important;
+    left: 0 !important;
+    width: 100vw !important;
+    height: 100vh !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    background-color: #000 !important;
+    z-index: 1 !important;
 }
 
-.video-container iframe,
+/* Forces the raw thumbnail or profile asset image to maintain its true proportions aspect ratio */
 .video-container img {
-  width: 100% !important;
-  height: 100% !important;
-  object-fit: cover !important;
-  border: none !important;
+    width: 100% !important;
+    height: auto !important;
+    max-height: 100vh !important;
+    object-fit: contain !important; /* Prevents the extreme cropping zoom */
+    display: block !important;
 }
 
-/* Floating HUD Controls Meta Overlay */
-.miko-metadata,
-.feed-snap-item[data-id="featured"] .header-controls {
-  position: absolute;
-  bottom: 100px; /* Positions meta cleanly above glass navigation footer bar */
-  left: 16px;
-  right: 76px;   /* Reserves space for action layout stack on the right edge */
-  z-index: 50;
-  background: transparent !important;
-  border: none !important;
-  pointer-events: none;
+/* Fixes navbar and text elements visibility by resetting viewport boundary layers */
+.view-port {
+    height: 100vh !important;
+    width: 100vw !important;
+    position: relative !important;
+    z-index: 20 !important;
 }
 
-.miko-metadata *,
-.feed-snap-item[data-id="featured"] .header-controls * {
-  pointer-events: auto;
+.miko-metadata {
+    pointer-events: none !important;
+    bottom: 120px !important; /* Shifts text cleanly above the nav zone */
 }
 
-/* Author Info & Text Styling */
-.author-text-block {
-  text-shadow: 0 2px 8px rgba(0, 0, 0, 0.85);
-}
-
-.author-name {
-  font-family: 'Outfit', sans-serif !important;
-  font-size: 18px !important;
-  font-weight: 800 !important;
-  color: #ffffff !important;
-}
-
-.clip-stats {
-  font-family: 'Inter', sans-serif !important;
-  font-size: 13px !important;
-  color: rgba(255, 255, 255, 0.7) !important;
-  margin-top: 4px;
-}
-
-/* Clean Floating Right-Side Action Stack */
-.feed-snap-item .action-buttons,
-.feed-snap-item .carousel-controls,
-.feed-snap-item .filter-wrapper {
-  position: absolute;
-  right: 16px;
-  bottom: 110px;
-  display: flex;
-  flex-direction: column;
-  gap: 20px;
-  z-index: 60;
-}
-
-.feed-snap-item .carousel-controls {
-  bottom: 50%;
-  transform: translateY(50%);
-  left: 16px;
-  right: 16px;
-  flex-direction: row;
-  justify-content: space-between;
-  pointer-events: none;
-}
-
-.feed-snap-item .carousel-controls button {
-  pointer-events: auto;
-  background: rgba(0, 0, 0, 0.4);
-  border: 1px solid var(--glass-border);
-  backdrop-filter: blur(10px);
-}
-
-.feed-snap-item .clips-header {
-  position: absolute;
-  top: 84px;
-  right: 16px;
-  z-index: 60;
-}
-
-/* Translucent Premium Buttons */
-.share-btn, .filter-btn-tiny {
-  width: 48px;
-  height: 48px;
-  border-radius: 50%;
-  background: rgba(20, 24, 28, 0.6) !important;
-  border: 1px solid var(--glass-border) !important;
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: #fff !important;
-  box-shadow: 0 4px 12px rgba(0,0,0,0.4);
-}
-
-.filter-btn-tiny {
-  border-radius: 20px !important;
-  width: auto !important;
-  padding: 0 16px !important;
-  gap: 6px;
+.action-buttons {
+    bottom: 120px !important;
+    z-index: 100 !important;
 }
