@@ -76,21 +76,19 @@
                 <iframe :src="'https://www.twitch.tv/embed/codemiko/chat?parent=' + hostname + '&darkpopout'" style="width: 100%; height: 100%; border: none;" loading="lazy"></iframe>
             </div>
 
-            <div class="view-port" v-show="currentTab === 'feed'" style="height:100%; width:100%;">
-                <feed-view
-                    :current-tab="currentTab"
-                    :is-refreshing="isRefreshing"
-                    :yt-feed="ytFeed"
-                    :yt-current-index="ytCurrentIndex"
-                    :reddit-feed="redditFeed"
-                    :reddit-current-index="redditCurrentIndex"
-                    :format-number="formatNumber"
-                    @prev-yt="prevYt"
-                    @next-yt="nextYt"
-                    @prev-reddit="prevReddit"
-                    @next-reddit="nextReddit">
-                </feed-view>
-            </div>
+            <feed-view
+                :current-tab="currentTab"
+                :is-refreshing="isRefreshing"
+                :yt-feed="ytFeed"
+                :yt-current-index="ytCurrentIndex"
+                :reddit-feed="redditFeed"
+                :reddit-current-index="redditCurrentIndex"
+                :format-number="formatNumber"
+                @prev-yt="prevYt"
+                @next-yt="nextYt"
+                @prev-reddit="prevReddit"
+                @next-reddit="nextReddit">
+            </feed-view>
 
             <gerald-view
                 :current-tab="currentTab"
@@ -170,6 +168,6 @@
       }
     </script>
 
-    <script src="./app.js?v=6"></script>
+    <script src="./app.js?v=7"></script>
 </body>
 </html>
