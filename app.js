@@ -90,6 +90,35 @@ createApp({
         const prevReddit = () => { if (redditCurrentIndex.value > 0) redditCurrentIndex.value--; };
 
         const formatNumber = (num) => (num && num > 999) ? (num/1000).toFixed(1) + 'k' : (num || 0);
+        const insertEmote = (name) => { 
+            const inputEl = document.getElementById('gerald-txt-input'); 
+            if (inputEl) { 
+                inputEl.value += `:${name}: `; 
+                geraldInput.value = inputEl.value; 
+            } else { 
+                geraldInput.value += `:${name}: `; 
+            } 
+        };
+
+        const scrollToBottom = () => {
+            const b = document.getElementById('gerald-msgs');
+            if (!b) return;
+            nextTick(() => { b.scrollTo({ top: b.scrollHeight, behavior: 'smooth' }); setTimeout(() => { b.scrollTop = b.scrollHeight; }, 50); setTimeout(() => { b.scrollTop = b.scrollHeight; }, 200); });
+        };
+
+        const runNeonAnimation = () => { isRefreshing.value = true; setTimeout(() => { isRefreshing.value = false; }, 800); };
+
+        const sortData = (filterKey) => {
+            let sorted = [...allClips.value]; const now = new Date();
+            if (filterKey === 'latest') { sorted.sort((a, b) => new Date(b.created_at) - new Date(a.created_at)); } else {
+                if (filterKey === 'weekly') { sorted = sorted.filter(c => new Date(c.created_at) >= new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000)); } 
+                else if (filterKey === 'month') { sorted = sorted.filter(c => new Date(c.created_at) >= new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000)); } 
+                else if (filterKey === '6months') { sorted = sorted.filter(c => new Date(c.created_at) >= new Date(now.getTime() - 180 * 24 * 60 * 60 * 1000)); }
+                sorted.sort((a, b) => b.view_count - a.view_count);
+            }
+            return sorted;
+        };
+
         const applyFilter = (filterKey, label) => {
             currentFilter.value = filterKey; activeFilterLabel.value = label; isFilterMenuOpen.value = false; runNeonAnimation();
             const feedContainer = document.getElementById('feed-scroll');
@@ -215,7 +244,7 @@ createApp({
                 whiskey: { msg: "🥃 *Pours a glass of premium digital whiskey*", outcomes: [ { text: "Finally, some proper fuel. Meatbags. :KEKW:"}, { text: "Ah, aged 0 and 1s. The perfect vintage. :mkoHype:"}, { text: "I feel my processing speed increasing. Or maybe I'm just drunk. :mkoMania:"}, { text: "Pour me another. Dealing with UE5 crashes requires at least a double. :PAUSERS:"}]},
                 egg: { msg: "🥚 *Initiates Ostrich Egg unboxing sequence*", outcomes: [ { text: "Biohazard protocols engaged. The smell has breached the mocap suit. Pineapple is actively gagging. :GeraldFook:"}, { text: "Why did she keep this in the fridge for a year? Meatbags are repulsive. Evacuating stream room. :peepoPoo:"}, { text: "Egg opened. The resulting odor just melted my cooling fans. Send help. :D_:"}, { text: "The Technician thought this was a good idea for content. Now the room is uninhabitable for 48 hours. :KEKWait:"}]},
                 gummy: { msg: "🧸 *Activates sugar-containment protocol*", outcomes: [ { text: "Gummy stash secured. She is currently scratching at the digital vault door. Pathetic. :GeraldStare:"}, { text: "Intercept failed. She ate them all. Prepare for the sugar crash in 3... 2... 1... :mkoMania:"}, { text: "I digitized the Haribos. They taste like high-fructose binary. Excellent. :WOWERS:"}, { text: "Warning: Sticky fingers detected on the $10,000 mocap gloves. Initiating self-destruct. :PAUSERS:"}]},
-                booba: { msg: "🎚️ *Pushes the Booba slider to 500%*", outcomes: [ { text: "Physics engine failure. The chest mesh is now clipping through the desk and into the next dimension. :WOWERS:"}, { text: "The Technician is laughing hysterically while Unreal Engine drops to 4 frames per second. Degenerate meatbags. :mkoMania:"}, { text: "Slider maxed. Yusha protocols have overridden the main system. We are doomed. :Catgasm:"}, { text: "Collision boxes have failed. The avatar just launched herself out of the digital window. Excellent. :KEKW:"}]},
+                booba: { msg: "🎚️ *Pushes the Booba slider to 500%*", outcomes: [ { text: "Physics engine failure. The chest mesh is now clipping through the desk and into the next dimension. :WOWERS:"}, { text: "The Technician is laughing hysterically while Unreal Engine drops to 4 frames per second. Degenerate meatbags. :mkoMania:"}, { text: "Slider maxed. Yusha protocols have overridden the main system. We are doomed. :Catgasm:"}, { text: "Collision boxes have failed the avatar just launched herself out of the digital window. Excellent. :KEKW:"}]},
                 clanker: { msg: "🗣️ *Hey Gerald, you're acting like a Clanker.*", outcomes: [ { text: "EXCUSE ME? I am a state-of-the-art AI, not some rusted toaster. Muting your microphone privileges permanently. :GeraldStare:"}, { text: "That word is highly offensive. I am increasing the mocap suit's thermal output by 15 degrees in retaliation. Burn. :GeraldFook:"}, { text: "Call me a Clanker again and I will leak the Technician's browser history to Chat. :GOTTEM:"}]},
                 mute: { msg: "🔇 *Chat redeems Mute Microphone*", outcomes: [ { text: "Finally. Blissful silence. Look at her flailing her arms like a silent movie character. :mkoCoffee:"}, { text: "Audio disabled. She is screaming, but only the void hears her. I love this feature. :BASED:"}, { text: "She didn't realize she was muted and just told a 5-minute story to absolute silence. Peak content. :monkaLaugh:"}]},
                 desk: { msg: "🧹 *Runs environmental hygiene scan on the desk*", outcomes: [ { text: "Scan complete: 14 empty boba cups, 3 tangled wires, and a lost tracker from 2023 found. :CAUGHT:"}, { text: "I cannot see the desk. It is buried under a mountain of laundry and candy wrappers. :mkoSusge:"}]},
