@@ -1,40 +1,752 @@
-/* Fixes the monstrous image blow-up on the Home View feed cards */
-.video-container {
-    position: absolute !important;
-    top: 0 !important;
-    left: 0 !important;
-    width: 100vw !important;
-    height: 100vh !important;
-    display: flex !important;
-    align-items: center !important;
-    justify-content: center !important;
-    background-color: #000 !important;
-    z-index: 1 !important;
+/* =========================================================
+   1. GLOBAL VARIABLES & RESET
+   ========================================================= */
+:root {
+  --bg-color: #050505;
+  --gerald: #0ea5e9;
+  --youtube: #ff0000;
+  --reddit: #ff4500;
+  --discord: #5865F2;
+  --text-muted: #a1a1aa;
+  --success: #10b981;
+  --glass-bg: rgba(10, 10, 12, 0.6);
+  --glass-border: rgba(255, 255, 255, 0.08);
+  --glass-blur: blur(20px);
 }
 
-/* Forces the raw thumbnail or profile asset image to maintain its true proportions aspect ratio */
-.video-container img {
-    width: 100% !important;
-    height: auto !important;
-    max-height: 100vh !important;
-    object-fit: contain !important; /* Prevents the extreme cropping zoom */
-    display: block !important;
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+  -webkit-tap-highlight-color: transparent;
 }
 
-/* Fixes navbar and text elements visibility by resetting viewport boundary layers */
+body {
+  background-color: var(--bg-color);
+  color: #ffffff;
+  font-family: 'Inter', sans-serif;
+  overflow: hidden;
+  overscroll-behavior: none; /* Prevents native pull-to-refresh clash */
+}
+
+/* Typography Utility */
+.gradient-text {
+  background: linear-gradient(90deg, #ffffff, #9146FF);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.spin-anim {
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin { 
+  100% { transform: rotate(360deg); } 
+}
+
+/* =========================================================
+   2. APP CONTAINER & GLASS NAVIGATION
+   ========================================================= */
+#app-container {
+  height: 100vh;
+  width: 100vw;
+  display: flex;
+  flex-direction: column;
+  position: relative;
+  transition: all 0.3s ease;
+}
+
+/* Gerald Skin Override */
+#app-container.gerald-skin-active {
+  --bg-color: #020617;
+  --glass-bg: rgba(2, 6, 23, 0.8);
+  --glass-border: rgba(14, 165, 233, 0.2);
+}
+
+/* Glass Header */
+.app-header {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 64px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0 16px;
+  background: var(--glass-bg);
+  backdrop-filter: var(--glass-blur);
+  -webkit-backdrop-filter: var(--glass-blur);
+  border-bottom: 1px solid var(--glass-border);
+  z-index: 500;
+  transition: transform 0.3s ease;
+}
+
+.app-header.hidden {
+  transform: translateY(-100%);
+}
+
+.story-ring {
+  border: 2px solid #9146FF;
+  border-radius: 50%;
+  padding: 2px;
+  position: relative;
+}
+
+.story-ring.offline {
+  border-color: var(--text-muted);
+}
+
+.story-avatar {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  display: block;
+}
+
+.header-badge {
+  position: absolute;
+  bottom: -6px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: red;
+  color: white;
+  font-size: 9px;
+  padding: 2px 6px;
+  border-radius: 6px;
+  font-weight: 800;
+  letter-spacing: 0.5px;
+}
+
+.header-badge.offline {
+  background: #3f3f46;
+}
+
+/* Glass Bottom Nav */
+.bottom-nav {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  height: 76px;
+  display: flex;
+  justify-content: space-around;
+  align-items: center;
+  background: var(--glass-bg);
+  backdrop-filter: var(--glass-blur);
+  -webkit-backdrop-filter: var(--glass-blur);
+  border-top: 1px solid var(--glass-border);
+  padding-bottom: env(safe-area-inset-bottom);
+  z-index: 500;
+}
+
+.nav-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  color: var(--text-muted);
+  font-size: 11px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: color 0.2s;
+}
+
+.nav-item.active {
+  color: white;
+}
+
+.nav-item.active-gerald {
+  color: var(--gerald);
+}
+
+/* =========================================================
+   3. HOME: FULL-BLEED STAGE
+   ========================================================= */
 .view-port {
-    height: 100vh !important;
-    width: 100vw !important;
-    position: relative !important;
-    z-index: 20 !important;
+  flex: 1;
+  position: relative;
+  height: 100vh;
+  width: 100vw;
+}
+
+.scroll-area {
+  height: 100vh;
+  width: 100vw;
+  overflow-y: auto;
+  overflow-x: hidden;
+  scroll-snap-type: y mandatory;
+  position: absolute;
+  top: 0;
+  left: 0;
+  z-index: 10;
+}
+
+.feed-snap-item {
+  height: 100vh;
+  width: 100vw;
+  scroll-snap-align: start;
+  position: relative;
+  background-color: #000;
+  overflow: hidden;
+}
+
+/* Fixes the Miko Zoom Issue */
+.video-container {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: #000;
+  z-index: 1;
+}
+
+.video-container img {
+  width: 100%;
+  max-height: 100vh;
+  object-fit: contain; /* Locks aspect ratio */
+  display: block;
+}
+
+.video-container iframe {
+  width: 100%;
+  height: 100%;
+  border: none;
+}
+
+/* Floating Meta Layers */
+.header-controls {
+  position: absolute;
+  top: 80px;
+  left: 16px;
+  z-index: 50;
+}
+
+.premium-badge {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  background: rgba(0,0,0,0.6);
+  backdrop-filter: blur(10px);
+  padding: 6px 12px;
+  border-radius: 20px;
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 1px;
+  color: white;
+  border: 1px solid rgba(255,255,255,0.1);
+}
+
+.premium-badge .dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: red;
+}
+
+.premium-badge.vod .dot {
+  background: var(--text-muted);
 }
 
 .miko-metadata {
-    pointer-events: none !important;
-    bottom: 120px !important; /* Shifts text cleanly above the nav zone */
+  position: absolute;
+  bottom: 100px;
+  left: 16px;
+  right: 80px;
+  z-index: 50;
+  pointer-events: none;
+}
+
+.author-text-block {
+  text-shadow: 0 2px 8px rgba(0, 0, 0, 0.85);
+}
+
+.author-name {
+  font-family: 'Outfit', sans-serif;
+  font-size: 18px;
+  font-weight: 800;
+  color: white;
+}
+
+.clip-stats {
+  font-family: 'Inter', sans-serif;
+  font-size: 13px;
+  color: rgba(255, 255, 255, 0.8);
+  margin-top: 4px;
 }
 
 .action-buttons {
-    bottom: 120px !important;
-    z-index: 100 !important;
+  position: absolute;
+  bottom: 100px;
+  right: 16px;
+  z-index: 60;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.share-btn, .filter-btn-tiny {
+  background: rgba(20, 24, 28, 0.6);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid var(--glass-border);
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.4);
+}
+
+.share-btn {
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+}
+
+.filter-btn-tiny {
+  border-radius: 20px;
+  padding: 8px 16px;
+  gap: 6px;
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.clips-header {
+  position: absolute;
+  top: 80px;
+  right: 16px;
+  z-index: 60;
+}
+
+/* =========================================================
+   4. FEED VIEW (REDDIT & YOUTUBE HUB)
+   ========================================================= */
+.feed-layout {
+  height: 100vh;
+  width: 100vw;
+  background: var(--bg-color);
+  padding-top: 64px;
+  padding-bottom: 76px;
+  display: flex;
+  flex-direction: column;
+}
+
+.segment-header-wrapper {
+  padding: 16px;
+}
+
+.segment-tabs-container {
+  display: flex;
+  background: rgba(255,255,255,0.05);
+  padding: 6px;
+  border-radius: 16px;
+  border: 1px solid rgba(255,255,255,0.05);
+}
+
+.segment-tab-btn {
+  flex: 1;
+  padding: 12px;
+  border: none;
+  background: transparent;
+  color: var(--text-muted);
+  font-weight: 700;
+  font-size: 13px;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  transition: all 0.2s;
+}
+
+.segment-tab-btn.active {
+  background: rgba(255,255,255,0.1);
+  color: white;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+}
+
+.reddit-compact-card {
+  background: rgba(255,255,255,0.03);
+  border: 1px solid rgba(255,255,255,0.05);
+  margin: 0 16px;
+  border-radius: 16px;
+  padding: 16px;
+  text-decoration: none;
+  color: white;
+  display: flex;
+  flex-direction: column;
+}
+
+.reddit-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 12px;
+}
+
+.reddit-author {
+  font-size: 12px;
+  color: var(--text-muted);
+}
+
+.reddit-author span {
+  font-weight: 800;
+  color: var(--reddit);
+}
+
+.reddit-flair-badge {
+  background: rgba(255, 69, 0, 0.15);
+  border: 1px solid rgba(255, 69, 0, 0.3);
+  color: var(--reddit);
+  font-size: 9px;
+  font-weight: 800;
+  padding: 4px 8px;
+  border-radius: 8px;
+  text-transform: uppercase;
+}
+
+.reddit-img-container {
+  width: 100%;
+  border-radius: 12px;
+  overflow: hidden;
+  margin-bottom: 16px;
+  background: #000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.reddit-img-container img {
+  width: 100%;
+  max-height: 250px;
+  object-fit: cover;
+}
+
+.reddit-post-title {
+  font-size: 16px;
+  font-weight: 600;
+  line-height: 1.4;
+  margin-bottom: 16px;
+}
+
+.feed-loader-msg {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 40px;
+  color: var(--text-muted);
+  font-size: 14px;
+  font-weight: 500;
+}
+
+/* Center Carousel Controls */
+.carousel-controls {
+  display: flex;
+  justify-content: space-between;
+  padding: 0 16px;
+  margin-top: 16px;
+}
+
+.carousel-btn {
+  background: rgba(255,255,255,0.1);
+  border: 1px solid rgba(255,255,255,0.1);
+  color: white;
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.carousel-btn.hidden-arrow {
+  opacity: 0.2;
+  pointer-events: none;
+}
+
+/* =========================================================
+   5. GERALD OS VIEW
+   ========================================================= */
+.gerald-container {
+  height: 100vh;
+  padding-top: 64px;
+  padding-bottom: 76px;
+  display: flex;
+  flex-direction: column;
+  background: var(--bg-color);
+}
+
+.gerald-header {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 16px;
+  border-bottom: 1px solid rgba(14, 165, 233, 0.1);
+}
+
+.gerald-messages {
+  flex: 1;
+  overflow-y: auto;
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.chat-bubble {
+  max-width: 85%;
+  padding: 14px 18px;
+  border-radius: 16px;
+  line-height: 1.5;
+  font-size: 15px;
+  word-wrap: break-word;
+}
+
+.chat-bubble.gerald {
+  align-self: flex-start;
+  background: rgba(14, 165, 233, 0.1);
+  border: 1px solid rgba(14, 165, 233, 0.2);
+  color: #e0f2fe;
+  border-bottom-left-radius: 4px;
+}
+
+.chat-bubble.user {
+  align-self: flex-end;
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  color: white;
+  border-bottom-right-radius: 4px;
+}
+
+.terminal-intro {
+  padding: 16px;
+  background: rgba(0,0,0,0.4);
+  border: 1px solid rgba(14, 165, 233, 0.3);
+  border-radius: 12px;
+  font-family: monospace;
+  color: var(--gerald);
+  font-size: 13px;
+}
+
+.gerald-input-area {
+  padding: 12px 16px;
+  display: flex;
+  gap: 12px;
+  background: rgba(0,0,0,0.5);
+  border-top: 1px solid rgba(255,255,255,0.05);
+  align-items: flex-end;
+}
+
+.gerald-input-wrapper {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  background: rgba(255,255,255,0.05);
+  border-radius: 24px;
+  padding: 4px 12px;
+  border: 1px solid rgba(255,255,255,0.1);
+}
+
+.gerald-input {
+  flex: 1;
+  background: transparent;
+  border: none;
+  color: white;
+  outline: none;
+  resize: none;
+  padding: 12px 8px;
+  font-family: inherit;
+  font-size: 15px;
+}
+
+.emote-toggle-btn {
+  background: transparent;
+  border: none;
+  color: var(--text-muted);
+  padding: 8px;
+}
+
+.gerald-send {
+  background: var(--gerald);
+  color: black;
+  border: none;
+  border-radius: 50%;
+  width: 48px;
+  height: 48px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.tray-container {
+  padding: 16px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  background: #0a0a0c;
+  border-top: 1px solid #1f1f22;
+  max-height: 250px;
+  overflow-y: auto;
+}
+
+.bribe-btn {
+  background: rgba(255,255,255,0.05);
+  border: 1px solid rgba(255,255,255,0.1);
+  color: white;
+  padding: 10px 16px;
+  border-radius: 12px;
+  font-weight: 600;
+  font-size: 14px;
+}
+
+/* =========================================================
+   6. MODALS, SHEETS, & POPUPS
+   ========================================================= */
+.modal-overlay, .sheet-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.8);
+  z-index: 1000;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  backdrop-filter: blur(5px);
+}
+
+.modal-overlay.open, .sheet-overlay.open {
+  display: flex;
+}
+
+.modal-content, .bottom-sheet {
+  background: #18181b;
+  width: 100%;
+  border-top-left-radius: 24px;
+  border-top-right-radius: 24px;
+  padding: 24px 20px 40px;
+  position: relative;
+  box-shadow: 0 -10px 40px rgba(0,0,0,0.5);
+}
+
+.drag-handle {
+  width: 40px;
+  height: 5px;
+  background: rgba(255,255,255,0.2);
+  border-radius: 3px;
+  margin: 0 auto 24px;
+}
+
+.input-box, .sleek-input {
+  width: 100%;
+  background: rgba(0,0,0,0.4);
+  border: 1px solid rgba(255,255,255,0.1);
+  color: white;
+  padding: 16px;
+  border-radius: 12px;
+  margin-bottom: 12px;
+  font-family: inherit;
+  font-size: 15px;
+  outline: none;
+}
+
+.sync-btn {
+  width: 100%;
+  background: white;
+  color: black;
+  font-weight: 800;
+  border: none;
+  padding: 16px;
+  border-radius: 12px;
+  margin-top: 10px;
+  font-size: 15px;
+}
+
+.menu-btn {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  background: transparent;
+  border: none;
+  padding: 16px 0;
+  color: white;
+  font-weight: 600;
+  font-size: 15px;
+  border-bottom: 1px solid rgba(255,255,255,0.05);
+}
+
+.btn-content {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.icon-wrap {
+  width: 40px;
+  height: 40px;
+  border-radius: 12px;
+  background: rgba(255,255,255,0.08);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.sheet-option {
+  width: 100%;
+  padding: 18px;
+  background: transparent;
+  border: none;
+  border-bottom: 1px solid rgba(255,255,255,0.05);
+  color: white;
+  font-size: 16px;
+  font-weight: 500;
+  text-align: left;
+}
+
+.sheet-option.active {
+  color: var(--gerald);
+  font-weight: 800;
+}
+
+/* =========================================================
+   7. UTILITIES & TOASTS
+   ========================================================= */
+.toast-popup {
+  position: fixed;
+  top: -100px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: rgba(20, 20, 20, 0.95);
+  border: 1px solid var(--glass-border);
+  backdrop-filter: blur(10px);
+  color: white;
+  padding: 14px 20px;
+  border-radius: 16px;
+  font-size: 14px;
+  font-weight: 500;
+  z-index: 9999;
+  transition: top 0.4s cubic-bezier(0.2, 0.8, 0.2, 1);
+  box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+  width: 90%;
+  max-width: 400px;
+}
+
+.toast-popup.show {
+  top: 40px;
+}
+
+.pull-refresh-indicator {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  display: flex;
+  justify-content: center;
+  padding: 24px;
+  z-index: 100;
+  pointer-events: none;
 }
