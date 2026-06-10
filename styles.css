@@ -2,7 +2,7 @@
     --bg-color: #050505; --card-bg: #111113; --primary: #9146FF; --primary-light: #a970ff; 
     --text-main: #ffffff; --text-muted: #a1a1aa; --border-color: #27272a; 
     --danger: #ef4444; --offline-gray: #3f3f46; --success: #00ffa3; 
-    --gerald: #0ea5e9; --discord: #5865F2; --youtube: #ff0000; --reddit: #ff4500;
+    --gerald: #0ea5e9; --discord: #5865F2; --youtube: #ff0000; --reddit: #ff4500; --twitter: #1da1f2;
     --nav-bg: rgba(15, 15, 18, 0.85); --modal-bg: #0a0a0c;
 }
 
@@ -55,8 +55,10 @@ body, html { margin: 0; padding: 0; height: 100%; height: 100dvh; width: 100%; m
 .scroll-area { height: 100%; width: 100%; overflow-y: auto; scroll-behavior: smooth; padding-bottom: 90px; }
 .scroll-area::-webkit-scrollbar { display: none; }
 
-#feed-scroll { padding-bottom: 0; scroll-snap-type: y mandatory; }
-.feed-snap-item { width: 100%; height: 100%; flex-shrink: 0; display: flex; flex-direction: column; justify-content: center; position: relative; padding: 0 15px 90px; scroll-snap-align: start; scroll-snap-stop: always; }
+#feed-scroll { padding-bottom: 0; }
+.dashboard-grid-container { display: flex; flex-direction: column; width: 100%; height: 100%; padding: 110px 15px 95px; gap: 15px; }
+.dashboard-stream-box { flex-shrink: 0; width: 100%; display: flex; flex-direction: column; }
+.dashboard-chat-box { flex: 1; min-height: 200px; width: 100%; border-radius: 16px; overflow: hidden; border: 1px solid var(--border-color); background: #000; box-shadow: 0 8px 24px rgba(0,0,0,0.5); }
 
 .feed-layout { position: absolute; top: 110px; bottom: 85px; left: 0; right: 0; padding: 0 15px; display: flex; flex-direction: column; gap: 20px; overflow: hidden; }
 #yt-wrapper { flex-shrink: 0; display: flex; flex-direction: column; }
@@ -78,10 +80,6 @@ body, html { margin: 0; padding: 0; height: 100%; height: 100dvh; width: 100%; m
 .video-container img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; z-index: 1; opacity: 0.5; }
 
 .card { background: var(--card-bg); border-radius: 16px; padding: 16px; border: 1px solid var(--border-color); }
-.clips-header { width: 100%; display: flex; justify-content: flex-end; align-items: center; margin-bottom: 15px; z-index: 50; position: relative; padding: 0 5px; }
-.filter-wrapper { position: relative; }
-.filter-btn-tiny { background: var(--card-bg); border: 1px solid var(--border-color); color: #a1a1aa; padding: 6px 12px; border-radius: 8px; font-size: 10px; font-weight: 800; text-transform: uppercase; display: flex; align-items: center; gap: 4px; cursor: pointer; transition: 0.1s; outline: none; }
-.filter-btn-tiny:active { transform: scale(0.95); border-color: var(--primary); color: #fff; }
 
 .gerald-container { display: flex; flex-direction: column; height: 100%; padding-bottom: 0px; }
 .gerald-header { padding: 60px 20px 20px; text-align: center; display: flex; flex-direction: column; align-items: center; flex-shrink: 0; }
@@ -102,8 +100,8 @@ body, html { margin: 0; padding: 0; height: 100%; height: 100dvh; width: 100%; m
 .emote-toggle-btn { background: transparent; border: none; color: var(--text-muted); cursor: pointer; padding: 10px 6px; border-radius: 50%; height: 44px; display: flex; align-items: center; justify-content: center; }
 .emote-toggle-btn:active { color: var(--gerald); }
 .gerald-input { flex: 1; background: transparent; border: none; padding: 12px 8px; color: white; outline: none; font-size: 14px; resize: none; overflow-y: auto; max-height: 120px; line-height: 1.4; font-family: 'Inter', sans-serif;}
-.gerald-input::-webkit-scrollbar { width: 4px; }
-.gerald-input::-webkit-scrollbar-thumb { background: #3f3f46; border-radius: 4px; }
+.gerald-input::-webkit-sandbox { width: 4px; }
+.gerald-input::-webkit-sandbox-thumb { background: #3f3f46; border-radius: 4px; }
 
 .tray-container { display: flex; flex-wrap: wrap; gap: 10px; padding: 15px; background: #111113; border-top: 1px solid var(--border-color); max-height: 250px; overflow-y: auto; flex-shrink: 0; position: relative; z-index: 51; }
 .tray-container::-webkit-scrollbar { width: 4px; }
@@ -117,6 +115,163 @@ body, html { margin: 0; padding: 0; height: 100%; height: 100dvh; width: 100%; m
 
 .gerald-send { background: var(--gerald); border: none; width: 44px; height: 44px; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white; cursor: pointer; flex-shrink: 0; transition: 0.1s; }
 .gerald-send:active { transform: scale(0.9); }
+
+/* --- FLOATING MATERIAL 3 NAVBAR --- */
+.bottom-nav { 
+    position: fixed; 
+    bottom: calc(20px + env(safe-area-inset-bottom, 0px)); 
+    left: 50%; 
+    transform: translateX(-50%); 
+    width: calc(100% - 32px); 
+    max-width: 420px; 
+    height: 76px;
+    background: var(--card-bg); 
+    border: 1px solid var(--border-color); 
+    border-radius: 28px; 
+    display: flex; 
+    justify-content: space-around; 
+    align-items: center; 
+    padding: 0 8px;
+    z-index: 1000; 
+    box-shadow: 0 10px 30px rgba(0,0,0,0.6);
+}
+
+.nav-item { 
+    display: flex; 
+    flex-direction: column; 
+    align-items: center; 
+    justify-content: center;
+    flex: 1; 
+    height: 100%;
+    color: var(--text-muted); 
+    cursor: pointer; 
+    text-decoration: none; 
+    -webkit-tap-highlight-color: transparent;
+}
+
+.nav-item .material-symbols-rounded, .nav-item svg { 
+    font-size: 24px; 
+    width: 24px;
+    height: 24px;
+    box-sizing: content-box;
+    color: var(--text-muted);
+    padding: 4px 16px; 
+    border-radius: 16px; 
+    margin-bottom: 4px;
+    transition: background-color 0.2s ease, color 0.2s ease;
+    z-index: 2;
+}
+
+.nav-label {
+    font-size: 11px;
+    font-weight: 600;
+    color: var(--text-muted);
+    transition: color 0.2s ease, font-weight 0.2s ease;
+    z-index: 2;
+}
+
+.nav-item.active .nav-label, .nav-item.active-gerald .nav-label { 
+    color: var(--text-main); 
+    font-weight: 700;
+}
+
+.nav-item.active .material-symbols-rounded, 
+.nav-item.active svg { 
+    font-variation-settings: 'FILL' 1; 
+    color: var(--primary); 
+    background: rgba(145, 70, 255, 0.15); 
+}
+
+.nav-item.active-gerald .material-symbols-rounded { 
+    font-variation-settings: 'FILL' 1; 
+    color: var(--gerald); 
+    background: rgba(14, 165, 233, 0.15); 
+}
+
+/* --- CLIPS HUB GRID --- */
+.clips-grid-container {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 12px;
+    padding: 110px 15px 95px;
+    overflow-y: auto;
+    height: 100%;
+}
+.clips-grid-container::-webkit-scrollbar { display: none; }
+
+.grid-clip-card {
+    background: var(--card-bg);
+    border: 1px solid var(--border-color);
+    border-radius: 14px;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+}
+.grid-thumbnail-wrap {
+    position: relative;
+    width: 100%;
+    aspect-ratio: 16/9;
+    background: #000;
+}
+.grid-thumbnail-wrap img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+.grid-clip-title {
+    font-size: 12px;
+    font-weight: 700;
+    color: var(--text-main);
+    padding: 8px 10px 4px;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+    line-height: 1.3;
+    flex: 1;
+}
+.grid-clip-meta {
+    font-size: 10px;
+    color: var(--text-muted);
+    padding: 0 10px 8px;
+    font-weight: 600;
+    text-transform: uppercase;
+}
+
+/* --- HUB MATRIX SOCIAL LINKS --- */
+.social-matrix-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 12px;
+    width: 100%;
+    margin-top: 15px;
+}
+.matrix-card {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 14px;
+    border-radius: 14px;
+    background: var(--card-bg);
+    border: 1px solid var(--border-color);
+    color: var(--text-main);
+    text-decoration: none;
+    font-weight: 700;
+    font-size: 13px;
+    transition: transform 0.2s, border-color 0.2s;
+}
+.matrix-card:active { transform: scale(0.97); }
+.matrix-card.twitch { border-color: rgba(145, 70, 255, 0.3); }
+.matrix-card.twitch span { color: var(--primary); }
+.matrix-card.youtube { border-color: rgba(255, 0, 0, 0.3); }
+.matrix-card.youtube span { color: var(--youtube); }
+.matrix-card.reddit { border-color: rgba(255, 69, 0, 0.3); }
+.matrix-card.reddit span { color: var(--reddit); }
+.matrix-card.twitter { border-color: rgba(29, 161, 242, 0.3); }
+.matrix-card.twitter span { color: var(--twitter); }
+.matrix-card.discord { border-color: rgba(88, 101, 242, 0.3); }
+.matrix-card.discord span { color: var(--discord); }
 
 .sheet-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.85); z-index: 2000; opacity: 0; pointer-events: none; transition: opacity 0.3s; display: flex; flex-direction: column; justify-content: flex-end; align-items: center; }
 .sheet-overlay.open { opacity: 1; pointer-events: auto; }
@@ -168,107 +323,6 @@ body, html { margin: 0; padding: 0; height: 100%; height: 100dvh; width: 100%; m
 
 .typing-indicator { display: flex; align-items: center; gap: 8px; font-size: 11px; color: var(--gerald); padding: 5px 20px; font-weight: 800; text-transform: uppercase; letter-spacing: 1px; }
 
-.reddit-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 12px; flex-shrink: 0; }
-.reddit-author { font-size: 11px; color: #a1a1aa; font-weight: 600; display: flex; flex-direction: column; gap: 3px;}
-.reddit-author span { color: var(--reddit); font-size: 12px;}
-.reddit-post-title { font-size: 15px; font-weight: 700; line-height: 1.4; color: #fff; margin-bottom: 5px; display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; flex-shrink: 0; }
-.reddit-actions { display: flex; gap: 16px; border-top: 1px solid #27272a; padding-top: 12px; margin-top: 10px; color: #a1a1aa; font-size: 12px; font-weight: 800; flex-shrink: 0; }
-
-.miko-metadata { display: flex; align-items: flex-start; justify-content: space-between; padding: 12px 5px 0; background: transparent; width: 100%; gap: 10px; }
-.miko-metadata .author-info { display: flex; align-items: center; min-width: 0; flex: 1; }
-.miko-metadata img { width: 44px; height: 44px; border-radius: 50%; border: 2px solid var(--primary); margin-right: 12px; box-shadow: 0 2px 10px rgba(0,0,0,0.5); flex-shrink: 0; }
-.miko-metadata .author-text-block { min-width: 0; flex: 1; }
-.miko-metadata .author-name { font-weight: 800; font-size: 14px; color: white; display: -webkit-box; -webkit-line-clamp: 2; overflow: hidden; }
-.miko-metadata .clip-stats { font-size: 11px; font-weight: 700; color: var(--text-muted); display: flex; align-items: center; gap: 6px; margin-top: 5px; text-transform: uppercase; }
-
-.action-buttons { display: flex; align-items: center; gap: 5px; }
-.share-btn { background: transparent; border: none; display: flex; align-items: center; justify-content: center; cursor: pointer; transition: 0.2s; flex-shrink: 0; padding: 8px; width: 40px; height: 40px; color: var(--text-muted); }
-.share-btn:active { color: white; }
-.share-btn .gradient-icon { background: linear-gradient(135deg, var(--primary), #ff4685); -webkit-background-clip: text; -webkit-text-fill-color: transparent; display: inline-block; }
-
-.premium-badge { display: inline-flex; align-items: center; justify-content: center; gap: 8px; background: rgba(0, 0, 0, 0.7); backdrop-filter: blur(10px); border: 1px solid rgba(255, 255, 255, 0.15); padding: 6px 14px; border-radius: 30px; color: #fff; font-size: 10px; font-weight: 900; text-transform: uppercase; }
-.premium-badge .dot { width: 6px; height: 6px; border-radius: 50%; box-shadow: 0 0 8px currentColor; }
-.premium-badge.live .dot { background: var(--danger); color: var(--danger); animation: heartbeat 1.5s infinite; }
-.premium-badge.vod .dot { background: var(--primary); color: var(--primary); animation: heartbeat 1.5s infinite; }
-@keyframes heartbeat { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.4); } }
-
-/* --- FLOATING MATERIAL 3 NAVBAR --- */
-.bottom-nav { 
-    position: fixed; 
-    bottom: calc(20px + env(safe-area-inset-bottom, 0px)); 
-    left: 50%; 
-    transform: translateX(-50%); 
-    width: calc(100% - 32px); 
-    max-width: 420px; 
-    height: 76px;
-    background: var(--card-bg); 
-    border: 1px solid var(--border-color); 
-    border-radius: 28px; 
-    display: flex; 
-    justify-content: space-around; 
-    align-items: center; 
-    padding: 0 8px;
-    z-index: 1000; 
-    box-shadow: 0 10px 30px rgba(0,0,0,0.6);
-}
-
-.nav-item { 
-    display: flex; 
-    flex-direction: column; 
-    align-items: center; 
-    justify-content: center;
-    flex: 1; 
-    height: 100%;
-    color: var(--text-muted); 
-    cursor: pointer; 
-    text-decoration: none; 
-    -webkit-tap-highlight-color: transparent;
-}
-
-/* M3 Icon State */
-.nav-item .material-symbols-rounded, .nav-item svg { 
-    font-size: 24px; 
-    width: 24px;
-    height: 24px;
-    box-sizing: content-box;
-    color: var(--text-muted);
-    padding: 4px 16px; 
-    border-radius: 16px; /* Forms the M3 Pill */
-    margin-bottom: 4px;
-    transition: background-color 0.2s ease, color 0.2s ease;
-    z-index: 2;
-}
-
-/* Label State */
-.nav-label {
-    font-size: 11px;
-    font-weight: 600;
-    color: var(--text-muted);
-    transition: color 0.2s ease, font-weight 0.2s ease;
-    z-index: 2;
-}
-
-/* --- M3 ACTIVE STATES (NATIVE APP COLORS) --- */
-.nav-item.active .nav-label, .nav-item.active-gerald .nav-label { 
-    color: var(--text-main); 
-    font-weight: 700;
-}
-
-/* Primary Accent (Miko) */
-.nav-item.active .material-symbols-rounded, 
-.nav-item.active svg { 
-    font-variation-settings: 'FILL' 1; 
-    color: var(--primary); 
-    background: rgba(145, 70, 255, 0.15); 
-}
-
-/* Gerald Accent */
-.nav-item.active-gerald .material-symbols-rounded { 
-    font-variation-settings: 'FILL' 1; 
-    color: var(--gerald); 
-    background: rgba(14, 165, 233, 0.15); 
-}
-
 @media (min-width: 768px) {
     body { padding: 2vh; }
     #app-container { flex-direction: column; max-width: 1000px; height: 95vh; border-radius: 24px; }
@@ -277,6 +331,5 @@ body, html { margin: 0; padding: 0; height: 100%; height: 100dvh; width: 100%; m
     .nav-item { flex: initial; width: auto; padding: 0; }
     .nav-item .material-symbols-rounded { font-size: 28px; }
     .scroll-area { padding-bottom: 120px; }
-    .feed-snap-item { padding-bottom: 100px; } 
     .gerald-input-area { padding-bottom: 110px; }
 }
