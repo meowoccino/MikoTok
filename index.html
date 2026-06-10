@@ -16,7 +16,7 @@
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="https://unpkg.com/vue@3/dist/vue.global.prod.js"></script>
     
-    <link rel="stylesheet" href="./styles.css?v=32">
+    <link rel="stylesheet" href="./styles.css?v=33">
 </head>
 <body @click="closeFilterMenu">
     <div id="app-container" v-cloak>
@@ -53,21 +53,19 @@
                 :is-live="isLive"
                 :active-feed-video="activeFeedVideo"
                 :hostname="hostname"
+                @scroll="handleScroll"
+                @prev-vod="prevVod"
+                @next-vod="nextVod">
+            </home-view>
+
+            <clips-view
+                :current-tab="currentTab"
                 :clips="clips"
-                :active-filter-label="activeFilterLabel"
                 :optimize-twitch-img="optimizeTwitchImg"
                 :format-views="formatViews"
                 :format-date="formatDate"
-                @scroll="handleScroll"
-                @prev-vod="prevVod"
-                @next-vod="nextVod"
-                @open-filter="isFilterMenuOpen = true"
                 @share-clip="shareClip">
-            </home-view>
-
-            <div class="chat-container" style="height: calc(100% - 85px); width: 100%; display: flex; background: #050505;" v-if="currentTab === 'chat'">
-                <iframe :src="'https://www.twitch.tv/embed/codemiko/chat?parent=' + hostname + '&darkpopout'" style="width: 100%; height: 100%; border: none; outline: none;" allowfullscreen="false" scrolling="no" loading="lazy"></iframe>
-            </div>
+            </clips-view>
 
             <feed-view
                 :current-tab="currentTab"
@@ -102,6 +100,8 @@
                 @send="talkToGerald">
             </gerald-view>
 
+            <more-view :current-tab="currentTab"></more-view>
+
         </div>
 
         <filter-menu
@@ -110,14 +110,6 @@
             @close="isFilterMenuOpen = false"
             @apply="applyFilter">
         </filter-menu>
-
-        <discord-modal
-            :is-open="modals.discord"
-            @close="modals.discord = false"
-            @touch-start="handleModalTouchStart"
-            @touch-move="handleModalTouchMove"
-            @touch-end="handleModalTouchEnd">
-        </discord-modal>
 
         <profile-modal
             :is-open="modals.profile"
@@ -143,13 +135,12 @@
 
         <bottom-nav
             :current-tab="currentTab"
-            @change-tab="tab => { currentTab = tab; isHeaderVisible = true; }"
-            @open-discord="modals.discord = true">
+            @change-tab="tab => { currentTab = tab; isHeaderVisible = true; }">
         </bottom-nav>
 
     </div>
 
-    <script src="./app.js?v=32"></script>
+    <script src="./app.js?v=33"></script>
     <script>
       if ('serviceWorker' in navigator) {
         window.addEventListener('load', () => {
