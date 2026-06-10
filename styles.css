@@ -118,26 +118,22 @@ body, html { margin: 0; padding: 0; height: 100%; height: 100dvh; width: 100%; m
 .gerald-send { background: var(--gerald); border: none; width: 44px; height: 44px; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white; cursor: pointer; flex-shrink: 0; transition: 0.1s; }
 .gerald-send:active { transform: scale(0.9); }
 
-/* --- FLOATING NEON NAVBAR --- */
+/* --- MATERIAL DESIGN 3 NAVBAR --- */
 .bottom-nav { 
     position: fixed; 
-    bottom: max(20px, env(safe-area-inset-bottom, 20px)); 
+    bottom: 0; 
     left: 50%; 
     transform: translateX(-50%); 
-    width: calc(100% - 40px); 
-    max-width: 440px; 
-    height: 70px;
-    background: rgba(10, 10, 12, 0.75); 
-    backdrop-filter: blur(24px); 
-    -webkit-backdrop-filter: blur(24px); 
-    border-radius: 35px; 
-    border: 1px solid rgba(255, 255, 255, 0.08); 
+    width: 100%; 
+    max-width: 540px; 
+    height: 80px;
+    background: #0f0f11; /* M3 Surface Container */
+    border-top: 1px solid #1f1f22; 
     display: flex; 
     justify-content: space-around; 
     align-items: center; 
-    padding: 0 10px; 
+    padding-bottom: env(safe-area-inset-bottom, 0px);
     z-index: 1000; 
-    box-shadow: 0 20px 40px rgba(0,0,0,0.8), inset 0 1px 0 rgba(255,255,255,0.1); 
 }
 
 .nav-item { 
@@ -147,84 +143,60 @@ body, html { margin: 0; padding: 0; height: 100%; height: 100dvh; width: 100%; m
     justify-content: center;
     flex: 1; 
     height: 100%;
-    color: #52525b; 
+    color: #a1a1aa; /* M3 On-Surface Variant */
     cursor: pointer; 
     text-decoration: none; 
-    position: relative;
-    transition: all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1); 
     -webkit-tap-highlight-color: transparent;
 }
 
-/* Icon Default State */
+/* Icon Default State (M3 Dimensions) */
 .nav-item .material-symbols-rounded, .nav-item svg { 
     font-size: 24px; 
-    color: #52525b;
-    transition: all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+    width: 24px;
+    height: 24px;
+    box-sizing: content-box;
+    color: #a1a1aa;
+    padding: 4px 20px; /* Creates the 32x64px M3 Pill */
+    border-radius: 16px; 
+    margin-bottom: 4px;
+    transition: background-color 0.2s ease, color 0.2s ease;
     z-index: 2;
 }
 
 /* Label Default State */
 .nav-label {
-    font-size: 10px;
-    font-weight: 700;
-    margin-top: 4px;
-    transition: all 0.3s ease;
+    font-size: 12px;
+    font-weight: 600;
+    transition: color 0.2s ease, font-weight 0.2s ease;
     z-index: 2;
 }
 
-/* The Glowing Indicator Dot */
-.nav-item::after {
-    content: '';
-    position: absolute;
-    bottom: 8px;
-    width: 4px;
-    height: 4px;
-    border-radius: 50%;
-    background: transparent;
-    transition: all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
-    opacity: 0;
-    transform: translateY(10px) scale(0);
+/* --- M3 ACTIVE STATES --- */
+.nav-item.active .nav-label { 
+    color: #e4d9ff; 
+    font-weight: 700;
 }
 
-/* --- ACTIVE STATES (THE WOW FACTOR) --- */
-.nav-item.active .nav-label, .nav-item.active-gerald .nav-label { 
-    color: #ffffff; 
-}
-
-/* Miko Accent */
-.nav-item.active .material-symbols-rounded { 
+/* Primary Accent (Miko) */
+.nav-item.active .material-symbols-rounded, 
+.nav-item.active svg { 
     font-variation-settings: 'FILL' 1; 
-    color: var(--primary); 
-    transform: translateY(-6px); 
-    filter: drop-shadow(0 4px 10px rgba(145, 70, 255, 0.6));
-}
-
-.nav-item.active::after {
-    background: var(--primary);
-    box-shadow: 0 0 10px var(--primary), 0 0 20px var(--primary);
-    opacity: 1;
-    transform: translateY(0) scale(1);
+    color: #e4d9ff; /* M3 On-Primary Container */
+    background: rgba(145, 70, 255, 0.25); /* M3 Primary Container */
 }
 
 /* Gerald Accent */
+.nav-item.active-gerald .nav-label { 
+    color: #bae6fd; 
+    font-weight: 700;
+}
+
 .nav-item.active-gerald .material-symbols-rounded { 
     font-variation-settings: 'FILL' 1; 
-    color: var(--gerald); 
-    transform: translateY(-6px); 
-    filter: drop-shadow(0 4px 10px rgba(14, 165, 233, 0.6));
+    color: #bae6fd; 
+    background: rgba(14, 165, 233, 0.25); 
 }
 
-.nav-item.active-gerald::after {
-    background: var(--gerald);
-    box-shadow: 0 0 10px var(--gerald), 0 0 20px var(--gerald);
-    opacity: 1;
-    transform: translateY(0) scale(1);
-}
-
-/* Tap Squish Physics */
-.nav-item:active { 
-    transform: scale(0.85) translateY(2px); 
-}
 
 .sheet-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.85); z-index: 2000; opacity: 0; pointer-events: none; transition: opacity 0.3s; display: flex; flex-direction: column; justify-content: flex-end; align-items: center; }
 .sheet-overlay.open { opacity: 1; pointer-events: auto; }
