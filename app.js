@@ -153,7 +153,7 @@ const ChatView = {
         insertEmote(name) {
             this.$emit('insert-chat-emote', name);
             this.showPicker = false;
-            this.$nextTick(() => this.$refs.chatInput && this.$refs.chatInput.focus());
+            // No nextTick focus here to prevent android keyboard popping open!
         },
         togglePicker() {
             this.showPicker = !this.showPicker;
@@ -292,6 +292,9 @@ const GeraldView = {
                 </div>
                 <div class="gerald-title-block">
                     <span class="gerald-name-text">Gerald O.S.</span>
+                    <div class="gerald-status-sub" :class="apiConnected ? 'sub-online' : 'sub-offline'">
+                        {{ apiConnected ? 'SYSTEM: ONLINE // CLOUD_STREAM_ACTIVE' : 'SYSTEM: STANDBY // API_DISCONNECTED' }}
+                    </div>
                 </div>
             </div>
             <div class="gerald-messages" id="gerald-msgs" @click="$emit('close-pickers')">
@@ -488,46 +491,44 @@ createApp({
             const color = tags['color'] || '#9146FF';
             const text = matchText[1].trim();
 
-            if (user !== twitchUsername.value) {
-                const badges = [];
-                if (tags['badges']) {
-                    tags['badges'].split(',').forEach(b => {
-                        const [type, ver] = b.split('/');
-                        if (type === 'broadcaster') badges.push({ title: 'Broadcaster', img: 'https://static-cdn.jtvnw.net/badges/v1/5527c58c-fb7d-422d-b71b-f309dcb85cc1/1' });
-                        else if (type === 'moderator') badges.push({ title: 'Mod', img: 'https://static-cdn.jtvnw.net/badges/v1/3267646d-33f0-4b17-b3df-f923a41db1d0/1' });
-                        else if (type === 'vip') badges.push({ title: 'VIP', img: 'https://static-cdn.jtvnw.net/badges/v1/b817aba4-fad8-49e2-b88a-7cc744dfa6ec/1' });
-                        else if (type === 'subscriber') badges.push({ title: `Sub`, img: 'https://static-cdn.jtvnw.net/badges/v1/5d9f2208-5dd8-11e7-8513-2ff4adfae661/1' });
-                    });
-                }
-
-                sbClient.from('twitch_chat_logs').insert({ username: user, message: text, color: color, badges: badges }).then();
-
-                let html = text.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
-                if (tags['emotes']) {
-                    const replacements = [];
-                    tags['emotes'].split('/').forEach(e => {
-                        const [id, positions] = e.split(':');
-                        if (!positions) return;
-                        positions.split(',').forEach(pos => {
-                            const [s, en] = pos.split('-').map(Number);
-                            replacements.push({ s, en, id });
-                        });
-                    });
-                    replacements.sort((a, b) => b.s - a.s);
-                    const chars = [...text];
-                    replacements.forEach(({ s, en, id }) => {
-                        const emoteName = chars.slice(s, en + 1).join('');
-                        chars.splice(s, en - s + 1, `<img src="https://static-cdn.jtvnw.net/emoticons/v2/${id}/default/dark/1.0" class="chat-emote-img" title="${emoteName}">`);
-                    });
-                    html = chars.join('');
-                } else {
-                    html = processEmotes(text);
-                }
-
-                chatMessages.value.push({ username: user, html: html, color: color, badges: badges });
-                if (chatMessages.value.length > 200) chatMessages.value.shift();
-                if (currentTab.value === 'chat') scrollChatToBottom();
+            const badges = [];
+            if (tags['badges']) {
+                tags['badges'].split(',').forEach(b => {
+                    const [type, ver] = b.split('/');
+                    if (type === 'broadcaster') badges.push({ title: 'Broadcaster', img: 'https://static-cdn.jtvnw.net/badges/v1/5527c58c-fb7d-422d-b71b-f309dcb85cc1/1' });
+                    else if (type === 'moderator') badges.push({ title: 'Mod', img: 'https://static-cdn.jtvnw.net/badges/v1/3267646d-33f0-4b17-b3df-f923a41db1d0/1' });
+                    else if (type === 'vip') badges.push({ title: 'VIP', img: 'https://static-cdn.jtvnw.net/badges/v1/b817aba4-fad8-49e2-b88a-7cc744dfa6ec/1' });
+                    else if (type === 'subscriber') badges.push({ title: `Sub`, img: 'https://static-cdn.jtvnw.net/badges/v1/5d9f2208-5dd8-11e7-8513-2ff4adfae661/1' });
+                });
             }
+
+            sbClient.from('twitch_chat_logs').insert({ username: user, message: text, color: color, badges: badges }).then();
+
+            let html = text.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+            if (tags['emotes']) {
+                const replacements = [];
+                tags['emotes'].split('/').forEach(e => {
+                    const [id, positions] = e.split(':');
+                    if (!positions) return;
+                    positions.split(',').forEach(pos => {
+                        const [s, en] = pos.split('-').map(Number);
+                        replacements.push({ s, en, id });
+                    });
+                });
+                replacements.sort((a, b) => b.s - a.s);
+                const chars = [...text];
+                replacements.forEach(({ s, en, id }) => {
+                    const emoteName = chars.slice(s, en + 1).join('');
+                    chars.splice(s, en - s + 1, `<img src="https://static-cdn.jtvnw.net/emoticons/v2/${id}/default/dark/1.0" class="chat-emote-img" title="${emoteName}">`);
+                });
+                html = chars.join('');
+            } else {
+                html = processEmotes(text);
+            }
+
+            chatMessages.value.push({ username: user, html: html, color: color, badges: badges });
+            if (chatMessages.value.length > 200) chatMessages.value.shift();
+            if (currentTab.value === 'chat') scrollChatToBottom();
         };
 
         const connectTwitchChat = () => {
@@ -576,9 +577,13 @@ createApp({
             const msg = chatInput.value.trim();
             twitchWs.send(`PRIVMSG #codemiko :${msg}`);
             
-            sbClient.from('twitch_chat_logs').insert({ username: twitchUsername.value || 'You', message: msg, color: '#9146FF', badges: [] }).then();
+            let myBadges = [];
+            const myLast = chatMessages.value.slice().reverse().find(m => m.username === twitchUsername.value && m.badges && m.badges.length > 0);
+            if (myLast) myBadges = myLast.badges;
 
-            chatMessages.value.push({ username: twitchUsername.value || 'You', html: processEmotes(msg), color: '#9146FF', badges: [] });
+            sbClient.from('twitch_chat_logs').insert({ username: twitchUsername.value || 'You', message: msg, color: '#9146FF', badges: myBadges }).then();
+
+            chatMessages.value.push({ username: twitchUsername.value || 'You', html: processEmotes(msg), color: '#9146FF', badges: myBadges });
             chatInput.value = '';
             scrollChatToBottom();
         };
@@ -664,7 +669,6 @@ createApp({
             html = html.replace(/\[([^\]]+)\]\((https?:\/\/[^\s]+)\)/gi, '<a href="$2" target="_blank" style="color: var(--primary); text-decoration: underline; font-weight: bold;">$1</a>');
             html = html.replace(/(^|[^"'])(https?:\/\/[^\s<)]+)/gi, '$1<a href="$2" target="_blank" style="color: var(--primary); text-decoration: underline; word-break: break-all;">$2</a>');
             
-            // Fixed Emote parsing inside Chat/Gerald Message boxes
             const words = html.split(' ');
             for (let i = 0; i < words.length; i++) {
                 const cleanWord = words[i].replace(/^:|:$/g, '');
@@ -697,7 +701,6 @@ createApp({
             const game = games[type];
             if (!game) return;
             
-            // Fix: Push locally processed strings so it doesn't try to sync with the crashed edge function
             geraldMessages.value.push({ role: 'user', content: game.msg });
             closePickers();
             
@@ -854,7 +857,7 @@ createApp({
         });
 
         return { 
-            hostname, splashVisible, splashOpacity, currentTab, appTheme, toggleTheme, clips, modals, isLive, toast, currentUser, loginEmail, loginPass, apiConfig, geraldInput, geraldMessages, isGeraldTyping, talkToGerald, logoSvg, syncState, wipeState, logoutState, isHeaderVisible, handleScroll, handleModalTouchStart, handleModalTouchMove, handleModalTouchEnd, currentFilter, activeFilterLabel, isFilterMenuOpen, closeFilterMenu, applyFilter, parseMarkdown, recentVods, currentVodIndex, nextVod, prevVod, customEmotes, showEmotePicker, insertEmote, clearGeraldHistory, handleGeraldEnter, toggleEmotes, toggleMinigames, closePickers, nukeCache, activeClipId, tabOffset, switchTab, handleSwipeStart, handleSwipeEnd, playClip, selectedClip, showMinigames, runSync,
+            hostname, splashVisible, splashOpacity, currentTab, appTheme, toggleTheme, clips, modals, isLive, toast, currentUser, loginEmail, loginPass, apiConfig, geraldInput, geraldMessages, isGeraldTyping, talkToGerald, logoSvg, syncState, wipeState, logoutState, isHeaderVisible, handleScroll, handleModalTouchStart, handleModalTouchMove, handleModalTouchEnd, currentFilter, activeFilterLabel, isFilterMenuOpen, closeFilterMenu, applyFilter, parseMarkdown, recentVods, currentVodIndex, nextVod, prevVod, customEmotes, showEmotePicker, insertEmote, clearGeraldHistory, handleGeraldEnter, toggleEmotes, toggleMinigames, closePickers, nukeCache, activeClipId, tabOffset, switchTab, handleSwipeStart, handleSwipeEnd, playClip, playMinigame, selectedClip, showMinigames, runSync,
             chatMessages, chatInput, twitchChatToken, twitchAuthUrl, twitchUsername, sendTwitchChatMessage,
             handleLogin: async () => { const email = loginEmail.value.includes('@') ? loginEmail.value : `${loginEmail.value}@miko.com`; const { data } = await sbClient.auth.signInWithPassword({ email, password: loginPass.value }); if(data.user) { currentUser.value = data.user; modals.value.profile = false; loadGeraldHistory(); } }, 
             handleLogout: () => { if (logoutState.value !== 'idle') return; logoutState.value = 'logging_out'; setTimeout(() => { sbClient.auth.signOut(); currentUser.value = null; geraldMessages.value = [{role:'gerald', content: ''}]; localStorage.removeItem('tw_chat_token'); localStorage.removeItem('tw_username'); twitchChatToken.value = null; twitchUsername.value = null; if (twitchWs) twitchWs.close(); modals.value.profile = false; logoutState.value = 'idle'; }, 1500); },
