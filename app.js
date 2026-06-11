@@ -189,20 +189,16 @@ const ChatView = {
                 </div>
             </div>
 
-            <transition name="tray-slide">
-                <div class="chat-emote-tray" v-if="showPicker && isLoggedIn" @click.stop>
-                    <input ref="pickerSearch" v-model="pickerQuery"
-                           class="emote-search-input" placeholder="Search emotes…">
-                    <div class="emote-picker-grid">
-                        <img v-for="([name, emote]) in filteredEmotes" :key="name"
-                             :src="getEmoteUrl(emote)" :title="name"
-                             class="emote-picker-img"
-                             @click="insertEmote(name)">
-                        <div v-if="filteredEmotes.length === 0"
-                             style="color:var(--text-muted);font-size:12px;padding:8px;width:100%;">No emotes found</div>
-                    </div>
+            <div class="chat-emote-tray" v-show="showPicker && isLoggedIn" @click.stop>
+                <input ref="pickerSearch" v-model="pickerQuery" class="emote-search-input" placeholder="Search emotes…">
+                <div class="emote-picker-grid">
+                    <img v-for="([name, emote]) in filteredEmotes" :key="name"
+                         :src="getEmoteUrl(emote)" :title="name"
+                         class="emote-picker-img"
+                         @click="insertEmote(name)">
+                    <div v-if="filteredEmotes.length === 0" style="color:var(--text-muted);font-size:12px;padding:8px;width:100%;">No emotes found</div>
                 </div>
-            </transition>
+            </div>
 
             <div v-if="isLoggedIn" class="custom-chat-input-area">
                 <button class="chat-icon-btn" :class="{ 'chat-icon-active': showPicker }" @click.stop="togglePicker" title="Emotes">
@@ -497,7 +493,7 @@ createApp({
                 badges: badges
             }).then();
 
-            let html = text.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+            let html = text.replace(/&/g, '&').replace(/</g, '<').replace(/>/g, '>');
             if (tags['emotes']) {
                 const replacements = [];
                 tags['emotes'].split('/').forEach(e => {
@@ -552,7 +548,7 @@ createApp({
                     .then(({ data }) => {
                         if (data) {
                             data.reverse().forEach(row => {
-                                let html = row.message.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+                                let html = row.message.replace(/&/g, '&').replace(/</g, '<').replace(/>/g, '>');
                                 Object.entries(customEmotes.value).forEach(([name, emote]) => {
                                     if (emote.url) {
                                         const escaped = name.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
@@ -581,7 +577,7 @@ createApp({
             if (!chatInput.value.trim() || !twitchWs || !twitchChatToken.value || !wsAuthenticated) return;
             const msg = chatInput.value.trim();
             twitchWs.send(`PRIVMSG #codemiko :${msg}`);
-            let html = msg.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+            let html = msg.replace(/&/g, '&').replace(/</g, '<').replace(/>/g, '>');
             Object.entries(customEmotes.value).forEach(([name, emote]) => {
                 if (!emote.url) return;
                 const escaped = name.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
@@ -659,7 +655,7 @@ createApp({
         
         const parseMarkdown = (text) => {
             if (!text) return '';
-            let html = text.replace(/</g, '&lt;').replace(/>/g, '&gt;');
+            let html = text.replace(/</g, '<').replace(/>/g, '>');
             html = html.replace(/(^|\W)'([^']+)'(\W|$)/g, '$1<strong>$2</strong>$3');
             html = html.replace(/\*\*(.*?)\*\*/g, '$1').replace(/\*(.*?)\*/g, '$1'); 
             html = html.replace(/\[([^\]]+)\]\((https?:\/\/[^\s]+)\)/gi, '<a href="$2" target="_blank" style="color: var(--primary); text-decoration: underline; font-weight: bold;">$1</a>');
@@ -831,11 +827,4 @@ createApp({
         return { 
             hostname, splashVisible, splashOpacity, currentTab, appTheme, toggleTheme, clips, modals, isLive, toast, currentUser, loginEmail, loginPass, apiConfig, geraldInput, geraldMessages, isGeraldTyping, talkToGerald, logoSvg, syncState, wipeState, logoutState, runSync, isHeaderVisible, handleScroll, handleModalTouchStart, handleModalTouchMove, handleModalTouchEnd, currentFilter, activeFilterLabel, isFilterMenuOpen, closeFilterMenu, applyFilter, parseMarkdown, recentVods, currentVodIndex, nextVod, prevVod, customEmotes, showEmotePicker, insertEmote, clearGeraldHistory, handleGeraldEnter, toggleEmotes, toggleMinigames, closePickers, nukeCache, activeClipId, tabOffset, switchTab, handleSwipeStart, handleSwipeEnd, playClip, selectedClip,
             chatMessages, chatInput, twitchChatToken, twitchAuthUrl, twitchUsername, sendTwitchChatMessage,
-            handleLogin: async () => { const email = loginEmail.value.includes('@') ? loginEmail.value : `${loginEmail.value}@miko.com`; const { data } = await sbClient.auth.signInWithPassword({ email, password: loginPass.value }); if(data.user) { currentUser.value = data.user; modals.value.profile = false; loadGeraldHistory(); } }, 
-            handleLogout: () => { if (logoutState.value !== 'idle') return; logoutState.value = 'logging_out'; setTimeout(() => { sbClient.auth.signOut(); currentUser.value = null; geraldMessages.value = [{role:'gerald', content: ''}]; modals.value.profile = false; logoutState.value = 'idle'; }, 1500); },
-            optimizeTwitchImg: (u) => u ? u.replace('%{width}', '480').replace('%{height}', '270') : '', 
-            formatViews: (v) => v ? v.toLocaleString() : '0', 
-            formatDate: (d) => new Date(d).toLocaleDateString([], {month:'short', day:'numeric'})
-        };
-    }
-}).mount('#app-container');
+            handleLogin: async () => { const email = loginEmail.value.includes('@') ? loginEmail.value : `${loginEmail.value}@miko.com`; const { data } = await sbClient.auth.signInWithPassword({ email, password: loginPass.value }); if(data.user) { currentUser.value
