@@ -15,12 +15,12 @@ const AppHeader = {
 
 const BottomNav = {
     props: ['currentTab'],
-    template: `<nav class="bottom-nav"><div class="nav-item" :class="{ active: currentTab === 'home' }" @click="$emit('change-tab', 'home')"><span class="material-symbols-rounded">home</span>Home</div><div class="nav-item" :class="{ active: currentTab === 'chat' }" @click="$emit('change-tab', 'chat')"><span class="material-symbols-rounded">chat</span>Chat</div><div class="nav-item" :class="{ active: currentTab === 'feed' }" @click="$emit('change-tab', 'feed')"><span class="material-symbols-rounded">forum</span>Feed</div><div class="nav-item" :class="{ active: currentTab === 'gerald' }" @click="$emit('change-tab', 'gerald')"><span class="material-symbols-rounded">graphic_eq</span>Gerald</div></nav>`
+    template: `<nav class="bottom-nav"><div class="nav-item" :class="{ active: currentTab === 'home' }" @click="$emit('change-tab', 'home')"><span class="material-symbols-rounded">home</span>Home</div><div class="nav-item" :class="{ active: currentTab === 'chat' }" @click="$emit('change-tab', 'chat')"><span class="material-symbols-rounded">chat</span>Chat</div><div class="nav-item" :class="{ active: currentTab === 'feed' }" @click="$emit('change-tab', 'feed')"><span class="material-symbols-rounded">forum</span>Feed</div><div class="nav-item" :class="{ 'active-gerald': currentTab === 'gerald' }" @click="$emit('change-tab', 'gerald')"><span class="material-symbols-rounded">graphic_eq</span>Gerald</div></nav>`
 };
 
 const ClipModal = {
     props: ['clip', 'hostname'],
-    template: `<div class="clip-modal-overlay" :class="{ open: !!clip }" @click.self="$emit('close')"><div class="clip-modal-content" v-if="clip"><button class="clip-close-x" @click="$emit('close')"><span class="material-symbols-rounded">close</span></button><div class="clip-frame-container"><iframe :src="'https://clips.twitch.tv/embed?clip=' + clip.id + '&parent=' + hostname + '&autoplay=true&muted=false'" allow="autoplay; fullscreen" allowfullscreen></iframe></div></div></div>`
+    template: `<div class="clip-modal-overlay" :class="{ open: !!clip }" @click.self="$emit('close')"><div class="clip-modal-content" v-if="clip"><button class="clip-close-x" @click="$emit('close')"><span class="material-symbols-rounded">close</span></button><div class="clip-frame-container"><iframe :src="'https://clips.twitch.tv/embed?clip=' + clip.id + '&parent=' + hostname + '&autoplay=1&muted=0'" allow="autoplay; fullscreen" allowfullscreen></iframe></div></div></div>`
 }
 
 const FilterMenu = {
@@ -34,7 +34,7 @@ const ProfileModal = {
 };
 
 const ChatView = {
-    props: ['currentTab', 'chatMessages', 'chatInput', 'isLoggedIn', 'twitchAuthUrl'],
+    props: ['currentTab', 'chatMessages', 'chatInput', 'isLoggedIn'],
     template: `<div class="chat-wrapper" v-show="currentTab === 'chat'"><div class="twitch-chat-list" id="twitch-chat-list"><div v-if="!isLoggedIn" class="chat-login-prompt"><span class="material-symbols-rounded" style="font-size:48px; color:var(--primary); margin-bottom:10px;">login</span><p>Login to chat and use emotes.</p><button class="twitch-login-btn" @click="$emit('login-twitch')">Connect Twitch</button></div><div v-for="(msg, i) in chatMessages" :key="i" class="twitch-msg-row"><span class="twitch-username" :style="{color: msg.color}">{{ msg.username }}</span><span class="twitch-text" v-html="msg.html"></span></div></div><div class="custom-chat-input-area"><input type="text" class="custom-chat-input" placeholder="Send a message..." :value="chatInput" @input="$emit('update-input', $event.target.value)" @keydown.enter="$emit('send-chat')" :disabled="!isLoggedIn"><button class="icon-btn" @click="$emit('send-chat')" :disabled="!isLoggedIn || !chatInput.trim()"><span class="material-symbols-rounded" style="font-size: 20px;">send</span></button></div></div>`
 };
 
@@ -96,6 +96,12 @@ createApp({
             const body = document.body;
             body.className = '';
             body.classList.add('theme-' + appTheme.value);
+            
+            // Sync background colors for Android Chrome URL address bars dynamically
+            const metaTheme = document.querySelector('meta[name="theme-color"]');
+            if (metaTheme) {
+                metaTheme.setAttribute('content', appTheme.value === 'light' ? '#f8f9fa' : '#0d0d11');
+            }
         };
 
         const toggleTheme = () => {
@@ -107,7 +113,7 @@ createApp({
         const loginToTwitch = () => {
             const clientId = apiConfig.value.cid || 'kimne78kx3ncx6brgo4mv6wki5h1ko';
             const redirectUri = "https://meowoccino.github.io/MikoTok/";
-            window.location.href = `https://id.twitch.tv/oauth2/authorize?client_id=${clientId}&redirect_uri=${encodeURIComponent(redirectUri)}&response_type=token&scope=chat:read+chat:edit&force_verify=true`;
+            window.location.assign(`https://id.twitch.tv/oauth2/authorize?client_id=${clientId}&redirect_uri=${encodeURIComponent(redirectUri)}&response_type=token&scope=chat:read+chat:edit&force_verify=true`);
         };
 
         const parseTwitchEmotes = (text, emotesTag) => {
@@ -364,7 +370,6 @@ createApp({
         };
 
         const fetchSocialFeeds = () => {
-            // Updated pipeline values to render exactly 10 robust mock cards immediately to override CORS block issues cleanly
             redditFeed.value = [
                 { id: 'r1', author: 'MikoTok_Bot', title: 'CodeMiko Streaming System Pipeline Check and Audit.', thumbnail: '', ups: 512, num_comments: 14, permalink: '/r/CodeMiko', date: 'Just Now' },
                 { id: 'r2', author: 'Technician_Boss', title: 'Unreal Engine 5 compilation metrics optimization notes.', thumbnail: '', ups: 241, num_comments: 8, permalink: '/r/CodeMiko', date: '5 hours ago' },
