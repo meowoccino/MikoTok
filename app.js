@@ -53,20 +53,6 @@ const BottomNav = {
     `
 };
 
-const ClipModal = {
-    props: ['clip', 'hostname'],
-    template: `
-        <div class="clip-modal-overlay" :class="{ open: !!clip }" @click.self="$emit('close')">
-            <div class="clip-modal-content" v-if="clip">
-                <button class="clip-close-x" @click="$emit('close')"><span class="material-symbols-rounded">close</span></button>
-                <div class="clip-frame-container">
-                    <iframe :src="'https://clips.twitch.tv/embed?clip=' + clip.id + '&parent=' + hostname + '&autoplay=true&muted=false'" allow="autoplay; fullscreen" allowfullscreen></iframe>
-                </div>
-            </div>
-        </div>
-    `
-};
-
 const FilterMenu = {
     props: ['isOpen', 'currentFilter'],
     template: `
@@ -131,6 +117,20 @@ const ProfileModal = {
                             </div>
                         </button>
                     </div>
+                </div>
+            </div>
+        </div>
+    `
+};
+
+const ClipModal = {
+    props: ['clip', 'hostname'],
+    template: `
+        <div class="clip-modal-overlay" :class="{ open: !!clip }" @click.self="$emit('close')">
+            <div class="clip-modal-content" v-if="clip">
+                <button class="clip-close-x" @click="$emit('close')"><span class="material-symbols-rounded">close</span></button>
+                <div class="clip-frame-container">
+                    <iframe :src="'https://clips.twitch.tv/embed?clip=' + clip.id + '&parent=' + hostname + '&autoplay=true&muted=false'" allow="autoplay; fullscreen" allowfullscreen></iframe>
                 </div>
             </div>
         </div>
@@ -212,10 +212,12 @@ const GeraldView = {
     template: `
         <div class="gerald-container">
             <div class="gerald-header" @click="$emit('close-pickers')">
-                <img src="gerald.png" class="gerald-avatar" alt="Gerald">
-                <div class="gerald-title-block">
-                    <span class="gerald-name-text">Gerald OS</span>
-                    <div :class="apiConnected ? 'pulse-dot-live' : 'pulse-dot-offline'"></div>
+                <div class="gerald-avatar-wrapper">
+                    <img src="gerald.png" class="gerald-avatar" alt="Gerald">
+                    <div class="gerald-title-block">
+                        <span class="gerald-name-text">Gerald OS</span>
+                        <div :class="apiConnected ? 'pulse-dot-live' : 'pulse-dot-offline'"></div>
+                    </div>
                 </div>
             </div>
             <div class="gerald-messages" id="gerald-msgs" @click="$emit('close-pickers')">
@@ -624,8 +626,9 @@ createApp({
 
         onMounted(async () => {
             const clientId = apiConfig.value.cid || 'kimne78kx3ncx6brgo4mv6wki5h1ko';
-            // Hardcoded strictly to match exact Twitch Console URI
-            twitchAuthUrl.value = 'https://id.twitch.tv/oauth2/authorize?client_id=' + clientId + '&redirect_uri=' + encodeURIComponent('https://meowoccino.github.io/MikoTok/') + '&response_type=token&scope=chat:read+chat:edit&force_verify=true';
+            let baseUri = window.location.origin + window.location.pathname;
+            if (baseUri.endsWith('/')) { baseUri = baseUri.slice(0, -1); }
+            twitchAuthUrl.value = 'https://id.twitch.tv/oauth2/authorize?client_id=' + clientId + '&redirect_uri=' + encodeURIComponent(baseUri) + '&response_type=token&scope=chat:read+chat:edit&force_verify=true';
             
             updateThemeClass();
             if (window.location.hash.includes('access_token')) {
