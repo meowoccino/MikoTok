@@ -16,7 +16,7 @@
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="https://unpkg.com/vue@3/dist/vue.global.prod.js"></script>
     
-    <link rel="stylesheet" href="./styles.css?v=54">
+    <link rel="stylesheet" href="./styles.css?v=55">
 </head>
 <body @click="closeFilterMenu">
     <div id="app-container" v-cloak :class="['theme-' + appTheme, {'gerald-theme': currentTab === 'gerald'}]">
@@ -54,6 +54,7 @@
                         :optimize-twitch-img="optimizeTwitchImg"
                         :format-views="formatViews"
                         :format-date="formatDate"
+                        :active-clip-id="activeClipId"
                         @prev-vod="prevVod"
                         @next-vod="nextVod"
                         @open-filter="isFilterMenuOpen = true"
@@ -147,6 +148,6 @@
 
     </div>
 
-    <script src="./app.js?v=54"></script>
+    <script src="./app.js?v=55"></script>
 </body>
 </html>
