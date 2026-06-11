@@ -198,7 +198,7 @@ const GeraldView = {
             <div class="gerald-messages" id="gerald-msgs" @click="$emit('close-pickers')">
                 <template v-for="(m, i) in geraldMessages" :key="i">
                     <div v-if="i === 0 && m.role === 'gerald'" class="terminal-intro">
-                        <div class="terminal-text">> Human detected.<br>> State your inquiry.</div>
+                        <div class="terminal-text startup-anim">> Human detected.<br>> State your inquiry.</div>
                         <div class="gerald-system-card startup-anim-delay">
                             <div class="gerald-sys-row"><span class="sys-label">CORE:</span> <span class="sys-value">ONLINE</span></div>
                             <div class="gerald-sys-row"><span class="sys-label">MOOD:</span> <span class="sys-value">SARCASTIC</span></div>
@@ -304,7 +304,7 @@ createApp({
         
         const tabOffset = computed(() => {
             const index = tabs.indexOf(currentTab.value);
-            return -(index * 25); 
+            return -(index * 100); 
         });
 
         const appTheme = ref(localStorage.getItem('miko_theme') || 'light');
@@ -604,9 +604,7 @@ createApp({
 
         onMounted(async () => {
             const clientId = apiConfig.value.cid || 'kimne78kx3ncx6brgo4mv6wki5h1ko';
-            let baseUri = window.location.origin + window.location.pathname;
-            if (baseUri.endsWith('/')) { baseUri = baseUri.slice(0, -1); }
-            twitchAuthUrl.value = 'https://id.twitch.tv/oauth2/authorize?client_id=' + clientId + '&redirect_uri=' + encodeURIComponent(baseUri) + '&response_type=token&scope=chat:read+chat:edit&force_verify=true';
+            twitchAuthUrl.value = 'https://id.twitch.tv/oauth2/authorize?client_id=' + clientId + '&redirect_uri=https://meowoccino.github.io/MikoTok/&response_type=token&scope=chat:read+chat:edit&force_verify=true';
             
             updateThemeClass();
             if (window.location.hash.includes('access_token')) {
