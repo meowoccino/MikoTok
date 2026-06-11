@@ -261,112 +261,22 @@ const MoreView = {
                     <svg viewBox="0 0 24 24" class="social-icon" style="color: #FFD500;"><path fill="currentColor" d="M12.11 0c-1.39 0-3.36.14-4.8.84-1.2.59-1.95 1.54-2.22 2.76-.23 1.04-.26 2.06-.27 2.82-.01.99.1 2.21.36 3.12.27.93.7 1.83 1.25 2.58.53.72 1.15 1.34 1.82 1.84.14.1.28.2.42.29-.21.23-.46.43-.73.59-.51.3-1.12.45-1.74.45-.48 0-.96-.1-1.42-.29-.39-.16-.76-.39-1.09-.67-.28-.23-.5-.51-.67-.82-.2-.36-.45-.63-.78-.81-.36-.21-.8-.28-1.24-.22-.38.05-.72.22-1 .47-.25.23-.44.53-.55.85-.11.34-.14.7-.08 1.05.06.33.19.65.38.93.38.56.97.94 1.63 1.13.88.25 1.83.25 2.72.06.66-.14 1.29-.38 1.88-.69.21-.11.43-.24.64-.4.32-.23.67-.4.16.03.65.61 1.48 1.15 2.37 1.5.8.31 1.66.47 2.54.47.88 0 1.74-.16 2.54-.47.89-.35 1.72-.89 2.37-1.5.38-.36.72-.77 1.01-1.21.25-.38.56-.71.93-.97.21-.16.43-.29.64-.4.59-.31 1.22-.55 1.88-.69.89-.19 1.84-.19 2.72-.06.66.19 1.25.57 1.63 1.13.19.28.32.6.38.93.06.35.03.71-.08 1.05-.11.32-.3.62-.55.85-.28.25-.62.42-1 .47-.44.06-.88-.01-1.24-.22-.33-.18-.58-.45-.78-.81-.17-.31-.39-.59-.67-.82-.33-.28-.7-.51-1.09-.67-.46-.19-.94-.29-1.42-.29-.62 0-1.23.15-1.74.45-.27.16-.52.36-.73.59.14-.09.28-.19.42-.29.67-.5 1.29-1.12 1.82-1.84.55-.75.98-1.65 1.25-2.58.26-.91.37-2.13.36-3.12-.01-.76-.04-1.78-.27-2.82-.27-1.22-1.02-2.17-2.22-2.76-1.44-.7-3.41-.84-4.8-.84z"/></svg>
                     <span style="color: var(--text-main);">Snapchat</span>
                 </a>
-            </div>
-        </div>
-    `
-};
-
-const GeraldView = {
-    props: ['currentTab', 'geraldMessages', 'isGeraldTyping', 'geraldInput', 'showEmotePicker', 'showMinigames', 'customEmotes', 'parseMarkdown', 'apiConnected'],
-    template: `
-        <div class="gerald-container">
-            <div class="gerald-header" @click="$emit('close-pickers')">
-                <img src="gerald.png" class="gerald-avatar" alt="Gerald">
-                <div class="gerald-title-block">
-                    <span class="gerald-name-text">Gerald O.S.</span>
-                    <div :class="apiConnected ? 'pulse-dot-live' : 'pulse-dot-offline'"></div>
-                </div>
-            </div>
-            <div class="gerald-messages" id="gerald-msgs" @click="$emit('close-pickers')">
-                <template v-for="(m, i) in geraldMessages" :key="i">
-                    <div v-if="i === 0 && m.role === 'gerald'" class="terminal-intro">
-                        <div class="terminal-text startup-anim">
-                            > Human detected.<br>
-                            > What do you want?
-                        </div>
-                    </div>
-                    <div v-else class="chat-bubble" :class="m.role" v-html="parseMarkdown(m.content)"></div>
-                </template>
-                <div v-if="isGeraldTyping" key="typing" class="typing-indicator">COMPUTING...</div>
-            </div>
-            <div class="gerald-action-area">
-                <div class="chat-emote-tray" v-show="showEmotePicker" style="bottom: 100%; border-bottom: none; border-radius: 16px 16px 0 0;">
-                    <div class="emote-picker-grid">
-                        <img v-for="(emote, name) in customEmotes" :key="name"
-                             :src="emote.url ? emote.url : 'https://cdn.discordapp.com/emojis/' + emote.id + '.' + (emote.animated ? 'gif' : 'png') + '?size=44'"
-                             class="emote-picker-img" @click="$emit('insert-emote', name)">
-                    </div>
-                </div>
-                <div class="chat-emote-tray" v-show="showMinigames" style="bottom: 100%; border-bottom: none; border-radius: 16px 16px 0 0;">
-                    <div class="emote-picker-grid" style="gap: 8px;">
-                        <button class="bribe-btn" @click="$emit('play-game', 'glitch')">🕶️ Glitch Persona</button>
-                        <button class="bribe-btn" @click="$emit('play-game', 'shader')">🔥 Compile UE5</button>
-                        <button class="bribe-btn" @click="$emit('play-game', 'boba')">🥤 Boba Spill</button>
-                        <button class="bribe-btn" @click="$emit('play-game', 'pineapple')">🚪 Pineapple Walk-In</button>
-                        <button class="bribe-btn" @click="$emit('play-game', 'cat')">🐈 Cat on PC</button>
-                        <button class="bribe-btn" @click="$emit('play-game', 'bits')">🎟️ 100K Bits</button>
-                        <button class="bribe-btn" @click="$emit('play-game', 'mute')">🔇 Mute Mic</button>
-                        <button class="bribe-btn" @click="$emit('play-game', 'bald')">🧑‍🦲 Delete Hair</button>
-                        <button class="bribe-btn" @click="$emit('play-game', 'siren')">🚨 Firetruck Siren</button>
-                    </div>
-                </div>
-                <div class="gerald-input-area">
-                    <div class="gerald-input-wrapper">
-                        <button class="emote-toggle-btn" @click="$emit('toggle-emotes')"><span class="material-symbols-rounded" :style="{ color: showEmotePicker ? 'var(--primary)' : 'inherit' }">mood</span></button>
-                        <button class="emote-toggle-btn" @click="$emit('toggle-minigames')"><span class="material-symbols-rounded" :style="{ color: showMinigames ? 'var(--primary)' : 'inherit' }">sports_esports</span></button>
-                        <textarea class="gerald-input" rows="1" placeholder="Message Gerald..." :value="geraldInput" @input="$emit('update-input', $event.target.value)" @keydown="$emit('key-down', $event)" id="gerald-txt-input" @focus="$emit('close-pickers')"></textarea>
-                    </div>
-                    <button class="gerald-send" @click="$emit('send')"><span class="material-symbols-rounded">send</span></button>
-                </div>
-            </div>
-        </div>
-    `
-};
-
-const HomeView = {
-    props: ['currentTab', 'currentVodIndex', 'recentVods', 'isLive', 'hostname', 'clips', 'activeFilterLabel', 'optimizeTwitchImg', 'formatViews', 'formatDate', 'activeClipId'],
-    template: `
-        <div>
-            <div class="hero-section">
-                <div class="header-controls" style="margin-bottom: 12px; display: flex; justify-content: flex-start;">
-                    <div :class="['premium-badge', isLive ? 'live-badge' : 'vod']">
-                        <div class="dot"></div>
-                        <span>{{ isLive ? 'LIVE' : (recentVods[currentVodIndex] ? 'VOD • ' + recentVods[currentVodIndex].date : 'PAST BROADCAST') }}</span>
-                    </div>
-                </div>
-                <div class="video-wrapper-outer">
-                    <div class="video-container">
-                        <iframe v-if="currentVodIndex === -1" id="miko-live-player" :src="'https://player.twitch.tv/?channel=codemiko&parent=' + hostname + '&autoplay=true&muted=true'" allow="autoplay; fullscreen" allowfullscreen loading="lazy"></iframe>
-                        <iframe v-else-if="recentVods && recentVods[currentVodIndex]" :src="'https://player.twitch.tv/?video=' + recentVods[currentVodIndex].id + '&parent=' + hostname + '&autoplay=false'" allow="autoplay; fullscreen" allowfullscreen loading="lazy"></iframe>
-                    </div>
-                </div>
-                <div class="carousel-controls" v-if="recentVods && recentVods.length > 0 && !isLive" style="margin-top: 12px; justify-content: flex-end;">
-                    <button class="carousel-btn" :class="{ 'hidden-arrow': currentVodIndex <= 0 }" @click.stop="$emit('prev-vod')"><span class="material-symbols-rounded">chevron_left</span></button>
-                    <button class="carousel-btn" :class="{ 'hidden-arrow': currentVodIndex >= recentVods.length - 1 }" @click.stop="$emit('next-vod')"><span class="material-symbols-rounded">chevron_right</span></button>
-                </div>
-            </div>
-            <div class="clips-list-container">
-                <div class="clips-header">
-                    <div class="filter-wrapper">
-                        <button class="filter-btn-tiny" @click="$emit('open-filter')">
-                            <span class="material-symbols-rounded" style="font-size: 16px;">sort</span><span>{{ activeFilterLabel }}</span>
-                        </button>
-                    </div>
-                </div>
-                <div class="clip-list-item" v-for="clip in clips" :key="clip.id" @click="$emit('play-clip', clip)">
-                    <div class="clip-thumb-wrapper">
-                        <img v-if="activeClipId !== clip.id" :src="clip.thumbnail_url ? optimizeTwitchImg(clip.thumbnail_url) : ''" loading="lazy" alt="Thumbnail">
-                        <iframe v-else :src="'https://clips.twitch.tv/embed?clip=' + clip.id + '&parent=' + hostname + '&autoplay=true&muted=false'" allow="autoplay; fullscreen" allowfullscreen style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: 5;"></iframe>
-                        <div class="duration-badge" v-if="activeClipId !== clip.id">0:45</div>
-                    </div>
-                    <div class="miko-metadata">
-                        <div class="author-name">{{ clip.title }}</div>
-                        <div class="clip-stats">
-                            <span>Just Chatting • {{ formatDate(clip.created_at) }}</span>
-                            <span>{{ formatViews(clip.view_count) }} views</span>
-                        </div>
-                    </div>
-                </div>
+                <a href="https://www.facebook.com/thecodemiko/" target="_blank" class="social-card">
+                    <svg viewBox="0 0 24 24" class="social-icon" style="color: #1877F2;"><path fill="currentColor" d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.469h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.469h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/></svg>
+                    <span style="color: var(--text-main);">Facebook</span>
+                </a>
+                <a href="https://discord.com/invite/codemiko" target="_blank" class="social-card">
+                    <svg viewBox="0 0 24 24" class="social-icon" style="color: #5865F2;"><path fill="currentColor" d="M20.317 4.3698a19.7913 19.7913 0 00-4.8851-1.5152.0741.0741 0 00-.0785.0371c-.211.3753-.4447.8648-.6083 1.2495-1.8447-.2762-3.68-.2762-5.4868 0-.1636-.3933-.4058-.8742-.6177-1.2495a.077.077 0 00-.0785-.037 19.7363 19.7363 0 00-4.8852 1.515.0699.0699 0 00-.0321.0277C.5334 9.0458-.319 13.5799.0992 18.0578a.0824.0824 0 00.0312.0561c2.0528 1.5076 4.0413 2.4228 5.9929 3.0294a.0777.0777 0 00.0842-.0276c.4616-.6304.8731-1.2952 1.226-1.9942a.076.076 0 00-.0416-.1057c-.6528-.2476-1.2743-.5495-1.8722-.8923a.077.077 0 01-.0076-.1277c.1258-.0943.2517-.1923.3718-.2914a.0743.0743 0 01.0776-.0105c3.9278 1.7933 8.18 1.7933 12.0614 0a.0739.0739 0 01.0785.0095c.1202.099.246.1981.3728.2924a.077.077 0 01-.0066.1276 12.2986 12.2986 0 01-1.873.8914.0766.0766 0 00-.0407.1067c.3604.698.7719 1.3628 1.225 1.9932a.076.076 0 00.0842.0286c1.961-.6067 3.9495-1.5219 6.0023-3.0294a.077.077 0 00.0313-.0552c.5004-5.177-.8382-9.6739-3.5485-13.6604a.061.061 0 00-.0312-.0286zM8.02 15.3312c-1.1825 0-2.1569-1.0857-2.1569-2.419 0-1.3332.9555-2.4189 2.157-2.4189 1.2108 0 2.1757 1.0952 2.1568 2.419 0 1.3332-.9555 2.4189-2.1569 2.4189zm7.9748 0c-1.1825 0-2.1569-1.0857-2.1569-2.419 0-1.3332.9554-2.4189 2.1569-2.4189 1.2108 0 2.1757 1.0952 2.1568 2.419 0 1.3332-.946 2.4189-2.1568 2.4189Z"/></svg>
+                    <span style="color: var(--text-main);">Discord</span>
+                </a>
+                <a href="https://www.reddit.com/r/CodeMiko/" target="_blank" class="social-card">
+                    <svg viewBox="0 0 24 24" class="social-icon" style="color: #FF4500;"><path fill="currentColor" d="M24 11.5c0-1.65-1.35-3-3-3-.96 0-1.86.48-2.42 1.24-1.64-1-3.75-1.64-6.07-1.72.08-1.1.4-3.05 1.52-3.7.72-.4 1.73-.24 3 .5C17.2 6.3 18.46 7.5 20 7.5c1.65 0 3-1.35 3-3s-1.35-3-3-3c-1.38 0-2.54.94-2.88 2.22-1.43-.72-2.64-.8-3.6-.25-1.64.94-1.95 3.47-2 4.55-2.33.08-4.45.7-6.1 1.72C4.86 8.98 3.96 8.5 3 8.5c-1.65 0-3 1.35-3 3 0 1.32.84 2.44 2.05 2.84-.03.22-.05.44-.05.66 0 3.86 4.5 7 10 7s10-3.14 10-7c0-.22-.02-.44-.05-.66 1.2-.4 2.05-1.54 2.05-2.84zM2.3 13.37C1.5 13.07 1 12.35 1 11.5c0-1.1.9-2 2-2 .64 0 1.22.32 1.6.82-1.1.85-1.92 1.9-2.3 3.05zm3.7.13c0-1.1.9-2 2-2s2 .9 2 2-.9 2-2 2-2-.9-2-2zm9.8 4.8c-1.08.63-2.42.96-3.8.96-1.4 0-2.74-.34-3.8-.95-.24-.13-.32-.44-.2-.68.15-.24.46-.32.7-.18 1.83 1.06 4.76 1.06 6.6 0 .23-.13.53-.05.67.2.14.23.06.54-.18.67zm.2-2.8c-1.1 0-2-.9-2-2s.9-2 2-2 2 .9 2 2-.9 2-2 2zm5.7-2.13c-.38-1.16-1.2-2.2-2.3-3.05.38-.5.96-.82 1.6-.82 1.1 0 2 .9 2 2 0 .84-.53 1.57-1.3 1.87z"/></svg>
+                    <span style="color: var(--text-main);">Reddit</span>
+                </a>
+                <a href="https://app.fanfix.io/@codeyuna" target="_blank" class="social-card">
+                    <span class="material-symbols-rounded social-icon" style="font-size: 28px; color: #FF3366;">favorite</span>
+                    <span style="color: var(--text-main);">Fanfix</span>
+                </a>
             </div>
         </div>
     `
@@ -443,7 +353,7 @@ createApp({
         };
 
         const processEmotes = (text) => {
-            let out = text.replace(/&/g, '&').replace(/</g, '<').replace(/>/g, '>');
+            let out = text.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
             const words = out.split(' ');
             for (let i = 0; i < words.length; i++) {
                 const cleanWord = words[i].replace(/^:|:$/g, '');
@@ -485,7 +395,7 @@ createApp({
 
                 sbClient.from('twitch_chat_logs').insert({ username: user, message: text, color: color, badges: badges }).then();
 
-                let html = text.replace(/&/g, '&').replace(/</g, '<').replace(/>/g, '>');
+                let html = text.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
                 if (tags['emotes']) {
                     const replacements = [];
                     tags['emotes'].split('/').forEach(e => {
@@ -799,18 +709,19 @@ createApp({
                 connectTwitchChat();
             }
 
-            const { data: { session } } = await sbClient.auth.getSession();
-            if (session?.user) { currentUser.value = session.user; loadGeraldHistory(); }
-            load7TVEmotes();
-            loadData(); checkLive();
+            try {
+                const { data: { session } } = await sbClient.auth.getSession();
+                if (session?.user) { currentUser.value = session.user; loadGeraldHistory(); }
+            } catch(e) {}
 
-            setInterval(loadData, 21600000);
-            setInterval(checkLive, 60000); 
+            await load7TVEmotes();
+            await loadData(); 
+            await checkLive();
 
             setTimeout(() => {
                 splashOpacity.value = 0;
                 setTimeout(() => { splashVisible.value = false; }, 400);
-            }, 2500);
+            }, 1200);
         });
 
         return { 
