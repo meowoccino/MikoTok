@@ -16,7 +16,7 @@
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="https://unpkg.com/vue@3/dist/vue.global.prod.js"></script>
     
-    <link rel="stylesheet" href="./styles.css?v=30">
+    <link rel="stylesheet" href="./styles.css?v=31">
 </head>
 <body @click="closeFilterMenu">
     <div id="app-container" v-cloak :class="{'gerald-theme': currentTab === 'gerald'}">
@@ -29,13 +29,8 @@
             :logo-svg="logoSvg">
         </splash-screen>
 
-        <pull-to-refresh 
-            :is-pulling="isPulling" 
-            :refresh-transform="refreshTransform" 
-            :is-refreshing="isRefreshing">
-        </pull-to-refresh>
-
         <app-header 
+            v-show="currentTab === 'home'"
             :is-header-visible="isHeaderVisible" 
             :current-tab="currentTab" 
             :is-live="isLive" 
@@ -43,11 +38,10 @@
             @open-profile="modals.profile = true">
         </app-header>
 
-        <div class="view-port" @touchstart="handlePullStart" @touchmove="handlePullMove" @touchend="handlePullEnd">
+        <div class="view-port">
             
             <home-view
                 :current-tab="currentTab"
-                :is-refreshing="isRefreshing"
                 :current-vod-index="currentVodIndex"
                 :recent-vods="recentVods"
                 :is-live="isLive"
@@ -69,14 +63,13 @@
                 :chat-messages="chatMessages"
                 :chat-input="chatInput"
                 :is-logged-in="!!twitchChatToken"
+                :twitch-auth-url="twitchAuthUrl"
                 @update-input="e => chatInput = e"
-                @send-chat="sendTwitchChatMessage"
-                @login-twitch="loginToTwitch">
+                @send-chat="sendTwitchChatMessage">
             </chat-view>
 
             <feed-view
                 :current-tab="currentTab"
-                :is-refreshing="isRefreshing"
                 :active-feed-source="activeFeedSource"
                 :yt-feed="ytFeed"
                 :reddit-feed="redditFeed"
