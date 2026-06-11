@@ -1,6 +1,8 @@
 const ToastPopup = {
     props: ['toast'],
-    template: `<div class="toast-popup" :class="{ show: toast.visible }" v-html="toast.message"></div>`
+    template: `
+        <div class="toast-popup" :class="{ show: toast.visible }" v-html="toast.message"></div>
+    `
 };
 
 const SplashScreen = {
@@ -150,21 +152,25 @@ const MoreView = {
     template: `
         <div class="more-container">
             <div class="social-grid">
-                <a href="https://www.youtube.com/@CodeMiko" target="_blank" class="social-card yt">
-                    <svg viewBox="0 0 24 24" class="social-icon"><path fill="currentColor" d="M23.498 6.186a3.016 3.016 0 0 0-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 0 0 .502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 0 0 2.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 0 0 2.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z"/></svg>
-                    <span>YouTube</span>
+                <a href="https://throne.com/codemiko" target="_blank" class="social-card throne">
+                    <span class="material-symbols-rounded social-icon" style="font-size: 24px;">redeem</span>
+                    <span>Throne</span>
                 </a>
                 <a href="https://www.twitch.tv/codemiko" target="_blank" class="social-card twitch">
                     <svg viewBox="0 0 24 24" class="social-icon"><path fill="currentColor" d="M11.571 4.714h1.715v5.143H11.57zm4.715 0H18v5.143h-1.714zM6 0L1.714 4.286v15.428h5.143V24l4.286-4.286h3.428L22.286 12V0zm14.571 11.143l-3.428 3.428h-3.429l-3 3v-3H6.857V1.714h13.714Z"/></svg>
                     <span>Twitch</span>
                 </a>
+                <a href="https://www.youtube.com/@CodeMiko" target="_blank" class="social-card yt">
+                    <svg viewBox="0 0 24 24" class="social-icon"><path fill="currentColor" d="M23.498 6.186a3.016 3.016 0 0 0-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 0 0 .502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 0 0 2.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 0 0 2.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z"/></svg>
+                    <span>YouTube</span>
+                </a>
+                <a href="https://kick.com/codemiko" target="_blank" class="social-card kick">
+                    <svg viewBox="0 0 24 24" class="social-icon"><path fill="currentColor" d="M3.75 2v20h16.5V2H3.75zM7.5 17V7h3.75v3.75H15V7h3.75v10H15v-3.75h-3.75V17H7.5z"/></svg>
+                    <span>Kick</span>
+                </a>
                 <a href="https://www.tiktok.com/@codemiko" target="_blank" class="social-card tiktok">
                     <svg viewBox="0 0 24 24" class="social-icon"><path fill="currentColor" d="M19.59 6.69a4.83 4.83 0 0 1-3.77-4.25V2h-3.45v13.67a2.89 2.89 0 0 1-5.2 1.74 2.89 2.89 0 0 1 2.31-4.64 2.93 2.93 0 0 1 .88.13V9.4a6.84 6.84 0 0 0-1-.05A6.33 6.33 0 0 0 5 20.1a6.34 6.34 0 0 0 10.86-4.43v-7a8.16 8.16 0 0 0 4.77 1.52v-3.4a4.85 4.85 0 0 1-1-.1z"/></svg>
                     <span>TikTok</span>
-                </a>
-                <a href="https://discord.com/invite/codemiko" target="_blank" class="social-card discord">
-                    <svg viewBox="0 0 24 24" class="social-icon"><path fill="currentColor" d="M20.317 4.3698a19.7913 19.7913 0 00-4.8851-1.5152.0741.0741 0 00-.0785.0371c-.211.3753-.4447.8648-.6083 1.2495-1.8447-.2762-3.68-.2762-5.4868 0-.1636-.3933-.4058-.8742-.6177-1.2495a.077.077 0 00-.0785-.037 19.7363 19.7363 0 00-4.8852 1.515.0699.0699 0 00-.0321.0277C.5334 9.0458-.319 13.5799.0992 18.0578a.0824.0824 0 00.0312.0561c2.0528 1.5076 4.0413 2.4228 5.9929 3.0294a.0777.0777 0 00.0842-.0276c.4616-.6304.8731-1.2952 1.226-1.9942a.076.076 0 00-.0416-.1057c-.6528-.2476-1.2743-.5495-1.8722-.8923a.077.077 0 01-.0076-.1277c.1258-.0943.2517-.1923.3718-.2914a.0743.0743 0 01.0776-.0105c3.9278 1.7933 8.18 1.7933 12.0614 0a.0739.0739 0 01.0785.0095c.1202.099.246.1981.3728.2924a.077.077 0 01-.0066.1276 12.2986 12.2986 0 01-1.873.8914.0766.0766 0 00-.0407.1067c.3604.698.7719 1.3628 1.225 1.9932a.076.076 0 00.0842.0286c1.961-.6067 3.9495-1.5219 6.0023-3.0294a.077.077 0 00.0313-.0552c.5004-5.177-.8382-9.6739-3.5485-13.6604a.061.061 0 00-.0312-.0286zM8.02 15.3312c-1.1825 0-2.1569-1.0857-2.1569-2.419 0-1.3332.9555-2.4189 2.157-2.4189 1.2108 0 2.1757 1.0952 2.1568 2.419 0 1.3332-.9555 2.4189-2.1569 2.4189zm7.9748 0c-1.1825 0-2.1569-1.0857-2.1569-2.419 0-1.3332.9554-2.4189 2.1569-2.4189 1.2108 0 2.1757 1.0952 2.1568 2.419 0 1.3332-.946 2.4189-2.1568 2.4189Z"/></svg>
-                    <span>Discord</span>
                 </a>
                 <a href="https://x.com/thecodemiko" target="_blank" class="social-card x-twitter">
                     <svg viewBox="0 0 24 24" class="social-icon"><path fill="currentColor" d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>
@@ -174,6 +180,18 @@ const MoreView = {
                     <svg viewBox="0 0 24 24" class="social-icon"><path fill="currentColor" d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zM12 0C8.741 0 8.333.014 7.053.072 2.695.272.273 2.69.073 7.052.014 8.333 0 8.741 0 12c0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98C8.333 23.986 8.741 24 12 24c3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98C15.668.014 15.259 0 12 0zm0 5.838a6.162 6.162 0 1 0 0 12.324 6.162 6.162 0 0 0 0-12.324zM12 16a4 4 0 1 1 0-8 4 4 0 0 1 0 8zm6.406-11.845a1.44 1.44 0 1 0 0 2.881 1.44 1.44 0 0 0 0-2.881z"/></svg>
                     <span>Instagram</span>
                 </a>
+                <a href="https://www.snapchat.com/add/codemiko" target="_blank" class="social-card snapchat">
+                    <svg viewBox="0 0 24 24" class="social-icon"><path fill="currentColor" d="M12.02.042C9.406.1 7.155.875 5.56 2.646c-1.1 1.229-1.636 2.822-1.636 4.801 0 1.25-.094 2.52-1.073 3.666-.312.385-.687.729-1.093 1.042-.209.156-.469.343-.844.521-.635.291-.885.812-.666 1.343.145.375.468.625.864.719 1.094.26 2.302.395 3.323.51a19.78 19.78 0 00-.77 2.135 4.3 4.3 0 00-.094.885c0 .48.24.969.833 1.23.49.208 1.135.03 1.636-.261.27-.156.552-.354.833-.562.916-.656 1.937-1.385 3.25-1.396 2.197-.02 4.311.604 6.27 1.76.125.073.26.135.396.188.427.146.854.125 1.125-.115.354-.302.406-.823.167-1.312a20.082 20.082 0 00-1.042-2.031c1.073-.136 2.375-.323 3.614-.625.688-.167 1.125-.667 1.094-1.24-.031-.573-.521-1.031-1.25-1.208-1.573-.427-2.614-1.614-2.885-2.093-.729-1.219-.74-2.583-.74-3.927 0-2.02-.552-3.666-1.74-4.885C16.907.969 14.656.094 12.02.042zm6.27 18.061c.428.188.897.459 1.417.813.438.302.688.75.615 1.198-.073.437-.448.791-1.01.916a8.473 8.473 0 01-1.532.146c-.77.01-1.614-.156-2.52-.375-1.021-.26-2.125-.562-3.23-.562s-2.208.302-3.23.562c-.906.219-1.75.385-2.52.375a8.463 8.463 0 01-1.531-.146c-.562-.125-.937-.479-1.01-.916-.073-.448.177-.896.614-1.198.521-.354.99-.625 1.417-.813a3.522 3.522 0 011.083 2.115c.125.75 1.094 1.343 2.656 1.635.886.167 1.834.198 2.521.198.688 0 1.635-.031 2.521-.198 1.562-.292 2.531-.885 2.656-1.635a3.52 3.52 0 011.083-2.115z"/></svg>
+                    <span>Snapchat</span>
+                </a>
+                <a href="https://www.facebook.com/thecodemiko/" target="_blank" class="social-card facebook">
+                    <svg viewBox="0 0 24 24" class="social-icon"><path fill="currentColor" d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.469h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.469h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/></svg>
+                    <span>Facebook</span>
+                </a>
+                <a href="https://discord.com/invite/codemiko" target="_blank" class="social-card discord">
+                    <svg viewBox="0 0 24 24" class="social-icon"><path fill="currentColor" d="M20.317 4.3698a19.7913 19.7913 0 00-4.8851-1.5152.0741.0741 0 00-.0785.0371c-.211.3753-.4447.8648-.6083 1.2495-1.8447-.2762-3.68-.2762-5.4868 0-.1636-.3933-.4058-.8742-.6177-1.2495a.077.077 0 00-.0785-.037 19.7363 19.7363 0 00-4.8852 1.515.0699.0699 0 00-.0321.0277C.5334 9.0458-.319 13.5799.0992 18.0578a.0824.0824 0 00.0312.0561c2.0528 1.5076 4.0413 2.4228 5.9929 3.0294a.0777.0777 0 00.0842-.0276c.4616-.6304.8731-1.2952 1.226-1.9942a.076.076 0 00-.0416-.1057c-.6528-.2476-1.2743-.5495-1.8722-.8923a.077.077 0 01-.0076-.1277c.1258-.0943.2517-.1923.3718-.2914a.0743.0743 0 01.0776-.0105c3.9278 1.7933 8.18 1.7933 12.0614 0a.0739.0739 0 01.0785.0095c.1202.099.246.1981.3728.2924a.077.077 0 01-.0066.1276 12.2986 12.2986 0 01-1.873.8914.0766.0766 0 00-.0407.1067c.3604.698.7719 1.3628 1.225 1.9932a.076.076 0 00.0842.0286c1.961-.6067 3.9495-1.5219 6.0023-3.0294a.077.077 0 00.0313-.0552c.5004-5.177-.8382-9.6739-3.5485-13.6604a.061.061 0 00-.0312-.0286zM8.02 15.3312c-1.1825 0-2.1569-1.0857-2.1569-2.419 0-1.3332.9555-2.4189 2.157-2.4189 1.2108 0 2.1757 1.0952 2.1568 2.419 0 1.3332-.9555 2.4189-2.1569 2.4189zm7.9748 0c-1.1825 0-2.1569-1.0857-2.1569-2.419 0-1.3332.9554-2.4189 2.1569-2.4189 1.2108 0 2.1757 1.0952 2.1568 2.419 0 1.3332-.946 2.4189-2.1568 2.4189Z"/></svg>
+                    <span>Discord</span>
+                </a>
                 <a href="https://www.reddit.com/r/CodeMiko/" target="_blank" class="social-card reddit">
                     <svg viewBox="0 0 24 24" class="social-icon"><path fill="currentColor" d="M24 11.5c0-1.65-1.35-3-3-3-.96 0-1.86.48-2.42 1.24-1.64-1-3.75-1.64-6.07-1.72.08-1.1.4-3.05 1.52-3.7.72-.4 1.73-.24 3 .5C17.2 6.3 18.46 7.5 20 7.5c1.65 0 3-1.35 3-3s-1.35-3-3-3c-1.38 0-2.54.94-2.88 2.22-1.43-.72-2.64-.8-3.6-.25-1.64.94-1.95 3.47-2 4.55-2.33.08-4.45.7-6.1 1.72C4.86 8.98 3.96 8.5 3 8.5c-1.65 0-3 1.35-3 3 0 1.32.84 2.44 2.05 2.84-.03.22-.05.44-.05.66 0 3.86 4.5 7 10 7s10-3.14 10-7c0-.22-.02-.44-.05-.66 1.2-.4 2.05-1.54 2.05-2.84zM2.3 13.37C1.5 13.07 1 12.35 1 11.5c0-1.1.9-2 2-2 .64 0 1.22.32 1.6.82-1.1.85-1.92 1.9-2.3 3.05zm3.7.13c0-1.1.9-2 2-2s2 .9 2 2-.9 2-2 2-2-.9-2-2zm9.8 4.8c-1.08.63-2.42.96-3.8.96-1.4 0-2.74-.34-3.8-.95-.24-.13-.32-.44-.2-.68.15-.24.46-.32.7-.18 1.83 1.06 4.76 1.06 6.6 0 .23-.13.53-.05.67.2.14.23.06.54-.18.67zm.2-2.8c-1.1 0-2-.9-2-2s.9-2 2-2 2 .9 2 2-.9 2-2 2zm5.7-2.13c-.38-1.16-1.2-2.2-2.3-3.05.38-.5.96-.82 1.6-.82 1.1 0 2 .9 2 2 0 .84-.53 1.57-1.3 1.87z"/></svg>
                     <span>Reddit</span>
@@ -181,10 +199,6 @@ const MoreView = {
                 <a href="https://app.fanfix.io/@codeyuna" target="_blank" class="social-card fanfix">
                     <span class="material-symbols-rounded social-icon" style="font-size: 28px;">favorite</span>
                     <span>Fanfix</span>
-                </a>
-                <a href="https://throne.com/codemiko" target="_blank" class="social-card throne">
-                    <span class="material-symbols-rounded social-icon" style="font-size: 28px;">redeem</span>
-                    <span>Throne</span>
                 </a>
             </div>
         </div>
@@ -196,21 +210,16 @@ const GeraldView = {
     template: `
         <div class="gerald-container">
             <div class="gerald-header" @click="$emit('close-pickers')">
-                <div class="gerald-avatar-wrapper">
-                    <img src="gerald.png" class="gerald-avatar" alt="Gerald">
-                    <div class="gerald-title-block">
-                        <span class="gerald-name-text">Gerald OS</span>
-                        <div :class="apiConnected ? 'pulse-dot-live' : 'pulse-dot-offline'"></div>
-                    </div>
+                <img src="gerald.png" class="gerald-avatar" alt="Gerald">
+                <div class="gerald-title-block">
+                    <span class="gerald-name-text">Gerald OS</span>
+                    <div :class="apiConnected ? 'pulse-dot-live' : 'pulse-dot-offline'"></div>
                 </div>
             </div>
             <div class="gerald-messages" id="gerald-msgs" @click="$emit('close-pickers')">
                 <template v-for="(m, i) in geraldMessages" :key="i">
                     <div v-if="i === 0 && m.role === 'gerald'" class="terminal-intro">
-                        <div class="terminal-text startup-anim">
-                            > Human detected.<br>
-                            > What do you want?
-                        </div>
+                        <div class="terminal-text startup-anim">> Human detected.<br>> What do you want?</div>
                     </div>
                     <div v-else class="chat-bubble" :class="m.role" v-html="parseMarkdown(m.content)"></div>
                 </template>
@@ -258,9 +267,11 @@ const HomeView = {
                         <div class="dot"></div><span>{{ recentVods[currentVodIndex] ? ('VOD • ' + recentVods[currentVodIndex].date) : 'PAST BROADCAST' }}</span>
                     </div>
                 </div>
-                <div class="video-container">
-                    <iframe v-if="currentVodIndex === -1" id="miko-live-player" :src="'https://player.twitch.tv/?channel=codemiko&parent=' + hostname + '&autoplay=true&muted=true'" allow="autoplay; fullscreen" allowfullscreen loading="lazy"></iframe>
-                    <iframe v-else-if="recentVods && recentVods[currentVodIndex]" :src="'https://player.twitch.tv/?video=' + recentVods[currentVodIndex].id + '&parent=' + hostname + '&autoplay=true&muted=true'" allow="autoplay; fullscreen" allowfullscreen loading="lazy"></iframe>
+                <div class="video-wrapper-outer">
+                    <div class="video-container">
+                        <iframe v-if="currentVodIndex === -1" id="miko-live-player" :src="'https://player.twitch.tv/?channel=codemiko&parent=' + hostname + '&autoplay=true&muted=true'" allow="autoplay; fullscreen" allowfullscreen loading="lazy"></iframe>
+                        <iframe v-else-if="recentVods && recentVods[currentVodIndex]" :src="'https://player.twitch.tv/?video=' + recentVods[currentVodIndex].id + '&parent=' + hostname + '&autoplay=false'" allow="autoplay; fullscreen" allowfullscreen loading="lazy"></iframe>
+                    </div>
                 </div>
                 <div class="carousel-controls" v-if="recentVods && recentVods.length > 0 && !isLive" style="margin-top: 12px; justify-content: flex-end;">
                     <button class="carousel-btn" :class="{ 'hidden-arrow': currentVodIndex <= 0 }" @click.stop="$emit('prev-vod')"><span class="material-symbols-rounded">chevron_left</span></button>
@@ -277,11 +288,9 @@ const HomeView = {
                 </div>
                 <div class="clip-list-item" v-for="clip in clips" :key="clip.id" @click="$emit('play-clip', clip)">
                     <div class="clip-thumb-wrapper">
-                        <iframe v-if="activeClipId === clip.id" :src="'https://clips.twitch.tv/embed?clip=' + clip.id + '&parent=' + hostname + '&autoplay=true&muted=false'" allow="autoplay; fullscreen" allowfullscreen></iframe>
-                        <template v-else>
-                            <img :src="clip.thumbnail_url ? optimizeTwitchImg(clip.thumbnail_url) : ''" loading="lazy" alt="Thumbnail">
-                            <div class="duration-badge">0:45</div>
-                        </template>
+                        <img v-if="activeClipId !== clip.id" :src="clip.thumbnail_url ? optimizeTwitchImg(clip.thumbnail_url) : ''" loading="lazy" alt="Thumbnail">
+                        <iframe v-else :src="'https://clips.twitch.tv/embed?clip=' + clip.id + '&parent=' + hostname + '&autoplay=true&muted=false'" allow="autoplay; fullscreen" allowfullscreen></iframe>
+                        <div class="duration-badge" v-if="activeClipId !== clip.id">0:45</div>
                     </div>
                     <div class="miko-metadata">
                         <div class="author-name">{{ clip.title }}</div>
@@ -317,7 +326,7 @@ createApp({
         const appTheme = ref(localStorage.getItem('miko_theme') || 'light');
         const splashVisible = ref(true), splashOpacity = ref(1), clips = ref([]), allClips = ref([]), modals = ref({profile: false, discord: false}), isLive = ref(false), currentUser = ref(null), loginEmail = ref(''), loginPass = ref(''), toast = ref({visible: false, message: ''}), hostname = window.location.hostname || 'meowoccino.github.io';
         const syncState = ref('idle'), wipeState = ref('idle'), logoutState = ref('idle');
-        const apiConfig = ref({ cid: localStorage.getItem('twitch_cid') || '', tkn: localStorage.getItem('twitch_tkn') || '' });
+        const apiConfig = ref({ cid: localStorage.getItem('twitch_cid') || 'i2fjxfk0oq6ybixle760zryrtvdqjg', tkn: localStorage.getItem('twitch_tkn') || '' });
         
         const customEmotes = ref({
             "mkoSusge": { id: "1273724925743595540", animated: false }, "KEKW": { id: "1456296327964262453", animated: false }, "mkoNOTED": { id: "1369891690898391070", animated: false }, "mkoHype": { id: "870761283035734086", animated: false }, "Shruge": { id: "1456297412875518078", animated: false }, "Bedge": { id: "1369823782084022423", animated: false }, "mkoCoffee": { id: "1369891686544834570", animated: false }, "D_": { id: "1456295688626241619", animated: false }, "mkoLove": { id: "1150505635721519115", animated: false }
@@ -389,6 +398,11 @@ createApp({
                 twitchWs.send('CAP REQ :twitch.tv/tags twitch.tv/commands');
                 if (twitchChatToken.value) {
                     twitchWs.send(`PASS oauth:${twitchChatToken.value}`);
+                    fetch('https://id.twitch.tv/oauth2/validate', { headers: { 'Authorization': `OAuth ${twitchChatToken.value}` } })
+                        .then(res => res.json())
+                        .then(data => {
+                            if(data.login) { twitchWs.send(`NICK ${data.login}`); twitchWs.send('JOIN #codemiko'); }
+                        }).catch(() => { twitchWs.send('NICK justinfan123'); twitchWs.send('JOIN #codemiko'); });
                 } else {
                     twitchWs.send('PASS oauth:anonymous');
                     twitchWs.send('NICK justinfan12345');
@@ -414,7 +428,9 @@ createApp({
                             user = tags['display-name'] || matchUser[1];
                             text = matchText[1].trim();
                             
-                            chatMessages.value.push({ username: user, html: text, color: tags['color'] || '#9146FF' });
+                            let html = parseMarkdown(text);
+                            
+                            chatMessages.value.push({ username: user, html: html, color: tags['color'] || '#9146FF' });
                             if (chatMessages.value.length > 100) chatMessages.value.shift();
                             
                             if (currentTab.value === 'chat') {
@@ -429,7 +445,7 @@ createApp({
         const sendTwitchChatMessage = () => {
             if (!chatInput.value.trim() || !twitchWs || !twitchChatToken.value) return;
             twitchWs.send(`PRIVMSG #codemiko :${chatInput.value}`);
-            chatMessages.value.push({ username: 'You', html: chatInput.value, color: '#9146FF' });
+            chatMessages.value.push({ username: 'You', html: parseMarkdown(chatInput.value), color: '#9146FF' });
             chatInput.value = '';
             nextTick(() => { const list = document.getElementById('twitch-chat-list'); if (list) list.scrollTop = list.scrollHeight; });
         };
@@ -439,14 +455,18 @@ createApp({
         
         const formatNumber = (num) => (num && num > 999) ? (num/1000).toFixed(1) + 'k' : (num || 0);
         const closeFilterMenu = () => { isFilterMenuOpen.value = false; };
-        const insertEmote = (name) => { const inputEl = document.getElementById('gerald-txt-input'); if (inputEl) { inputEl.value += `:${name}: `; geraldInput.value = inputEl.value; } else { geraldInput.value += `:${name}: `; } };
+        
+        const insertEmote = (name) => {
+            const el = currentTab.value === 'chat' ? document.querySelector('.custom-chat-input') : document.getElementById('gerald-txt-input');
+            if (el) { el.value += `:${name}: `; if (currentTab.value === 'chat') { chatInput.value = el.value; } else { geraldInput.value = el.value; } }
+        };
 
         const playClip = (clip) => { activeClipId.value = clip.id; };
 
         const scrollToBottom = () => {
             const b = document.getElementById('gerald-msgs');
             if (!b) return;
-            nextTick(() => { b.scrollTo({ top: b.scrollHeight, behavior: 'smooth' }); setTimeout(() => { b.scrollTop = b.scrollHeight; }, 50); setTimeout(() => { b.scrollTop = b.scrollHeight; }, 200); });
+            nextTick(() => { b.scrollTo({ top: b.scrollHeight }); setTimeout(() => { b.scrollTop = b.scrollHeight; }, 50); setTimeout(() => { b.scrollTop = b.scrollHeight; }, 200); });
         };
 
         const sortData = (filterKey) => {
@@ -489,6 +509,14 @@ createApp({
             html = html.replace(/\*\*(.*?)\*\*/g, '$1').replace(/\*(.*?)\*/g, '$1'); 
             html = html.replace(/\[([^\]]+)\]\((https?:\/\/[^\s]+)\)/gi, '<a href="$2" target="_blank" style="color: var(--primary); text-decoration: underline; font-weight: bold;">$1</a>');
             html = html.replace(/(^|[^"'])(https?:\/\/[^\s<)]+)/gi, '$1<a href="$2" target="_blank" style="color: var(--primary); text-decoration: underline; word-break: break-all;">$2</a>');
+            html = html.replace(/`?:([^:\s]+):`?/g, (match, name) => {
+                const emote = customEmotes.value[name];
+                if (emote) { 
+                    const src = emote.url ? emote.url : `https://cdn.discordapp.com/emojis/${emote.id}.${emote.animated ? 'gif' : 'png'}?size=44`;
+                    return `<img src="${src}" alt=":${name}:" style="height: 1.5em; vertical-align: middle; display: inline-block;">`; 
+                }
+                return match;
+            });
             return html;
         };
 
@@ -609,8 +637,7 @@ createApp({
 
         onMounted(async () => {
             const clientId = apiConfig.value.cid || 'i2fjxfk0oq6ybixle760zryrtvdqjg';
-            const exactRedirectUri = 'https://meowoccino.github.io/MikoTok/';
-            twitchAuthUrl.value = 'https://id.twitch.tv/oauth2/authorize?client_id=' + clientId + '&redirect_uri=' + encodeURIComponent(exactRedirectUri) + '&response_type=token&scope=chat:read+chat:edit&force_verify=true';
+            twitchAuthUrl.value = 'https://id.twitch.tv/oauth2/authorize?client_id=' + clientId + '&redirect_uri=https://meowoccino.github.io/MikoTok/&response_type=token&scope=chat:read+chat:edit&force_verify=true';
             
             updateThemeClass();
             if (window.location.hash.includes('access_token')) {
