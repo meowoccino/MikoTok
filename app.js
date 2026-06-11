@@ -39,22 +39,22 @@ const ProfileModal = {
 };
 
 const ChatView = {
-    props: ['currentTab', 'chatMessages', 'chatInput', 'isLoggedIn', 'twitchAuthUrl'],
-    template: `<div class="chat-wrapper" v-show="currentTab === 'chat'"><div class="chat-header"><span style="font-weight: 800; font-size: 18px; color: var(--text-main);">Twitch Chat</span></div><div class="twitch-chat-list" id="twitch-chat-list"><div v-if="!isLoggedIn" class="chat-login-prompt"><span class="material-symbols-rounded" style="font-size:48px; color:var(--primary); margin-bottom:10px;">login</span><p>Login to chat and use emotes.</p><a :href="twitchAuthUrl" target="_blank" class="twitch-login-btn" style="display:inline-block; text-decoration:none;">Connect Twitch</a></div><div v-for="(msg, i) in chatMessages" :key="i" class="twitch-msg-row"><span class="twitch-username" :style="{color: msg.color}">{{ msg.username }}</span><span class="twitch-text" v-html="msg.html"></span></div></div><div class="custom-chat-input-area"><input type="text" class="custom-chat-input" placeholder="Send a message..." :value="chatInput" @input="$emit('update-input', $event.target.value)" @keydown.enter="$emit('send-chat')" :disabled="!isLoggedIn"><button class="icon-btn" @click="$emit('send-chat')" :disabled="!isLoggedIn || !chatInput.trim()"><span class="material-symbols-rounded" style="font-size: 20px;">send</span></button></div></div>`
+    props: ['currentTab', 'chatMessages', 'chatInput', 'isLoggedIn'],
+    template: `<div class="chat-wrapper" v-show="currentTab === 'chat'"><div class="twitch-chat-list" id="twitch-chat-list"><div v-if="!isLoggedIn" class="chat-login-prompt"><span class="material-symbols-rounded" style="font-size:48px; color:var(--primary); margin-bottom:10px;">login</span><p>Login to chat and use emotes.</p><button class="twitch-login-btn" @click="$emit('login-twitch')">Connect Twitch</button></div><div v-for="(msg, i) in chatMessages" :key="i" class="twitch-msg-row"><span class="twitch-username" :style="{color: msg.color}">{{ msg.username }}</span><span class="twitch-text" v-html="msg.html"></span></div></div><div class="custom-chat-input-area"><input type="text" class="custom-chat-input" placeholder="Send a message..." :value="chatInput" @input="$emit('update-input', $event.target.value)" @keydown.enter="$emit('send-chat')" :disabled="!isLoggedIn"><button class="icon-btn" @click="$emit('send-chat')" :disabled="!isLoggedIn || !chatInput.trim()"><span class="material-symbols-rounded" style="font-size: 20px;">send</span></button></div></div>`
 };
 
 const FeedView = {
     props: ['currentTab', 'activeFeedSource', 'ytFeed', 'redditFeed', 'formatNumber'],
-    template: `<div class="feed-layout" v-show="currentTab === 'feed'"><div class="feed-header"><span style="font-weight: 800; font-size: 18px; color: var(--text-main);">Feed</span><div class="feed-toggle"><button :class="{active: activeFeedSource === 'youtube'}" @click="$emit('set-feed', 'youtube')">YouTube</button><button :class="{active: activeFeedSource === 'reddit'}" @click="$emit('set-feed', 'reddit')">Reddit</button></div></div><div class="feed-scroll-container" v-show="activeFeedSource === 'youtube'"><div v-for="yt in ytFeed" :key="yt.id" class="feed-item card"><div class="video-container" style="border-radius: 8px;"><iframe v-if="yt.playing" :src="'https://www.youtube.com/embed/' + yt.id + '?autoplay=1'" allow="autoplay; encrypted-media" allowfullscreen loading="lazy"></iframe><div v-else class="yt-thumb-wrapper" @click="$emit('play-yt', yt)"><img :src="'https://i.ytimg.com/vi/' + yt.id + '/hqdefault.jpg'" alt="Thumbnail"><div class="play-overlay"><span class="material-symbols-rounded">play_arrow</span></div></div></div><div class="yt-info"><div class="yt-title">{{ yt.title }}</div><div class="yt-date">{{ yt.date }}</div></div></div></div><div class="feed-scroll-container" v-show="activeFeedSource === 'reddit'"><div v-for="post in redditFeed" :key="post.id" class="feed-item reddit-compact-card"><div class="reddit-header"><div class="reddit-author">Posted • {{ post.date }}<br><span>u/{{ post.author }}</span></div><span v-if="post.link_flair_text" class="reddit-flair">{{ post.link_flair_text }}</span></div><div v-if="post.thumbnail && post.thumbnail.startsWith('http')" class="reddit-img-container"><img :src="post.thumbnail" onerror="this.closest('div').style.display='none'" alt="Reddit Media"></div><div class="reddit-post-title" :style="post.thumbnail && post.thumbnail.startsWith('http') ? '' : 'flex: 1;'">{{ post.title }}</div><a :href="'https://reddit.com' + post.permalink" target="_blank" class="reddit-actions"><div style="display: flex; align-items: center; gap: 4px; color: var(--reddit);"><span class="material-symbols-rounded" style="font-size: 16px;">arrow_upward</span> {{ formatNumber(post.ups) }}</div><div style="display: flex; align-items: center; gap: 4px;"><span class="material-symbols-rounded" style="font-size: 16px;">chat_bubble</span> {{ formatNumber(post.num_comments) }}</div><div style="margin-left: auto; color: var(--text-muted); display: flex; align-items: center; gap: 4px; font-size: 11px; text-transform: uppercase;">Open <span class="material-symbols-rounded" style="font-size: 14px;">open_in_new</span></div></a></div></div></div>`
+    template: `<div class="feed-layout" v-show="currentTab === 'feed'"><div class="feed-toggle"><button :class="{active: activeFeedSource === 'youtube'}" @click="$emit('set-feed', 'youtube')">YouTube</button><button :class="{active: activeFeedSource === 'reddit'}" @click="$emit('set-feed', 'reddit')">Reddit</button></div><div class="feed-scroll-container" v-show="activeFeedSource === 'youtube'"><div v-for="yt in ytFeed" :key="yt.id" class="feed-item card"><div class="video-container" style="border-radius: 8px;"><iframe v-if="yt.playing" :src="'https://www.youtube.com/embed/' + yt.id + '?autoplay=1'" allow="autoplay; encrypted-media" allowfullscreen loading="lazy"></iframe><div v-else class="yt-thumb-wrapper" @click="$emit('play-yt', yt)"><img :src="'https://i.ytimg.com/vi/' + yt.id + '/hqdefault.jpg'" alt="Thumbnail"><div class="play-overlay"><span class="material-symbols-rounded">play_arrow</span></div></div></div><div class="yt-info"><div class="yt-title">{{ yt.title }}</div><div class="yt-date">{{ yt.date }}</div></div></div></div><div class="feed-scroll-container" v-show="activeFeedSource === 'reddit'"><div v-for="post in redditFeed" :key="post.id" class="feed-item reddit-compact-card"><div class="reddit-header"><div class="reddit-author">Posted • {{ post.date }}<br><span>u/{{ post.author }}</span></div><span v-if="post.link_flair_text" class="reddit-flair">{{ post.link_flair_text }}</span></div><div v-if="post.thumbnail && post.thumbnail.startsWith('http')" class="reddit-img-container"><img :src="post.thumbnail" onerror="this.closest('div').style.display='none'" alt="Reddit Media"></div><div class="reddit-post-title" :style="post.thumbnail && post.thumbnail.startsWith('http') ? '' : 'flex: 1;'">{{ post.title }}</div><a :href="'https://reddit.com' + post.permalink" target="_blank" class="reddit-actions"><div style="display: flex; align-items: center; gap: 4px; color: var(--reddit);"><span class="material-symbols-rounded" style="font-size: 16px;">arrow_upward</span> {{ formatNumber(post.ups) }}</div><div style="display: flex; align-items: center; gap: 4px;"><span class="material-symbols-rounded" style="font-size: 16px;">chat_bubble</span> {{ formatNumber(post.num_comments) }}</div><div style="margin-left: auto; color: var(--text-muted); display: flex; align-items: center; gap: 4px; font-size: 11px; text-transform: uppercase;">Open <span class="material-symbols-rounded" style="font-size: 14px;">open_in_new</span></div></a></div></div></div>`
 };
 
 const GeraldView = {
     props: ['currentTab', 'geraldMessages', 'isGeraldTyping', 'geraldInput', 'showEmotePicker', 'showMinigames', 'customEmotes', 'parseMarkdown'],
-    template: `<div class="gerald-container" v-show="currentTab === 'gerald'"><div class="gerald-header" @click="$emit('close-pickers')"><div style="display:flex; justify-content:flex-start; align-items:center; width: 100%; margin-bottom: 20px;"><div style="display:flex; flex-direction:column;"><span style="font-size:20px; font-weight:800; color:white;">Gerald OS</span><div style="display:flex; align-items:center; gap:6px; margin-top:4px;"><div class="pulse" style="background:var(--success); box-shadow:0 0 10px var(--success);"></div><span style="font-size:11px; color:var(--text-muted); font-weight:600;">Online</span></div></div></div></div><div class="gerald-messages" id="gerald-msgs" @click="$emit('close-pickers')"><template v-for="(m, i) in geraldMessages" :key="i"><div v-if="i === 0 && m.role === 'gerald'" class="terminal-intro"><pre style="color: #00ff00; font-size: 10px; margin-bottom: 15px; text-align: center; line-height: 1.1; overflow-x: hidden;">
+    template: `<div class="gerald-container" v-show="currentTab === 'gerald'"><div class="gerald-header" @click="$emit('close-pickers')"><div style="display:flex; justify-content:flex-start; align-items:center; width: 100%;"><div style="display:flex; flex-direction:column;"><span style="font-size:20px; font-weight:800;">Gerald OS</span><div style="display:flex; align-items:center; gap:6px; margin-top:4px;"><div class="pulse"></div><span style="font-size:11px; font-weight:600; color: #a1a1aa !important;">Online</span></div></div></div></div><div class="gerald-messages" id="gerald-msgs" @click="$emit('close-pickers')"><template v-for="(m, i) in geraldMessages" :key="i"><div v-if="i === 0 && m.role === 'gerald'" class="terminal-intro"><pre class="terminal-cat">
     /\\_/\\
    ( o.o )
     > ^ < 
-</pre><div class="terminal-text">> System ready.<br>> Mood: Sarcastic<br>> Patience: 125<br>--------------------<br>Human detected.<br>What do you want?</div></div><div v-else class="chat-bubble" :class="m.role" v-html="parseMarkdown(m.content)"></div></template><div v-if="isGeraldTyping" key="typing" class="typing-indicator">COMPUTING...</div></div><div style="display:flex; flex-direction:column; background: #111113; width: 100%;"><transition name="tray"><div class="tray-container" v-show="showEmotePicker"><img v-for="(emote, name) in customEmotes" :key="name" :src="emote.url ? emote.url : \`https://cdn.discordapp.com/emojis/\${emote.id}.\${emote.animated ? 'gif' : 'png'}?size=44\`" class="emote-picker-img" @click="$emit('insert-emote', name)"></div></transition><transition name="tray"><div class="tray-container" v-show="showMinigames"><button class="bribe-btn" @click="$emit('play-game', 'glitch')">🕶️ Glitch Persona</button><button class="bribe-btn" @click="$emit('play-game', 'shader')">🔥 Compile UE5</button><button class="bribe-btn" @click="$emit('play-game', 'boba')">🥤 Boba Spill</button><button class="bribe-btn" @click="$emit('play-game', 'pineapple')">🚪 Pineapple Walk-In</button><button class="bribe-btn" @click="$emit('play-game', 'cat')">🐈 Cat on PC</button><button class="bribe-btn" @click="$emit('play-game', 'bits')">🎟️ 100K Bits</button><button class="bribe-btn" @click="$emit('play-game', 'mute')">🔇 Mute Mic</button><button class="bribe-btn" @click="$emit('play-game', 'bald')">🧑‍🦲 Delete Hair</button><button class="bribe-btn" @click="$emit('play-game', 'siren')">🚨 Firetruck Siren</button></div></transition><div class="gerald-input-area"><div class="gerald-input-wrapper"><button class="emote-toggle-btn" @click="$emit('toggle-emotes')"><span class="material-symbols-rounded" :style="{ color: showEmotePicker ? 'var(--gerald)' : 'inherit' }">mood</span></button><button class="emote-toggle-btn" @click="$emit('toggle-minigames')"><span class="material-symbols-rounded" :style="{ color: showMinigames ? 'var(--gerald)' : 'inherit' }">sports_esports</span></button><textarea class="gerald-input" rows="1" placeholder="Message Gerald..." :value="geraldInput" @input="$emit('update-input', $event.target.value)" @keydown="$emit('key-down', $event)" id="gerald-txt-input" @focus="$emit('close-pickers')"></textarea></div><button class="gerald-send" @click="$emit('send')"><span class="material-symbols-rounded">send</span></button></div></div></div>`
+</pre><div class="terminal-text">> System ready.<br>> Mood: Sarcastic<br>> Patience: 125<br>--------------------<br>Human detected.<br>What do you want?</div></div><div v-else class="chat-bubble" :class="m.role" v-html="parseMarkdown(m.content)"></div></template><div v-if="isGeraldTyping" key="typing" class="typing-indicator">COMPUTING...</div></div><div class="gerald-action-area"><transition name="tray"><div class="tray-container" v-show="showEmotePicker"><img v-for="(emote, name) in customEmotes" :key="name" :src="emote.url ? emote.url : \`https://cdn.discordapp.com/emojis/\${emote.id}.\${emote.animated ? 'gif' : 'png'}?size=44\`" class="emote-picker-img" @click="$emit('insert-emote', name)"></div></transition><transition name="tray"><div class="tray-container" v-show="showMinigames"><button class="bribe-btn" @click="$emit('play-game', 'glitch')">🕶️ Glitch Persona</button><button class="bribe-btn" @click="$emit('play-game', 'shader')">🔥 Compile UE5</button><button class="bribe-btn" @click="$emit('play-game', 'boba')">🥤 Boba Spill</button><button class="bribe-btn" @click="$emit('play-game', 'pineapple')">🚪 Pineapple Walk-In</button><button class="bribe-btn" @click="$emit('play-game', 'cat')">🐈 Cat on PC</button><button class="bribe-btn" @click="$emit('play-game', 'bits')">🎟️ 100K Bits</button><button class="bribe-btn" @click="$emit('play-game', 'mute')">🔇 Mute Mic</button><button class="bribe-btn" @click="$emit('play-game', 'bald')">🧑‍🦲 Delete Hair</button><button class="bribe-btn" @click="$emit('play-game', 'siren')">🚨 Firetruck Siren</button></div></transition><div class="gerald-input-area"><div class="gerald-input-wrapper"><button class="emote-toggle-btn" @click="$emit('toggle-emotes')"><span class="material-symbols-rounded" :style="{ color: showEmotePicker ? '#0ea5e9' : 'inherit' }">mood</span></button><button class="emote-toggle-btn" @click="$emit('toggle-minigames')"><span class="material-symbols-rounded" :style="{ color: showMinigames ? '#0ea5e9' : 'inherit' }">sports_esports</span></button><textarea class="gerald-input" rows="1" placeholder="Message Gerald..." :value="geraldInput" @input="$emit('update-input', $event.target.value)" @keydown="$emit('key-down', $event)" id="gerald-txt-input" @focus="$emit('close-pickers')"></textarea></div><button class="gerald-send" @click="$emit('send')"><span class="material-symbols-rounded">send</span></button></div></div></div>`
 };
 
 const HomeView = {
@@ -97,8 +97,14 @@ createApp({
         const chatMessages = ref([]);
         const chatInput = ref('');
         const twitchChatToken = ref(localStorage.getItem('tw_chat_token') || null);
-        const twitchAuthUrl = ref('');
         let twitchWs = null;
+
+        const loginToTwitch = () => {
+            const clientId = apiConfig.value.cid || 'kimne78kx3ncx6brgo4mv6wki5h1ko';
+            const redirectUri = window.location.origin + window.location.pathname;
+            const url = `https://id.twitch.tv/oauth2/authorize?client_id=${clientId}&redirect_uri=${encodeURIComponent(redirectUri)}&response_type=token&scope=chat:read+chat:edit&force_verify=true`;
+            window.location.assign(url);
+        };
 
         const parseTwitchEmotes = (text, emotesTag) => {
             if (!emotesTag) return text;
@@ -240,8 +246,8 @@ createApp({
             let html = text.replace(/</g, '<').replace(/>/g, '>');
             html = html.replace(/(^|\W)'([^']+)'(\W|$)/g, '$1<strong>$2</strong>$3');
             html = html.replace(/\*\*(.*?)\*\*/g, '$1').replace(/\*(.*?)\*/g, '$1'); 
-            html = html.replace(/\[([^\]]+)\]\((https?:\/\/[^\s]+)\)/gi, '<a href="$2" target="_blank" style="color: var(--gerald); text-decoration: underline; font-weight: bold;">$1</a>');
-            html = html.replace(/(^|[^"'])(https?:\/\/[^\s<)]+)/gi, '$1<a href="$2" target="_blank" style="color: var(--gerald); text-decoration: underline; word-break: break-all;">$2</a>');
+            html = html.replace(/\[([^\]]+)\]\((https?:\/\/[^\s]+)\)/gi, '<a href="$2" target="_blank" style="color: #0ea5e9; text-decoration: underline; font-weight: bold;">$1</a>');
+            html = html.replace(/(^|[^"'])(https?:\/\/[^\s<)]+)/gi, '$1<a href="$2" target="_blank" style="color: #0ea5e9; text-decoration: underline; word-break: break-all;">$2</a>');
             html = html.replace(/`?:([^:\s]+):`?/g, (match, name) => {
                 const emote = customEmotes.value[name];
                 if (emote) { 
@@ -322,7 +328,7 @@ createApp({
                     if (currentUser.value) { sbClient.from('gerald_history').insert({ role: 'gerald', content: cleanReply, user_id: currentUser.value.id }).then(); }
                 }
             } catch (e) { 
-                geraldMessages.value.push({ role: 'gerald', content: 'SYSTEM ERROR: Supabase or Gemini function failed to respond. I am relying on offline sub-routines.' }); 
+                geraldMessages.value.push({ role: 'gerald', content: 'SYSTEM ERROR: Offline Subroutines active.' }); 
             } finally { isGeraldTyping.value = false; scrollToBottom(); }
         };
 
@@ -335,7 +341,7 @@ createApp({
         };
 
         const fetchSocialFeeds = () => {
-            fetch('https://api.codetabs.com/v1/proxy?quest=' + encodeURIComponent('https://www.reddit.com/r/CodeMiko/new.json?limit=15'))
+            fetch('https://api.allorigins.win/raw?url=' + encodeURIComponent('https://www.reddit.com/r/CodeMiko/new.json?limit=15'))
                 .then(res => res.json())
                 .then(data => {
                     if (data && data.data && data.data.children) {
@@ -347,11 +353,13 @@ createApp({
                                 date: new Date(d.created_utc * 1000).toLocaleDateString([], { month: 'short', day: 'numeric', year: 'numeric' })
                             }
                         });
-                    }
-                }).catch(err => { console.log('Reddit fetch failed'); });
+                    } else { throw new Error(); }
+                }).catch(err => { 
+                    redditFeed.value = [{ id: 'error', author: 'System', title: 'Reddit feed temporarily unavailable.', thumbnail: '', ups: 0, num_comments: 0, permalink: '/r/CodeMiko', date: new Date().toLocaleDateString() }];
+                });
 
-            const ytFeedUrl = encodeURIComponent('https://www.youtube.com/feeds/videos.xml?channel_id=UCXz_cgB5Lq2kE9Z-2-zU-hg');
-            fetch(`https://api.rss2json.com/v1/api.json?rss_url=${ytFeedUrl}`)
+            const ytFeedUrl = encodeURIComponent('https://api.rss2json.com/v1/api.json?rss_url=https://www.youtube.com/feeds/videos.xml?channel_id=UCXz_cgB5Lq2kE9Z-2-zU-hg');
+            fetch('https://api.allorigins.win/raw?url=' + ytFeedUrl)
                 .then(res => res.json())
                 .then(data => {
                     if (data && data.items && data.items.length > 0) {
@@ -359,8 +367,10 @@ createApp({
                             let vidId = item.link.split('v=')[1];
                             return { id: vidId, title: item.title, playing: false, date: new Date(item.pubDate).toLocaleDateString([], { month: 'short', day: 'numeric', year: 'numeric' }) };
                         });
-                    }
-                }).catch(err => { console.log('YouTube fetch failed'); });
+                    } else { throw new Error(); }
+                }).catch(err => { 
+                    ytFeed.value = [{ id: 'dQw4w9WgXcQ', title: 'YouTube feed temporarily unavailable.', playing: false, date: new Date().toLocaleDateString() }];
+                });
         };
 
         const checkLive = async () => {
@@ -380,10 +390,6 @@ createApp({
         const runSync = async () => {};
 
         onMounted(async () => {
-            const clientId = apiConfig.value.cid || 'kimne78kx3ncx6brgo4mv6wki5h1ko';
-            const redirectUri = window.location.origin + window.location.pathname;
-            twitchAuthUrl.value = `https://id.twitch.tv/oauth2/authorize?client_id=${clientId}&redirect_uri=${encodeURIComponent(redirectUri)}&response_type=token&scope=chat:read+chat:edit`;
-
             if (window.location.hash.includes('access_token')) {
                 const params = new URLSearchParams(window.location.hash.substring(1));
                 if (params.get('access_token')) {
@@ -406,7 +412,7 @@ createApp({
 
         return { 
             hostname, splashVisible, splashOpacity, currentTab, clips, modals, isLive, toast, currentUser, loginEmail, loginPass, apiConfig, geraldInput, geraldMessages, isGeraldTyping, talkToGerald, logoSvg, syncState, wipeState, logoutState, runSync, isHeaderVisible, handleScroll, handleModalTouchStart, handleModalTouchMove, handleModalTouchEnd, currentFilter, activeFilterLabel, isFilterMenuOpen, closeFilterMenu, applyFilter, parseMarkdown, recentVods, currentVodIndex, nextVod, prevVod, customEmotes, showEmotePicker, insertEmote, clearGeraldHistory, handleGeraldEnter, toggleEmotes, toggleMinigames, closePickers, ytFeed, redditFeed, formatNumber, showMinigames, playMinigame, activeFeedSource,
-            chatMessages, chatInput, twitchChatToken, twitchAuthUrl, sendTwitchChatMessage, selectedClip, playClip, playYt,
+            chatMessages, chatInput, twitchChatToken, loginToTwitch, sendTwitchChatMessage, selectedClip, playClip, playYt,
             handleLogin: async () => { const email = loginEmail.value.includes('@') ? loginEmail.value : `${loginEmail.value}@miko.com`; const { data } = await sbClient.auth.signInWithPassword({ email, password: loginPass.value }); if(data.user) { currentUser.value = data.user; modals.value.profile = false; loadGeraldHistory(); } }, 
             handleLogout: () => { if (logoutState.value !== 'idle') return; logoutState.value = 'logging_out'; setTimeout(() => { sbClient.auth.signOut(); currentUser.value = null; geraldMessages.value = [{role:'gerald', content: geraldGreetings.join('\n')}]; modals.value.profile = false; logoutState.value = 'idle'; }, 1500); },
             optimizeTwitchImg: (u) => u ? u.replace('%{width}', '480').replace('%{height}', '270') : '', 
