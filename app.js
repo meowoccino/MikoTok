@@ -10,7 +10,7 @@ const SplashScreen = {
     template: `
         <div id="splash-screen" v-if="splashVisible" :style="{ opacity: splashOpacity }">
             <div style="width:100px;height:100px;margin-bottom:20px;" v-html="logoSvg('splash')"></div>
-            <div style="font-size: 32px; font-weight: 900; color: var(--primary); font-family: 'Outfit', sans-serif;">MikoTok</div>
+            <div class="header-title" style="font-size: 32px; font-weight: 900;">MikoTok</div>
             <div class="progress-bar"><div class="progress-fill"></div></div>
         </div>
     `
@@ -41,27 +41,13 @@ const BottomNav = {
             <div class="nav-item" :class="{ active: currentTab === 'chat' }" @click="$emit('change-tab', 'chat')">
                 <span class="material-symbols-rounded">chat</span><span class="nav-label">Chat</span>
             </div>
-            <div class="nav-item" :class="{ active: currentTab === 'feed' }" @click="$emit('change-tab', 'feed')">
-                <span class="material-symbols-rounded">forum</span><span class="nav-label">Feed</span>
-            </div>
             <div class="nav-item" :class="{ 'active-gerald': currentTab === 'gerald' }" @click="$emit('change-tab', 'gerald')">
                 <span class="material-symbols-rounded">graphic_eq</span><span class="nav-label">Gerald</span>
             </div>
-        </nav>
-    `
-};
-
-const ClipModal = {
-    props: ['clip', 'hostname'],
-    template: `
-        <div class="clip-modal-overlay" :class="{ open: !!clip }" @click.self="$emit('close')">
-            <div class="clip-modal-content" v-if="clip">
-                <button class="clip-close-x" @click="$emit('close')"><span class="material-symbols-rounded">close</span></button>
-                <div class="clip-frame-container">
-                    <iframe :src="'https://clips.twitch.tv/embed?clip=' + clip.id + '&parent=' + hostname + '&autoplay=true'" allow="autoplay; fullscreen" allowfullscreen></iframe>
-                </div>
+            <div class="nav-item" :class="{ active: currentTab === 'more' }" @click="$emit('change-tab', 'more')">
+                <span class="material-symbols-rounded">menu</span><span class="nav-label">More</span>
             </div>
-        </div>
+        </nav>
     `
 };
 
@@ -104,24 +90,6 @@ const ProfileModal = {
                         <input type="password" class="sleek-input" :value="apiConfig.tkn" @change="$emit('update-api', 'tkn', $event.target.value)" placeholder="Access Token">
                     </div>
                     <div class="action-menu">
-                        <button class="menu-btn sync-row" :style="syncState === 'sync-success' ? 'color: var(--success);' : ''" @click="$emit('sync')" :disabled="syncState !== 'idle'">
-                            <div class="btn-content">
-                                <div class="icon-wrap" :style="syncState === 'sync-success' ? 'background: rgba(16, 185, 129, 0.15);' : ''"><span class="material-symbols-rounded" :class="{'spin-anim': syncState === 'syncing'}" style="font-size: 18px;">{{ syncState === 'sync-success' ? 'check' : 'sync' }}</span></div>
-                                <span>{{ syncState === 'syncing' ? 'SYNCING...' : (syncState === 'sync-success' ? 'SUCCESS' : 'Force Data Sync') }}</span>
-                            </div>
-                        </button>
-                        <button class="menu-btn wipe-row" :style="wipeState === 'success' ? 'color: var(--success);' : ''" @click="$emit('wipe')" :disabled="wipeState !== 'idle'">
-                            <div class="btn-content">
-                                <div class="icon-wrap"><span class="material-symbols-rounded" :class="{'shake-anim': wipeState === 'wiping'}" style="font-size: 18px;">delete</span></div>
-                                <span>{{ wipeState === 'wiping' ? 'WIPING...' : (wipeState === 'success' ? 'MEMORY WIPED!' : 'Wipe Gerald Memory') }}</span>
-                            </div>
-                        </button>
-                        <button class="menu-btn sync-row" style="color: #ff4500;" @click="$emit('nuke-cache')">
-                            <div class="btn-content">
-                                <div class="icon-wrap" style="background: rgba(255, 69, 0, 0.15);"><span class="material-symbols-rounded" style="font-size: 18px;">cached</span></div>
-                                <span>Nuke App Cache</span>
-                            </div>
-                        </button>
                         <button class="menu-btn logout-row" @click="$emit('logout')" :disabled="logoutState !== 'idle'">
                             <div class="btn-content">
                                 <div class="icon-wrap"><span class="material-symbols-rounded" :class="{'spin-anim': logoutState === 'logging_out'}" style="font-size: 18px;">{{ logoutState === 'logging_out' ? 'hourglass_empty' : 'logout' }}</span></div>
@@ -138,7 +106,7 @@ const ProfileModal = {
 const ChatView = {
     props: ['currentTab', 'chatMessages', 'chatInput', 'isLoggedIn', 'twitchAuthUrl'],
     template: `
-        <div class="chat-wrapper" v-show="currentTab === 'chat'">
+        <div class="chat-wrapper">
             <div class="twitch-chat-list" id="twitch-chat-list">
                 <div v-if="!isLoggedIn" class="chat-login-prompt">
                     <span class="material-symbols-rounded" style="font-size:48px; color:var(--primary); margin-bottom:10px;">login</span>
@@ -160,51 +128,35 @@ const ChatView = {
     `
 };
 
-const FeedView = {
-    props: ['currentTab', 'activeFeedSource', 'ytFeed', 'redditFeed', 'formatNumber'],
+const MoreView = {
     template: `
-        <div class="feed-layout" v-show="currentTab === 'feed'">
-            <div class="feed-toggle-container">
-                <div class="feed-toggle">
-                    <button :class="{active: activeFeedSource === 'youtube'}" @click="$emit('set-feed', 'youtube')">YouTube</button>
-                    <button :class="{active: activeFeedSource === 'reddit'}" @click="$emit('set-feed', 'reddit')">Reddit</button>
-                </div>
-            </div>
-            
-            <div class="feed-scroll-container" v-show="activeFeedSource === 'youtube'">
-                <div v-if="ytFeed.length === 0" style="text-align:center; padding: 40px; color: var(--text-muted);">Fetching YouTube...</div>
-                <div v-for="yt in ytFeed" :key="yt.id" class="feed-item card">
-                    <div class="video-container yt-thumb-wrapper">
-                        <iframe v-if="yt.playing" :src="'https://www.youtube.com/embed/' + yt.id + '?autoplay=1'" allow="autoplay; encrypted-media" allowfullscreen loading="lazy"></iframe>
-                        <div v-else @click="$emit('play-yt', yt)" style="width: 100%; height: 100%;">
-                            <img :src="'https://i.ytimg.com/vi/' + yt.id + '/hqdefault.jpg'" alt="Thumbnail">
-                            <div class="play-overlay"><span class="material-symbols-rounded">play_arrow</span></div>
-                        </div>
-                    </div>
-                    <div class="yt-info">
-                        <div class="yt-title">{{ yt.title }}</div>
-                        <div class="yt-date">{{ yt.date }}</div>
-                    </div>
-                </div>
-            </div>
-            
-            <div class="feed-scroll-container" v-show="activeFeedSource === 'reddit'">
-                <div v-if="redditFeed.length === 0" style="text-align:center; padding: 40px; color: var(--text-muted);">Fetching Reddit...</div>
-                <div v-for="post in redditFeed" :key="post.id" class="feed-item reddit-compact-card">
-                    <div class="reddit-header">
-                        <div class="reddit-author">Posted • {{ post.date }}<br><span>u/{{ post.author }}</span></div>
-                        <span v-if="post.link_flair_text" class="reddit-flair">{{ post.link_flair_text }}</span>
-                    </div>
-                    <div v-if="post.thumbnail && post.thumbnail.startsWith('http')" class="reddit-img-container">
-                        <img :src="post.thumbnail" onerror="this.closest('div').style.display='none'" alt="Reddit Media">
-                    </div>
-                    <div class="reddit-post-title" :style="post.thumbnail && post.thumbnail.startsWith('http') ? '' : 'flex: 1;'">{{ post.title }}</div>
-                    <a :href="'https://reddit.com' + post.permalink" target="_blank" class="reddit-actions">
-                        <div style="display: flex; align-items: center; gap: 4px; color: var(--reddit);"><span class="material-symbols-rounded" style="font-size: 16px;">arrow_upward</span> {{ formatNumber(post.ups) }}</div>
-                        <div style="display: flex; align-items: center; gap: 4px;"><span class="material-symbols-rounded" style="font-size: 16px;">chat_bubble</span> {{ formatNumber(post.num_comments) }}</div>
-                        <div style="margin-left: auto; color: var(--text-muted); display: flex; align-items: center; gap: 4px; font-size: 11px; text-transform: uppercase;">Open <span class="material-symbols-rounded" style="font-size: 14px;">open_in_new</span></div>
-                    </a>
-                </div>
+        <div class="more-container">
+            <div class="more-header">Official Links</div>
+            <div class="social-grid">
+                <a href="https://www.youtube.com/@CodeMiko" target="_blank" class="social-card yt">
+                    <svg viewBox="0 0 24 24" class="social-icon"><path fill="currentColor" d="M23.498 6.186a3.016 3.016 0 0 0-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 0 0 .502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 0 0 2.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 0 0 2.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z"/></svg>
+                    <span>YouTube</span>
+                </a>
+                <a href="https://www.twitch.tv/codemiko" target="_blank" class="social-card twitch">
+                    <svg viewBox="0 0 24 24" class="social-icon"><path fill="currentColor" d="M11.571 4.714h1.715v5.143H11.57zm4.715 0H18v5.143h-1.714zM6 0L1.714 4.286v15.428h5.143V24l4.286-4.286h3.428L22.286 12V0zm14.571 11.143l-3.428 3.428h-3.429l-3 3v-3H6.857V1.714h13.714Z"/></svg>
+                    <span>Twitch</span>
+                </a>
+                <a href="https://x.com/thecodemiko" target="_blank" class="social-card x-twitter">
+                    <svg viewBox="0 0 24 24" class="social-icon"><path fill="currentColor" d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>
+                    <span>X (Twitter)</span>
+                </a>
+                <a href="https://www.instagram.com/thecodemiko/" target="_blank" class="social-card instagram">
+                    <svg viewBox="0 0 24 24" class="social-icon"><path fill="currentColor" d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zM12 0C8.741 0 8.333.014 7.053.072 2.695.272.273 2.69.073 7.052.014 8.333 0 8.741 0 12c0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98C8.333 23.986 8.741 24 12 24c3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98C15.668.014 15.259 0 12 0zm0 5.838a6.162 6.162 0 1 0 0 12.324 6.162 6.162 0 0 0 0-12.324zM12 16a4 4 0 1 1 0-8 4 4 0 0 1 0 8zm6.406-11.845a1.44 1.44 0 1 0 0 2.881 1.44 1.44 0 0 0 0-2.881z"/></svg>
+                    <span>Instagram</span>
+                </a>
+                <a href="https://www.reddit.com/r/CodeMiko/" target="_blank" class="social-card reddit">
+                    <svg viewBox="0 0 24 24" class="social-icon"><path fill="currentColor" d="M24 11.5c0-1.65-1.35-3-3-3-.96 0-1.86.48-2.42 1.24-1.64-1-3.75-1.64-6.07-1.72.08-1.1.4-3.05 1.52-3.7.72-.4 1.73-.24 3 .5C17.2 6.3 18.46 7.5 20 7.5c1.65 0 3-1.35 3-3s-1.35-3-3-3c-1.38 0-2.54.94-2.88 2.22-1.43-.72-2.64-.8-3.6-.25-1.64.94-1.95 3.47-2 4.55-2.33.08-4.45.7-6.1 1.72C4.86 8.98 3.96 8.5 3 8.5c-1.65 0-3 1.35-3 3 0 1.32.84 2.44 2.05 2.84-.03.22-.05.44-.05.66 0 3.86 4.5 7 10 7s10-3.14 10-7c0-.22-.02-.44-.05-.66 1.2-.4 2.05-1.54 2.05-2.84zM2.3 13.37C1.5 13.07 1 12.35 1 11.5c0-1.1.9-2 2-2 .64 0 1.22.32 1.6.82-1.1.85-1.92 1.9-2.3 3.05zm3.7.13c0-1.1.9-2 2-2s2 .9 2 2-.9 2-2 2-2-.9-2-2zm9.8 4.8c-1.08.63-2.42.96-3.8.96-1.4 0-2.74-.34-3.8-.95-.24-.13-.32-.44-.2-.68.15-.24.46-.32.7-.18 1.83 1.06 4.76 1.06 6.6 0 .23-.13.53-.05.67.2.14.23.06.54-.18.67zm.2-2.8c-1.1 0-2-.9-2-2s.9-2 2-2 2 .9 2 2-.9 2-2 2zm5.7-2.13c-.38-1.16-1.2-2.2-2.3-3.05.38-.5.96-.82 1.6-.82 1.1 0 2 .9 2 2 0 .84-.53 1.57-1.3 1.87z"/></svg>
+                    <span>Reddit</span>
+                </a>
+                <a href="https://app.fanfix.io/@codeyuna" target="_blank" class="social-card fanfix">
+                    <span class="material-symbols-rounded social-icon" style="font-size: 28px;">favorite</span>
+                    <span>Fanfix</span>
+                </a>
             </div>
         </div>
     `
@@ -213,7 +165,7 @@ const FeedView = {
 const GeraldView = {
     props: ['currentTab', 'geraldMessages', 'isGeraldTyping', 'geraldInput', 'showEmotePicker', 'showMinigames', 'customEmotes', 'parseMarkdown', 'apiConnected'],
     template: `
-        <div class="gerald-container" v-show="currentTab === 'gerald'">
+        <div class="gerald-container">
             <div class="gerald-header" @click="$emit('close-pickers')">
                 <div class="gerald-avatar-wrapper">
                     <img src="gerald.png" class="gerald-avatar" alt="Gerald">
@@ -226,13 +178,11 @@ const GeraldView = {
             <div class="gerald-messages" id="gerald-msgs" @click="$emit('close-pickers')">
                 <template v-for="(m, i) in geraldMessages" :key="i">
                     <div v-if="i === 0 && m.role === 'gerald'" class="terminal-intro">
-                        <div class="terminal-text startup-anim">
-                            > System ready.<br>
-                            > Mood: Sarcastic<br>
-                            > Patience: 125<br>
-                            --------------------<br>
-                            Human detected.<br>
-                            What do you want?
+                        <div class="terminal-text">> Human detected.<br>> State your inquiry.</div>
+                        <div class="gerald-system-card startup-anim">
+                            <div class="gerald-sys-row"><span class="sys-label">CORE:</span> <span class="sys-value">ONLINE</span></div>
+                            <div class="gerald-sys-row"><span class="sys-label">MOOD:</span> <span class="sys-value">SARCASTIC</span></div>
+                            <div class="gerald-sys-row"><span class="sys-label">PATIENCE:</span> <span class="sys-value">125ms</span></div>
                         </div>
                     </div>
                     <div v-else class="chat-bubble" :class="m.role" v-html="parseMarkdown(m.content)"></div>
@@ -272,43 +222,42 @@ const GeraldView = {
 };
 
 const HomeView = {
-    props: ['currentTab', 'currentVodIndex', 'recentVods', 'isLive', 'hostname', 'clips', 'activeFilterLabel', 'optimizeTwitchImg', 'formatViews', 'formatDate'],
+    props: ['currentTab', 'currentVodIndex', 'recentVods', 'isLive', 'hostname', 'clips', 'activeFilterLabel', 'optimizeTwitchImg', 'formatViews', 'formatDate', 'activeClipId'],
     template: `
-        <div class="scroll-area" id="home-scroll" v-show="currentTab === 'home'" @scroll="$emit('scroll', $event)">
-            <div class="hero-section">
-                <div class="header-controls" style="margin-bottom: 12px; display: flex; justify-content: flex-start;" v-if="!isLive">
-                    <div class="premium-badge vod" v-if="recentVods && recentVods.length > 0">
-                        <div class="dot"></div><span>{{ recentVods[currentVodIndex] ? ('VOD • ' + recentVods[currentVodIndex].date) : 'PAST BROADCAST' }}</span>
-                    </div>
-                </div>
-                <div class="video-container" style="border-radius:12px; box-shadow: 0 4px 15px rgba(0,0,0,0.1);">
-                    <iframe v-if="currentVodIndex === -1 && currentTab === 'home'" id="miko-live-player" :src="'https://player.twitch.tv/?channel=codemiko&parent=' + hostname + '&autoplay=true&muted=true'" allow="autoplay; fullscreen" allowfullscreen loading="lazy"></iframe>
-                    <iframe v-else-if="recentVods && recentVods[currentVodIndex] && currentTab === 'home'" :src="'https://player.twitch.tv/?video=' + recentVods[currentVodIndex].id + '&parent=' + hostname + '&autoplay=true&muted=true'" allow="autoplay; fullscreen" allowfullscreen loading="lazy"></iframe>
-                </div>
-                <div class="carousel-controls" v-if="recentVods && recentVods.length > 0 && !isLive" style="margin-top: 12px; justify-content: flex-end;">
-                    <button class="carousel-btn" :class="{ 'hidden-arrow': currentVodIndex <= 0 }" @click.stop="$emit('prev-vod')"><span class="material-symbols-rounded">chevron_left</span></button>
-                    <button class="carousel-btn" :class="{ 'hidden-arrow': currentVodIndex >= recentVods.length - 1 }" @click.stop="$emit('next-vod')"><span class="material-symbols-rounded">chevron_right</span></button>
+        <div class="hero-section">
+            <div class="header-controls" style="margin-bottom: 12px; display: flex; justify-content: flex-start;" v-if="!isLive">
+                <div class="premium-badge vod" v-if="recentVods && recentVods.length > 0">
+                    <div class="dot"></div><span>{{ recentVods[currentVodIndex] ? ('VOD • ' + recentVods[currentVodIndex].date) : 'PAST BROADCAST' }}</span>
                 </div>
             </div>
-            <div class="clips-list-container">
-                <div class="clips-header">
-                    <div class="filter-wrapper">
-                        <button class="filter-btn-tiny" @click="$emit('open-filter')">
-                            <span class="material-symbols-rounded" style="font-size: 16px;">sort</span><span>{{ activeFilterLabel }}</span>
-                        </button>
-                    </div>
+            <div class="video-container" style="border-radius:12px; box-shadow: 0 4px 15px rgba(0,0,0,0.1);">
+                <iframe v-if="currentVodIndex === -1" id="miko-live-player" :src="'https://player.twitch.tv/?channel=codemiko&parent=' + hostname + '&autoplay=true&muted=true'" allow="autoplay; fullscreen" allowfullscreen loading="lazy"></iframe>
+                <iframe v-else-if="recentVods && recentVods[currentVodIndex]" :src="'https://player.twitch.tv/?video=' + recentVods[currentVodIndex].id + '&parent=' + hostname + '&autoplay=true&muted=true'" allow="autoplay; fullscreen" allowfullscreen loading="lazy"></iframe>
+            </div>
+            <div class="carousel-controls" v-if="recentVods && recentVods.length > 0 && !isLive" style="margin-top: 12px; justify-content: flex-end;">
+                <button class="carousel-btn" :class="{ 'hidden-arrow': currentVodIndex <= 0 }" @click.stop="$emit('prev-vod')"><span class="material-symbols-rounded">chevron_left</span></button>
+                <button class="carousel-btn" :class="{ 'hidden-arrow': currentVodIndex >= recentVods.length - 1 }" @click.stop="$emit('next-vod')"><span class="material-symbols-rounded">chevron_right</span></button>
+            </div>
+        </div>
+        <div class="clips-list-container">
+            <div class="clips-header">
+                <div class="filter-wrapper">
+                    <button class="filter-btn-tiny" @click="$emit('open-filter')">
+                        <span class="material-symbols-rounded" style="font-size: 16px;">sort</span><span>{{ activeFilterLabel }}</span>
+                    </button>
                 </div>
-                <div class="clip-list-item" v-for="clip in clips" :key="clip.id" @click="$emit('play-clip', clip)">
-                    <div class="clip-thumb-wrapper">
-                        <img :src="clip.thumbnail_url ? optimizeTwitchImg(clip.thumbnail_url) : ''" loading="lazy" alt="Thumbnail">
-                        <div class="duration-badge">0:45</div>
-                    </div>
-                    <div class="miko-metadata">
-                        <div class="author-name">{{ clip.title }}</div>
-                        <div class="clip-stats">
-                            <span>Just Chatting • {{ formatDate(clip.created_at) }}</span>
-                            <span>{{ formatViews(clip.view_count) }} views</span>
-                        </div>
+            </div>
+            <div class="clip-list-item" v-for="clip in clips" :key="clip.id" @click="$emit('play-clip', clip)">
+                <div class="clip-thumb-wrapper">
+                    <img :src="clip.thumbnail_url ? optimizeTwitchImg(clip.thumbnail_url) : ''" loading="lazy" alt="Thumbnail">
+                    <iframe v-if="activeClipId === clip.id" :src="'https://clips.twitch.tv/embed?clip=' + clip.id + '&parent=' + hostname + '&autoplay=true&muted=false'" allow="autoplay; fullscreen" allowfullscreen style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: 5;"></iframe>
+                    <div class="duration-badge">0:45</div>
+                </div>
+                <div class="miko-metadata">
+                    <div class="author-name">{{ clip.title }}</div>
+                    <div class="clip-stats">
+                        <span>Just Chatting • {{ formatDate(clip.created_at) }}</span>
+                        <span>{{ formatViews(clip.view_count) }} views</span>
                     </div>
                 </div>
             </div>
@@ -316,22 +265,26 @@ const HomeView = {
     `
 };
 
-const { createApp, ref, onMounted, nextTick, watch } = Vue;
+const { createApp, ref, onMounted, nextTick, watch, computed } = Vue;
 const sbClient = supabase.createClient('https://yhxcuayiwqpjvalyrcqv.supabase.co', 'sb_publishable_VyFcNARHblJg10qlC_O7Dg_coouXK92');
 
 createApp({
     components: {
         ToastPopup, SplashScreen, AppHeader, BottomNav, FilterMenu, 
-        ProfileModal, GeraldView, FeedView, HomeView, ChatView, ClipModal
+        ProfileModal, GeraldView, HomeView, ChatView, MoreView
     },
     setup() {
+        const tabs = ['home', 'chat', 'gerald', 'more'];
         const initialHash = window.location.hash.replace('#', '');
-        const validTabs = ['home', 'chat', 'feed', 'gerald'];
-        const currentTab = ref(validTabs.includes(initialHash) ? initialHash : 'home');
+        const currentTab = ref(tabs.includes(initialHash) ? initialHash : 'home');
+        
+        const tabOffset = computed(() => {
+            const index = tabs.indexOf(currentTab.value);
+            return -(index * 25);
+        });
+
         const appTheme = ref(localStorage.getItem('miko_theme') || 'light');
-        
         const splashVisible = ref(true), splashOpacity = ref(1), clips = ref([]), allClips = ref([]), modals = ref({profile: false, discord: false}), isLive = ref(false), currentUser = ref(null), loginEmail = ref(''), loginPass = ref(''), toast = ref({visible: false, message: ''}), hostname = window.location.hostname || 'meowoccino.github.io';
-        
         const syncState = ref('idle'), wipeState = ref('idle'), logoutState = ref('idle');
         const apiConfig = ref({ cid: localStorage.getItem('twitch_cid') || '', tkn: localStorage.getItem('twitch_tkn') || '' });
         
@@ -340,20 +293,37 @@ createApp({
         });
 
         const geraldInput = ref(''), geraldMessages = ref([{role:'gerald', content: ''}]), isGeraldTyping = ref(false), showEmotePicker = ref(false), showMinigames = ref(false);
-        
         const currentFilter = ref('latest'), activeFilterLabel = ref('Latest'), isFilterMenuOpen = ref(false);
         const recentVods = ref([]), currentVodIndex = ref(0);
-        const activeFeedSource = ref('youtube');
-        const ytFeed = ref([]);
-        const redditFeed = ref([]);
         
-        const selectedClip = ref(null);
-
+        const activeClipId = ref(null);
         const chatMessages = ref([]);
         const chatInput = ref('');
         const twitchChatToken = ref(localStorage.getItem('tw_chat_token') || null);
-        const twitchAuthUrl = ref('https://id.twitch.tv/oauth2/authorize?client_id=kimne78kx3ncx6brgo4mv6wki5h1ko&redirect_uri=https://meowoccino.github.io/MikoTok&response_type=token&scope=chat:read+chat:edit&force_verify=true');
+        const twitchAuthUrl = ref('');
         let twitchWs = null;
+
+        let touchStartX = 0;
+        const handleSwipeStart = (e) => { touchStartX = e.touches[0].clientX; };
+        const handleSwipeEnd = (e) => {
+            const touchEndX = e.changedTouches[0].clientX;
+            const diff = touchStartX - touchEndX;
+            const threshold = 60;
+            const currentIndex = tabs.indexOf(currentTab.value);
+            
+            if (diff > threshold && currentIndex < tabs.length - 1) {
+                switchTab(tabs[currentIndex + 1]);
+            } else if (diff < -threshold && currentIndex > 0) {
+                switchTab(tabs[currentIndex - 1]);
+            }
+        };
+
+        const switchTab = (tab) => {
+            currentTab.value = tab;
+            window.history.pushState(null, '', `#${tab}`);
+            if (tab === 'chat') { setTimeout(() => { const list = document.getElementById('twitch-chat-list'); if (list) list.scrollTop = list.scrollHeight; }, 100); }
+            if (tab === 'gerald') { setTimeout(scrollToBottom, 50); }
+        };
 
         const updateThemeClass = () => {
             const body = document.body;
@@ -435,7 +405,7 @@ createApp({
         const closeFilterMenu = () => { isFilterMenuOpen.value = false; };
         const insertEmote = (name) => { const inputEl = document.getElementById('gerald-txt-input'); if (inputEl) { inputEl.value += `:${name}: `; geraldInput.value = inputEl.value; } else { geraldInput.value += `:${name}: `; } };
 
-        const playClip = (clip) => { selectedClip.value = clip; };
+        const playClip = (clip) => { activeClipId.value = clip.id; };
         const playYt = (yt) => { yt.playing = true; };
 
         const scrollToBottom = () => {
@@ -464,13 +434,7 @@ createApp({
             }
         };
 
-        watch(currentTab, (newTab) => { 
-            if (window.location.hash !== `#${newTab}`) { window.history.pushState(null, '', `#${newTab}`); }
-            if (newTab === 'gerald') { setTimeout(scrollToBottom, 50); }
-            if (newTab === 'chat') { setTimeout(() => { const list = document.getElementById('twitch-chat-list'); if (list) list.scrollTop = list.scrollHeight; }, 100); }
-        });
-        
-        window.addEventListener('popstate', () => { const hash = window.location.hash.replace('#', ''); if (validTabs.includes(hash)) { currentTab.value = hash; } else { currentTab.value = 'home'; }});
+        window.addEventListener('popstate', () => { const hash = window.location.hash.replace('#', ''); if (tabs.includes(hash)) { currentTab.value = hash; } else { currentTab.value = 'home'; }});
         
         const isHeaderVisible = ref(true); let lastScrollY = 0;
         const handleScroll = (e) => { const currentScrollY = e.target.scrollTop; if (currentScrollY <= 0) { isHeaderVisible.value = true; return; } if (Math.abs(currentScrollY - lastScrollY) < 10) return; isHeaderVisible.value = currentScrollY < lastScrollY; lastScrollY = currentScrollY; };
@@ -592,35 +556,6 @@ createApp({
             allClips.value = c || []; clips.value = sortData(currentFilter.value);
         };
 
-        const fetchSocialFeeds = () => {
-            fetch('https://api.allorigins.win/raw?url=' + encodeURIComponent('https://www.reddit.com/r/CodeMiko/new.json?limit=15'))
-                .then(res => res.json())
-                .then(data => {
-                    if (data && data.data && data.data.children) {
-                        redditFeed.value = data.data.children.filter(child => !child.data.stickied).slice(0, 10).map(child => {
-                            let d = child.data;
-                            return {
-                                id: d.id, author: d.author, title: d.title, url: d.url, thumbnail: d.thumbnail,
-                                ups: d.ups, num_comments: d.num_comments, permalink: d.permalink, link_flair_text: d.link_flair_text,
-                                date: new Date(d.created_utc * 1000).toLocaleDateString([], { month: 'short', day: 'numeric', year: 'numeric' })
-                            }
-                        });
-                    }
-                }).catch(err => { redditFeed.value = []; });
-
-            fetch('https://api.rss2json.com/v1/api.json?rss_url=' + encodeURIComponent('https://www.youtube.com/feeds/videos.xml?channel_id=UC1wNmbS9K-X9j3t_Ww_gZ3w'))
-                .then(res => res.json())
-                .then(data => {
-                    if (data && data.items && data.items.length > 0) {
-                        ytFeed.value = data.items.slice(0, 10).map(item => {
-                            let vidMatch = item.link.match(/(?:v=|\/)([\w-]{11})/);
-                            let vidId = vidMatch ? vidMatch[1] : item.guid.split(':').pop();
-                            return { id: vidId, title: item.title, playing: false, date: new Date(item.pubDate).toLocaleDateString([], { month: 'short', day: 'numeric', year: 'numeric' }) };
-                        });
-                    }
-                }).catch(err => { ytFeed.value = []; });
-        };
-
         const checkLive = async () => {
             try {
                 const res = await fetch('https://decapi.me/twitch/uptime/codemiko');
@@ -638,6 +573,12 @@ createApp({
         const runSync = async () => {};
 
         onMounted(async () => {
+            const clientId = apiConfig.value.cid || 'kimne78kx3ncx6brgo4mv6wki5h1ko';
+            // Force strict formatting exactly matching Github Pages root path (NO trailing slash) to bypass mismatch
+            let baseUri = window.location.origin + window.location.pathname;
+            if (baseUri.endsWith('/')) { baseUri = baseUri.slice(0, -1); }
+            twitchAuthUrl.value = 'https://id.twitch.tv/oauth2/authorize?client_id=' + clientId + '&redirect_uri=' + encodeURIComponent(baseUri) + '&response_type=token&scope=chat:read+chat:edit&force_verify=true';
+            
             updateThemeClass();
             if (window.location.hash.includes('access_token')) {
                 const params = new URLSearchParams(window.location.hash.substring(1));
@@ -651,17 +592,16 @@ createApp({
 
             const { data: { session } } = await sbClient.auth.getSession();
             if (session?.user) { currentUser.value = session.user; loadGeraldHistory(); }
-            loadData(); checkLive(); fetchSocialFeeds(); connectTwitchChat();
+            loadData(); checkLive(); connectTwitchChat();
             
-            setInterval(fetchSocialFeeds, 21600000); 
             setInterval(loadData, 21600000);
             setInterval(checkLive, 60000); 
             setTimeout(() => { splashOpacity.value = 0; setTimeout(() => splashVisible.value = false, 400); }, 1500);
         });
 
         return { 
-            hostname, splashVisible, splashOpacity, currentTab, appTheme, toggleTheme, clips, modals, isLive, toast, currentUser, loginEmail, loginPass, apiConfig, geraldInput, geraldMessages, isGeraldTyping, talkToGerald, logoSvg, syncState, wipeState, logoutState, runSync, isHeaderVisible, handleScroll, handleModalTouchStart, handleModalTouchMove, handleModalTouchEnd, currentFilter, activeFilterLabel, isFilterMenuOpen, closeFilterMenu, applyFilter, parseMarkdown, recentVods, currentVodIndex, nextVod, prevVod, customEmotes, showEmotePicker, insertEmote, clearGeraldHistory, handleGeraldEnter, toggleEmotes, toggleMinigames, closePickers, ytFeed, redditFeed, formatNumber, showMinigames, playMinigame, activeFeedSource, nukeCache,
-            chatMessages, chatInput, twitchChatToken, twitchAuthUrl, sendTwitchChatMessage, selectedClip, playClip, playYt,
+            hostname, splashVisible, splashOpacity, currentTab, appTheme, toggleTheme, clips, modals, isLive, toast, currentUser, loginEmail, loginPass, apiConfig, geraldInput, geraldMessages, isGeraldTyping, talkToGerald, logoSvg, syncState, wipeState, logoutState, runSync, isHeaderVisible, handleScroll, handleModalTouchStart, handleModalTouchMove, handleModalTouchEnd, currentFilter, activeFilterLabel, isFilterMenuOpen, closeFilterMenu, applyFilter, parseMarkdown, recentVods, currentVodIndex, nextVod, prevVod, customEmotes, showEmotePicker, insertEmote, clearGeraldHistory, handleGeraldEnter, toggleEmotes, toggleMinigames, closePickers, formatNumber, showMinigames, playMinigame, nukeCache, activeClipId, tabOffset, switchTab, handleSwipeStart, handleSwipeEnd,
+            chatMessages, chatInput, twitchChatToken, twitchAuthUrl, sendTwitchChatMessage, playClip, playYt,
             handleLogin: async () => { const email = loginEmail.value.includes('@') ? loginEmail.value : `${loginEmail.value}@miko.com`; const { data } = await sbClient.auth.signInWithPassword({ email, password: loginPass.value }); if(data.user) { currentUser.value = data.user; modals.value.profile = false; loadGeraldHistory(); } }, 
             handleLogout: () => { if (logoutState.value !== 'idle') return; logoutState.value = 'logging_out'; setTimeout(() => { sbClient.auth.signOut(); currentUser.value = null; geraldMessages.value = [{role:'gerald', content: ''}]; modals.value.profile = false; logoutState.value = 'idle'; }, 1500); },
             optimizeTwitchImg: (u) => u ? u.replace('%{width}', '480').replace('%{height}', '270') : '', 
