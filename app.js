@@ -198,7 +198,7 @@ const GeraldView = {
             <div class="gerald-messages" id="gerald-msgs" @click="$emit('close-pickers')">
                 <template v-for="(m, i) in geraldMessages" :key="i">
                     <div v-if="i === 0 && m.role === 'gerald'" class="terminal-intro">
-                        <div class="terminal-text startup-anim">> Human detected.<br>> State your inquiry.</div>
+                        <div class="terminal-text">> Human detected.<br>> State your inquiry.</div>
                         <div class="gerald-system-card startup-anim-delay">
                             <div class="gerald-sys-row"><span class="sys-label">CORE:</span> <span class="sys-value">ONLINE</span></div>
                             <div class="gerald-sys-row"><span class="sys-label">MOOD:</span> <span class="sys-value">SARCASTIC</span></div>
@@ -304,7 +304,7 @@ createApp({
         
         const tabOffset = computed(() => {
             const index = tabs.indexOf(currentTab.value);
-            return -(index * 25);
+            return -(index * 25); 
         });
 
         const appTheme = ref(localStorage.getItem('miko_theme') || 'light');
@@ -339,7 +339,6 @@ createApp({
             const diffX = touchStartX - touchEndX;
             const diffY = touchStartY - touchEndY;
             
-            // Only trigger tab swipe if horizontal drag is significantly larger than vertical drag
             if (Math.abs(diffX) > Math.abs(diffY) && Math.abs(diffX) > 60) {
                 const currentIndex = tabs.indexOf(currentTab.value);
                 if (diffX > 0 && currentIndex < tabs.length - 1) {
