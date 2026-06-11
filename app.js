@@ -1,8 +1,6 @@
 const ToastPopup = {
     props: ['toast'],
-    template: `
-        <div class="toast-popup" :class="{ show: toast.visible }" v-html="toast.message"></div>
-    `
+    template: `<div class="toast-popup" :class="{ show: toast.visible }" v-html="toast.message"></div>`
 };
 
 const SplashScreen = {
@@ -123,20 +121,6 @@ const ProfileModal = {
     `
 };
 
-const ClipModal = {
-    props: ['clip', 'hostname'],
-    template: `
-        <div class="clip-modal-overlay" :class="{ open: !!clip }" @click.self="$emit('close')">
-            <div class="clip-modal-content" v-if="clip">
-                <button class="clip-close-x" @click="$emit('close')"><span class="material-symbols-rounded">close</span></button>
-                <div class="clip-frame-container">
-                    <iframe :src="'https://clips.twitch.tv/embed?clip=' + clip.id + '&parent=' + hostname + '&autoplay=true&muted=false'" allow="autoplay; fullscreen" allowfullscreen></iframe>
-                </div>
-            </div>
-        </div>
-    `
-};
-
 const ChatView = {
     props: ['currentTab', 'chatMessages', 'chatInput', 'isLoggedIn', 'twitchAuthUrl'],
     template: `
@@ -224,12 +208,8 @@ const GeraldView = {
                 <template v-for="(m, i) in geraldMessages" :key="i">
                     <div v-if="i === 0 && m.role === 'gerald'" class="terminal-intro">
                         <div class="terminal-text startup-anim">
-                            &gt; System ready.<br>
-                            &gt; Mood: Sarcastic<br>
-                            &gt; Patience: 125ms<br>
-                            --------------------<br>
-                            Human detected.<br>
-                            What do you want?
+                            > Human detected.<br>
+                            > What do you want?
                         </div>
                     </div>
                     <div v-else class="chat-bubble" :class="m.role" v-html="parseMarkdown(m.content)"></div>
@@ -269,7 +249,7 @@ const GeraldView = {
 };
 
 const HomeView = {
-    props: ['currentTab', 'currentVodIndex', 'recentVods', 'isLive', 'hostname', 'clips', 'activeFilterLabel', 'optimizeTwitchImg', 'formatViews', 'formatDate'],
+    props: ['currentTab', 'currentVodIndex', 'recentVods', 'isLive', 'hostname', 'clips', 'activeFilterLabel', 'optimizeTwitchImg', 'formatViews', 'formatDate', 'activeClipId'],
     template: `
         <div>
             <div class="hero-section">
@@ -278,11 +258,9 @@ const HomeView = {
                         <div class="dot"></div><span>{{ recentVods[currentVodIndex] ? ('VOD • ' + recentVods[currentVodIndex].date) : 'PAST BROADCAST' }}</span>
                     </div>
                 </div>
-                <div class="video-wrapper-outer">
-                    <div class="video-container">
-                        <iframe v-if="currentVodIndex === -1" id="miko-live-player" :src="'https://player.twitch.tv/?channel=codemiko&parent=' + hostname + '&autoplay=true&muted=true'" allow="autoplay; fullscreen" allowfullscreen loading="lazy"></iframe>
-                        <iframe v-else-if="recentVods && recentVods[currentVodIndex]" :src="'https://player.twitch.tv/?video=' + recentVods[currentVodIndex].id + '&parent=' + hostname + '&autoplay=false'" allow="autoplay; fullscreen" allowfullscreen loading="lazy"></iframe>
-                    </div>
+                <div class="video-container">
+                    <iframe v-if="currentVodIndex === -1" id="miko-live-player" :src="'https://player.twitch.tv/?channel=codemiko&parent=' + hostname + '&autoplay=true&muted=true'" allow="autoplay; fullscreen" allowfullscreen loading="lazy"></iframe>
+                    <iframe v-else-if="recentVods && recentVods[currentVodIndex]" :src="'https://player.twitch.tv/?video=' + recentVods[currentVodIndex].id + '&parent=' + hostname + '&autoplay=true&muted=true'" allow="autoplay; fullscreen" allowfullscreen loading="lazy"></iframe>
                 </div>
                 <div class="carousel-controls" v-if="recentVods && recentVods.length > 0 && !isLive" style="margin-top: 12px; justify-content: flex-end;">
                     <button class="carousel-btn" :class="{ 'hidden-arrow': currentVodIndex <= 0 }" @click.stop="$emit('prev-vod')"><span class="material-symbols-rounded">chevron_left</span></button>
@@ -299,8 +277,11 @@ const HomeView = {
                 </div>
                 <div class="clip-list-item" v-for="clip in clips" :key="clip.id" @click="$emit('play-clip', clip)">
                     <div class="clip-thumb-wrapper">
-                        <img :src="clip.thumbnail_url ? optimizeTwitchImg(clip.thumbnail_url) : ''" loading="lazy" alt="Thumbnail">
-                        <div class="duration-badge">0:45</div>
+                        <iframe v-if="activeClipId === clip.id" :src="'https://clips.twitch.tv/embed?clip=' + clip.id + '&parent=' + hostname + '&autoplay=true&muted=false'" allow="autoplay; fullscreen" allowfullscreen></iframe>
+                        <template v-else>
+                            <img :src="clip.thumbnail_url ? optimizeTwitchImg(clip.thumbnail_url) : ''" loading="lazy" alt="Thumbnail">
+                            <div class="duration-badge">0:45</div>
+                        </template>
                     </div>
                     <div class="miko-metadata">
                         <div class="author-name">{{ clip.title }}</div>
@@ -321,7 +302,7 @@ const sbClient = supabase.createClient('https://yhxcuayiwqpjvalyrcqv.supabase.co
 createApp({
     components: {
         ToastPopup, SplashScreen, AppHeader, BottomNav, FilterMenu, 
-        ProfileModal, GeraldView, HomeView, ChatView, MoreView, ClipModal
+        ProfileModal, GeraldView, HomeView, ChatView, MoreView
     },
     setup() {
         const tabs = ['home', 'chat', 'gerald', 'more'];
@@ -330,7 +311,7 @@ createApp({
         
         const tabOffset = computed(() => {
             const index = tabs.indexOf(currentTab.value);
-            return -(index * 100); 
+            return -(index * 25); 
         });
 
         const appTheme = ref(localStorage.getItem('miko_theme') || 'light');
@@ -342,11 +323,14 @@ createApp({
             "mkoSusge": { id: "1273724925743595540", animated: false }, "KEKW": { id: "1456296327964262453", animated: false }, "mkoNOTED": { id: "1369891690898391070", animated: false }, "mkoHype": { id: "870761283035734086", animated: false }, "Shruge": { id: "1456297412875518078", animated: false }, "Bedge": { id: "1369823782084022423", animated: false }, "mkoCoffee": { id: "1369891686544834570", animated: false }, "D_": { id: "1456295688626241619", animated: false }, "mkoLove": { id: "1150505635721519115", animated: false }
         });
 
-        const geraldInput = ref(''), geraldMessages = ref([{role:'gerald', content: ''}]), isGeraldTyping = ref(false), showEmotePicker = ref(false), showMinigames = ref(false);
+        const geraldInput = ref('');
+        const geraldMessages = ref([{role:'gerald', content: ''}]);
+        const isGeraldTyping = ref(false), showEmotePicker = ref(false), showMinigames = ref(false);
+        
         const currentFilter = ref('latest'), activeFilterLabel = ref('Latest'), isFilterMenuOpen = ref(false);
         const recentVods = ref([]), currentVodIndex = ref(0);
         
-        const selectedClip = ref(null);
+        const activeClipId = ref(null);
         const chatMessages = ref([]);
         const chatInput = ref('');
         const twitchChatToken = ref(localStorage.getItem('tw_chat_token') || null);
@@ -405,11 +389,6 @@ createApp({
                 twitchWs.send('CAP REQ :twitch.tv/tags twitch.tv/commands');
                 if (twitchChatToken.value) {
                     twitchWs.send(`PASS oauth:${twitchChatToken.value}`);
-                    fetch('https://id.twitch.tv/oauth2/validate', { headers: { 'Authorization': `OAuth ${twitchChatToken.value}` } })
-                        .then(res => res.json())
-                        .then(data => {
-                            if(data.login) { twitchWs.send(`NICK ${data.login}`); twitchWs.send('JOIN #codemiko'); }
-                        }).catch(() => { twitchWs.send('NICK justinfan123'); twitchWs.send('JOIN #codemiko'); });
                 } else {
                     twitchWs.send('PASS oauth:anonymous');
                     twitchWs.send('NICK justinfan12345');
@@ -462,7 +441,7 @@ createApp({
         const closeFilterMenu = () => { isFilterMenuOpen.value = false; };
         const insertEmote = (name) => { const inputEl = document.getElementById('gerald-txt-input'); if (inputEl) { inputEl.value += `:${name}: `; geraldInput.value = inputEl.value; } else { geraldInput.value += `:${name}: `; } };
 
-        const playClip = (clip) => { selectedClip.value = clip; };
+        const playClip = (clip) => { activeClipId.value = clip.id; };
 
         const scrollToBottom = () => {
             const b = document.getElementById('gerald-msgs');
@@ -629,10 +608,9 @@ createApp({
         const runSync = async () => {};
 
         onMounted(async () => {
-            const clientId = apiConfig.value.cid || 'kimne78kx3ncx6brgo4mv6wki5h1ko';
-            let baseUri = window.location.origin + window.location.pathname;
-            if (baseUri.endsWith('/')) { baseUri = baseUri.slice(0, -1); }
-            twitchAuthUrl.value = 'https://id.twitch.tv/oauth2/authorize?client_id=' + clientId + '&redirect_uri=' + encodeURIComponent(baseUri) + '&response_type=token&scope=chat:read+chat:edit&force_verify=true';
+            const clientId = apiConfig.value.cid || 'i2fjxfk0oq6ybixle760zryrtvdqjg';
+            const exactRedirectUri = 'https://meowoccino.github.io/MikoTok/';
+            twitchAuthUrl.value = 'https://id.twitch.tv/oauth2/authorize?client_id=' + clientId + '&redirect_uri=' + encodeURIComponent(exactRedirectUri) + '&response_type=token&scope=chat:read+chat:edit&force_verify=true';
             
             updateThemeClass();
             if (window.location.hash.includes('access_token')) {
@@ -642,6 +620,11 @@ createApp({
                     localStorage.setItem('tw_chat_token', twitchChatToken.value);
                     window.history.replaceState({}, document.title, window.location.pathname + '#chat');
                     currentTab.value = 'chat';
+                    
+                    fetch('https://id.twitch.tv/oauth2/validate', { headers: { 'Authorization': 'OAuth ' + twitchChatToken.value } })
+                        .then(res => {
+                            if (!res.ok) { twitchChatToken.value = null; localStorage.removeItem('tw_chat_token'); }
+                        }).catch(e => console.error(e));
                 }
             }
 
@@ -655,8 +638,8 @@ createApp({
         });
 
         return { 
-            hostname, splashVisible, splashOpacity, currentTab, appTheme, toggleTheme, clips, modals, isLive, toast, currentUser, loginEmail, loginPass, apiConfig, geraldInput, geraldMessages, isGeraldTyping, talkToGerald, logoSvg, syncState, wipeState, logoutState, runSync, isHeaderVisible, handleScroll, handleModalTouchStart, handleModalTouchMove, handleModalTouchEnd, currentFilter, activeFilterLabel, isFilterMenuOpen, closeFilterMenu, applyFilter, parseMarkdown, recentVods, currentVodIndex, nextVod, prevVod, customEmotes, showEmotePicker, insertEmote, clearGeraldHistory, handleGeraldEnter, toggleEmotes, toggleMinigames, closePickers, nukeCache, selectedClip, tabOffset, switchTab, handleSwipeStart, handleSwipeEnd,
-            chatMessages, chatInput, twitchChatToken, twitchAuthUrl, sendTwitchChatMessage, playClip,
+            hostname, splashVisible, splashOpacity, currentTab, appTheme, toggleTheme, clips, modals, isLive, toast, currentUser, loginEmail, loginPass, apiConfig, geraldInput, geraldMessages, isGeraldTyping, talkToGerald, logoSvg, syncState, wipeState, logoutState, runSync, isHeaderVisible, handleScroll, handleModalTouchStart, handleModalTouchMove, handleModalTouchEnd, currentFilter, activeFilterLabel, isFilterMenuOpen, closeFilterMenu, applyFilter, parseMarkdown, recentVods, currentVodIndex, nextVod, prevVod, customEmotes, showEmotePicker, insertEmote, clearGeraldHistory, handleGeraldEnter, toggleEmotes, toggleMinigames, closePickers, nukeCache, activeClipId, tabOffset, switchTab, handleSwipeStart, handleSwipeEnd, playClip,
+            chatMessages, chatInput, twitchChatToken, twitchAuthUrl, sendTwitchChatMessage,
             handleLogin: async () => { const email = loginEmail.value.includes('@') ? loginEmail.value : `${loginEmail.value}@miko.com`; const { data } = await sbClient.auth.signInWithPassword({ email, password: loginPass.value }); if(data.user) { currentUser.value = data.user; modals.value.profile = false; loadGeraldHistory(); } }, 
             handleLogout: () => { if (logoutState.value !== 'idle') return; logoutState.value = 'logging_out'; setTimeout(() => { sbClient.auth.signOut(); currentUser.value = null; geraldMessages.value = [{role:'gerald', content: ''}]; modals.value.profile = false; logoutState.value = 'idle'; }, 1500); },
             optimizeTwitchImg: (u) => u ? u.replace('%{width}', '480').replace('%{height}', '270') : '', 
