@@ -4,7 +4,7 @@
     --danger: #ef4444; 
     --offline-gray: #9ca3af; 
     --success: #10b981; 
-    --gerald: #0ea5e9; 
+    --gerald: #9146FF; /* Set active navigation highlight color uniformly back to brand purple */
     --discord: #5865F2; 
     --reddit: #ff4500;
 }
