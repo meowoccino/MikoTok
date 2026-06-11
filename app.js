@@ -170,7 +170,6 @@ const ChatView = {
     template: `
         <div class="chat-wrapper">
 
-            <!-- ── Login screen ── -->
             <div v-if="!isLoggedIn" class="chat-login-screen">
                 <div class="chat-login-card">
                     <svg viewBox="0 0 24 24" class="chat-login-icon"><path fill="currentColor" d="M11.571 4.714h1.715v5.143H11.57zm4.715 0H18v5.143h-1.714zM6 0L1.714 4.286v15.428h5.143V24l4.286-4.286h3.428L22.286 12V0zm14.571 11.143l-3.428 3.428h-3.429l-3 3v-3H6.857V1.714h13.714Z"/></svg>
@@ -180,7 +179,6 @@ const ChatView = {
                 </div>
             </div>
 
-            <!-- ── Message list ── -->
             <div v-else class="twitch-chat-list" id="twitch-chat-list" @click="closePicker">
                 <div v-if="chatMessages.length === 0" class="chat-empty-state">
                     <span class="material-symbols-rounded" style="font-size:32px; color:var(--text-muted); margin-bottom:8px;">chat_bubble_outline</span>
@@ -188,32 +186,26 @@ const ChatView = {
                 </div>
                 <div v-for="(msg, i) in chatMessages" :key="i"
                      class="twitch-msg-row"
-                     :class="{ 'msg-mine': msg.username === twitchUsername, 'msg-highlighted': msg.isHighlighted }">
+                     :class="{ 'msg-mine': msg.username === twitchUsername }">
                     <span class="twitch-badges">
                         <img v-for="(badge, bi) in (msg.badges || [])" :key="bi"
                              :src="badge.img" :title="badge.title" class="badge-img">
                     </span>
-                    <span class="twitch-username" :style="{ color: msg.color }">{{ msg.username }}</span><span class="twitch-colon">:&nbsp;</span><span class="twitch-text" v-html="msg.html"></span>
+                    <span class="twitch-username" :style="{ color: msg.color }">{{ msg.username }}</span><span class="twitch-colon">: </span><span class="twitch-text" v-html="msg.html"></span>
                 </div>
             </div>
 
-            <!-- ── Emote picker tray ── -->
-            <transition name="tray-slide">
-                <div class="chat-emote-tray" v-if="showPicker && isLoggedIn" @click.stop>
-                    <input ref="pickerSearch" v-model="pickerQuery"
-                           class="emote-search-input" placeholder="Search emotes…">
-                    <div class="emote-picker-grid">
-                        <img v-for="([name, emote]) in filteredEmotes" :key="name"
-                             :src="getEmoteUrl(emote)" :title="name"
-                             class="emote-picker-img"
-                             @click="insertEmote(name)">
-                        <div v-if="filteredEmotes.length === 0"
-                             style="color:var(--text-muted);font-size:12px;padding:8px;width:100%;">No emotes found</div>
-                    </div>
+            <div class="chat-emote-tray" v-show="showPicker && isLoggedIn" @click.stop>
+                <input ref="pickerSearch" v-model="pickerQuery" class="emote-search-input" placeholder="Search emotes…">
+                <div class="emote-picker-grid">
+                    <img v-for="([name, emote]) in filteredEmotes" :key="name"
+                         :src="getEmoteUrl(emote)" :title="name"
+                         class="emote-picker-img"
+                         @click="insertEmote(name)">
+                    <div v-if="filteredEmotes.length === 0" style="color:var(--text-muted);font-size:12px;padding:8px;width:100%;">No emotes found</div>
                 </div>
-            </transition>
+            </div>
 
-            <!-- ── Input bar ── -->
             <div v-if="isLoggedIn" class="custom-chat-input-area">
                 <button class="chat-icon-btn" :class="{ 'chat-icon-active': showPicker }" @click.stop="togglePicker" title="Emotes">
                     <span class="material-symbols-rounded" style="font-size:22px;">mood</span>
@@ -241,14 +233,17 @@ const MoreView = {
     template: `
         <div class="more-container">
             <div class="social-grid">
+                
                 <a href="https://throne.com/codemiko" target="_blank" class="social-card throne">
-                    <div style="display:flex; align-items:center; gap:15px; flex:1;">
-                        <span class="material-symbols-rounded social-icon" style="font-size: 28px; color: #0ea5e9;">redeem</span>
+                    <div style="display:flex; align-items:center; gap:12px; flex:1;">
+                        <span class="material-symbols-rounded social-icon" style="font-size: 26px; color: #0ea5e9;">redeem</span>
                         <span style="color: var(--text-main);">Throne</span>
                     </div>
                     <span class="material-symbols-rounded" style="color: var(--text-muted); font-size: 20px; transform: rotate(45deg);">push_pin</span>
                 </a>
+                
                 <div style="height: 4px;"></div>
+                
                 <a href="https://www.twitch.tv/codemiko" target="_blank" class="social-card">
                     <svg viewBox="0 0 24 24" class="social-icon" style="color: #9146FF;"><path fill="currentColor" d="M11.571 4.714h1.715v5.143H11.57zm4.715 0H18v5.143h-1.714zM6 0L1.714 4.286v15.428h5.143V24l4.286-4.286h3.428L22.286 12V0zm14.571 11.143l-3.428 3.428h-3.429l-3 3v-3H6.857V1.714h13.714Z"/></svg>
                     <span style="color: var(--text-main);">Twitch</span>
@@ -258,7 +253,7 @@ const MoreView = {
                     <span style="color: var(--text-main);">YouTube</span>
                 </a>
                 <a href="https://kick.com/codemiko" target="_blank" class="social-card">
-                    <svg viewBox="0 0 24 24" class="social-icon" style="color: #53FC18;"><path fill="currentColor" d="M1.4 1.56v20.88h5.96V16h2.15v2.89h2.52v3.55h10.54V1.56h-10.54v3.55h-2.52v2.89H7.36V1.56z"/></svg>
+                    <svg viewBox="0 0 24 24" class="social-icon" style="color: #53FC18;"><path fill="currentColor" d="M3.75 2v20h4.5v-5.25h2.25v2.25h2.25v3h7.5V2h-7.5v3h-2.25v2.25H8.25V2h-4.5z"/></svg>
                     <span style="color: var(--text-main);">Kick</span>
                 </a>
                 <a href="https://www.tiktok.com/@codemiko" target="_blank" class="social-card">
@@ -274,7 +269,7 @@ const MoreView = {
                     <span style="color: var(--text-main);">Instagram</span>
                 </a>
                 <a href="https://www.snapchat.com/add/codemiko" target="_blank" class="social-card">
-                    <svg viewBox="0 0 24 24" class="social-icon" style="color: #FFD500;"><path fill="currentColor" d="M12.02.042C9.406.1 7.155.875 5.56 2.646c-1.1 1.229-1.636 2.822-1.636 4.801 0 1.25-.094 2.52-1.073 3.666-.312.385-.687.729-1.093 1.042-.209.156-.469.343-.844.521-.635.291-.885.812-.666 1.343.145.375.468.625.864.719 1.094.26 2.302.395 3.323.51a19.78 19.78 0 00-.77 2.135 4.3 4.3 0 00-.094.885c0 .48.24.969.833 1.23.49.208 1.135.03 1.636-.261.27-.156.552-.354.833-.562.916-.656 1.937-1.385 3.25-1.396 2.197-.02 4.311.604 6.27 1.76.125.073.26.135.396.188.427.146.854.125 1.125-.115.354-.302.406-.823.167-1.312a20.082 20.082 0 00-1.042-2.031c1.073-.136 2.375-.323 3.614-.625.688-.167 1.125-.667 1.094-1.24-.031-.573-.521-1.031-1.25-1.208-1.573-.427-2.614-1.614-2.885-2.093-.729-1.219-.74-2.583-.74-3.927 0-2.02-.552-3.666-1.74-4.885C16.907.969 14.656.094 12.02.042zm6.27 18.061c.428.188.897.459 1.417.813.438.302.688.75.615 1.198-.073.437-.448.791-1.01.916a8.473 8.473 0 01-1.532.146c-.77.01-1.614-.156-2.52-.375-1.021-.26-2.125-.562-3.23-.562s-2.208.302-3.23.562c-.906.219-1.75.385-2.52.375a8.463 8.463 0 01-1.531-.146c-.562-.125-.937-.479-1.01-.916-.073-.448.177-.896.614-1.198.521-.354.99-.625 1.417-.813a3.522 3.522 0 011.083 2.115c.125.75 1.094 1.343 2.656 1.635.886.167 1.834.198 2.521.198.688 0 1.635-.031 2.521-.198 1.562-.292 2.531-.885 2.656-1.635a3.52 3.52 0 011.083-2.115z"/></svg>
+                    <svg viewBox="0 0 24 24" class="social-icon" style="color: #FFD500;"><path fill="currentColor" d="M12.11 0c-1.39 0-3.36.14-4.8.84-1.2.59-1.95 1.54-2.22 2.76-.23 1.04-.26 2.06-.27 2.82-.01.99.1 2.21.36 3.12.27.93.7 1.83 1.25 2.58.53.72 1.15 1.34 1.82 1.84.14.1.28.2.42.29-.21.23-.46.43-.73.59-.51.3-1.12.45-1.74.45-.48 0-.96-.1-1.42-.29-.39-.16-.76-.39-1.09-.67-.28-.23-.5-.51-.67-.82-.2-.36-.45-.63-.78-.81-.36-.21-.8-.28-1.24-.22-.38.05-.72.22-1 .47-.25.23-.44.53-.55.85-.11.34-.14.7-.08 1.05.06.33.19.65.38.93.38.56.97.94 1.63 1.13.88.25 1.83.25 2.72.06.66-.14 1.29-.38 1.88-.69.21-.11.43-.24.64-.4.32-.23.67-.4.16.03.65.61 1.48 1.15 2.37 1.5.8.31 1.66.47 2.54.47.88 0 1.74-.16 2.54-.47.89-.35 1.72-.89 2.37-1.5.38-.36.72-.77 1.01-1.21.25-.38.56-.71.93-.97.21-.16.43-.29.64-.4.59-.31 1.22-.55 1.88-.69.89-.19 1.84-.19 2.72-.06.66.19 1.25.57 1.63 1.13.19.28.32.6.38.93.06.35.03.71-.08 1.05-.11.32-.3.62-.55.85-.28.25-.62.42-1 .47-.44.06-.88-.01-1.24-.22-.33-.18-.58-.45-.78-.81-.17-.31-.39-.59-.67-.82-.33-.28-.7-.51-1.09-.67-.46-.19-.94-.29-1.42-.29-.62 0-1.23.15-1.74.45-.27.16-.52.36-.73.59.14-.09.28-.19.42-.29.67-.5 1.29-1.12 1.82-1.84.55-.75.98-1.65 1.25-2.58.26-.91.37-2.13.36-3.12-.01-.76-.04-1.78-.27-2.82-.27-1.22-1.02-2.17-2.22-2.76-1.44-.7-3.41-.84-4.8-.84z"/></svg>
                     <span style="color: var(--text-main);">Snapchat</span>
                 </a>
                 <a href="https://www.facebook.com/thecodemiko/" target="_blank" class="social-card">
@@ -314,8 +309,8 @@ const GeraldView = {
                 <template v-for="(m, i) in geraldMessages" :key="i">
                     <div v-if="i === 0 && m.role === 'gerald'" class="terminal-intro">
                         <div class="terminal-text startup-anim">
-                            &gt; Human detected.<br>
-                            &gt; What do you want?
+                            > Human detected.<br>
+                            > What do you want?
                         </div>
                     </div>
                     <div v-else class="chat-bubble" :class="m.role" v-html="parseMarkdown(m.content)"></div>
@@ -323,15 +318,15 @@ const GeraldView = {
                 <div v-if="isGeraldTyping" key="typing" class="typing-indicator">COMPUTING...</div>
             </div>
             <div class="gerald-action-area">
-                <transition name="tray">
-                    <div class="tray-container" v-show="showEmotePicker">
+                <div class="chat-emote-tray" v-show="showEmotePicker" style="bottom: 100%; border-bottom: none; border-radius: 16px 16px 0 0;">
+                    <div class="emote-picker-grid">
                         <img v-for="(emote, name) in customEmotes" :key="name"
                              :src="emote.url ? emote.url : 'https://cdn.discordapp.com/emojis/' + emote.id + '.' + (emote.animated ? 'gif' : 'png') + '?size=44'"
-                             class="emote-picker-img" @click="$emit('insert-emote', ':' + name + ':')">
+                             class="emote-picker-img" @click="$emit('insert-emote', name)">
                     </div>
-                </transition>
-                <transition name="tray">
-                    <div class="tray-container" v-show="showMinigames">
+                </div>
+                <div class="chat-emote-tray" v-show="showMinigames" style="bottom: 100%; border-bottom: none; border-radius: 16px 16px 0 0;">
+                    <div class="emote-picker-grid" style="gap: 8px;">
                         <button class="bribe-btn" @click="$emit('play-game', 'glitch')">🕶️ Glitch Persona</button>
                         <button class="bribe-btn" @click="$emit('play-game', 'shader')">🔥 Compile UE5</button>
                         <button class="bribe-btn" @click="$emit('play-game', 'boba')">🥤 Boba Spill</button>
@@ -342,7 +337,7 @@ const GeraldView = {
                         <button class="bribe-btn" @click="$emit('play-game', 'bald')">🧑‍🦲 Delete Hair</button>
                         <button class="bribe-btn" @click="$emit('play-game', 'siren')">🚨 Firetruck Siren</button>
                     </div>
-                </transition>
+                </div>
                 <div class="gerald-input-area">
                     <div class="gerald-input-wrapper">
                         <button class="emote-toggle-btn" @click="$emit('toggle-emotes')"><span class="material-symbols-rounded" :style="{ color: showEmotePicker ? 'var(--primary)' : 'inherit' }">mood</span></button>
@@ -350,54 +345,6 @@ const GeraldView = {
                         <textarea class="gerald-input" rows="1" placeholder="Message Gerald..." :value="geraldInput" @input="$emit('update-input', $event.target.value)" @keydown="$emit('key-down', $event)" id="gerald-txt-input" @focus="$emit('close-pickers')"></textarea>
                     </div>
                     <button class="gerald-send" @click="$emit('send')"><span class="material-symbols-rounded">send</span></button>
-                </div>
-            </div>
-        </div>
-    `
-};
-
-// ─── Home View ────────────────────────────────────────────────────────────────
-const HomeView = {
-    props: ['currentTab', 'currentVodIndex', 'recentVods', 'isLive', 'hostname', 'clips', 'activeFilterLabel', 'optimizeTwitchImg', 'formatViews', 'formatDate'],
-    template: `
-        <div>
-            <div class="hero-section">
-                <div class="header-controls" style="margin-bottom: 12px; display: flex; justify-content: flex-start;" v-if="!isLive">
-                    <div class="premium-badge vod" v-if="recentVods && recentVods.length > 0">
-                        <div class="dot"></div><span>{{ recentVods[currentVodIndex] ? ('VOD • ' + recentVods[currentVodIndex].date) : 'PAST BROADCAST' }}</span>
-                    </div>
-                </div>
-                <div class="video-wrapper-outer">
-                    <div class="video-container">
-                        <iframe v-if="currentVodIndex === -1" id="miko-live-player" :src="'https://player.twitch.tv/?channel=codemiko&parent=' + hostname + '&autoplay=true&muted=true'" allow="autoplay; fullscreen" allowfullscreen loading="lazy"></iframe>
-                        <iframe v-else-if="recentVods && recentVods[currentVodIndex]" :src="'https://player.twitch.tv/?video=' + recentVods[currentVodIndex].id + '&parent=' + hostname + '&autoplay=false'" allow="autoplay; fullscreen" allowfullscreen loading="lazy"></iframe>
-                    </div>
-                </div>
-                <div class="carousel-controls" v-if="recentVods && recentVods.length > 0 && !isLive" style="margin-top: 12px; justify-content: flex-end;">
-                    <button class="carousel-btn" :class="{ 'hidden-arrow': currentVodIndex <= 0 }" @click.stop="$emit('prev-vod')"><span class="material-symbols-rounded">chevron_left</span></button>
-                    <button class="carousel-btn" :class="{ 'hidden-arrow': currentVodIndex >= recentVods.length - 1 }" @click.stop="$emit('next-vod')"><span class="material-symbols-rounded">chevron_right</span></button>
-                </div>
-            </div>
-            <div class="clips-list-container">
-                <div class="clips-header">
-                    <div class="filter-wrapper">
-                        <button class="filter-btn-tiny" @click="$emit('open-filter')">
-                            <span class="material-symbols-rounded" style="font-size: 16px;">sort</span><span>{{ activeFilterLabel }}</span>
-                        </button>
-                    </div>
-                </div>
-                <div class="clip-list-item" v-for="clip in clips" :key="clip.id" @click="$emit('play-clip', clip)">
-                    <div class="clip-thumb-wrapper">
-                        <img :src="clip.thumbnail_url ? optimizeTwitchImg(clip.thumbnail_url) : ''" loading="lazy" alt="Thumbnail">
-                        <div class="duration-badge">0:45</div>
-                    </div>
-                    <div class="miko-metadata">
-                        <div class="author-name">{{ clip.title }}</div>
-                        <div class="clip-stats">
-                            <span>Just Chatting • {{ formatDate(clip.created_at) }}</span>
-                            <span>{{ formatViews(clip.view_count) }} views</span>
-                        </div>
-                    </div>
                 </div>
             </div>
         </div>
@@ -415,7 +362,7 @@ createApp({
         const initialHash = window.location.hash.replace('#', '');
         const currentTab = ref(tabs.includes(initialHash) ? initialHash : 'home');
 
-        const tabOffset = computed(() => -(tabs.indexOf(currentTab.value) * 25)); // Fixed offset to 25% for 4 tabs
+        const tabOffset = computed(() => -(tabs.indexOf(currentTab.value) * 100)); 
 
         const appTheme = ref(localStorage.getItem('miko_theme') || 'light');
         const splashVisible = ref(true), splashOpacity = ref(1);
@@ -484,7 +431,7 @@ createApp({
 
         // ── IRC message parser ──
         const scrollChatToBottom = () => {
-            setTimeout(() => { const l = document.getElementById('twitch-chat-list'); if (l) l.scrollTop = l.scrollHeight; }, 80);
+            setTimeout(() => { const l = document.getElementById('twitch-chat-list'); if (l) l.scrollTo({ top: l.scrollHeight, behavior: 'smooth' }); }, 100);
         };
 
         const parseIrcMessage = (raw) => {
@@ -518,7 +465,7 @@ createApp({
             }
 
             // Twitch emotes from IRC tags
-            let html = text.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+            let html = text.replace(/&/g, '&').replace(/</g, '<').replace(/>/g, '>');
             if (tags['emotes']) {
                 const replacements = [];
                 tags['emotes'].split('/').forEach(e => {
@@ -594,7 +541,7 @@ createApp({
             const msg = chatInput.value.trim();
             twitchWs.send(`PRIVMSG #codemiko :${msg}`);
             // Render own message with emotes
-            let html = msg.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+            let html = msg.replace(/&/g, '&').replace(/</g, '<').replace(/>/g, '>');
             Object.entries(customEmotes.value).forEach(([name, emote]) => {
                 if (!emote.url) return;
                 const escaped = name.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
@@ -674,7 +621,7 @@ createApp({
 
         const parseMarkdown = (text) => {
             if (!text) return '';
-            let html = text.replace(/</g, '&lt;').replace(/>/g, '&gt;');
+            let html = text.replace(/</g, '<').replace(/>/g, '>');
             html = html.replace(/(^|\W)'([^']+)'(\W|$)/g, '$1<strong>$2</strong>$3');
             html = html.replace(/\*\*(.*?)\*\*/g, '$1').replace(/\*(.*?)\*/g, '$1');
             html = html.replace(/\[([^\]]+)\]\((https?:\/\/[^\s]+)\)/gi, '<a href="$2" target="_blank" style="color:var(--primary);text-decoration:underline;font-weight:bold;">$1</a>');
@@ -691,7 +638,6 @@ createApp({
         const toggleEmotes = () => { showEmotePicker.value = !showEmotePicker.value; showMinigames.value = false; };
         const toggleMinigames = () => { showMinigames.value = !showMinigames.value; showEmotePicker.value = false; };
         const closePickers = () => { showEmotePicker.value = false; showMinigames.value = false; };
-        const insertEmote = (name) => { geraldInput.value += (geraldInput.value.endsWith(' ') || !geraldInput.value ? '' : ' ') + name + ' '; };
 
         const playMinigame = (type) => {
             const games = {
