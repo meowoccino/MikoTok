@@ -243,7 +243,7 @@ const MoreView = {
                     <span style="color: var(--text-main);">YouTube</span>
                 </a>
                 <a href="https://kick.com/codemiko" target="_blank" class="social-card">
-                    <svg viewBox="0 0 24 24" class="social-icon" style="color: #53FC18;"><path fill="currentColor" d="M2.5 2v20h6v-5h3v5h10V2h-10v5h-3V2zM15 15h3v4h-3zM12 10h3v5h-3zM9 5h3v5H9z"/></svg>
+                    <svg viewBox="0 0 32 32" class="social-icon" style="color: #53FC18; width:24px; height:24px;"><path fill="currentColor" d="M4 2v24h8v-6h3v6h3v9h10V2H4zm17 14h-3v3h-3v-6h6v3z"/></svg>
                     <span style="color: var(--text-main);">Kick</span>
                 </a>
                 <a href="https://www.tiktok.com/@codemiko" target="_blank" class="social-card">
@@ -259,25 +259,70 @@ const MoreView = {
                     <span style="color: var(--text-main);">Instagram</span>
                 </a>
                 <a href="https://www.snapchat.com/add/codemiko" target="_blank" class="social-card">
-                    <svg viewBox="0 0 448 512" class="social-icon" style="color: #FFD500;"><path fill="currentColor" d="M424.2 334.8c-30.5-5.3-30.5-26.6-30.5-26.6s-.5-13.5-26.1-25.5c0 0-13.7-5.9-16.8-19.8-3.1-13.8-1-23.2-1-23.2 19.3-17 38.6-47 38.6-88.7 0-66.2-31.5-115-99.7-121.7h-7c-50.5 .8-99.2 31.8-99.2 119.7 0 44 20.3 73.5 38.6 88.7 0 0 2.1 9.4-1 23.2-3.1 13.8-16.8 19.8-16.8 19.8-25.5 12-26.1 25.5-26.1 25.5s0 21.3-30.5 26.6C16.8 340.1 0 351.4 0 364.5c0 14.5 19.6 15 32 15h11s21.5-3 30.5-8.5c5.3-3.1 11.2-5 17.3-5.5 14-1.3 22.3 8.3 35.1 18.5 12.3 9.7 30 23.6 74 23.6h4.5c44 0 61.6-13.8 74-23.6 12.8-10.1 21-19.8 35.1-18.5 6.1 .5 12 2.4 17.3 5.5 9 5.5 30.5 8.5 30.5 8.5h11c12.3 0 32-.5 32-15 0-13.1-16.8-24.4-44.2-29.7z"/></svg>
+                    <svg viewBox="0 0 512 512" class="social-icon" style="color: #FFD500; width:24px; height:24px;"><path fill="currentColor" d="M256 32C156.4 32 112 108.4 112 192c0 14.4 2.8 45.1 11.2 64.6c4.2 9.7 11.2 19.4 11.2 27.8c0 11.1-13.9 19.4-27.8 25c-27.8 11.1-51.4 36.1-51.4 69.4c0 38.9 44.4 52.8 88.9 52.8c12.5 0 27.8-1.4 40.3-4.2c11.1-2.8 13.9-9.7 25-5.6c20.8 7.7 51.4 14.2 86.1 14.2s65.3-6.5 86.1-14.2c11.1-4.2 13.9 2.8 25 5.6c12.5 2.8 27.8 4.2 40.3 4.2c44.4 0 88.9-13.9 88.9-52.8c0-33.3-23.6-58.3-51.4-69.4c-13.9-5.6-27.8-13.9-27.8-25c0-8.3 7-18.1 11.2-27.8c8.4-19.5 11.2-50.2 11.2-64.6c0-83.6-44.4-160-153.6-160z"/></svg>
                     <span style="color: var(--text-main);">Snapchat</span>
                 </a>
-                <a href="https://www.facebook.com/thecodemiko/" target="_blank" class="social-card">
-                    <svg viewBox="0 0 24 24" class="social-icon" style="color: #1877F2;"><path fill="currentColor" d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.469h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.469h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/></svg>
-                    <span style="color: var(--text-main);">Facebook</span>
-                </a>
-                <a href="https://discord.com/invite/codemiko" target="_blank" class="social-card">
-                    <svg viewBox="0 0 24 24" class="social-icon" style="color: #5865F2;"><path fill="currentColor" d="M20.317 4.3698a19.7913 19.7913 0 00-4.8851-1.5152.0741.0741 0 00-.0785.0371c-.211.3753-.4447.8648-.6083 1.2495-1.8447-.2762-3.68-.2762-5.4868 0-.1636-.3933-.4058-.8742-.6177-1.2495a.077.077 0 00-.0785-.037 19.7363 19.7363 0 00-4.8852 1.515.0699.0699 0 00-.0321.0277C.5334 9.0458-.319 13.5799.0992 18.0578a.0824.0824 0 00.0312.0561c2.0528 1.5076 4.0413 2.4228 5.9929 3.0294a.0777.0777 0 00.0842-.0276c.4616-.6304.8731-1.2952 1.226-1.9942a.076.076 0 00-.0416-.1057c-.6528-.2476-1.2743-.5495-1.8722-.8923a.077.077 0 01-.0076-.1277c.1258-.0943.2517-.1923.3718-.2914a.0743.0743 0 01.0776-.0105c3.9278 1.7933 8.18 1.7933 12.0614 0a.0739.0739 0 01.0785.0095c.1202.099.246.1981.3728.2924a.077.077 0 01-.0066.1276 12.2986 12.2986 0 01-1.873.8914.0766.0766 0 00-.0407.1067c.3604.698.7719 1.3628 1.225 1.9932a.076.076 0 00.0842.0286c1.961-.6067 3.9495-1.5219 6.0023-3.0294a.077.077 0 00.0313-.0552c.5004-5.177-.8382-9.6739-3.5485-13.6604a.061.061 0 00-.0312-.0286zM8.02 15.3312c-1.1825 0-2.1569-1.0857-2.1569-2.419 0-1.3332.9555-2.4189 2.157-2.4189 1.2108 0 2.1757 1.0952 2.1568 2.419 0 1.3332-.9555 2.4189-2.1569 2.4189zm7.9748 0c-1.1825 0-2.1569-1.0857-2.1569-2.419 0-1.3332.9554-2.4189 2.1569-2.4189 1.2108 0 2.1757 1.0952 2.1568 2.419 0 1.3332-.946 2.4189-2.1568 2.4189Z"/></svg>
-                    <span style="color: var(--text-main);">Discord</span>
-                </a>
-                <a href="https://www.reddit.com/r/CodeMiko/" target="_blank" class="social-card">
-                    <svg viewBox="0 0 24 24" class="social-icon" style="color: #FF4500;"><path fill="currentColor" d="M24 11.5c0-1.65-1.35-3-3-3-.96 0-1.86.48-2.42 1.24-1.64-1-3.75-1.64-6.07-1.72.08-1.1.4-3.05 1.52-3.7.72-.4 1.73-.24 3 .5C17.2 6.3 18.46 7.5 20 7.5c1.65 0 3-1.35 3-3s-1.35-3-3-3c-1.38 0-2.54.94-2.88 2.22-1.43-.72-2.64-.8-3.6-.25-1.64.94-1.95 3.47-2 4.55-2.33.08-4.45.7-6.1 1.72C4.86 8.98 3.96 8.5 3 8.5c-1.65 0-3 1.35-3 3 0 1.32.84 2.44 2.05 2.84-.03.22-.05.44-.05.66 0 3.86 4.5 7 10 7s10-3.14 10-7c0-.22-.02-.44-.05-.66 1.2-.4 2.05-1.54 2.05-2.84zM2.3 13.37C1.5 13.07 1 12.35 1 11.5c0-1.1.9-2 2-2 .64 0 1.22.32 1.6.82-1.1.85-1.92 1.9-2.3 3.05zm3.7.13c0-1.1.9-2 2-2 s2 .9 2 2-.9 2-2 2-2-.9-2-2zm9.8 4.8c-1.08.63-2.42.96-3.8.96-1.4 0-2.74-.34-3.8-.95-.24-.13-.32-.44-.2-.68.15-.24.46-.32.7-.18 1.83 1.06 4.76 1.06 6.6 0 .23-.13.53-.05.67.2.14.23.06.54-.18.67zm.2-2.8c-1.1 0-2-.9-2-2s.9-2 2-2 2 .9 2 2-.9 2-2 2zm5.7-2.13c-.38-1.16-1.2-2.2-2.3-3.05.38-.5.96-.82 1.6-.82 1.1 0 2 .9 2 2 0 .84-.53 1.57-1.3 1.87z"/></svg>
-                    <span style="color: var(--text-main);">Reddit</span>
-                </a>
-                <a href="https://app.fanfix.io/@codeyuna" target="_blank" class="social-card">
-                    <span class="material-symbols-rounded social-icon" style="font-size: 28px; color: #FF3366;">favorite</span>
-                    <span style="color: var(--text-main);">Fanfix</span>
-                </a>
+            </div>
+        </div>
+    `
+};
+
+const GeraldView = {
+    props: ['currentTab', 'geraldMessages', 'isGeraldTyping', 'geraldInput', 'showEmotePicker', 'showMinigames', 'customEmotes', 'parseMarkdown', 'apiConnected'],
+    template: `
+        <div class="gerald-container">
+            <div class="gerald-header" @click="$emit('close-pickers')">
+                <div class="avatar-glow-wrap" :class="apiConnected ? 'glow-online' : 'glow-offline'">
+                    <img src="gerald.png" class="gerald-avatar" alt="Gerald">
+                </div>
+                <div class="gerald-title-block">
+                    <span class="gerald-name-text">Gerald O.S.</span>
+                    <div class="gerald-status-sub" :class="apiConnected ? 'sub-online' : 'sub-offline'">
+                        {{ apiConnected ? 'SYSTEM: ONLINE // CLOUD_STREAM_ACTIVE' : 'SYSTEM: STANDBY // API_DISCONNECTED' }}
+                    </div>
+                </div>
+            </div>
+            <div class="gerald-messages" id="gerald-msgs" @click="$emit('close-pickers')">
+                <template v-for="(m, i) in geraldMessages" :key="i">
+                    <div v-if="i === 0 && m.role === 'gerald'" class="terminal-intro">
+                        <div class="terminal-text startup-anim">
+                            > Human detected.<br>
+                            > What do you want?
+                        </div>
+                    </div>
+                    <div v-else class="chat-bubble" :class="m.role" v-html="parseMarkdown(m.content)"></div>
+                </template>
+                <div v-if="isGeraldTyping" key="typing" class="typing-indicator">COMPUTING...</div>
+            </div>
+            <div class="gerald-action-area">
+                <div class="chat-emote-tray" v-show="showEmotePicker" style="bottom: 100%; border-bottom: none; border-radius: 16px 16px 0 0;">
+                    <div class="emote-picker-grid">
+                        <img v-for="(emote, name) in customEmotes" :key="name"
+                             :src="emote.url ? emote.url : 'https://cdn.discordapp.com/emojis/' + emote.id + '.' + (emote.animated ? 'gif' : 'png') + '?size=44'"
+                             class="emote-picker-img" @mousedown.prevent="$emit('insert-emote', name)">
+                    </div>
+                </div>
+                <div class="chat-emote-tray" v-show="showMinigames" style="bottom: 100%; border-bottom: none; border-radius: 16px 16px 0 0;">
+                    <div class="emote-picker-grid" style="gap: 8px;">
+                        <button class="bribe-btn" @click.stop="$emit('play-game', 'glitch')">🕶️ Glitch Persona</button>
+                        <button class="bribe-btn" @click.stop="$emit('play-game', 'shader')">🔥 Compile UE5</button>
+                        <button class="bribe-btn" @click.stop="$emit('play-game', 'boba')">🥤 Boba Spill</button>
+                        <button class="bribe-btn" @click.stop="$emit('play-game', 'pineapple')">🚪 Pineapple Walk-In</button>
+                        <button class="bribe-btn" @click.stop="$emit('play-game', 'cat')">🐈 Cat on PC</button>
+                        <button class="bribe-btn" @click.stop="$emit('play-game', 'bits')">🎟️ 100K Bits</button>
+                        <button class="bribe-btn" @click.stop="$emit('play-game', 'mute')">🔇 Mute Mic</button>
+                        <button class="bribe-btn" @click.stop="$emit('play-game', 'bald')">🧑‍🦲 Delete Hair</button>
+                        <button class="bribe-btn" @click.stop="$emit('play-game', 'siren')">🚨 Firetruck Siren</button>
+                    </div>
+                </div>
+                <div class="gerald-input-area">
+                    <div class="gerald-input-wrapper">
+                        <button class="emote-toggle-btn" @click="$emit('toggle-emotes')"><span class="material-symbols-rounded" :style="{ color: showEmotePicker ? 'var(--primary)' : 'inherit' }">mood</span></button>
+                        <button class="emote-toggle-btn" @click="$emit('toggle-minigames')"><span class="material-symbols-rounded" :style="{ color: showMinigames ? 'var(--primary)' : 'inherit' }">sports_esports</span></button>
+                        <textarea class="gerald-input" rows="1" placeholder="Message Gerald..." :value="geraldInput" @input="$emit('update-input', $event.target.value)" @keydown="$emit('key-down', $event)" id="gerald-txt-input" @focus="$emit('close-pickers')"></textarea>
+                    </div>
+                    <button class="gerald-send" @click="$emit('send')"><span class="material-symbols-rounded">send</span></button>
+                </div>
             </div>
         </div>
     `
@@ -447,43 +492,41 @@ createApp({
             const color = tags['color'] || '#9146FF';
             const text = matchText[1].trim();
 
-            if (user !== twitchUsername.value) {
-                const badges = [];
-                if (tags['badges']) {
-                    tags['badges'].split(',').forEach(b => {
-                        const imgUrl = badgeAssets[b];
-                        if (imgUrl) badges.push({ title: b.split('/')[0], img: imgUrl });
-                    });
-                }
-
-                sbClient.from('twitch_chat_logs').insert({ username: user, message: text, color: color, badges: badges }).then();
-
-                let html = text.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
-                if (tags['emotes']) {
-                    const replacements = [];
-                    tags['emotes'].split('/').forEach(e => {
-                        const [id, positions] = e.split(':');
-                        if (!positions) return;
-                        positions.split(',').forEach(pos => {
-                            const [s, en] = pos.split('-').map(Number);
-                            replacements.push({ s, en, id });
-                        });
-                    });
-                    replacements.sort((a, b) => b.s - a.s);
-                    const chars = [...text];
-                    replacements.forEach(({ s, en, id }) => {
-                        const emoteName = chars.slice(s, en + 1).join('');
-                        chars.splice(s, en - s + 1, `<img src="https://static-cdn.jtvnw.net/emoticons/v2/${id}/default/dark/1.0" class="chat-emote-img" title="${emoteName}">`);
-                    });
-                    html = chars.join('');
-                } else {
-                    html = processEmotes(text);
-                }
-
-                chatMessages.value.push({ username: user, html: html, color: color, badges: badges });
-                if (chatMessages.value.length > 200) chatMessages.value.shift();
-                if (currentTab.value === 'chat') scrollChatToBottom();
+            const badges = [];
+            if (tags['badges']) {
+                tags['badges'].split(',').forEach(b => {
+                    const imgUrl = badgeAssets[b];
+                    if (imgUrl) badges.push({ title: b.split('/')[0], img: imgUrl });
+                });
             }
+
+            sbClient.from('twitch_chat_logs').insert({ username: user, message: text, color: color, badges: badges }).then();
+
+            let html = text.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+            if (tags['emotes']) {
+                const replacements = [];
+                tags['emotes'].split('/').forEach(e => {
+                    const [id, positions] = e.split(':');
+                    if (!positions) return;
+                    positions.split(',').forEach(pos => {
+                        const [s, en] = pos.split('-').map(Number);
+                        replacements.push({ s, en, id });
+                    });
+                });
+                replacements.sort((a, b) => b.s - a.s);
+                const chars = [...text];
+                replacements.forEach(({ s, en, id }) => {
+                    const emoteName = chars.slice(s, en + 1).join('');
+                    chars.splice(s, en - s + 1, `<img src="https://static-cdn.jtvnw.net/emoticons/v2/${id}/default/dark/1.0" class="chat-emote-img" title="${emoteName}">`);
+                });
+                html = chars.join('');
+            } else {
+                html = processEmotes(text);
+            }
+
+            chatMessages.value.push({ username: user, html: html, color: color, badges: badges });
+            if (chatMessages.value.length > 200) chatMessages.value.shift();
+            if (currentTab.value === 'chat') scrollChatToBottom();
         };
 
         const connectTwitchChat = () => {
@@ -531,9 +574,13 @@ createApp({
             if (!msg || !twitchWs || !twitchChatToken.value || !wsAuthenticated) return;
             twitchWs.send(`PRIVMSG #codemiko :${msg}`);
             
-            sbClient.from('twitch_chat_logs').insert({ username: twitchUsername.value || 'You', message: msg, color: '#9146FF', badges: userCurrentBadges.value }).then();
+            let myBadges = [];
+            const myLast = chatMessages.value.slice().reverse().find(m => m.username === twitchUsername.value && m.badges && m.badges.length > 0);
+            if (myLast) myBadges = myLast.badges;
 
-            chatMessages.value.push({ username: twitchUsername.value || 'You', html: processEmotes(msg), color: '#9146FF', badges: userCurrentBadges.value });
+            sbClient.from('twitch_chat_logs').insert({ username: twitchUsername.value || 'You', message: msg, color: '#9146FF', badges: myBadges }).then();
+
+            chatMessages.value.push({ username: twitchUsername.value || 'You', html: processEmotes(msg), color: '#9146FF', badges: myBadges });
             scrollChatToBottom();
         };
 
@@ -617,7 +664,7 @@ createApp({
         };
 
         const applyFilter = (filterKey, label) => {
-            currentFilter.value = filterKey; activeFilterLabel.value = label; isFilterMenuOpen = false;
+            currentFilter.value = filterKey; activeFilterLabel.value = label; isFilterMenuOpen.value = false;
             const feedContainer = document.getElementById('home-scroll');
             if(feedContainer) {
                 clips.value = sortData(filterKey);
