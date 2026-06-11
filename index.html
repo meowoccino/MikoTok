@@ -16,10 +16,10 @@
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="https://unpkg.com/vue@3/dist/vue.global.prod.js"></script>
     
-    <link rel="stylesheet" href="./styles.css?v=32">
+    <link rel="stylesheet" href="./styles.css?v=33">
 </head>
 <body @click="closeFilterMenu">
-    <div id="app-container" v-cloak :class="{'gerald-theme': currentTab === 'gerald'}">
+    <div id="app-container" v-cloak :class="['theme-' + appTheme, {'gerald-theme': currentTab === 'gerald'}]">
         
         <toast-popup :toast="toast"></toast-popup>
 
@@ -35,7 +35,9 @@
             :current-tab="currentTab" 
             :is-live="isLive" 
             :logo-svg="logoSvg"
-            @open-profile="modals.profile = true">
+            :app-theme="appTheme"
+            @open-profile="modals.profile = true"
+            @toggle-theme="toggleTheme">
         </app-header>
 
         <div class="view-port">
@@ -132,13 +134,8 @@
             @sync="runSync"
             @wipe="clearGeraldHistory"
             @logout="handleLogout"
-            @open-discord="modals.discord = true">
+            @nuke-cache="nukeCache">
         </profile-modal>
-
-        <discord-modal
-            :is-open="modals.discord"
-            @close="modals.discord = false">
-        </discord-modal>
 
         <bottom-nav
             :current-tab="currentTab"
@@ -147,6 +144,6 @@
 
     </div>
 
-    <script src="./app.js?v=32"></script>
+    <script src="./app.js?v=33"></script>
 </body>
 </html>
