@@ -9,9 +9,11 @@ const SplashScreen = {
     props: ['splashVisible', 'splashOpacity', 'logoSvg'],
     template: `
         <div id="splash-screen" v-if="splashVisible" :style="{ opacity: splashOpacity }">
-            <div style="width:100px;height:100px;margin-bottom:20px;" v-html="logoSvg('splash')"></div>
-            <div class="header-title" style="font-size: 32px; font-weight: 900;">MikoTok</div>
-            <div class="progress-bar"><div class="progress-fill"></div></div>
+            <div class="splash-logo-container">
+                <div class="orbit-ring"></div>
+                <div class="splash-svg-wrapper" v-html="logoSvg('splash')"></div>
+            </div>
+            <div class="miko-text-gradient" style="font-size: 36px; letter-spacing: -1px; margin-bottom: 20px;">MikoTok</div>
         </div>
     `
 };
@@ -22,10 +24,10 @@ const AppHeader = {
         <header class="app-header" :class="{ hidden: !isHeaderVisible }">
             <div style="display:flex; align-items:center; gap:8px;">
                 <div style="width:24px;height:24px; cursor:pointer;" v-html="logoSvg('header')" @click="$emit('open-profile')"></div>
-                <span class="header-title" style="font-size:18px; font-weight:900;">MikoTok</span>
+                <span class="miko-text-gradient" style="font-size:22px; letter-spacing: -0.5px;">MikoTok</span>
             </div>
             <button class="theme-toggle-btn" @click="$emit('toggle-theme')">
-                <span class="material-symbols-rounded" style="font-size: 22px;">{{ appTheme === 'light' ? 'dark_mode' : 'light_mode' }}</span>
+                <span class="material-symbols-rounded" style="font-size: 24px;">{{ appTheme === 'light' ? 'dark_mode' : 'light_mode' }}</span>
             </button>
         </header>
     `
@@ -90,6 +92,24 @@ const ProfileModal = {
                         <input type="password" class="sleek-input" :value="apiConfig.tkn" @change="$emit('update-api', 'tkn', $event.target.value)" placeholder="Access Token">
                     </div>
                     <div class="action-menu">
+                        <button class="menu-btn sync-row" :style="syncState === 'sync-success' ? 'color: var(--success);' : ''" @click="$emit('sync')" :disabled="syncState !== 'idle'">
+                            <div class="btn-content">
+                                <div class="icon-wrap" :style="syncState === 'sync-success' ? 'background: rgba(16, 185, 129, 0.15);' : ''"><span class="material-symbols-rounded" :class="{'spin-anim': syncState === 'syncing'}" style="font-size: 18px;">{{ syncState === 'sync-success' ? 'check' : 'sync' }}</span></div>
+                                <span>{{ syncState === 'syncing' ? 'SYNCING...' : (syncState === 'sync-success' ? 'SUCCESS' : 'Force Data Sync') }}</span>
+                            </div>
+                        </button>
+                        <button class="menu-btn wipe-row" :style="wipeState === 'success' ? 'color: var(--success);' : ''" @click="$emit('wipe')" :disabled="wipeState !== 'idle'">
+                            <div class="btn-content">
+                                <div class="icon-wrap"><span class="material-symbols-rounded" :class="{'shake-anim': wipeState === 'wiping'}" style="font-size: 18px;">delete</span></div>
+                                <span>{{ wipeState === 'wiping' ? 'WIPING...' : (wipeState === 'success' ? 'MEMORY WIPED!' : 'Wipe Gerald Memory') }}</span>
+                            </div>
+                        </button>
+                        <button class="menu-btn sync-row" style="color: #ff4500;" @click="$emit('nuke-cache')">
+                            <div class="btn-content">
+                                <div class="icon-wrap" style="background: rgba(255, 69, 0, 0.15);"><span class="material-symbols-rounded" style="font-size: 18px;">cached</span></div>
+                                <span>Nuke App Cache</span>
+                            </div>
+                        </button>
                         <button class="menu-btn logout-row" @click="$emit('logout')" :disabled="logoutState !== 'idle'">
                             <div class="btn-content">
                                 <div class="icon-wrap"><span class="material-symbols-rounded" :class="{'spin-anim': logoutState === 'logging_out'}" style="font-size: 18px;">{{ logoutState === 'logging_out' ? 'hourglass_empty' : 'logout' }}</span></div>
@@ -131,7 +151,7 @@ const ChatView = {
 const MoreView = {
     template: `
         <div class="more-container">
-            <div class="more-header">Official Links</div>
+            <div class="more-header miko-text-gradient" style="font-size: 22px;">Official Links</div>
             <div class="social-grid">
                 <a href="https://www.youtube.com/@CodeMiko" target="_blank" class="social-card yt">
                     <svg viewBox="0 0 24 24" class="social-icon"><path fill="currentColor" d="M23.498 6.186a3.016 3.016 0 0 0-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 0 0 .502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 0 0 2.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 0 0 2.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z"/></svg>
@@ -178,8 +198,8 @@ const GeraldView = {
             <div class="gerald-messages" id="gerald-msgs" @click="$emit('close-pickers')">
                 <template v-for="(m, i) in geraldMessages" :key="i">
                     <div v-if="i === 0 && m.role === 'gerald'" class="terminal-intro">
-                        <div class="terminal-text">> Human detected.<br>> State your inquiry.</div>
-                        <div class="gerald-system-card startup-anim">
+                        <div class="terminal-text startup-anim">> Human detected.<br>> State your inquiry.</div>
+                        <div class="gerald-system-card startup-anim-delay">
                             <div class="gerald-sys-row"><span class="sys-label">CORE:</span> <span class="sys-value">ONLINE</span></div>
                             <div class="gerald-sys-row"><span class="sys-label">MOOD:</span> <span class="sys-value">SARCASTIC</span></div>
                             <div class="gerald-sys-row"><span class="sys-label">PATIENCE:</span> <span class="sys-value">125ms</span></div>
@@ -250,9 +270,11 @@ const HomeView = {
                 </div>
                 <div class="clip-list-item" v-for="clip in clips" :key="clip.id" @click="$emit('play-clip', clip)">
                     <div class="clip-thumb-wrapper">
-                        <img :src="clip.thumbnail_url ? optimizeTwitchImg(clip.thumbnail_url) : ''" loading="lazy" alt="Thumbnail">
-                        <iframe v-if="activeClipId === clip.id" :src="'https://clips.twitch.tv/embed?clip=' + clip.id + '&parent=' + hostname + '&autoplay=true&muted=false'" allow="autoplay; fullscreen" allowfullscreen style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: 5;"></iframe>
-                        <div class="duration-badge">0:45</div>
+                        <iframe v-if="activeClipId === clip.id" :src="'https://clips.twitch.tv/embed?clip=' + clip.id + '&parent=' + hostname + '&autoplay=true&muted=false'" allow="autoplay; fullscreen" allowfullscreen></iframe>
+                        <template v-else>
+                            <img :src="clip.thumbnail_url ? optimizeTwitchImg(clip.thumbnail_url) : ''" loading="lazy" alt="Thumbnail">
+                            <div class="duration-badge">0:45</div>
+                        </template>
                     </div>
                     <div class="miko-metadata">
                         <div class="author-name">{{ clip.title }}</div>
@@ -267,70 +289,22 @@ const HomeView = {
     `
 };
 
-const FeedView = {
-    props: ['currentTab', 'activeFeedSource', 'ytFeed', 'redditFeed', 'formatNumber'],
-    template: `
-        <div class="feed-layout">
-            <div class="feed-toggle-container">
-                <div class="feed-toggle">
-                    <button :class="{active: activeFeedSource === 'youtube'}" @click="$emit('set-feed', 'youtube')">YouTube</button>
-                    <button :class="{active: activeFeedSource === 'reddit'}" @click="$emit('set-feed', 'reddit')">Reddit</button>
-                </div>
-            </div>
-            <div class="feed-scroll-container" v-show="activeFeedSource === 'youtube'">
-                <div v-if="ytFeed.length === 0" style="text-align:center; padding: 40px; color: var(--text-muted);">Fetching YouTube...</div>
-                <div v-for="yt in ytFeed" :key="yt.id" class="feed-item card">
-                    <div class="video-container yt-thumb-wrapper">
-                        <iframe v-if="yt.playing" :src="'https://www.youtube.com/embed/' + yt.id + '?autoplay=1'" allow="autoplay; encrypted-media" allowfullscreen loading="lazy"></iframe>
-                        <div v-else @click="$emit('play-yt', yt)" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%;">
-                            <img :src="'https://i.ytimg.com/vi/' + yt.id + '/hqdefault.jpg'" alt="Thumbnail">
-                            <div class="play-overlay"><span class="material-symbols-rounded">play_arrow</span></div>
-                        </div>
-                    </div>
-                    <div class="yt-info">
-                        <div class="yt-title">{{ yt.title }}</div>
-                        <div class="yt-date">{{ yt.date }}</div>
-                    </div>
-                </div>
-            </div>
-            <div class="feed-scroll-container" v-show="activeFeedSource === 'reddit'">
-                <div v-if="redditFeed.length === 0" style="text-align:center; padding: 40px; color: var(--text-muted);">Fetching Reddit...</div>
-                <div v-for="post in redditFeed" :key="post.id" class="feed-item reddit-compact-card">
-                    <div class="reddit-header">
-                        <div class="reddit-author">Posted • {{ post.date }}<br><span>u/{{ post.author }}</span></div>
-                        <span v-if="post.link_flair_text" class="reddit-flair">{{ post.link_flair_text }}</span>
-                    </div>
-                    <div v-if="post.thumbnail && post.thumbnail.startsWith('http')" class="reddit-img-container">
-                        <img :src="post.thumbnail" onerror="this.closest('div').style.display='none'" alt="Reddit Media">
-                    </div>
-                    <div class="reddit-post-title" :style="post.thumbnail && post.thumbnail.startsWith('http') ? '' : 'flex: 1;'">{{ post.title }}</div>
-                    <a :href="'https://reddit.com' + post.permalink" target="_blank" class="reddit-actions">
-                        <div style="display: flex; align-items: center; gap: 4px; color: var(--reddit);"><span class="material-symbols-rounded" style="font-size: 16px;">arrow_upward</span> {{ formatNumber(post.ups) }}</div>
-                        <div style="display: flex; align-items: center; gap: 4px;"><span class="material-symbols-rounded" style="font-size: 16px;">chat_bubble</span> {{ formatNumber(post.num_comments) }}</div>
-                        <div style="margin-left: auto; color: var(--text-muted); display: flex; align-items: center; gap: 4px; font-size: 11px; text-transform: uppercase;">Open <span class="material-symbols-rounded" style="font-size: 14px;">open_in_new</span></div>
-                    </a>
-                </div>
-            </div>
-        </div>
-    `
-};
-
 const { createApp, ref, onMounted, nextTick, watch, computed } = Vue;
 const sbClient = supabase.createClient('https://yhxcuayiwqpjvalyrcqv.supabase.co', 'sb_publishable_VyFcNARHblJg10qlC_O7Dg_coouXK92');
 
 createApp({
     components: {
         ToastPopup, SplashScreen, AppHeader, BottomNav, FilterMenu, 
-        ProfileModal, GeraldView, FeedView, HomeView, ChatView, MoreView
+        ProfileModal, GeraldView, HomeView, ChatView, MoreView
     },
     setup() {
-        const tabs = ['home', 'chat', 'feed', 'gerald', 'more'];
+        const tabs = ['home', 'chat', 'gerald', 'more'];
         const initialHash = window.location.hash.replace('#', '');
         const currentTab = ref(tabs.includes(initialHash) ? initialHash : 'home');
         
         const tabOffset = computed(() => {
             const index = tabs.indexOf(currentTab.value);
-            return -(index * 20); // 5 tabs = 20% width per tab in a 500% container
+            return -(index * 25);
         });
 
         const appTheme = ref(localStorage.getItem('miko_theme') || 'light');
@@ -346,10 +320,6 @@ createApp({
         const currentFilter = ref('latest'), activeFilterLabel = ref('Latest'), isFilterMenuOpen = ref(false);
         const recentVods = ref([]), currentVodIndex = ref(0);
         
-        const activeFeedSource = ref('youtube');
-        const ytFeed = ref([]);
-        const redditFeed = ref([]);
-
         const activeClipId = ref(null);
         const chatMessages = ref([]);
         const chatInput = ref('');
@@ -358,17 +328,25 @@ createApp({
         let twitchWs = null;
 
         let touchStartX = 0;
-        const handleSwipeStart = (e) => { touchStartX = e.touches[0].clientX; };
+        let touchStartY = 0;
+        const handleSwipeStart = (e) => { 
+            touchStartX = e.touches[0].clientX; 
+            touchStartY = e.touches[0].clientY;
+        };
         const handleSwipeEnd = (e) => {
             const touchEndX = e.changedTouches[0].clientX;
-            const diff = touchStartX - touchEndX;
-            const threshold = 60;
-            const currentIndex = tabs.indexOf(currentTab.value);
+            const touchEndY = e.changedTouches[0].clientY;
+            const diffX = touchStartX - touchEndX;
+            const diffY = touchStartY - touchEndY;
             
-            if (diff > threshold && currentIndex < tabs.length - 1) {
-                switchTab(tabs[currentIndex + 1]);
-            } else if (diff < -threshold && currentIndex > 0) {
-                switchTab(tabs[currentIndex - 1]);
+            // Only trigger tab swipe if horizontal drag is significantly larger than vertical drag
+            if (Math.abs(diffX) > Math.abs(diffY) && Math.abs(diffX) > 60) {
+                const currentIndex = tabs.indexOf(currentTab.value);
+                if (diffX > 0 && currentIndex < tabs.length - 1) {
+                    switchTab(tabs[currentIndex + 1]);
+                } else if (diffX < 0 && currentIndex > 0) {
+                    switchTab(tabs[currentIndex - 1]);
+                }
             }
         };
 
@@ -460,7 +438,6 @@ createApp({
         const insertEmote = (name) => { const inputEl = document.getElementById('gerald-txt-input'); if (inputEl) { inputEl.value += `:${name}: `; geraldInput.value = inputEl.value; } else { geraldInput.value += `:${name}: `; } };
 
         const playClip = (clip) => { activeClipId.value = clip.id; };
-        const playYt = (yt) => { yt.playing = true; };
 
         const scrollToBottom = () => {
             const b = document.getElementById('gerald-msgs');
@@ -610,35 +587,6 @@ createApp({
             allClips.value = c || []; clips.value = sortData(currentFilter.value);
         };
 
-        const fetchSocialFeeds = () => {
-            fetch('https://api.codetabs.com/v1/proxy?quest=' + encodeURIComponent('https://www.reddit.com/r/CodeMiko/new.json?limit=15'))
-                .then(res => res.json())
-                .then(data => {
-                    if (data && data.data && data.data.children) {
-                        redditFeed.value = data.data.children.filter(child => !child.data.stickied).slice(0, 10).map(child => {
-                            let d = child.data;
-                            return {
-                                id: d.id, author: d.author, title: d.title, url: d.url, thumbnail: d.thumbnail,
-                                ups: d.ups, num_comments: d.num_comments, permalink: d.permalink, link_flair_text: d.link_flair_text,
-                                date: new Date(d.created_utc * 1000).toLocaleDateString([], { month: 'short', day: 'numeric', year: 'numeric' })
-                            }
-                        });
-                    }
-                }).catch(err => { redditFeed.value = []; });
-
-            fetch('https://api.codetabs.com/v1/proxy?quest=' + encodeURIComponent('https://api.rss2json.com/v1/api.json?rss_url=https://www.youtube.com/feeds/videos.xml?channel_id=UCXz_cgB5Lq2kE9Z-2-zU-hg'))
-                .then(res => res.json())
-                .then(data => {
-                    if (data && data.items && data.items.length > 0) {
-                        ytFeed.value = data.items.slice(0, 10).map(item => {
-                            let vidMatch = item.link.match(/(?:v=|\/)([\w-]{11})/);
-                            let vidId = vidMatch ? vidMatch[1] : item.guid.split(':').pop();
-                            return { id: vidId, title: item.title, playing: false, date: new Date(item.pubDate).toLocaleDateString([], { month: 'short', day: 'numeric', year: 'numeric' }) };
-                        });
-                    }
-                }).catch(err => { ytFeed.value = []; });
-        };
-
         const checkLive = async () => {
             try {
                 const res = await fetch('https://decapi.me/twitch/uptime/codemiko');
@@ -657,7 +605,6 @@ createApp({
 
         onMounted(async () => {
             const clientId = apiConfig.value.cid || 'kimne78kx3ncx6brgo4mv6wki5h1ko';
-            // Explicitly strict URL matching for Twitch dev console, stripping any trailing slash
             let baseUri = window.location.origin + window.location.pathname;
             if (baseUri.endsWith('/')) { baseUri = baseUri.slice(0, -1); }
             twitchAuthUrl.value = 'https://id.twitch.tv/oauth2/authorize?client_id=' + clientId + '&redirect_uri=' + encodeURIComponent(baseUri) + '&response_type=token&scope=chat:read+chat:edit&force_verify=true';
@@ -675,17 +622,16 @@ createApp({
 
             const { data: { session } } = await sbClient.auth.getSession();
             if (session?.user) { currentUser.value = session.user; loadGeraldHistory(); }
-            loadData(); checkLive(); fetchSocialFeeds(); connectTwitchChat();
+            loadData(); checkLive(); connectTwitchChat();
             
-            setInterval(fetchSocialFeeds, 21600000); 
             setInterval(loadData, 21600000);
             setInterval(checkLive, 60000); 
             setTimeout(() => { splashOpacity.value = 0; setTimeout(() => splashVisible.value = false, 400); }, 1500);
         });
 
         return { 
-            hostname, splashVisible, splashOpacity, currentTab, appTheme, toggleTheme, clips, modals, isLive, toast, currentUser, loginEmail, loginPass, apiConfig, geraldInput, geraldMessages, isGeraldTyping, talkToGerald, logoSvg, syncState, wipeState, logoutState, runSync, isHeaderVisible, handleScroll, handleModalTouchStart, handleModalTouchMove, handleModalTouchEnd, currentFilter, activeFilterLabel, isFilterMenuOpen, closeFilterMenu, applyFilter, parseMarkdown, recentVods, currentVodIndex, nextVod, prevVod, customEmotes, showEmotePicker, insertEmote, clearGeraldHistory, handleGeraldEnter, toggleEmotes, toggleMinigames, closePickers, activeFeedSource, ytFeed, redditFeed, formatNumber, showMinigames, playMinigame, nukeCache, activeClipId, tabOffset, switchTab, handleSwipeStart, handleSwipeEnd,
-            chatMessages, chatInput, twitchChatToken, twitchAuthUrl, sendTwitchChatMessage, playClip, playYt,
+            hostname, splashVisible, splashOpacity, currentTab, appTheme, toggleTheme, clips, modals, isLive, toast, currentUser, loginEmail, loginPass, apiConfig, geraldInput, geraldMessages, isGeraldTyping, talkToGerald, logoSvg, syncState, wipeState, logoutState, runSync, isHeaderVisible, handleScroll, handleModalTouchStart, handleModalTouchMove, handleModalTouchEnd, currentFilter, activeFilterLabel, isFilterMenuOpen, closeFilterMenu, applyFilter, parseMarkdown, recentVods, currentVodIndex, nextVod, prevVod, customEmotes, showEmotePicker, insertEmote, clearGeraldHistory, handleGeraldEnter, toggleEmotes, toggleMinigames, closePickers, formatNumber, showMinigames, playMinigame, nukeCache, activeClipId, tabOffset, switchTab, handleSwipeStart, handleSwipeEnd,
+            chatMessages, chatInput, twitchChatToken, twitchAuthUrl, sendTwitchChatMessage, playClip,
             handleLogin: async () => { const email = loginEmail.value.includes('@') ? loginEmail.value : `${loginEmail.value}@miko.com`; const { data } = await sbClient.auth.signInWithPassword({ email, password: loginPass.value }); if(data.user) { currentUser.value = data.user; modals.value.profile = false; loadGeraldHistory(); } }, 
             handleLogout: () => { if (logoutState.value !== 'idle') return; logoutState.value = 'logging_out'; setTimeout(() => { sbClient.auth.signOut(); currentUser.value = null; geraldMessages.value = [{role:'gerald', content: ''}]; modals.value.profile = false; logoutState.value = 'idle'; }, 1500); },
             optimizeTwitchImg: (u) => u ? u.replace('%{width}', '480').replace('%{height}', '270') : '', 
