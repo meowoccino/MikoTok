@@ -274,7 +274,7 @@ const MoreView = {
                     <span style="color: var(--text-main);">Instagram</span>
                 </a>
                 <a href="https://www.snapchat.com/add/codemiko" target="_blank" class="social-card">
-                    <svg viewBox="0 0 24 24" class="social-icon" style="color: #FFD500;"><path fill="currentColor" d="M12.02.042C9.406.1 7.155.875 5.56 2.646c-1.1 1.229-1.636 2.822-1.636 4.801 0 1.25-.094 2.52-1.073 3.666-.312.385-.687.729-1.093 1.042-.209.156-.469.343-.844.521-.635.291-.885.812-.666 1.343.145.375.468.625.864.719 1.094.26 2.302.395 3.323.51a19.78 19.78 0 00-.77 2.135 4.3 4.3 0 00-.094.885c0 .48.24.969.833 1.23.49.208 1.135.03 1.636-.261.27-.156.552-.354.833-.562.916-.656 1.937-1.385 3.25-1.396 2.197-.02 4.311.604 6.27 1.76.125.073.26.135.396.188.427.146.854.125 1.125-.115.354-.302.406-.823.167-1.312a20.082 20.082 0 00-1.042-2.031c1.073-.136 2.375-.323 3.614-.625.688-.167 1.125-.667 1.094-1.24-.031-.573-.521-1.031-1.25-1.208-1.573-.427-2.614-1.614-2.885-2.093-.729-1.219-.74-2.583-.74-3.927 0-2.02-.552-3.666-1.74-4.885C16.907.969 14.656.094 12.02.042z"/></svg>
+                    <svg viewBox="0 0 24 24" class="social-icon" style="color: #FFD500;"><path fill="currentColor" d="M12.02.042C9.406.1 7.155.875 5.56 2.646c-1.1 1.229-1.636 2.822-1.636 4.801 0 1.25-.094 2.52-1.073 3.666-.312.385-.687.729-1.093 1.042-.209.156-.469.343-.844.521-.635.291-.885.812-.666 1.343.145.375.468.625.864.719 1.094.26 2.302.395 3.323.51a19.78 19.78 0 00-.77 2.135 4.3 4.3 0 00-.094.885c0 .48.24.969.833 1.23.49.208 1.135.03 1.636-.261.27-.156.552-.354.833-.562.916-.656 1.937-1.385 3.25-1.396 2.197-.02 4.311.604 6.27 1.76.125.073.26.135.396.188.427.146.854.125 1.125-.115.354-.302.406-.823.167-1.312a20.082 20.082 0 00-1.042-2.031c1.073-.136 2.375-.323 3.614-.625.688-.167 1.125-.667 1.094-1.24-.031-.573-.521-1.031-1.25-1.208-1.573-.427-2.614-1.614-2.885-2.093-.729-1.219-.74-2.583-.74-3.927 0-2.02-.552-3.666-1.74-4.885C16.907.969 14.656.094 12.02.042zm6.27 18.061c.428.188.897.459 1.417.813.438.302.688.75.615 1.198-.073.437-.448.791-1.01.916a8.473 8.473 0 01-1.532.146c-.77.01-1.614-.156-2.52-.375-1.021-.26-2.125-.562-3.23-.562s-2.208.302-3.23.562c-.906.219-1.75.385-2.52.375a8.463 8.463 0 01-1.531-.146c-.562-.125-.937-.479-1.01-.916-.073-.448.177-.896.614-1.198.521-.354.99-.625 1.417-.813a3.522 3.522 0 011.083 2.115c.125.75 1.094 1.343 2.656 1.635.886.167 1.834.198 2.521.198.688 0 1.635-.031 2.521-.198 1.562-.292 2.531-.885 2.656-1.635a3.52 3.52 0 011.083-2.115z"/></svg>
                     <span style="color: var(--text-main);">Snapchat</span>
                 </a>
                 <a href="https://www.facebook.com/thecodemiko/" target="_blank" class="social-card">
@@ -313,7 +313,10 @@ const GeraldView = {
             <div class="gerald-messages" id="gerald-msgs" @click="$emit('close-pickers')">
                 <template v-for="(m, i) in geraldMessages" :key="i">
                     <div v-if="i === 0 && m.role === 'gerald'" class="terminal-intro">
-                        <div class="terminal-text startup-anim">> Human detected.<br>> What do you want?</div>
+                        <div class="terminal-text startup-anim">
+                            &gt; Human detected.<br>
+                            &gt; What do you want?
+                        </div>
                     </div>
                     <div v-else class="chat-bubble" :class="m.role" v-html="parseMarkdown(m.content)"></div>
                 </template>
@@ -364,9 +367,11 @@ const HomeView = {
                         <div class="dot"></div><span>{{ recentVods[currentVodIndex] ? ('VOD • ' + recentVods[currentVodIndex].date) : 'PAST BROADCAST' }}</span>
                     </div>
                 </div>
-                <div class="video-container">
-                    <iframe v-if="currentVodIndex === -1" id="miko-live-player" :src="'https://player.twitch.tv/?channel=codemiko&parent=' + hostname + '&autoplay=true&muted=true'" allow="autoplay; fullscreen" allowfullscreen loading="lazy"></iframe>
-                    <iframe v-else-if="recentVods && recentVods[currentVodIndex]" :src="'https://player.twitch.tv/?video=' + recentVods[currentVodIndex].id + '&parent=' + hostname + '&autoplay=true&muted=true'" allow="autoplay; fullscreen" allowfullscreen loading="lazy"></iframe>
+                <div class="video-wrapper-outer">
+                    <div class="video-container">
+                        <iframe v-if="currentVodIndex === -1" id="miko-live-player" :src="'https://player.twitch.tv/?channel=codemiko&parent=' + hostname + '&autoplay=true&muted=true'" allow="autoplay; fullscreen" allowfullscreen loading="lazy"></iframe>
+                        <iframe v-else-if="recentVods && recentVods[currentVodIndex]" :src="'https://player.twitch.tv/?video=' + recentVods[currentVodIndex].id + '&parent=' + hostname + '&autoplay=false'" allow="autoplay; fullscreen" allowfullscreen loading="lazy"></iframe>
+                    </div>
                 </div>
                 <div class="carousel-controls" v-if="recentVods && recentVods.length > 0 && !isLive" style="margin-top: 12px; justify-content: flex-end;">
                     <button class="carousel-btn" :class="{ 'hidden-arrow': currentVodIndex <= 0 }" @click.stop="$emit('prev-vod')"><span class="material-symbols-rounded">chevron_left</span></button>
@@ -410,8 +415,7 @@ createApp({
         const initialHash = window.location.hash.replace('#', '');
         const currentTab = ref(tabs.includes(initialHash) ? initialHash : 'home');
 
-        // ── FIX: was -(index * 25), must be -(index * 100) ──
-        const tabOffset = computed(() => -(tabs.indexOf(currentTab.value) * 100));
+        const tabOffset = computed(() => -(tabs.indexOf(currentTab.value) * 25)); // Fixed offset to 25% for 4 tabs
 
         const appTheme = ref(localStorage.getItem('miko_theme') || 'light');
         const splashVisible = ref(true), splashOpacity = ref(1);
@@ -425,7 +429,7 @@ createApp({
         const syncState = ref('idle'), wipeState = ref('idle'), logoutState = ref('idle');
         const apiConfig = ref({ cid: localStorage.getItem('twitch_cid') || 'i2fjxfk0oq6ybixle760zryrtvdqjg', tkn: localStorage.getItem('twitch_tkn') || '' });
 
-        // Discord-hosted fallback emotes (used in Gerald picker)
+        // Discord-hosted fallback emotes
         const customEmotes = ref({
             "mkoSusge": { id: "1273724925743595540", animated: false },
             "KEKW":     { id: "1456296327964262453", animated: false },
