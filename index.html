@@ -16,7 +16,7 @@
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="https://unpkg.com/vue@3/dist/vue.global.prod.js"></script>
     
-    <link rel="stylesheet" href="./styles.css?v=29">
+    <link rel="stylesheet" href="./styles.css?v=30">
 </head>
 <body @click="closeFilterMenu">
     <div id="app-container" v-cloak :class="{'gerald-theme': currentTab === 'gerald'}">
@@ -61,7 +61,6 @@
                 @prev-vod="prevVod"
                 @next-vod="nextVod"
                 @open-filter="isFilterMenuOpen = true"
-                @share-clip="shareClip"
                 @play-clip="playClip">
             </home-view>
 
@@ -155,6 +154,6 @@
 
     </div>
 
-    <script src="./app.js?v=29"></script>
+    <script src="./app.js?v=30"></script>
 </body>
 </html>
