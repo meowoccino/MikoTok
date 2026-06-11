@@ -135,8 +135,32 @@ body, html {
     border-radius: 30px; color: #fff; font-size: 10px; font-weight: 900; text-transform: uppercase;
 }
 .premium-badge .dot { width: 6px; height: 6px; border-radius: 50%; }
-.premium-badge.vod .dot { background: var(--primary); animation: pulse-glow-ring 5s infinite ease-out; }
-.premium-badge.live-badge .dot { background: var(--danger); animation: pulse-glow-ring 4s infinite ease-out; }
+
+/* High-Visibility box-shadow Pulsing Engine for Badges (Slowed down to matching speeds) */
+.premium-badge.live-badge .dot {
+    background: var(--danger);
+    box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.7);
+    animation: indicator-pulse-slow 2.5s infinite ease-in-out;
+}
+.premium-badge.vod .dot {
+    background: var(--primary);
+    box-shadow: 0 0 0 0 rgba(145, 70, 255, 0.7);
+    animation: indicator-pulse-slow 2.5s infinite ease-in-out;
+}
+
+@keyframes indicator-pulse-slow {
+    0% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.7); }
+    70% { box-shadow: 0 0 0 8px rgba(239, 68, 68, 0); }
+    100% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0); }
+}
+.premium-badge.vod .dot {
+    animation-name: indicator-pulse-vod;
+}
+@keyframes indicator-pulse-vod {
+    0% { box-shadow: 0 0 0 0 rgba(145, 70, 255, 0.7); }
+    70% { box-shadow: 0 0 0 8px rgba(145, 70, 255, 0); }
+    100% { box-shadow: 0 0 0 0 rgba(145, 70, 255, 0); }
+}
 
 .video-wrapper-outer { width: 100%; position: relative; }
 .video-container {
@@ -290,6 +314,7 @@ body, html {
 .sub-online { color: #10b981; }
 .sub-offline { color: #ff3b30; opacity: 0.8; }
 
+/* Enforced Green and Red Glow Keyframe Channels */
 .glow-online {
     border: 2px solid #10b981;
     box-shadow: 0 0 15px rgba(16, 185, 129, 0.5);
@@ -308,10 +333,6 @@ body, html {
 @keyframes breathing-glow-dead {
     0%, 100% { box-shadow: 0 0 12px rgba(255, 59, 48, 0.3); border-color: rgba(255, 59, 48, 0.5); }
     50% { box-shadow: 0 0 25px rgba(255, 107, 107, 0.8); border-color: rgba(255, 107, 107, 1); }
-}
-@keyframes pulse-glow-ring { 
-    0% { transform: scale(1); opacity: 1; } 
-    100% { transform: scale(2.5); opacity: 0; } 
 }
 
 .gerald-messages {
