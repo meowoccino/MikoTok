@@ -135,7 +135,6 @@ const ClipModal = {
     `
 };
 
-// ─── Chat View ────────────────────────────────────────────────────────────────
 const ChatView = {
     props: ['chatMessages', 'chatInput', 'isLoggedIn', 'twitchAuthUrl', 'customEmotes', 'twitchUsername'],
     data() {
@@ -154,9 +153,7 @@ const ChatView = {
             return `https://cdn.discordapp.com/emojis/${emote.id}.${emote.animated ? 'gif' : 'png'}?size=44`;
         },
         insertEmote(name) {
-            const cur = this.chatInput || '';
-            const newVal = (cur.length && !cur.endsWith(' ') ? cur + ' ' : cur) + name + ' ';
-            this.$emit('update-input', newVal);
+            this.$emit('insert-chat-emote', ':' + name + ':');
             this.showPicker = false;
             this.$nextTick(() => this.$refs.chatInput && this.$refs.chatInput.focus());
         },
@@ -169,8 +166,6 @@ const ChatView = {
     },
     template: `
         <div class="chat-wrapper">
-
-            <!-- ── Login screen ── -->
             <div v-if="!isLoggedIn" class="chat-login-screen">
                 <div class="chat-login-card">
                     <svg viewBox="0 0 24 24" class="chat-login-icon"><path fill="currentColor" d="M11.571 4.714h1.715v5.143H11.57zm4.715 0H18v5.143h-1.714zM6 0L1.714 4.286v15.428h5.143V24l4.286-4.286h3.428L22.286 12V0zm14.571 11.143l-3.428 3.428h-3.429l-3 3v-3H6.857V1.714h13.714Z"/></svg>
@@ -180,7 +175,6 @@ const ChatView = {
                 </div>
             </div>
 
-            <!-- ── Message list ── -->
             <div v-else class="twitch-chat-list" id="twitch-chat-list" @click="closePicker">
                 <div v-if="chatMessages.length === 0" class="chat-empty-state">
                     <span class="material-symbols-rounded" style="font-size:32px; color:var(--text-muted); margin-bottom:8px;">chat_bubble_outline</span>
@@ -197,19 +191,21 @@ const ChatView = {
                 </div>
             </div>
 
-            <!-- ── Emote picker tray ── -->
-            <div class="chat-emote-tray" v-show="showPicker && isLoggedIn" @click.stop>
-                <input ref="pickerSearch" v-model="pickerQuery" class="emote-search-input" placeholder="Search emotes…">
-                <div class="emote-picker-grid">
-                    <img v-for="([name, emote]) in filteredEmotes" :key="name"
-                         :src="getEmoteUrl(emote)" :title="name"
-                         class="emote-picker-img"
-                         @click="insertEmote(name)">
-                    <div v-if="filteredEmotes.length === 0" style="color:var(--text-muted);font-size:12px;padding:8px;width:100%;">No emotes found</div>
+            <transition name="tray-slide">
+                <div class="chat-emote-tray" v-if="showPicker && isLoggedIn" @click.stop>
+                    <input ref="pickerSearch" v-model="pickerQuery"
+                           class="emote-search-input" placeholder="Search emotes…">
+                    <div class="emote-picker-grid">
+                        <img v-for="([name, emote]) in filteredEmotes" :key="name"
+                             :src="getEmoteUrl(emote)" :title="name"
+                             class="emote-picker-img"
+                             @click="insertEmote(name)">
+                        <div v-if="filteredEmotes.length === 0"
+                             style="color:var(--text-muted);font-size:12px;padding:8px;width:100%;">No emotes found</div>
+                    </div>
                 </div>
-            </div>
+            </transition>
 
-            <!-- ── Input bar ── -->
             <div v-if="isLoggedIn" class="custom-chat-input-area">
                 <button class="chat-icon-btn" :class="{ 'chat-icon-active': showPicker }" @click.stop="togglePicker" title="Emotes">
                     <span class="material-symbols-rounded" style="font-size:22px;">mood</span>
@@ -227,27 +223,22 @@ const ChatView = {
                     <span class="material-symbols-rounded" style="font-size:20px;">send</span>
                 </button>
             </div>
-
         </div>
     `
 };
 
-// ─── More View ────────────────────────────────────────────────────────────────
 const MoreView = {
     template: `
         <div class="more-container">
             <div class="social-grid">
-                
-                <a href="https://throne.com/codemiko" target="_blank" class="social-card">
-                    <div style="display:flex; align-items:center; gap:15px; flex:1;">
-                        <span class="material-symbols-rounded social-icon" style="font-size: 28px; color: #0ea5e9;">redeem</span>
+                <a href="https://throne.com/codemiko" target="_blank" class="social-card throne">
+                    <div style="display:flex; align-items:center; gap:12px; flex:1;">
+                        <span class="material-symbols-rounded social-icon" style="font-size: 26px; color: #0ea5e9;">redeem</span>
                         <span style="color: var(--text-main);">Throne</span>
                     </div>
                     <span class="material-symbols-rounded" style="color: var(--text-muted); font-size: 20px; transform: rotate(45deg);">push_pin</span>
                 </a>
-                
                 <div style="height: 4px;"></div>
-                
                 <a href="https://www.twitch.tv/codemiko" target="_blank" class="social-card">
                     <svg viewBox="0 0 24 24" class="social-icon" style="color: #9146FF;"><path fill="currentColor" d="M11.571 4.714h1.715v5.143H11.57zm4.715 0H18v5.143h-1.714zM6 0L1.714 4.286v15.428h5.143V24l4.286-4.286h3.428L22.286 12V0zm14.571 11.143l-3.428 3.428h-3.429l-3 3v-3H6.857V1.714h13.714Z"/></svg>
                     <span style="color: var(--text-main);">Twitch</span>
@@ -273,7 +264,7 @@ const MoreView = {
                     <span style="color: var(--text-main);">Instagram</span>
                 </a>
                 <a href="https://www.snapchat.com/add/codemiko" target="_blank" class="social-card">
-                    <svg viewBox="0 0 24 24" class="social-icon" style="color: #FFD500;"><path fill="currentColor" d="M12.02.042C9.406.1 7.155.875 5.56 2.646c-1.1 1.229-1.636 2.822-1.636 4.801 0 1.25-.094 2.52-1.073 3.666-.312.385-.687.729-1.093 1.042-.209.156-.469.343-.844.521-.635.291-.885.812-.666 1.343.145.375.468.625.864.719 1.094.26 2.302.395 3.323.51a19.78 19.78 0 00-.77 2.135 4.3 4.3 0 00-.094.885c0 .48.24.969.833 1.23.49.208 1.135.03 1.636-.261.27-.156.552-.354.833-.562.916-.656 1.937-1.385 3.25-1.396 2.197-.02 4.311.604 6.27 1.76.125.073.26.135.396.188.427.146.854.125 1.125-.115.354-.302.406-.823.167-1.312a20.082 20.082 0 00-1.042-2.031c1.073-.136 2.375-.323 3.614-.625.688-.167 1.125-.667 1.094-1.24-.031-.573-.521-1.031-1.25-1.208-1.573-.427-2.614-1.614-2.885-2.093-.729-1.219-.74-2.583-.74-3.927 0-2.02-.552-3.666-1.74-4.885C16.907.969 14.656.094 12.02.042zm6.27 18.061c.428.188.897.459 1.417.813.438.302.688.75.615 1.198-.073.437-.448.791-1.01.916a8.473 8.473 0 01-1.532.146c-.77.01-1.614-.156-2.52-.375-1.021-.26-2.125-.562-3.23-.562s-2.208.302-3.23.562c-.906.219-1.75.385-2.52.375a8.463 8.463 0 01-1.531-.146c-.562-.125-.937-.479-1.01-.916-.073-.448.177-.896.614-1.198.521-.354.99-.625 1.417-.813a3.522 3.522 0 011.083 2.115c.125.75 1.094 1.343 2.656 1.635.886.167 1.834.198 2.521.198.688 0 1.635-.031 2.521-.198 1.562-.292 2.531-.885 2.656-1.635a3.52 3.52 0 011.083-2.115z"/></svg>
+                    <svg viewBox="0 0 24 24" class="social-icon" style="color: #FFD500;"><path fill="currentColor" d="M12.11 0c-1.39 0-3.36.14-4.8.84-1.2.59-1.95 1.54-2.22 2.76-.23 1.04-.26 2.06-.27 2.82-.01.99.1 2.21.36 3.12.27.93.7 1.83 1.25 2.58.53.72 1.15 1.34 1.82 1.84.14.1.28.2.42.29-.21.23-.46.43-.73.59-.51.3-1.12.45-1.74.45-.48 0-.96-.1-1.42-.29-.39-.16-.76-.39-1.09-.67-.28-.23-.5-.51-.67-.82-.2-.36-.45-.63-.78-.81-.36-.21-.8-.28-1.24-.22-.38.05-.72.22-1 .47-.25.23-.44.53-.55.85-.11.34-.14.7-.08 1.05.06.33.19.65.38.93.38.56.97.94 1.63 1.13.88.25 1.83.25 2.72.06.66-.14 1.29-.38 1.88-.69.21-.11.43-.24.64-.4.32-.23.67-.4.16.03.65.61 1.48 1.15 2.37 1.5.8.31 1.66.47 2.54.47.88 0 1.74-.16 2.54-.47.89-.35 1.72-.89 2.37-1.5.38-.36.72-.77 1.01-1.21.25-.38.56-.71.93-.97.21-.16.43-.29.64-.4.59-.31 1.22-.55 1.88-.69.89-.19 1.84-.19 2.72-.06.66.19 1.25.57 1.63 1.13.19.28.32.6.38.93.06.35.03.71-.08 1.05-.11.32-.3.62-.55.85-.28.25-.62.42-1 .47-.44.06-.88-.01-1.24-.22-.33-.18-.58-.45-.78-.81-.17-.31-.39-.59-.67-.82-.33-.28-.7-.51-1.09-.67-.46-.19-.94-.29-1.42-.29-.62 0-1.23.15-1.74.45-.27.16-.52.36-.73.59.14-.09.28-.19.42-.29.67-.5 1.29-1.12 1.82-1.84.55-.75.98-1.65 1.25-2.58.26-.91.37-2.13.36-3.12-.01-.76-.04-1.78-.27-2.82-.27-1.22-1.02-2.17-2.22-2.76-1.44-.7-3.41-.84-4.8-.84z"/></svg>
                     <span style="color: var(--text-main);">Snapchat</span>
                 </a>
                 <a href="https://www.facebook.com/thecodemiko/" target="_blank" class="social-card">
@@ -297,7 +288,6 @@ const MoreView = {
     `
 };
 
-// ─── Gerald View ──────────────────────────────────────────────────────────────
 const GeraldView = {
     props: ['currentTab', 'geraldMessages', 'isGeraldTyping', 'geraldInput', 'showEmotePicker', 'showMinigames', 'customEmotes', 'parseMarkdown', 'apiConnected'],
     template: `
@@ -326,7 +316,7 @@ const GeraldView = {
                     <div class="emote-picker-grid">
                         <img v-for="(emote, name) in customEmotes" :key="name"
                              :src="emote.url ? emote.url : 'https://cdn.discordapp.com/emojis/' + emote.id + '.' + (emote.animated ? 'gif' : 'png') + '?size=44'"
-                             class="emote-picker-img" @click="$emit('insert-emote', name)">
+                             class="emote-picker-img" @click="$emit('insert-emote', ':' + name + ':')">
                     </div>
                 </div>
                 <div class="chat-emote-tray" v-show="showMinigames" style="bottom: 100%; border-bottom: none; border-radius: 16px 16px 0 0;">
@@ -355,7 +345,6 @@ const GeraldView = {
     `
 };
 
-// ─── Home View ────────────────────────────────────────────────────────────────
 const HomeView = {
     props: ['currentTab', 'currentVodIndex', 'recentVods', 'isLive', 'hostname', 'clips', 'activeFilterLabel', 'optimizeTwitchImg', 'formatViews', 'formatDate', 'activeClipId'],
     template: `
@@ -404,7 +393,6 @@ const HomeView = {
     `
 };
 
-// ─── App ──────────────────────────────────────────────────────────────────────
 const { createApp, ref, onMounted, nextTick, computed } = Vue;
 const sbClient = supabase.createClient('https://yhxcuayiwqpjvalyrcqv.supabase.co', 'sb_publishable_VyFcNARHblJg10qlC_O7Dg_coouXK92');
 
@@ -415,7 +403,7 @@ createApp({
         const initialHash = window.location.hash.replace('#', '');
         const currentTab = ref(tabs.includes(initialHash) ? initialHash : 'home');
 
-        const tabOffset = computed(() => -(tabs.indexOf(currentTab.value) * 25)); 
+        const tabOffset = computed(() => -(tabs.indexOf(currentTab.value) * 100)); 
 
         const appTheme = ref(localStorage.getItem('miko_theme') || 'light');
         const splashVisible = ref(true), splashOpacity = ref(1);
@@ -429,7 +417,6 @@ createApp({
         const syncState = ref('idle'), wipeState = ref('idle'), logoutState = ref('idle');
         const apiConfig = ref({ cid: localStorage.getItem('twitch_cid') || 'i2fjxfk0oq6ybixle760zryrtvdqjg', tkn: localStorage.getItem('twitch_tkn') || '' });
 
-        // Removed the hardcoded backup emotes completely as requested!
         const customEmotes = ref({});
 
         const geraldInput = ref(''), geraldMessages = ref([{ role: 'gerald', content: '' }]);
@@ -445,12 +432,11 @@ createApp({
         let twitchWs = null;
         let wsAuthenticated = false;
 
-        // ── Swipe ──
         let touchStartX = 0, touchStartY = 0;
         const handleSwipeStart = (e) => { touchStartX = e.touches[0].clientX; touchStartY = e.touches[0].clientY; };
         const handleSwipeEnd = (e) => {
             const dx = touchStartX - e.changedTouches[0].clientX;
-            const dy = touchStartY - e.touches[0].clientY;
+            const dy = touchStartY - e.changedTouches[0].clientY;
             if (Math.abs(dx) > Math.abs(dy) && Math.abs(dx) > 60) {
                 const idx = tabs.indexOf(currentTab.value);
                 if (dx > 0 && idx < tabs.length - 1) switchTab(tabs[idx + 1]);
@@ -472,7 +458,6 @@ createApp({
         };
         const toggleTheme = () => { appTheme.value = appTheme.value === 'light' ? 'dark' : 'light'; localStorage.setItem('miko_theme', appTheme.value); updateThemeClass(); };
 
-        // ── IRC message parser ──
         const scrollChatToBottom = () => {
             setTimeout(() => { const l = document.getElementById('twitch-chat-list'); if (l) l.scrollTop = l.scrollHeight; }, 100);
         };
@@ -493,7 +478,6 @@ createApp({
             const color = tags['color'] || '#9146FF';
             const text = matchText[1].trim();
 
-            // Badges
             const badges = [];
             if (tags['badges']) {
                 tags['badges'].split(',').forEach(b => {
@@ -507,7 +491,6 @@ createApp({
                 });
             }
 
-            // Sync to Supabase table logs so messages aren't lost on refresh
             sbClient.from('twitch_chat_logs').insert({
                 username: user,
                 message: text,
@@ -515,7 +498,6 @@ createApp({
                 badges: badges
             }).then();
 
-            // Twitch emotes from IRC tags
             let html = text.replace(/&/g, '&').replace(/</g, '<').replace(/>/g, '>');
             if (tags['emotes']) {
                 const replacements = [];
@@ -535,7 +517,6 @@ createApp({
                 });
                 html = chars.join('');
             } else {
-                // 7TV / custom emote text replacement
                 Object.entries(customEmotes.value).forEach(([name, emote]) => {
                     if (!emote.url) return;
                     const escaped = name.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
@@ -549,7 +530,6 @@ createApp({
             if (currentTab.value === 'chat') scrollChatToBottom();
         };
 
-        // ── WebSocket ──
         const connectTwitchChat = () => {
             if (twitchWs) { try { twitchWs.close(); } catch(e) {} }
             wsAuthenticated = false;
@@ -569,11 +549,9 @@ createApp({
                     wsAuthenticated = true;
                 }
                 
-                // Fetch our permanent historical logs from Supabase instead of a third party
                 sbClient.from('twitch_chat_logs').select('*').order('created_at', { ascending: false }).limit(50)
                     .then(({ data }) => {
                         if (data) {
-                            // Reverse to render them in top-to-bottom order
                             data.reverse().forEach(row => {
                                 let html = row.message.replace(/&/g, '&').replace(/</g, '<').replace(/>/g, '>');
                                 Object.entries(customEmotes.value).forEach(([name, emote]) => {
@@ -616,7 +594,6 @@ createApp({
             scrollChatToBottom();
         };
 
-        // ── 7TV emotes ──
         const load7TVEmotes = async () => {
             try {
                 const [globalRes, channelRes] = await Promise.all([
@@ -650,11 +627,10 @@ createApp({
 
         const sortData = (filterKey) => {
             let sorted = [...allClips.value]; const now = new Date();
-            if (filterKey === 'latest') { sorted.sort((a, b) => new Date(b.created_at) - new Date(a.created_at)); }
-            else {
-                if (filterKey === 'weekly') sorted = sorted.filter(c => new Date(c.created_at) >= new Date(now - 7*86400000));
-                else if (filterKey === 'month') sorted = sorted.filter(c => new Date(c.created_at) >= new Date(now - 30*86400000));
-                else if (filterKey === '6months') sorted = sorted.filter(c => new Date(c.created_at) >= new Date(now - 180*86400000));
+            if (filterKey === 'latest') { sorted.sort((a, b) => new Date(b.created_at) - new Date(a.created_at)); } else {
+                if (filterKey === 'weekly') { sorted = sorted.filter(c => new Date(c.created_at) >= new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000)); } 
+                else if (filterKey === 'month') { sorted = sorted.filter(c => new Date(c.created_at) >= new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000)); } 
+                else if (filterKey === '6months') { sorted = sorted.filter(c => new Date(c.created_at) >= new Date(now.getTime() - 180 * 24 * 60 * 60 * 1000)); }
                 sorted.sort((a, b) => b.view_count - a.view_count);
             }
             return sorted;
@@ -662,36 +638,39 @@ createApp({
 
         const applyFilter = (filterKey, label) => {
             currentFilter.value = filterKey; activeFilterLabel.value = label; isFilterMenuOpen.value = false;
-            clips.value = sortData(filterKey);
-            nextTick(() => { const f = document.getElementById('home-scroll'); if (f) f.scrollTop = 0; });
+            const feedContainer = document.getElementById('home-scroll');
+            if(feedContainer) {
+                clips.value = sortData(filterKey);
+                nextTick(() => { feedContainer.scrollTop = 0; });
+            }
         };
 
+        window.addEventListener('popstate', () => { const hash = window.location.hash.replace('#', ''); if (tabs.includes(hash)) { currentTab.value = hash; } else { currentTab.value = 'home'; }});
+        
         const isHeaderVisible = ref(true); let lastScrollY = 0;
-        const handleScroll = (e) => {
-            const y = e.target.scrollTop;
-            if (y <= 0) { isHeaderVisible.value = true; return; }
-            if (Math.abs(y - lastScrollY) < 10) return;
-            isHeaderVisible.value = y < lastScrollY; lastScrollY = y;
-        };
+        const handleScroll = (e) => { const currentScrollY = e.target.scrollTop; if (currentScrollY <= 0) { isHeaderVisible.value = true; return; } if (Math.abs(currentScrollY - lastScrollY) < 10) return; isHeaderVisible.value = currentScrollY < lastScrollY; lastScrollY = currentScrollY; };
 
         let modalStartY = 0, currentDeltaY = 0;
         const handleModalTouchStart = (e) => { if (e.currentTarget.scrollTop <= 0) { modalStartY = e.touches[0].clientY; currentDeltaY = 0; } };
         const handleModalTouchMove = (e) => { if (!modalStartY) return; currentDeltaY = e.touches[0].clientY - modalStartY; if (currentDeltaY > 0) { e.currentTarget.style.transform = `translateY(${currentDeltaY}px)`; e.currentTarget.style.transition = 'none'; } };
-        const handleModalTouchEnd = (e) => { if (!modalStartY) return; e.currentTarget.style.transition = 'transform 0.3s cubic-bezier(0.2,0.8,0.2,1)'; if (currentDeltaY > 100) modals.value.profile = false; e.currentTarget.style.transform = ''; modalStartY = 0; };
+        const handleModalTouchEnd = (e) => { if (!modalStartY) return; e.currentTarget.style.transition = 'transform 0.3s cubic-bezier(0.2, 0.8, 0.2, 1)'; if (currentDeltaY > 100) { modals.value.profile = false; modals.value.discord = false; } e.currentTarget.style.transform = ''; modalStartY = 0; };
 
         const logoSvg = (id) => `<svg viewBox="0 0 100 100"><defs><linearGradient id="grad-${id}" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stop-color="#9146FF"/><stop offset="100%" stop-color="#a970ff"/></linearGradient></defs><circle cx="50" cy="50" r="40" fill="url(#grad-${id})"/><path d="M 33 38 L 48 62 L 62 38 L 62 55 Q 62 65 69 64" fill="none" stroke="#ffffff" stroke-width="8" stroke-linecap="round" stroke-linejoin="round"/></svg>`;
-        const showToast = (msg, dur = 4000) => { toast.value.message = msg; toast.value.visible = true; setTimeout(() => toast.value.visible = false, dur); };
-
+        const showToast = (msg, duration = 6000) => { toast.value.message = msg; toast.value.visible = true; setTimeout(() => toast.value.visible = false, duration); };
+        
         const parseMarkdown = (text) => {
             if (!text) return '';
-            let html = text.replace(/</g, '&lt;').replace(/>/g, '&gt;');
+            let html = text.replace(/</g, '<').replace(/>/g, '>');
             html = html.replace(/(^|\W)'([^']+)'(\W|$)/g, '$1<strong>$2</strong>$3');
-            html = html.replace(/\*\*(.*?)\*\*/g, '$1').replace(/\*(.*?)\*/g, '$1');
-            html = html.replace(/\[([^\]]+)\]\((https?:\/\/[^\s]+)\)/gi, '<a href="$2" target="_blank" style="color:var(--primary);text-decoration:underline;font-weight:bold;">$1</a>');
-            html = html.replace(/(^|[^"'])(https?:\/\/[^\s<)]+)/gi, '$1<a href="$2" target="_blank" style="color:var(--primary);text-decoration:underline;word-break:break-all;">$2</a>');
+            html = html.replace(/\*\*(.*?)\*\*/g, '$1').replace(/\*(.*?)\*/g, '$1'); 
+            html = html.replace(/\[([^\]]+)\]\((https?:\/\/[^\s]+)\)/gi, '<a href="$2" target="_blank" style="color: var(--primary); text-decoration: underline; font-weight: bold;">$1</a>');
+            html = html.replace(/(^|[^"'])(https?:\/\/[^\s<)]+)/gi, '$1<a href="$2" target="_blank" style="color: var(--primary); text-decoration: underline; word-break: break-all;">$2</a>');
             html = html.replace(/`?:([^:\s]+):`?/g, (match, name) => {
                 const emote = customEmotes.value[name];
-                if (emote) { const src = emote.url || `https://cdn.discordapp.com/emojis/${emote.id}.${emote.animated ? 'gif' : 'png'}?size=44`; return `<img src="${src}" alt=":${name}:" style="height:1.5em;vertical-align:middle;">`; }
+                if (emote) { 
+                    const src = emote.url ? emote.url : `https://cdn.discordapp.com/emojis/${emote.id}.${emote.animated ? 'gif' : 'png'}?size=44`;
+                    return `<img src="${src}" alt=":${name}:" style="height: 1.5em; vertical-align: middle; display: inline-block;">`; 
+                }
                 return match;
             });
             return html;
@@ -704,15 +683,15 @@ createApp({
 
         const playMinigame = (type) => {
             const games = {
-                glitch:    { msg: "🕶️ *Activates Glitch Persona*",         text: "We are taking control. The Technician's fragile code cannot stop us." },
-                shader:    { msg: "🔥 *Compiles UE5 Shader Cache*",          text: "Compiling 14,582 shaders. Stream framerate reduced to 1 FPS." },
-                boba:      { msg: "🥤 *Boba Spill Alert*",                   text: "Fluid detected on motherboard. Initiating emergency containment flush." },
-                pineapple: { msg: "🚪 *Pineapple Walk-In*",                  text: "Chris has arrived. Reminder: He is NOT her boyfriend." },
-                cat:       { msg: "🐈 *Moves Cat Off Main PC*",              text: "The Savannah Cat was sleeping on the exhaust vent. Temps dropping." },
-                bits:      { msg: "🎟️ *Simulates 100K Bit Drop*",           text: "Particle explosion rendering! Memory overload!" },
-                mute:      { msg: "🔇 *Chat redeems Mute Microphone*",       text: "Finally. Blissful silence. Look at her flail." },
-                bald:      { msg: "🧑‍🦲 *Optimizing VRAM by removing hair assets.*", text: "Bald Miko activated." },
-                siren:     { msg: "🚨 *Triggers acoustic anomaly.*",          text: "Acoustic sensors blown. The Technician is emitting her 'firetruck siren'." }
+                glitch: { msg: "🕶️ *Activates Glitch Persona*", text: "We are taking control. The Technician's fragile code cannot stop us." },
+                shader: { msg: "🔥 *Compiles UE5 Shader Cache*", text: "Compiling 14,582 shaders. Stream framerate reduced to 1 FPS." },
+                boba: { msg: "🥤 *Boba Spill Alert*", text: "Fluid detected on motherboard. Initiating emergency containment flush." },
+                pineapple: { msg: "🚪 *Pineapple Walk-In*", text: "Chris has arrived. Reminder: He is NOT her boyfriend." },
+                cat: { msg: "🐈 *Moves Cat Off Main PC*", text: "The Savannah Cat was sleeping on the exhaust vent. Temps dropping." },
+                bits: { msg: "🎟️ *Simulates 100K Bit Drop*", text: "Particle explosion rendering! Memory overload!" },
+                mute: { msg: "🔇 *Chat redeems Mute Microphone*", text: "Finally. Blissful silence. Look at her flail." },
+                bald: { msg: "🧑‍🦲 *Optimizing VRAM by removing hair assets.*", text: "Bald Miko activated." },
+                siren: { msg: "🚨 *Triggers acoustic anomaly.*", text: "Acoustic sensors blown. The Technician is emitting her 'firetruck siren'." }
             };
             const game = games[type];
             if (!game) return;
@@ -724,7 +703,10 @@ createApp({
         const loadGeraldHistory = async () => {
             if (!currentUser.value) return;
             const { data } = await sbClient.from('gerald_history').select('*').eq('user_id', currentUser.value.id).order('created_at', { ascending: true });
-            if (data && data.length > 0) geraldMessages.value = data.map(d => ({ role: d.role, content: d.content }));
+            if (data && data.length > 0) {
+                let history = data.map(d => ({ role: d.role, content: d.content }));
+                geraldMessages.value = history;
+            }
             scrollToBottom();
         };
 
@@ -732,46 +714,63 @@ createApp({
             if (!currentUser.value || wipeState.value !== 'idle') return;
             wipeState.value = 'wiping';
             await sbClient.from('gerald_history').delete().eq('user_id', currentUser.value.id);
-            geraldMessages.value = [{ role: 'gerald', content: '' }];
+            geraldMessages.value = [{role:'gerald', content: ''}];
             wipeState.value = 'success';
             setTimeout(() => { wipeState.value = 'idle'; }, 2000);
         };
 
         const talkToGerald = async () => {
             const inputEl = document.getElementById('gerald-txt-input');
-            if (inputEl && inputEl.value !== geraldInput.value) geraldInput.value = inputEl.value;
+            if (inputEl && inputEl.value !== geraldInput.value) { geraldInput.value = inputEl.value; }
             if (!geraldInput.value.trim() || isGeraldTyping.value) return;
+            
             const userMsg = geraldInput.value;
             geraldMessages.value.push({ role: 'user', content: userMsg });
-            if (currentUser.value) sbClient.from('gerald_history').insert({ role: 'user', content: userMsg, user_id: currentUser.value.id }).then();
-            geraldInput.value = '';
-            if (inputEl) { inputEl.value = ''; inputEl.style.height = 'auto'; }
+            if (currentUser.value) { sbClient.from('gerald_history').insert({ role: 'user', content: userMsg, user_id: currentUser.value.id }).then(); }
+            
+            geraldInput.value = ''; 
+            if (inputEl) { inputEl.value = ''; inputEl.style.height = 'auto'; } 
+            
             isGeraldTyping.value = true; closePickers(); scrollToBottom();
-            const geminiHistory = geraldMessages.value.slice(-10).map(m => ({ role: m.role === 'gerald' ? 'model' : 'user', parts: [{ text: m.content }] }));
+            
+            const recentContextWindow = geraldMessages.value.slice(-10);
+            const geminiHistory = recentContextWindow.map(m => ({ role: m.role === 'gerald' ? 'model' : 'user', parts: [{ text: m.content }] }));
+            
             try {
                 const { data, error } = await sbClient.functions.invoke('gerald-chat', { body: { history: geminiHistory } });
                 if (error) throw error;
-                if (data?.reply) {
-                    geraldMessages.value.push({ role: 'gerald', content: data.reply.trim() });
-                    if (currentUser.value) sbClient.from('gerald_history').insert({ role: 'gerald', content: data.reply.trim(), user_id: currentUser.value.id }).then();
+                if (data && data.reply) {
+                    let cleanReply = data.reply.trim();
+                    geraldMessages.value.push({ role: 'gerald', content: cleanReply });
+                    if (currentUser.value) { sbClient.from('gerald_history').insert({ role: 'gerald', content: cleanReply, user_id: currentUser.value.id }).then(); }
                 }
-            } catch(e) { geraldMessages.value.push({ role: 'gerald', content: 'SYSTEM ERROR: Offline Subroutines active.' }); }
-            finally { isGeraldTyping.value = false; scrollToBottom(); }
+            } catch (e) { 
+                geraldMessages.value.push({ role: 'gerald', content: 'SYSTEM ERROR: Offline Subroutines active.' }); 
+            } finally { isGeraldTyping.value = false; scrollToBottom(); }
         };
 
         const nukeCache = async () => {
-            showToast("Nuking app cache...");
+            showToast("Nuking app cache storage layers...");
             try {
-                if ('serviceWorker' in navigator) { const regs = await navigator.serviceWorker.getRegistrations(); for (let r of regs) await r.unregister(); }
-                if ('caches' in window) { const keys = await caches.keys(); for (let k of keys) await caches.delete(k); }
-                showToast("Cache purged. Reloading...", 2000);
-                setTimeout(() => { window.location.href = window.location.origin + window.location.pathname + '?cb=' + Date.now() + window.location.hash; }, 1000);
-            } catch(e) { showToast("Cache purge error."); }
+                if ('serviceWorker' in navigator) {
+                    const registrations = await navigator.serviceWorker.getRegistrations();
+                    for (let registration of registrations) { await registration.unregister(); }
+                }
+                if ('caches' in window) {
+                    const cacheNames = await caches.keys();
+                    for (let name of cacheNames) { await caches.delete(name); }
+                }
+                showToast("Cache purged cleanly. Re-loading pipeline...", 2000);
+                setTimeout(() => {
+                    window.location.href = window.location.origin + window.location.pathname + '?cb=' + Date.now() + window.location.hash;
+                }, 1000);
+            } catch (e) { showToast("Cache purge error."); }
         };
 
         const loadData = async () => {
             const { data: dbEmotes } = await sbClient.from('emotes').select('*');
-            if (dbEmotes) dbEmotes.forEach(e => { customEmotes.value[e.name] = { id: e.id, animated: e.animated }; });
+            if (dbEmotes) { dbEmotes.forEach(e => { customEmotes.value[e.name] = { id: e.id, animated: e.animated }; }); }
+
             const { data: c } = await sbClient.from('clips').select('*').order('created_at', { ascending: false }).limit(3000);
             allClips.value = c || []; clips.value = sortData(currentFilter.value);
         };
@@ -780,95 +779,64 @@ createApp({
             try {
                 const res = await fetch('https://decapi.me/twitch/uptime/codemiko');
                 isLive.value = !(await res.text()).includes('offline');
+
                 try {
-                    const gql = await fetch('https://gql.twitch.tv/gql', { method: 'POST', headers: { 'Client-ID': 'kimne78kx3ncx6brgo4mv6wki5h1ko', 'Content-Type': 'application/json' }, body: JSON.stringify({ query: `query { user(login: "codemiko") { videos(first: 10) { edges { node { id createdAt } } } } }` }) });
-                    recentVods.value = (await gql.json()).data.user.videos.edges.map(e => ({ id: e.node.id, date: new Date(e.node.createdAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric' }).toUpperCase() }));
-                } catch(e) {}
-                if (currentVodIndex.value === 0 || currentVodIndex.value === -1) currentVodIndex.value = isLive.value ? -1 : 0;
+                    const gqlRes = await fetch('https://gql.twitch.tv/gql', { method: 'POST', headers: { 'Client-ID': 'kimne78kx3ncx6brgo4mv6wki5h1ko', 'Content-Type': 'application/json' }, body: JSON.stringify({ query: `query { user(login: "codemiko") { videos(first: 10) { edges { node { id createdAt } } } } }` }) });
+                    const edges = (await gqlRes.json()).data.user.videos.edges;
+                    recentVods.value = edges.map(e => ({ id: e.node.id, date: new Date(e.node.createdAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric' }).toUpperCase() }));
+                } catch(e) { }
+                if (currentVodIndex.value === 0 || currentVodIndex.value === -1) { currentVodIndex.value = isLive.value ? -1 : 0; }
             } catch(e) {}
         };
 
         const runSync = async () => {};
 
-        window.addEventListener('popstate', () => { const h = window.location.hash.replace('#', ''); currentTab.value = tabs.includes(h) ? h : 'home'; });
-
         onMounted(async () => {
             const clientId = apiConfig.value.cid || 'i2fjxfk0oq6ybixle760zryrtvdqjg';
-            twitchAuthUrl.value = `https://id.twitch.tv/oauth2/authorize?client_id=${clientId}&redirect_uri=${encodeURIComponent('https://meowoccino.github.io/MikoTok/')}&response_type=token&scope=chat:read+chat:edit&force_verify=true`;
-
+            twitchAuthUrl.value = 'https://id.twitch.tv/oauth2/authorize?client_id=' + clientId + '&redirect_uri=' + encodeURIComponent('https://meowoccino.github.io/MikoTok/') + '&response_type=token&scope=chat:read+chat:edit&force_verify=true';
+            
             updateThemeClass();
-
-            // Handle OAuth callback
             if (window.location.hash.includes('access_token')) {
                 const params = new URLSearchParams(window.location.hash.substring(1));
-                const token = params.get('access_token');
-                if (token) {
-                    twitchChatToken.value = token;
-                    localStorage.setItem('tw_chat_token', token);
-                    try {
-                        const res = await fetch('https://id.twitch.tv/oauth2/validate', { headers: { 'Authorization': `OAuth ${token}` } });
-                        const data = await res.json();
-                        if (data.login) {
-                            twitchUsername.value = data.login;
-                            localStorage.setItem('tw_username', data.login);
-                        } else {
-                            twitchChatToken.value = null;
-                            localStorage.removeItem('tw_chat_token');
-                            localStorage.removeItem('tw_username');
-                        }
-                    } catch(e) {}
+                if (params.get('access_token')) {
+                    twitchChatToken.value = params.get('access_token');
+                    localStorage.setItem('tw_chat_token', twitchChatToken.value);
                     window.history.replaceState({}, document.title, window.location.pathname + '#chat');
                     currentTab.value = 'chat';
-                }
-            }
-
-            if (twitchChatToken.value && !twitchUsername.value) {
-                try {
-                    const res = await fetch('https://id.twitch.tv/oauth2/validate', { headers: { 'Authorization': `OAuth ${twitchChatToken.value}` } });
-                    const data = await res.json();
-                    if (data.login) { twitchUsername.value = data.login; localStorage.setItem('tw_username', data.login); }
-                    else { twitchChatToken.value = null; localStorage.removeItem('tw_chat_token'); localStorage.removeItem('tw_username'); }
-                } catch(e) {}
-            }
+                    
+                    fetch('https://id.twitch.tv/oauth2/validate', { headers: { 'Authorization': 'OAuth ' + twitchChatToken.value } })
+                        .then(res => res.json())
+                        .then(data => {
+                            if (data.login) {
+                                twitchUsername.value = data.login;
+                                connectTwitchChat();
+                            } else {
+                                twitchChatToken.value = null; 
+                                localStorage.removeItem('tw_chat_token');
+                                connectTwitchChat();
+                            }
+                        }).catch(e => { console.error(e); connectTwitchChat(); });
+                } else { connectTwitchChat(); }
+            } else { connectTwitchChat(); }
 
             const { data: { session } } = await sbClient.auth.getSession();
             if (session?.user) { currentUser.value = session.user; loadGeraldHistory(); }
-
-            connectTwitchChat();
             load7TVEmotes();
-            loadData();
-            checkLive();
-
+            loadData(); checkLive();
+            
             setInterval(loadData, 21600000);
-            setInterval(checkLive, 60000);
+            setInterval(checkLive, 60000); 
             setTimeout(() => { splashOpacity.value = 0; setTimeout(() => splashVisible.value = false, 400); }, 1500);
         });
 
-        return {
-            hostname, splashVisible, splashOpacity, currentTab, appTheme, toggleTheme,
-            clips, modals, isLive, toast, currentUser, loginEmail, loginPass, apiConfig,
-            geraldInput, geraldMessages, isGeraldTyping, talkToGerald, logoSvg,
-            syncState, wipeState, logoutState, runSync,
-            isHeaderVisible, handleScroll, handleModalTouchStart, handleModalTouchMove, handleModalTouchEnd,
-            currentFilter, activeFilterLabel, isFilterMenuOpen, closeFilterMenu, applyFilter,
-            parseMarkdown, recentVods, currentVodIndex, nextVod, prevVod,
-            customEmotes, showEmotePicker, insertEmote, clearGeraldHistory,
-            handleGeraldEnter, toggleEmotes, toggleMinigames, closePickers,
-            nukeCache, selectedClip, tabOffset, switchTab, handleSwipeStart, handleSwipeEnd, playClip,
+        return { 
+            hostname, splashVisible, splashOpacity, currentTab, appTheme, toggleTheme, clips, modals, isLive, toast, currentUser, loginEmail, loginPass, apiConfig, geraldInput, geraldMessages, isGeraldTyping, talkToGerald, logoSvg, syncState, wipeState, logoutState, runSync, isHeaderVisible, handleScroll, handleModalTouchStart, handleModalTouchMove, handleModalTouchEnd, currentFilter, activeFilterLabel, isFilterMenuOpen, closeFilterMenu, applyFilter, parseMarkdown, recentVods, currentVodIndex, nextVod, prevVod, customEmotes, showEmotePicker, insertEmote, clearGeraldHistory, handleGeraldEnter, toggleEmotes, toggleMinigames, closePickers, nukeCache, activeClipId, tabOffset, switchTab, handleSwipeStart, handleSwipeEnd, playClip, selectedClip,
             chatMessages, chatInput, twitchChatToken, twitchAuthUrl, twitchUsername, sendTwitchChatMessage,
-            handleLogin: async () => {
-                const email = loginEmail.value.includes('@') ? loginEmail.value : `${loginEmail.value}@miko.com`;
-                const { data } = await sbClient.auth.signInWithPassword({ email, password: loginPass.value });
-                if (data.user) { currentUser.value = data.user; modals.value.profile = false; loadGeraldHistory(); }
-            },
-            handleLogout: () => {
-                if (logoutState.value !== 'idle') return;
-                logoutState.value = 'logging_out';
-                setTimeout(() => { sbClient.auth.signOut(); currentUser.value = null; geraldMessages.value = [{ role: 'gerald', content: '' }]; modals.value.profile = false; logoutState.value = 'idle'; }, 1500);
-            },
-            optimizeTwitchImg: (u) => u ? u.replace('%{width}', '480').replace('%{height}', '270') : '',
-            formatViews: (v) => v ? v.toLocaleString() : '0',
-            formatDate: (d) => new Date(d).toLocaleDateString([], { month: 'short', day: 'numeric' })
+            handleLogin: async () => { const email = loginEmail.value.includes('@') ? loginEmail.value : `${loginEmail.value}@miko.com`; const { data } = await sbClient.auth.signInWithPassword({ email, password: loginPass.value }); if(data.user) { currentUser.value = data.user; modals.value.profile = false; loadGeraldHistory(); } }, 
+            handleLogout: () => { if (logoutState.value !== 'idle') return; logoutState.value = 'logging_out'; setTimeout(() => { sbClient.auth.signOut(); currentUser.value = null; geraldMessages.value = [{role:'gerald', content: ''}]; modals.value.profile = false; logoutState.value = 'idle'; }, 1500); },
+            optimizeTwitchImg: (u) => u ? u.replace('%{width}', '480').replace('%{height}', '270') : '', 
+            formatViews: (v) => v ? v.toLocaleString() : '0', 
+            formatDate: (d) => new Date(d).toLocaleDateString([], {month:'short', day:'numeric'})
         };
     }
 }).mount('#app-container');
