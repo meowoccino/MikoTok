@@ -316,15 +316,15 @@ const GeraldView = {
                 </div>
                 <div class="chat-emote-tray" v-show="showMinigames" style="bottom: 100%; border-bottom: none; border-radius: 16px 16px 0 0;">
                     <div class="emote-picker-grid" style="gap: 8px;">
-                        <button class="bribe-btn" @click="$emit('play-game', 'glitch')">🕶️ Glitch Persona</button>
-                        <button class="bribe-btn" @click="$emit('play-game', 'shader')">🔥 Compile UE5</button>
-                        <button class="bribe-btn" @click="$emit('play-game', 'boba')">🥤 Boba Spill</button>
-                        <button class="bribe-btn" @click="$emit('play-game', 'pineapple')">🚪 Pineapple Walk-In</button>
-                        <button class="bribe-btn" @click="$emit('play-game', 'cat')">🐈 Cat on PC</button>
-                        <button class="bribe-btn" @click="$emit('play-game', 'bits')">🎟️ 100K Bits</button>
-                        <button class="bribe-btn" @click="$emit('play-game', 'mute')">🔇 Mute Mic</button>
-                        <button class="bribe-btn" @click="$emit('play-game', 'bald')">🧑‍🦲 Delete Hair</button>
-                        <button class="bribe-btn" @click="$emit('play-game', 'siren')">🚨 Firetruck Siren</button>
+                        <button class="bribe-btn" @click.stop="$emit('play-game', 'glitch')">🕶️ Glitch Persona</button>
+                        <button class="bribe-btn" @click.stop="$emit('play-game', 'shader')">🔥 Compile UE5</button>
+                        <button class="bribe-btn" @click.stop="$emit('play-game', 'boba')">🥤 Boba Spill</button>
+                        <button class="bribe-btn" @click.stop="$emit('play-game', 'pineapple')">🚪 Pineapple Walk-In</button>
+                        <button class="bribe-btn" @click.stop="$emit('play-game', 'cat')">🐈 Cat on PC</button>
+                        <button class="bribe-btn" @click.stop="$emit('play-game', 'bits')">🎟️ 100K Bits</button>
+                        <button class="bribe-btn" @click.stop="$emit('play-game', 'mute')">🔇 Mute Mic</button>
+                        <button class="bribe-btn" @click.stop="$emit('play-game', 'bald')">🧑‍🦲 Delete Hair</button>
+                        <button class="bribe-btn" @click.stop="$emit('play-game', 'siren')">🚨 Firetruck Siren</button>
                     </div>
                 </div>
                 <div class="gerald-input-area">
@@ -658,12 +658,23 @@ createApp({
         
         const parseMarkdown = (text) => {
             if (!text) return '';
-            let html = text.replace(/</g, '<').replace(/>/g, '>');
+            let html = text.replace(/</g, '&lt;').replace(/>/g, '&gt;');
             html = html.replace(/(^|\W)'([^']+)'(\W|$)/g, '$1<strong>$2</strong>$3');
-            html = html.replace(/\*\*(.*?)\*\*/g, '$1').replace(/\*(.*?)\*/g, '$1'); 
+            html = html.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>').replace(/\*(.*?)\*/g, '<em>$1</em>'); 
             html = html.replace(/\[([^\]]+)\]\((https?:\/\/[^\s]+)\)/gi, '<a href="$2" target="_blank" style="color: var(--primary); text-decoration: underline; font-weight: bold;">$1</a>');
             html = html.replace(/(^|[^"'])(https?:\/\/[^\s<)]+)/gi, '$1<a href="$2" target="_blank" style="color: var(--primary); text-decoration: underline; word-break: break-all;">$2</a>');
-            return html;
+            
+            // Fixed Emote parsing inside Chat/Gerald Message boxes
+            const words = html.split(' ');
+            for (let i = 0; i < words.length; i++) {
+                const cleanWord = words[i].replace(/^:|:$/g, '');
+                const match = customEmotes.value[cleanWord];
+                if (match) {
+                    const src = match.url ? match.url : `https://cdn.discordapp.com/emojis/${match.id}.${match.animated ? 'gif' : 'png'}?size=44`;
+                    words[i] = `<img src="${src}" alt=":${cleanWord}:" style="height: 1.65em; vertical-align: middle; display: inline-block; margin: 0 2px;">`;
+                }
+            }
+            return words.join(' ');
         };
 
         const handleGeraldEnter = (e) => { if (!e.shiftKey && e.key === 'Enter') { e.preventDefault(); talkToGerald(); } };
@@ -673,24 +684,27 @@ createApp({
 
         const playMinigame = (type) => {
             const games = {
-                glitch: { msg: "🕶️ *Activates Glitch Persona*", text: "We are taking control. The Technician's fragile code cannot stop us." },
-                shader: { msg: "🔥 *Compiles UE5 Shader Cache*", text: "Compiling 14,582 shaders. Stream framerate reduced to 1 FPS." },
-                boba: { msg: "🥤 *Boba Spill Alert*", text: "Fluid detected on motherboard. Initiating emergency containment flush." },
-                pineapple: { msg: "🚪 *Pineapple Walk-In*", text: "Chris has arrived. Reminder: He is NOT her boyfriend." },
-                cat: { msg: "🐈 *Moves Cat Off Main PC*", text: "The Savannah Cat was sleeping on the exhaust vent. Temps dropping." },
-                bits: { msg: "🎟️ *Simulates 100K Bit Drop*", text: "Particle explosion rendering! Memory overload!" },
-                mute: { msg: "🔇 *Chat redeems Mute Microphone*", text: "Finally. Blissful silence. Look at her flail." },
-                bald: { msg: "🧑‍🦲 *Optimizing VRAM by removing hair assets.*", text: "Bald Miko activated." },
-                siren: { msg: "🚨 *Triggers acoustic anomaly.*", text: "Acoustic sensors blown. The Technician is emitting her 'firetruck siren'." }
+                glitch: { msg: "🕶️ :glitch: *Activates Glitch Persona*", text: "We are taking control. The Technician's fragile code cannot stop us." },
+                shader: { msg: "🔥 :shader: *Compiles UE5 Shader Cache*", text: "Compiling 14,582 shaders. Stream framerate reduced to 1 FPS." },
+                boba: { msg: "🥤 :boba: *Boba Spill Alert*", text: "Fluid detected on motherboard. Initiating emergency containment flush." },
+                pineapple: { msg: "🚪 :pineapple: *Pineapple Walk-In*", text: "Chris has arrived. Reminder: He is NOT her boyfriend." },
+                cat: { msg: "🐈 :cat: *Moves Cat Off Main PC*", text: "The Savannah Cat was sleeping on the exhaust vent. Temps dropping." },
+                bits: { msg: "🎟️ :bits: *Simulates 100K Bit Drop*", text: "Particle explosion rendering! Memory overload!" },
+                mute: { msg: "🔇 :mute: *Chat redeems Mute Microphone*", text: "Finally. Blissful silence. Look at her flail." },
+                bald: { msg: "🧑‍🦲 :bald: *Optimizing VRAM by removing hair assets.*", text: "Bald Miko activated." },
+                siren: { msg: "🚨 :siren: *Triggers acoustic anomaly.*", text: "Acoustic sensors blown. The Technician is emitting her 'firetruck siren'." }
             };
             const game = games[type];
             if (!game) return;
+            
+            // Fix: Push locally processed strings so it doesn't try to sync with the crashed edge function
             geraldMessages.value.push({ role: 'user', content: game.msg });
             closePickers();
+            
             setTimeout(() => { 
                 geraldMessages.value.push({ role: 'gerald', content: game.text }); 
                 nextTick(scrollToBottom);
-            }, 800);
+            }, 600);
         };
 
         const loadGeraldHistory = async () => {
