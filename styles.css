@@ -135,8 +135,8 @@ body, html {
     border-radius: 30px; color: #fff; font-size: 10px; font-weight: 900; text-transform: uppercase;
 }
 .premium-badge .dot { width: 6px; height: 6px; border-radius: 50%; }
-.premium-badge.vod .dot { background: var(--primary); }
-.premium-badge.live-badge .dot { background: var(--danger); animation: pulse-glow-ring 1s infinite ease-out; }
+.premium-badge.vod .dot { background: var(--primary); animation: pulse-glow-ring 3s infinite ease-out; }
+.premium-badge.live-badge .dot { background: var(--danger); animation: pulse-glow-ring 2.5s infinite ease-out; }
 
 .video-wrapper-outer { width: 100%; position: relative; }
 .video-container {
@@ -268,9 +268,10 @@ body, html {
 /* ── Gerald View ── */
 .gerald-container { display: flex; flex-direction: column; height: 100%; position: relative; padding-top: env(safe-area-inset-top, 0px); }
 .gerald-header {
-    padding: 30px 20px 20px; display: flex; flex-direction: column;
-    align-items: center; justify-content: center; gap: 12px;
-    flex-shrink: 0; background: var(--bg-color); border-bottom: 1px solid var(--border-color);
+    padding: 25px 20px 20px; 
+    display: flex; flex-direction: column; align-items: center; 
+    justify-content: center; gap: 12px; flex-shrink: 0; 
+    background: var(--bg-color); border-bottom: 1px solid var(--border-color);
     text-align: center;
 }
 .avatar-glow-wrap {
@@ -279,18 +280,24 @@ body, html {
     transition: box-shadow 0.4s ease, border-color 0.4s ease;
 }
 .gerald-avatar { width: 116px; height: 116px; border-radius: 50%; object-fit: cover; }
-.gerald-title-block { display: block; margin-top: 4px; }
-.gerald-name-text { font-family: 'Outfit', sans-serif; font-size: 24px; font-weight: 900; color: var(--text-main); }
+.gerald-title-block { display: flex; flex-direction: column; align-items: center; gap: 4px; margin-top: 4px; }
+.gerald-name-text { font-family: 'Outfit', sans-serif; font-size: 26px; font-weight: 900; color: var(--text-main); line-height: 1.1; }
 
-/* High-Contrast Centered Status Glow Rings */
+.gerald-status-sub {
+    font-family: monospace; font-size: 10px; font-weight: 700;
+    letter-spacing: 0.5px; margin-top: 2px; text-transform: uppercase;
+}
+.sub-online { color: #10b981; }
+.sub-offline { color: #ff3b30; opacity: 0.8; }
+
 .glow-online {
     border: 2px solid #10b981;
     box-shadow: 0 0 15px rgba(16, 185, 129, 0.5);
     animation: breathing-glow-live 2.5s infinite ease-in-out;
 }
 .glow-offline {
-    border: 2px solid #0ea5e9;
-    box-shadow: 0 0 15px rgba(14, 165, 233, 0.4);
+    border: 2px solid #ff3b30;
+    box-shadow: 0 0 15px rgba(255, 59, 48, 0.4);
     animation: breathing-glow-dead 3s infinite ease-in-out;
 }
 
@@ -299,10 +306,9 @@ body, html {
     50% { box-shadow: 0 0 25px rgba(52, 211, 153, 0.9); border-color: rgba(52, 211, 153, 1); }
 }
 @keyframes breathing-glow-dead {
-    0%, 100% { box-shadow: 0 0 12px rgba(14, 165, 233, 0.3); border-color: rgba(14, 165, 233, 0.5); }
-    50% { box-shadow: 0 0 25px rgba(56, 189, 248, 0.8); border-color: rgba(56, 189, 248, 1); }
+    0%, 100% { box-shadow: 0 0 12px rgba(255, 59, 48, 0.3); border-color: rgba(255, 59, 48, 0.5); }
+    50% { box-shadow: 0 0 25px rgba(255, 107, 107, 0.8); border-color: rgba(255, 107, 107, 1); }
 }
-
 @keyframes pulse-glow-ring { 
     0% { transform: scale(1); opacity: 1; } 
     100% { transform: scale(2.5); opacity: 0; } 
