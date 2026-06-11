@@ -242,7 +242,7 @@ const MoreView = {
                     <span style="color: var(--text-main);">YouTube</span>
                 </a>
                 <a href="https://kick.com/codemiko" target="_blank" class="social-card">
-                    <svg viewBox="0 0 24 24" class="social-icon" style="color: #53FC18;"><path fill="currentColor" d="M1.4 1.56v20.88h5.96V16h2.15v2.89h2.52v3.55h10.54V1.56h-10.54v3.55h-2.52v2.89H7.36V1.56z"/></svg>
+                    <svg viewBox="0 0 32 32" class="social-icon" style="color: #53FC18; width:24px; height:24px;"><path fill="currentColor" d="M4 2v24h8v-6h3v6h3v9h10V2H4zm17 14h-3v3h-3v-6h6v3z"/></svg>
                     <span style="color: var(--text-main);">Kick</span>
                 </a>
                 <a href="https://www.tiktok.com/@codemiko" target="_blank" class="social-card">
@@ -258,7 +258,7 @@ const MoreView = {
                     <span style="color: var(--text-main);">Instagram</span>
                 </a>
                 <a href="https://www.snapchat.com/add/codemiko" target="_blank" class="social-card">
-                    <svg viewBox="0 0 24 24" class="social-icon" style="color: #FFD500;"><path fill="currentColor" d="M12.11 0c-1.39 0-3.36.14-4.8.84-1.2.59-1.95 1.54-2.22 2.76-.23 1.04-.26 2.06-.27 2.82-.01.99.1 2.21.36 3.12.27.93.7 1.83 1.25 2.58.53.72 1.15 1.34 1.82 1.84.14.1.28.2.42.29-.21.23-.46.43-.73.59-.51.3-1.12.45-1.74.45-.48 0-.96-.1-1.42-.29-.39-.16-.76-.39-1.09-.67-.28-.23-.5-.51-.67-.82-.2-.36-.45-.63-.78-.81-.36-.21-.8-.28-1.24-.22-.38.05-.72.22-1 .47-.25.23-.44.53-.55.85-.11.34-.14.7-.08 1.05.06.33.19.65.38.93.38.56.97.94 1.63 1.13.88.25 1.83.25 2.72.06.66-.14 1.29-.38 1.88-.69.21-.11.43-.24.64-.4.32-.23.67-.4.16.03.65.61 1.48 1.15 2.37 1.5.8.31 1.66.47 2.54.47.88 0 1.74-.16 2.54-.47.89-.35 1.72-.89 2.37-1.5.38-.36.72-.77 1.01-1.21.25-.38.56-.71.93-.97.21-.16.43-.29.64-.4.59-.31 1.22-.55 1.88-.69.89-.19 1.84-.19 2.72-.06.66.19 1.25.57 1.63 1.13.19.28.32.6.38.93.06.35.03.71-.08 1.05-.11.32-.3.62-.55.85-.28.25-.62.42-1 .47-.44.06-.88-.01-1.24-.22-.33-.18-.58-.45-.78-.81-.17-.31-.39-.59-.67-.82-.33-.28-.7-.51-1.09-.67-.46-.19-.94-.29-1.42-.29-.62 0-1.23.15-1.74.45-.27.16-.52.36-.73.59.14-.09.28-.19.42-.29.67-.5 1.29-1.12 1.82-1.84.55-.75.98-1.65 1.25-2.58.26-.91.37-2.13.36-3.12-.01-.76-.04-1.78-.27-2.82-.27-1.22-1.02-2.17-2.22-2.76-1.44-.7-3.41-.84-4.8-.84z"/></svg>
+                    <svg viewBox="0 0 512 512" class="social-icon" style="color: #FFD500; width:24px; height:24px;"><path fill="currentColor" d="M256 32C156.4 32 112 108.4 112 192c0 14.4 2.8 45.1 11.2 64.6c4.2 9.7 11.2 19.4 11.2 27.8c0 11.1-13.9 19.4-27.8 25c-27.8 11.1-51.4 36.1-51.4 69.4c0 38.9 44.4 52.8 88.9 52.8c12.5 0 27.8-1.4 40.3-4.2c11.1-2.8 13.9-9.7 25-5.6c20.8 7.7 51.4 14.2 86.1 14.2s65.3-6.5 86.1-14.2c11.1-4.2 13.9 2.8 25 5.6c12.5 2.8 27.8 4.2 40.3 4.2c44.4 0 88.9-13.9 88.9-52.8c0-33.3-23.6-58.3-51.4-69.4c-13.9-5.6-27.8-13.9-27.8-25c0-8.3 7-18.1 11.2-27.8c8.4-19.5 11.2-50.2 11.2-64.6c0-83.6-44.4-160-153.6-160z"/></svg>
                     <span style="color: var(--text-main);">Snapchat</span>
                 </a>
                 <a href="https://www.facebook.com/thecodemiko/" target="_blank" class="social-card">
@@ -270,7 +270,7 @@ const MoreView = {
                     <span style="color: var(--text-main);">Discord</span>
                 </a>
                 <a href="https://www.reddit.com/r/CodeMiko/" target="_blank" class="social-card">
-                    <svg viewBox="0 0 24 24" class="social-icon" style="color: #FF4500;"><path fill="currentColor" d="M24 11.5c0-1.65-1.35-3-3-3-.96 0-1.86.48-2.42 1.24-1.64-1-3.75-1.64-6.07-1.72.08-1.1.4-3.05 1.52-3.7.72-.4 1.73-.24 3 .5C17.2 6.3 18.46 7.5 20 7.5c1.65 0 3-1.35 3-3s-1.35-3-3-3c-1.38 0-2.54.94-2.88 2.22-1.43-.72-2.64-.8-3.6-.25-1.64.94-1.95 3.47-2 4.55-2.33.08-4.45.7-6.1 1.72C4.86 8.98 3.96 8.5 3 8.5c-1.65 0-3 1.35-3 3 0 1.32.84 2.44 2.05 2.84-.03.22-.05.44-.05.66 0 3.86 4.5 7 10 7s10-3.14 10-7c0-.22-.02-.44-.05-.66 1.2-.4 2.05-1.54 2.05-2.84zM2.3 13.37C1.5 13.07 1 12.35 1 11.5c0-1.1.9-2 2-2 .64 0 1.22.32 1.6.82-1.1.85-1.92 1.9-2.3 3.05zm3.7.13c0-1.1.9-2 2-2s2 .9 2 2-.9 2-2 2-2-.9-2-2zm9.8 4.8c-1.08.63-2.42.96-3.8.96-1.4 0-2.74-.34-3.8-.95-.24-.13-.32-.44-.2-.68.15-.24.46-.32.7-.18 1.83 1.06 4.76 1.06 6.6 0 .23-.13.53-.05.67.2.14.23.06.54-.18.67zm.2-2.8c-1.1 0-2-.9-2-2s.9-2 2-2 2 .9 2 2-.9 2-2 2zm5.7-2.13c-.38-1.16-1.2-2.2-2.3-3.05.38-.5.96-.82 1.6-.82 1.1 0 2 .9 2 2 0 .84-.53 1.57-1.3 1.87z"/></svg>
+                    <svg viewBox="0 0 24 24" class="social-icon" style="color: #FF4500;"><path fill="currentColor" d="M24 11.5c0-1.65-1.35-3-3-3-.96 0-1.86.48-2.42 1.24-1.64-1-3.75-1.64-6.07-1.72.08-1.1.4-3.05 1.52-3.7.72-.4 1.73-.24 3 .5C17.2 6.3 18.46 7.5 20 7.5c1.65 0 3-1.35 3-3s-1.35-3-3-3c-1.38 0-2.54.94-2.88 2.22-1.43-.72-2.64-.8-3.6-.25-1.64.94-1.95 3.47-2 4.55-2.33.08-4.45.7-6.1 1.72C4.86 8.98 3.96 8.5 3 8.5c-1.65 0-3 1.35-3 3 0 1.32.84 2.44 2.05 2.84-.03.22-.05.44-.05.66 0 3.86 4.5 7 10 7s10-3.14 10-7c0-.22-.02-.44-.05-.66 1.2-.4 2.05-1.54 2.05-2.84zM2.3 13.37C1.5 13.07 1 12.35 1 11.5c0-1.1.9-2 2-2 .64 0 1.22.32 1.6.82-1.1.85-1.92 1.9-2.3 3.05zm3.7.13c0-1.1.9-2 2-2 s2 .9 2 2-.9 2-2 2-2-.9-2-2zm9.8 4.8c-1.08.63-2.42.96-3.8.96-1.4 0-2.74-.34-3.8-.95-.24-.13-.32-.44-.2-.68.15-.24.46-.32.7-.18 1.83 1.06 4.76 1.06 6.6 0 .23-.13.53-.05.67.2.14.23.06.54-.18.67zm.2-2.8c-1.1 0-2-.9-2-2s.9-2 2-2 2 .9 2 2-.9 2-2 2zm5.7-2.13c-.38-1.16-1.2-2.2-2.3-3.05.38-.5.96-.82 1.6-.82 1.1 0 2 .9 2 2 0 .84-.53 1.57-1.3 1.87z"/></svg>
                     <span style="color: var(--text-main);">Reddit</span>
                 </a>
                 <a href="https://app.fanfix.io/@codeyuna" target="_blank" class="social-card">
@@ -287,10 +287,11 @@ const GeraldView = {
     template: `
         <div class="gerald-container">
             <div class="gerald-header" @click="$emit('close-pickers')">
-                <img src="gerald.png" class="gerald-avatar" alt="Gerald">
+                <div class="avatar-glow-wrap" :class="apiConnected ? 'glow-online' : 'glow-offline'">
+                    <img src="gerald.png" class="gerald-avatar" alt="Gerald">
+                </div>
                 <div class="gerald-title-block">
                     <span class="gerald-name-text">Gerald O.S.</span>
-                    <div :class="apiConnected ? 'pulse-dot-live' : 'pulse-dot-offline'"></div>
                 </div>
             </div>
             <div class="gerald-messages" id="gerald-msgs" @click="$emit('close-pickers')">
@@ -826,9 +827,11 @@ createApp({
                 if (session?.user) { currentUser.value = session.user; loadGeraldHistory(); }
             } catch(e) {}
 
-            await load7TVEmotes();
-            await loadData(); 
-            await checkLive();
+            try {
+                await load7TVEmotes();
+                await loadData(); 
+                await checkLive();
+            } catch(e) {}
 
             setTimeout(() => {
                 splashOpacity.value = 0;
