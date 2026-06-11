@@ -149,8 +149,11 @@ const ChatView = {
                     <a :href="twitchAuthUrl" class="twitch-login-btn">Connect Twitch</a>
                 </div>
                 <div v-for="(msg, i) in chatMessages" :key="i" class="twitch-msg-row">
+                    <span class="twitch-badges">
+                        <img v-for="(badge, bi) in msg.badges" :key="bi" :src="badge.img" :title="badge.title" style="width:16px;height:16px;vertical-align:middle;margin-right:4px;border-radius:2px;">
+                    </span>
                     <span class="twitch-username" :style="{color: msg.color}">{{ msg.username }}</span>
-                    <span class="twitch-text" v-html="msg.html"></span>
+                    <span class="twitch-text" v-html="' ' + msg.html"></span>
                 </div>
             </div>
             
@@ -178,7 +181,7 @@ const MoreView = {
         <div class="more-container">
             <div class="social-grid">
                 
-                <a href="https://throne.com/codemiko" target="_blank" class="social-card">
+                <a href="https://throne.com/codemiko" target="_blank" class="social-card throne">
                     <div style="display:flex; align-items:center; gap:15px; flex:1;">
                         <span class="material-symbols-rounded social-icon" style="font-size: 28px; color: #0ea5e9;">redeem</span>
                         <span style="color: var(--text-main);">Throne</span>
@@ -252,8 +255,8 @@ const GeraldView = {
                 <template v-for="(m, i) in geraldMessages" :key="i">
                     <div v-if="i === 0 && m.role === 'gerald'" class="terminal-intro">
                         <div class="terminal-text startup-anim">
-                            &gt; Human detected.<br>
-                            &gt; What do you want?
+                            > Human detected.<br>
+                            > What do you want?
                         </div>
                     </div>
                     <div v-else class="chat-bubble" :class="m.role" v-html="parseMarkdown(m.content)"></div>
@@ -302,11 +305,9 @@ const HomeView = {
                         <div class="dot"></div><span>{{ recentVods[currentVodIndex] ? ('VOD • ' + recentVods[currentVodIndex].date) : 'PAST BROADCAST' }}</span>
                     </div>
                 </div>
-                <div class="video-wrapper-outer">
-                    <div class="video-container">
-                        <iframe v-if="currentVodIndex === -1" id="miko-live-player" :src="'https://player.twitch.tv/?channel=codemiko&parent=' + hostname + '&autoplay=true&muted=true'" allow="autoplay; fullscreen" allowfullscreen loading="lazy"></iframe>
-                        <iframe v-else-if="recentVods && recentVods[currentVodIndex]" :src="'https://player.twitch.tv/?video=' + recentVods[currentVodIndex].id + '&parent=' + hostname + '&autoplay=false'" allow="autoplay; fullscreen" allowfullscreen loading="lazy"></iframe>
-                    </div>
+                <div class="video-container">
+                    <iframe v-if="currentVodIndex === -1" id="miko-live-player" :src="'https://player.twitch.tv/?channel=codemiko&parent=' + hostname + '&autoplay=true&muted=true'" allow="autoplay; fullscreen" allowfullscreen loading="lazy"></iframe>
+                    <iframe v-else-if="recentVods && recentVods[currentVodIndex]" :src="'https://player.twitch.tv/?video=' + recentVods[currentVodIndex].id + '&parent=' + hostname + '&autoplay=true&muted=true'" allow="autoplay; fullscreen" allowfullscreen loading="lazy"></iframe>
                 </div>
                 <div class="carousel-controls" v-if="recentVods && recentVods.length > 0 && !isLive" style="margin-top: 12px; justify-content: flex-end;">
                     <button class="carousel-btn" :class="{ 'hidden-arrow': currentVodIndex <= 0 }" @click.stop="$emit('prev-vod')"><span class="material-symbols-rounded">chevron_left</span></button>
@@ -406,8 +407,8 @@ createApp({
         const switchTab = (tab) => {
             currentTab.value = tab;
             window.history.pushState(null, '', `#${tab}`);
-            if (tab === 'chat') { setTimeout(() => { const list = document.getElementById('twitch-chat-list'); if (list) list.scrollTo({ top: list.scrollHeight, behavior: 'smooth' }); }, 100); }
-            if (tab === 'gerald') { setTimeout(scrollToBottom, 100); }
+            if (tab === 'chat') { setTimeout(() => { const list = document.getElementById('twitch-chat-list'); if (list) list.scrollTo({ top: list.scrollHeight, behavior: 'smooth' }); }, 150); }
+            if (tab === 'gerald') { setTimeout(scrollToBottom, 150); }
         };
 
         const updateThemeClass = () => {
@@ -426,6 +427,67 @@ createApp({
             updateThemeClass();
         };
 
+        const parseIrcMessage = (raw) => {
+            if (!raw || !raw.includes('PRIVMSG')) return;
+            let tags = {};
+            let line = raw;
+            if (line.startsWith('@')) {
+                const spaceIdx = line.indexOf(' ');
+                const tagString = line.substring(1, spaceIdx);
+                tagString.split(';').forEach(t => {
+                    const [k, ...v] = t.split('=');
+                    tags[k] = v.join('=');
+                });
+                line = line.substring(spaceIdx + 1);
+            }
+            const matchUser = line.match(/:([^!]+)!/);
+            const matchText = line.match(/PRIVMSG #[a-zA-Z0-9_]+ :(.+)/);
+            if (!matchUser || !matchText) return;
+            
+            const user = tags['display-name'] || matchUser[1];
+            const color = tags['color'] || '#9146FF';
+            let text = matchText[1].trim();
+            
+            const badges = [];
+            if (tags['badges']) {
+                tags['badges'].split(',').forEach(b => {
+                    const [type, version] = b.split('/');
+                    if (type === 'broadcaster') badges.push({ title: 'Broadcaster', img: 'https://static-cdn.jtvnw.net/badges/v1/5527c58c-fb7d-422d-b71b-f309dcb85cc1/1' });
+                    else if (type === 'moderator') badges.push({ title: 'Mod', img: 'https://static-cdn.jtvnw.net/badges/v1/3267646d-33f0-4b17-b3df-f923a41db1d0/1' });
+                    else if (type === 'vip') badges.push({ title: 'VIP', img: 'https://static-cdn.jtvnw.net/badges/v1/b817aba4-fad8-49e2-b88a-7cc744dfa6ec/1' });
+                    else if (type === 'subscriber') badges.push({ title: `Sub (${version}mo)`, img: `https://static-cdn.jtvnw.net/badges/v1/5d9f2208-5dd8-11e7-8513-2ff4adfae661/1` });
+                    else if (type === 'turbo') badges.push({ title: 'Turbo', img: 'https://static-cdn.jtvnw.net/badges/v1/bd444ec6-8f34-4bf9-91f4-af1e3428d80f/1' });
+                });
+            }
+            
+            let html = text.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+            if (tags['emotes']) {
+                let replacements = [];
+                tags['emotes'].split('/').forEach(e => {
+                    const [id, positions] = e.split(':');
+                    if (!positions) return;
+                    positions.split(',').forEach(pos => {
+                        const [start, end] = pos.split('-').map(Number);
+                        replacements.push({ start, end, id });
+                    });
+                });
+                replacements.sort((a, b) => b.start - a.start);
+                let chars = [...text];
+                replacements.forEach(({ start, end, id }) => {
+                    const img = `<img src="https://static-cdn.jtvnw.net/emoticons/v2/${id}/default/dark/1.0" style="height:22px;vertical-align:middle;margin:0 2px;" title="${chars.slice(start, end+1).join('')}">`;
+                    chars.splice(start, end - start + 1, img);
+                });
+                html = chars.join('');
+            }
+            
+            chatMessages.value.push({ username: user, html, color, badges });
+            if (chatMessages.value.length > 150) chatMessages.value.shift();
+            
+            if (currentTab.value === 'chat') {
+                setTimeout(() => { const list = document.getElementById('twitch-chat-list'); if (list) list.scrollTo({ top: list.scrollHeight, behavior: 'smooth' }); }, 100);
+            }
+        };
+
         const connectTwitchChat = () => {
             if (twitchWs) { try { twitchWs.close(); } catch(e){} }
             twitchWs = new WebSocket('wss://irc-ws.chat.twitch.tv:443');
@@ -442,68 +504,20 @@ createApp({
                     twitchWs.send('NICK justinfan12345');
                     twitchWs.send('JOIN #codemiko');
                 }
+                
+                fetch('https://recent-messages.robotty.de/api/v2/recent-messages/codemiko?limit=50')
+                    .then(r => r.json())
+                    .then(data => {
+                        if (data.messages) { data.messages.forEach(raw => parseIrcMessage(raw)); }
+                    }).catch(() => {});
             };
 
             twitchWs.onmessage = (event) => {
-                const msgs = event.data.split('\r\n');
-                msgs.forEach(raw => {
-                    if (!raw) return;
+                event.data.split('\r\n').forEach(raw => {
                     if (raw.startsWith('PING')) { twitchWs.send('PONG :tmi.twitch.tv'); return; }
-                    if (!raw.includes('PRIVMSG')) return;
-
-                    let tags = {};
-                    let line = raw;
-                    if (line.startsWith('@')) {
-                        const spaceIdx = line.indexOf(' ');
-                        const tagString = line.substring(1, spaceIdx);
-                        tagString.split(';').forEach(t => {
-                            const [k, v] = t.split('=');
-                            tags[k] = v;
-                        });
-                        line = line.substring(spaceIdx + 1);
-                    }
-                    const matchUser = line.match(/:([^!]+)!/);
-                    const matchText = line.match(/PRIVMSG #[a-zA-Z0-9_]+ :(.+)/);
-
-                    if (matchUser && matchText) {
-                        const user = tags['display-name'] || matchUser[1];
-                        const text = matchText[1].trim();
-                        
-                        let parsedTwitch = parseTwitchEmotes(text, tags['emotes']);
-                        let html = parseMarkdown(parsedTwitch);
-                        
-                        chatMessages.value.push({ username: user, html: html, color: tags['color'] || '#9146FF' });
-                        if (chatMessages.value.length > 100) chatMessages.value.shift();
-                        
-                        if (currentTab.value === 'chat') {
-                            setTimeout(() => { const list = document.getElementById('twitch-chat-list'); if (list) list.scrollTo({ top: list.scrollHeight, behavior: 'smooth' }); }, 50);
-                        }
-                    }
+                    parseIrcMessage(raw);
                 });
             };
-        };
-
-        const parseTwitchEmotes = (text, emotesTag) => {
-            if (!emotesTag) return text;
-            let replacements = [];
-            emotesTag.split('/').forEach(emote => {
-                let [id, positions] = emote.split(':');
-                if(positions) {
-                    positions.split(',').forEach(pos => {
-                        let [start, end] = pos.split('-');
-                        replacements.push({ id, start: parseInt(start), end: parseInt(end) });
-                    });
-                }
-            });
-            replacements.sort((a, b) => b.start - a.start);
-            let html = text;
-            replacements.forEach(r => {
-                let before = html.substring(0, r.start);
-                let after = html.substring(r.end + 1);
-                let img = `<img src="https://static-cdn.jtvnw.net/emoticons/v2/${r.id}/default/dark/1.0" class="twitch-emote" alt="emote">`;
-                html = before + img + after;
-            });
-            return html;
         };
 
         const sendTwitchChatMessage = () => {
@@ -511,7 +525,7 @@ createApp({
             twitchWs.send(`PRIVMSG #codemiko :${chatInput.value}`);
             chatMessages.value.push({ username: twitchUsername.value || 'You', html: parseMarkdown(chatInput.value), color: '#9146FF' });
             chatInput.value = '';
-            setTimeout(() => { const list = document.getElementById('twitch-chat-list'); if (list) list.scrollTo({ top: list.scrollHeight, behavior: 'smooth' }); }, 50);
+            setTimeout(() => { const list = document.getElementById('twitch-chat-list'); if (list) list.scrollTo({ top: list.scrollHeight, behavior: 'smooth' }); }, 100);
         };
 
         const nextVod = () => { if (currentVodIndex.value < recentVods.value.length - 1) currentVodIndex.value++; };
@@ -526,7 +540,7 @@ createApp({
             setTimeout(() => {
                 const b = document.getElementById('gerald-msgs');
                 if (b) { b.scrollTo({ top: b.scrollHeight, behavior: 'smooth' }); }
-            }, 50);
+            }, 100);
         };
 
         const sortData = (filterKey) => {
