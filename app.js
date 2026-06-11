@@ -825,6 +825,13 @@ createApp({
             if (session?.user) { currentUser.value = session.user; loadGeraldHistory(); }
             load7TVEmotes();
             loadData(); checkLive();
+
+            setTimeout(() => {
+                splashOpacity.value = 0;
+                setTimeout(() => {
+                    splashVisible.value = false;
+                }, 400);
+            }, 2500);
         });
 
         return { 
