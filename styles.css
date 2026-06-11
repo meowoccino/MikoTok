@@ -1,9 +1,9 @@
-:root { 
-    --bg-color: #f3f4f6; 
+:root, [data-theme="dark"], body, html { 
+    --bg-color: #f8f9fa; /* Enforce light grey background */
     --card-bg: #ffffff; 
     --primary: #9146FF; 
     --primary-light: #a970ff; 
-    --text-main: #111827; 
+    --text-main: #000000; /* Enforce black text */
     --text-muted: #6b7280; 
     --border-color: #e5e7eb; 
     --danger: #ef4444; 
@@ -11,20 +11,21 @@
     --success: #10b981; 
     --gerald: #0ea5e9; 
     --discord: #5865F2; 
-    --youtube: #9146FF; /* Mockup uses primary color for youtube toggle */
+    --youtube: #9146FF;
     --reddit: #ff4500;
     --nav-bg: rgba(255, 255, 255, 0.95); 
     --modal-bg: #ffffff;
 }
 
-[data-theme="dark"], .gerald-theme {
-    --bg-color: #050505;
-    --card-bg: #111113;
-    --text-main: #ffffff;
-    --text-muted: #a1a1aa;
-    --border-color: #27272a;
-    --nav-bg: rgba(15, 15, 18, 0.95);
-    --modal-bg: #0a0a0c;
+/* ONLY Gerald tab gets the dark theme */
+.gerald-theme {
+    --bg-color: #050505 !important;
+    --card-bg: #111113 !important;
+    --text-main: #ffffff !important;
+    --text-muted: #a1a1aa !important;
+    --border-color: #27272a !important;
+    --nav-bg: rgba(15, 15, 18, 0.95) !important;
+    --modal-bg: #0a0a0c !important;
 }
 
 * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; font-family: 'Inter', sans-serif; }
@@ -47,10 +48,9 @@ body, html { margin: 0; padding: 0; height: 100%; height: 100dvh; width: 100%; m
 .progress-fill { position: absolute; left: 0; top: 0; height: 100%; width: 50%; background: var(--primary); animation: load 1s infinite linear; }
 @keyframes load { 0% { transform: translateX(-100%); } 100% { transform: translateX(200%); } }
 
-.app-header { width: 100%; padding: 45px 20px 15px; display: flex; align-items: center; justify-content: space-between; z-index: 100; position: absolute; top: 0; left: 0; background: linear-gradient(to bottom, var(--bg-color) 70%, transparent 100%); pointer-events: none; transition: transform 0.3s; transform: translateZ(0); }
+.app-header { width: 100%; padding: 45px 20px 15px; display: flex; align-items: center; justify-content: space-between; z-index: 100; position: absolute; top: 0; left: 0; background: var(--bg-color); border-bottom: 1px solid var(--border-color); transition: transform 0.3s; transform: translateZ(0); }
 .app-header.hidden { transform: translateY(-100%); }
 .app-header.gerald-hidden { display: none; }
-.app-header > * { pointer-events: auto; }
 
 .header-title { color: var(--text-main); font-family: 'Outfit', sans-serif;}
 .header-status-wrapper { position: relative; width: 40px; height: 40px; display: flex; align-items: center; justify-content: center; text-decoration: none; }
@@ -72,37 +72,38 @@ body, html { margin: 0; padding: 0; height: 100%; height: 100dvh; width: 100%; m
 .scroll-area { height: 100%; width: 100%; overflow-y: auto; scroll-behavior: smooth; padding: 100px 20px 90px; }
 .scroll-area::-webkit-scrollbar { display: none; }
 
-/* Home View */
-.hero-section { margin-bottom: 25px; }
+/* Home View Layout */
+.hero-section { background: var(--card-bg); border-radius: 16px; padding: 10px; margin-bottom: 25px; box-shadow: 0 4px 15px rgba(0,0,0,0.03); border: 1px solid var(--border-color); }
 .video-container { position: relative; width: 100%; aspect-ratio: 16/9; background: #000; border-radius: 12px; overflow: hidden; }
 .video-container iframe { position: absolute; inset: 0; width: 100%; height: 100%; border: none; }
-.hero-metadata { display: flex; justify-content: space-between; align-items: flex-start; padding-top: 15px; }
+.hero-metadata { display: flex; justify-content: space-between; align-items: center; padding: 15px 5px 5px; }
 .viewer-pill { background: rgba(239, 68, 68, 0.1); color: var(--danger); padding: 6px 12px; border-radius: 20px; font-size: 11px; font-weight: 800; display: flex; align-items: center; gap: 4px; }
 .carousel-controls { display: flex; gap: 10px; }
-.carousel-btn { background: var(--card-bg); border: 1px solid var(--border-color); width: 32px; height: 32px; border-radius: 50%; display: flex; align-items: center; justify-content: center; cursor: pointer; color: var(--text-main); }
+.carousel-btn { background: var(--bg-color); border: 1px solid var(--border-color); width: 32px; height: 32px; border-radius: 50%; display: flex; align-items: center; justify-content: center; cursor: pointer; color: var(--text-main); }
 .carousel-btn.hidden-arrow { opacity: 0; pointer-events: none; }
 
 .clips-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; }
 .filter-btn-tiny { background: var(--card-bg); border: 1px solid var(--border-color); color: var(--text-main); padding: 8px 12px; border-radius: 8px; font-size: 12px; font-weight: 700; display: flex; align-items: center; gap: 6px; cursor: pointer; box-shadow: 0 2px 5px rgba(0,0,0,0.02); }
 
-.clip-list-item { display: flex; gap: 15px; align-items: center; margin-bottom: 20px; cursor: pointer; }
-.clip-thumb-wrapper { position: relative; width: 120px; aspect-ratio: 16/9; border-radius: 8px; overflow: hidden; flex-shrink: 0; background: #000; }
-.clip-thumb-wrapper img { width: 100%; height: 100%; object-fit: cover; opacity: 0.9; }
+/* This fixes the list to look like the mockup */
+.clip-list-item { display: flex; flex-direction: row; gap: 15px; align-items: center; margin-bottom: 20px; cursor: pointer; width: 100%; }
+.clip-thumb-wrapper { position: relative; width: 140px; height: 80px; border-radius: 8px; overflow: hidden; flex-shrink: 0; background: #000; }
+.clip-thumb-wrapper img { width: 100%; height: 100%; object-fit: cover; }
 .duration-badge { position: absolute; bottom: 4px; right: 4px; background: rgba(0,0,0,0.8); color: white; font-size: 10px; font-weight: 700; padding: 2px 6px; border-radius: 4px; }
-.miko-metadata { flex: 1; min-width: 0; }
-.author-name { font-weight: 700; font-size: 14px; color: var(--text-main); display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; line-height: 1.3; }
-.clip-stats { font-size: 11px; font-weight: 500; color: var(--text-muted); display: flex; align-items: center; margin-top: 6px; }
+.miko-metadata { flex: 1; display: flex; flex-direction: column; justify-content: center; min-width: 0; }
+.author-name { font-weight: 700; font-size: 14px; color: var(--text-main); display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; line-height: 1.3; margin-bottom: 4px; }
+.clip-stats { font-size: 11px; font-weight: 500; color: var(--text-muted); display: flex; justify-content: space-between; align-items: center; }
 
-/* Clip Modal */
+/* Clip Modal - Removes the phantom player */
 .clip-modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.9); z-index: 3000; display: flex; justify-content: center; align-items: center; opacity: 0; pointer-events: none; transition: 0.3s; }
 .clip-modal-overlay.open { opacity: 1; pointer-events: auto; }
-.clip-modal-content { width: 100%; max-width: 540px; aspect-ratio: 16/9; background: #000; }
-.clip-modal-content iframe { width: 100%; height: 100%; border: none; }
+.clip-modal-content { position: relative; width: 100%; max-width: 540px; aspect-ratio: 16/9; background: #000; }
+.clip-modal-content iframe { position: absolute; top: 0; left: 0; width: 100%; height: 100%; border: none; }
 
 /* Chat View */
-.chat-wrapper { display: flex; flex-direction: column; height: 100%; padding-top: 50px; background: var(--bg-color); }
-.chat-header { padding: 15px 20px; background: var(--bg-color); border-bottom: 1px solid var(--border-color); flex-shrink: 0; }
-.twitch-chat-list { flex: 1; overflow-y: auto; padding: 15px 20px 90px; display: flex; flex-direction: column; gap: 10px; scroll-behavior: smooth; }
+.chat-wrapper { display: flex; flex-direction: column; height: 100%; padding-top: 100px; background: var(--bg-color); }
+.chat-header { padding: 0 20px 15px; background: var(--bg-color); flex-shrink: 0; }
+.twitch-chat-list { flex: 1; overflow-y: auto; padding: 0 20px 90px; display: flex; flex-direction: column; gap: 10px; scroll-behavior: smooth; }
 .twitch-chat-list::-webkit-scrollbar { display: none; }
 .twitch-msg-row { font-size: 14px; line-height: 1.4; word-wrap: break-word; }
 .twitch-username { font-weight: 700; margin-right: 8px; }
@@ -112,21 +113,21 @@ body, html { margin: 0; padding: 0; height: 100%; height: 100dvh; width: 100%; m
 .chat-login-prompt { display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100%; color: var(--text-muted); font-weight: 600; text-align: center; }
 .twitch-login-btn { margin-top: 15px; background: var(--primary); color: white; padding: 12px 24px; border-radius: 20px; font-weight: 700; border: none; cursor: pointer; }
 
-.custom-chat-input-area { padding: 10px 20px calc(100px + env(safe-area-inset-bottom, 0px)) 20px; display: flex; gap: 10px; border-top: 1px solid var(--border-color); background: var(--bg-color); align-items: center; flex-shrink: 0; position: absolute; bottom: 0; width: 100%; }
+.custom-chat-input-area { padding: 10px 20px calc(100px + env(safe-area-inset-bottom, 0px)) 20px; display: flex; gap: 10px; background: var(--bg-color); align-items: center; flex-shrink: 0; position: absolute; bottom: 0; width: 100%; }
 .custom-chat-input { flex: 1; background: var(--card-bg); border: 1px solid var(--border-color); padding: 12px 15px; border-radius: 25px; outline: none; font-size: 14px; color: var(--text-main); box-shadow: 0 2px 10px rgba(0,0,0,0.02); }
 .icon-btn { background: transparent; border: none; color: var(--text-muted); display: flex; align-items: center; justify-content: center; width: 40px; height: 40px; cursor: pointer; border-radius: 50%; }
 .icon-btn:active:not(:disabled) { background: rgba(0,0,0,0.05); color: var(--primary); }
 
 /* Feeds View */
-.feed-layout { display: flex; flex-direction: column; height: 100%; padding-top: 50px; background: var(--bg-color); }
-.feed-header { padding: 15px 20px; display: flex; flex-direction: column; gap: 15px; border-bottom: 1px solid var(--border-color); flex-shrink: 0; }
-.feed-toggle { display: flex; background: var(--border-color); border-radius: 12px; padding: 4px; }
-.feed-toggle button { flex: 1; padding: 10px; border-radius: 8px; border: none; background: transparent; color: var(--text-muted); font-weight: 700; font-size: 13px; cursor: pointer; transition: 0.2s; }
-.feed-toggle button.active { background: var(--card-bg); color: var(--primary); box-shadow: 0 2px 5px rgba(0,0,0,0.05); }
+.feed-layout { display: flex; flex-direction: column; height: 100%; padding-top: 100px; background: var(--bg-color); }
+.feed-header { padding: 0 20px 15px; display: flex; flex-direction: column; gap: 15px; flex-shrink: 0; }
+.feed-toggle { display: flex; background: var(--border-color); border-radius: 12px; padding: 4px; max-width: 200px; }
+.feed-toggle button { flex: 1; padding: 8px; border-radius: 8px; border: none; background: transparent; color: var(--text-muted); font-weight: 700; font-size: 12px; cursor: pointer; transition: 0.2s; }
+.feed-toggle button.active { background: var(--primary); color: #fff; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
 
-.feed-scroll-container { flex: 1; overflow-y: auto; padding: 20px 20px 100px; display: flex; flex-direction: column; gap: 20px; }
+.feed-scroll-container { flex: 1; overflow-y: auto; padding: 0 20px 100px; display: flex; flex-direction: column; gap: 20px; }
 .feed-scroll-container::-webkit-scrollbar { display: none; }
-.feed-item { background: var(--card-bg); border-radius: 16px; border: 1px solid var(--border-color); overflow: hidden; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05); }
+.feed-item { background: var(--card-bg); border-radius: 16px; border: 1px solid var(--border-color); overflow: hidden; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.03); }
 .yt-thumb-wrapper { position: relative; cursor: pointer; }
 .yt-thumb-wrapper img { width: 100%; display: block; }
 .play-overlay { position: absolute; inset: 0; background: rgba(0,0,0,0.4); display: flex; justify-content: center; align-items: center; }
@@ -146,7 +147,7 @@ body, html { margin: 0; padding: 0; height: 100%; height: 100dvh; width: 100%; m
 .reddit-actions { display: flex; gap: 16px; border-top: 1px solid var(--border-color); padding-top: 12px; color: var(--text-muted); font-size: 12px; font-weight: 700; text-decoration: none;}
 
 /* Gerald View */
-.gerald-container { display: flex; flex-direction: column; height: 100%; padding-bottom: 0px; background: #050505; }
+.gerald-container { display: flex; flex-direction: column; height: 100%; padding-bottom: 0px; }
 .gerald-header { padding: 45px 20px 0; display: flex; align-items: center; flex-shrink: 0; }
 .gerald-messages { flex: 1; overflow-y: auto; padding: 20px 20px 90px; display: flex; flex-direction: column; gap: 12px; }
 .gerald-messages::-webkit-scrollbar { display: none; }
