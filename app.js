@@ -443,7 +443,7 @@ createApp({
         };
 
         const processEmotes = (text) => {
-            let out = text.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+            let out = text.replace(/&/g, '&').replace(/</g, '<').replace(/>/g, '>');
             const words = out.split(' ');
             for (let i = 0; i < words.length; i++) {
                 const cleanWord = words[i].replace(/^:|:$/g, '');
@@ -485,7 +485,7 @@ createApp({
 
                 sbClient.from('twitch_chat_logs').insert({ username: user, message: text, color: color, badges: badges }).then();
 
-                let html = text.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+                let html = text.replace(/&/g, '&').replace(/</g, '<').replace(/>/g, '>');
                 if (tags['emotes']) {
                     const replacements = [];
                     tags['emotes'].split('/').forEach(e => {
@@ -768,6 +768,7 @@ createApp({
             twitchAuthUrl.value = 'https://id.twitch.tv/oauth2/authorize?client_id=' + clientId + '&redirect_uri=' + encodeURIComponent('https://meowoccino.github.io/MikoTok/') + '&response_type=token&scope=chat:read+chat:edit&force_verify=true';
             
             updateThemeClass();
+            
             if (window.location.hash.includes('access_token')) {
                 const params = new URLSearchParams(window.location.hash.substring(1));
                 if (params.get('access_token')) {
@@ -775,26 +776,36 @@ createApp({
                     localStorage.setItem('tw_chat_token', twitchChatToken.value);
                     window.history.replaceState({}, document.title, window.location.pathname + '#chat');
                     currentTab.value = 'chat';
-                    
-                    fetch('https://id.twitch.tv/oauth2/validate', { headers: { 'Authorization': 'OAuth ' + twitchChatToken.value } })
-                        .then(res => res.json())
-                        .then(data => {
-                            if (data.login) {
-                                twitchUsername.value = data.login;
-                                connectTwitchChat();
-                            } else {
-                                twitchChatToken.value = null; 
-                                localStorage.removeItem('tw_chat_token');
-                                connectTwitchChat();
-                            }
-                        }).catch(e => { console.error(e); connectTwitchChat(); });
-                } else { connectTwitchChat(); }
-            } else { connectTwitchChat(); }
+                }
+            }
+
+            if (twitchChatToken.value) {
+                fetch('https://id.twitch.tv/oauth2/validate', { headers: { 'Authorization': 'OAuth ' + twitchChatToken.value } })
+                    .then(res => res.json())
+                    .then(data => {
+                        if (data.login) {
+                            twitchUsername.value = data.login;
+                            localStorage.setItem('tw_username', data.login);
+                            connectTwitchChat();
+                        } else {
+                            twitchChatToken.value = null; 
+                            twitchUsername.value = null;
+                            localStorage.removeItem('tw_chat_token');
+                            localStorage.removeItem('tw_username');
+                            connectTwitchChat();
+                        }
+                    }).catch(e => { console.error(e); connectTwitchChat(); });
+            } else {
+                connectTwitchChat();
+            }
 
             const { data: { session } } = await sbClient.auth.getSession();
             if (session?.user) { currentUser.value = session.user; loadGeraldHistory(); }
             load7TVEmotes();
             loadData(); checkLive();
+
+            setInterval(loadData, 21600000);
+            setInterval(checkLive, 60000); 
 
             setTimeout(() => {
                 splashOpacity.value = 0;
@@ -806,7 +817,7 @@ createApp({
             hostname, splashVisible, splashOpacity, currentTab, appTheme, toggleTheme, clips, modals, isLive, toast, currentUser, loginEmail, loginPass, apiConfig, geraldInput, geraldMessages, isGeraldTyping, talkToGerald, logoSvg, syncState, wipeState, logoutState, isHeaderVisible, handleScroll, handleModalTouchStart, handleModalTouchMove, handleModalTouchEnd, currentFilter, activeFilterLabel, isFilterMenuOpen, closeFilterMenu, applyFilter, parseMarkdown, recentVods, currentVodIndex, nextVod, prevVod, customEmotes, showEmotePicker, insertEmote, clearGeraldHistory, handleGeraldEnter, toggleEmotes, toggleMinigames, closePickers, nukeCache, activeClipId, tabOffset, switchTab, handleSwipeStart, handleSwipeEnd, playClip, selectedClip, showMinigames, runSync,
             chatMessages, chatInput, twitchChatToken, twitchAuthUrl, twitchUsername, sendTwitchChatMessage,
             handleLogin: async () => { const email = loginEmail.value.includes('@') ? loginEmail.value : `${loginEmail.value}@miko.com`; const { data } = await sbClient.auth.signInWithPassword({ email, password: loginPass.value }); if(data.user) { currentUser.value = data.user; modals.value.profile = false; loadGeraldHistory(); } }, 
-            handleLogout: () => { if (logoutState.value !== 'idle') return; logoutState.value = 'logging_out'; setTimeout(() => { sbClient.auth.signOut(); currentUser.value = null; geraldMessages.value = [{role:'gerald', content: ''}]; modals.value.profile = false; logoutState.value = 'idle'; }, 1500); },
+            handleLogout: () => { if (logoutState.value !== 'idle') return; logoutState.value = 'logging_out'; setTimeout(() => { sbClient.auth.signOut(); currentUser.value = null; geraldMessages.value = [{role:'gerald', content: ''}]; localStorage.removeItem('tw_chat_token'); localStorage.removeItem('tw_username'); twitchChatToken.value = null; twitchUsername.value = null; if (twitchWs) twitchWs.close(); modals.value.profile = false; logoutState.value = 'idle'; }, 1500); },
             optimizeTwitchImg: (u) => u ? u.replace('%{width}', '480').replace('%{height}', '270') : '', 
             formatViews: (v) => v ? v.toLocaleString() : '0', 
             formatDate: (d) => new Date(d).toLocaleDateString([], {month:'short', day:'numeric'})
