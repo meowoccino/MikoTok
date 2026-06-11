@@ -223,11 +223,13 @@ const GeraldView = {
             <div class="gerald-messages" id="gerald-msgs" @click="$emit('close-pickers')">
                 <template v-for="(m, i) in geraldMessages" :key="i">
                     <div v-if="i === 0 && m.role === 'gerald'" class="terminal-intro">
-                        <div class="terminal-text startup-anim">> Human detected.<br>> State your inquiry.</div>
-                        <div class="gerald-system-card startup-anim-delay">
-                            <div class="gerald-sys-row"><span class="sys-label">CORE:</span> <span class="sys-value">ONLINE</span></div>
-                            <div class="gerald-sys-row"><span class="sys-label">MOOD:</span> <span class="sys-value">SARCASTIC</span></div>
-                            <div class="gerald-sys-row"><span class="sys-label">PATIENCE:</span> <span class="sys-value">125ms</span></div>
+                        <div class="terminal-text startup-anim">
+                            &gt; System ready.<br>
+                            &gt; Mood: Sarcastic<br>
+                            &gt; Patience: 125ms<br>
+                            --------------------<br>
+                            Human detected.<br>
+                            What do you want?
                         </div>
                     </div>
                     <div v-else class="chat-bubble" :class="m.role" v-html="parseMarkdown(m.content)"></div>
@@ -276,9 +278,11 @@ const HomeView = {
                         <div class="dot"></div><span>{{ recentVods[currentVodIndex] ? ('VOD • ' + recentVods[currentVodIndex].date) : 'PAST BROADCAST' }}</span>
                     </div>
                 </div>
-                <div class="video-container">
-                    <iframe v-if="currentVodIndex === -1" id="miko-live-player" :src="'https://player.twitch.tv/?channel=codemiko&parent=' + hostname + '&autoplay=true&muted=true'" allow="autoplay; fullscreen" allowfullscreen loading="lazy"></iframe>
-                    <iframe v-else-if="recentVods && recentVods[currentVodIndex]" :src="'https://player.twitch.tv/?video=' + recentVods[currentVodIndex].id + '&parent=' + hostname + '&autoplay=true&muted=true'" allow="autoplay; fullscreen" allowfullscreen loading="lazy"></iframe>
+                <div class="video-wrapper-outer">
+                    <div class="video-container">
+                        <iframe v-if="currentVodIndex === -1" id="miko-live-player" :src="'https://player.twitch.tv/?channel=codemiko&parent=' + hostname + '&autoplay=true&muted=true'" allow="autoplay; fullscreen" allowfullscreen loading="lazy"></iframe>
+                        <iframe v-else-if="recentVods && recentVods[currentVodIndex]" :src="'https://player.twitch.tv/?video=' + recentVods[currentVodIndex].id + '&parent=' + hostname + '&autoplay=false'" allow="autoplay; fullscreen" allowfullscreen loading="lazy"></iframe>
+                    </div>
                 </div>
                 <div class="carousel-controls" v-if="recentVods && recentVods.length > 0 && !isLive" style="margin-top: 12px; justify-content: flex-end;">
                     <button class="carousel-btn" :class="{ 'hidden-arrow': currentVodIndex <= 0 }" @click.stop="$emit('prev-vod')"><span class="material-symbols-rounded">chevron_left</span></button>
@@ -326,7 +330,7 @@ createApp({
         
         const tabOffset = computed(() => {
             const index = tabs.indexOf(currentTab.value);
-            return -(index * 25); 
+            return -(index * 100); 
         });
 
         const appTheme = ref(localStorage.getItem('miko_theme') || 'light');
