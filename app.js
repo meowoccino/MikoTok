@@ -124,10 +124,13 @@ const ProfileModal = {
 };
 
 const ChatView = {
-    props: ['currentTab', 'chatMessages', 'chatInput', 'isLoggedIn', 'twitchAuthUrl'],
+    props: ['currentTab', 'chatMessages', 'chatInput', 'isLoggedIn', 'twitchAuthUrl', 'customEmotes'],
+    data() {
+        return { showEmotes: false };
+    },
     template: `
         <div class="chat-wrapper">
-            <div class="twitch-chat-list" id="twitch-chat-list">
+            <div class="twitch-chat-list" id="twitch-chat-list" @click="showEmotes = false">
                 <div v-if="!isLoggedIn" class="chat-login-prompt">
                     <span class="material-symbols-rounded" style="font-size:48px; color:var(--primary); margin-bottom:10px;">login</span>
                     <p style="color:var(--text-main); font-weight:700; margin-bottom:15px;">Login to chat and use emotes.</p>
@@ -138,8 +141,18 @@ const ChatView = {
                     <span class="twitch-text" v-html="msg.html"></span>
                 </div>
             </div>
+            
+            <transition name="tray">
+                <div class="chat-tray-container" v-show="showEmotes">
+                    <img v-for="(emote, name) in customEmotes" :key="name" :src="emote.url ? emote.url : 'https://cdn.discordapp.com/emojis/' + emote.id + '.' + (emote.animated ? 'gif' : 'png') + '?size=44'" class="emote-picker-img" @click="$emit('insert-chat-emote', ':' + name + ':'); showEmotes = false;">
+                </div>
+            </transition>
+            
             <div class="custom-chat-input-area">
-                <input type="text" class="custom-chat-input" placeholder="Send a message..." :value="chatInput" @input="$emit('update-input', $event.target.value)" @keydown.enter="$emit('send-chat')" :disabled="!isLoggedIn">
+                <button class="emote-toggle-btn" style="padding:0; width:36px; height:36px; justify-content:center; flex-shrink:0; margin-right:5px;" @click="showEmotes = !showEmotes" :disabled="!isLoggedIn">
+                    <span class="material-symbols-rounded" :style="{ color: showEmotes ? 'var(--primary)' : 'inherit' }">mood</span>
+                </button>
+                <input type="text" class="custom-chat-input" placeholder="Send a message..." :value="chatInput" @input="$emit('update-input', $event.target.value)" @keydown.enter="$emit('send-chat')" :disabled="!isLoggedIn" @focus="showEmotes = false">
                 <button class="icon-btn" @click="$emit('send-chat')" :disabled="!isLoggedIn || !chatInput.trim()">
                     <span class="material-symbols-rounded" style="font-size: 20px;">send</span>
                 </button>
@@ -210,16 +223,21 @@ const GeraldView = {
     template: `
         <div class="gerald-container">
             <div class="gerald-header" @click="$emit('close-pickers')">
-                <img src="gerald.png" class="gerald-avatar" alt="Gerald">
-                <div class="gerald-title-block">
-                    <span class="gerald-name-text">Gerald OS</span>
-                    <div :class="apiConnected ? 'pulse-dot-live' : 'pulse-dot-offline'"></div>
+                <div class="gerald-avatar-wrapper">
+                    <img src="gerald.png" class="gerald-avatar" alt="Gerald">
+                    <div class="gerald-title-block">
+                        <span class="gerald-name-text">Gerald OS</span>
+                        <div :class="apiConnected ? 'pulse-dot-live' : 'pulse-dot-offline'"></div>
+                    </div>
                 </div>
             </div>
             <div class="gerald-messages" id="gerald-msgs" @click="$emit('close-pickers')">
                 <template v-for="(m, i) in geraldMessages" :key="i">
                     <div v-if="i === 0 && m.role === 'gerald'" class="terminal-intro">
-                        <div class="terminal-text startup-anim">> Human detected.<br>> What do you want?</div>
+                        <div class="terminal-text startup-anim">
+                            > Human detected.<br>
+                            > What do you want?
+                        </div>
                     </div>
                     <div v-else class="chat-bubble" :class="m.role" v-html="parseMarkdown(m.content)"></div>
                 </template>
@@ -289,7 +307,7 @@ const HomeView = {
                 <div class="clip-list-item" v-for="clip in clips" :key="clip.id" @click="$emit('play-clip', clip)">
                     <div class="clip-thumb-wrapper">
                         <img v-if="activeClipId !== clip.id" :src="clip.thumbnail_url ? optimizeTwitchImg(clip.thumbnail_url) : ''" loading="lazy" alt="Thumbnail">
-                        <iframe v-else :src="'https://clips.twitch.tv/embed?clip=' + clip.id + '&parent=' + hostname + '&autoplay=true&muted=false'" allow="autoplay; fullscreen" allowfullscreen></iframe>
+                        <iframe v-else :src="'https://clips.twitch.tv/embed?clip=' + clip.id + '&parent=' + hostname + '&autoplay=true&muted=false'" allow="autoplay; fullscreen" allowfullscreen style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: 5;"></iframe>
                         <div class="duration-badge" v-if="activeClipId !== clip.id">0:45</div>
                     </div>
                     <div class="miko-metadata">
@@ -343,6 +361,7 @@ createApp({
         const chatMessages = ref([]);
         const chatInput = ref('');
         const twitchChatToken = ref(localStorage.getItem('tw_chat_token') || null);
+        const twitchUsername = ref(null);
         const twitchAuthUrl = ref('');
         let twitchWs = null;
 
@@ -398,10 +417,14 @@ createApp({
                 twitchWs.send('CAP REQ :twitch.tv/tags twitch.tv/commands');
                 if (twitchChatToken.value) {
                     twitchWs.send(`PASS oauth:${twitchChatToken.value}`);
-                    fetch('https://id.twitch.tv/oauth2/validate', { headers: { 'Authorization': `OAuth ${twitchChatToken.value}` } })
+                    fetch('https://id.twitch.tv/oauth2/validate', { headers: { 'Authorization': 'OAuth ' + twitchChatToken.value } })
                         .then(res => res.json())
                         .then(data => {
-                            if(data.login) { twitchWs.send(`NICK ${data.login}`); twitchWs.send('JOIN #codemiko'); }
+                            if(data.login) { 
+                                twitchUsername.value = data.login;
+                                twitchWs.send(`NICK ${data.login}`); 
+                                twitchWs.send('JOIN #codemiko'); 
+                            }
                         }).catch(() => { twitchWs.send('NICK justinfan123'); twitchWs.send('JOIN #codemiko'); });
                 } else {
                     twitchWs.send('PASS oauth:anonymous');
@@ -412,40 +435,70 @@ createApp({
 
             twitchWs.onmessage = (event) => {
                 const msgs = event.data.split('\r\n');
-                msgs.forEach(message => {
-                    if (message.startsWith('PING')) { twitchWs.send('PONG :tmi.twitch.tv'); return; }
-                    if (message.includes('PRIVMSG')) {
-                        let tags = {}, user = 'User', text = '';
-                        if (message.startsWith('@')) {
-                            let parts = message.split(' :');
-                            let tagString = parts[0].substring(1);
-                            message = parts.slice(1).join(' :');
-                            tagString.split(';').forEach(t => { let [k,v] = t.split('='); tags[k] = v; });
-                        }
-                        const matchUser = message.match(/:([^!]+)!/);
-                        const matchText = message.match(/PRIVMSG #[a-zA-Z0-9_]+ :(.+)/);
-                        if (matchUser && matchText) {
-                            user = tags['display-name'] || matchUser[1];
-                            text = matchText[1].trim();
-                            
-                            let html = parseMarkdown(text);
-                            
-                            chatMessages.value.push({ username: user, html: html, color: tags['color'] || '#9146FF' });
-                            if (chatMessages.value.length > 100) chatMessages.value.shift();
-                            
-                            if (currentTab.value === 'chat') {
-                                nextTick(() => { const list = document.getElementById('twitch-chat-list'); if (list) list.scrollTop = list.scrollHeight; });
-                            }
+                msgs.forEach(raw => {
+                    if (!raw) return;
+                    if (raw.startsWith('PING')) { twitchWs.send('PONG :tmi.twitch.tv'); return; }
+                    if (!raw.includes('PRIVMSG')) return;
+
+                    let tags = {};
+                    let line = raw;
+                    if (line.startsWith('@')) {
+                        const spaceIdx = line.indexOf(' ');
+                        const tagString = line.substring(1, spaceIdx);
+                        tagString.split(';').forEach(t => {
+                            const [k, v] = t.split('=');
+                            tags[k] = v;
+                        });
+                        line = line.substring(spaceIdx + 1);
+                    }
+                    const matchUser = line.match(/:([^!]+)!/);
+                    const matchText = line.match(/PRIVMSG #[a-zA-Z0-9_]+ :(.+)/);
+
+                    if (matchUser && matchText) {
+                        const user = tags['display-name'] || matchUser[1];
+                        const text = matchText[1].trim();
+
+                        let parsedTwitch = parseTwitchEmotes(text, tags['emotes']);
+                        let html = parseMarkdown(parsedTwitch);
+                        
+                        chatMessages.value.push({ username: user, html: html, color: tags['color'] || '#9146FF' });
+                        if (chatMessages.value.length > 100) chatMessages.value.shift();
+                        
+                        if (currentTab.value === 'chat') {
+                            nextTick(() => { const list = document.getElementById('twitch-chat-list'); if (list) list.scrollTop = list.scrollHeight; });
                         }
                     }
                 });
             };
         };
 
+        const parseTwitchEmotes = (text, emotesTag) => {
+            if (!emotesTag) return text;
+            let replacements = [];
+            emotesTag.split('/').forEach(emote => {
+                let [id, positions] = emote.split(':');
+                if(positions) {
+                    positions.split(',').forEach(pos => {
+                        let [start, end] = pos.split('-');
+                        replacements.push({ id, start: parseInt(start), end: parseInt(end) });
+                    });
+                }
+            });
+            replacements.sort((a, b) => b.start - a.start);
+            let html = text;
+            replacements.forEach(r => {
+                let before = html.substring(0, r.start);
+                let after = html.substring(r.end + 1);
+                let img = `<img src="https://static-cdn.jtvnw.net/emoticons/v2/${r.id}/default/dark/1.0" class="twitch-emote" alt="emote">`;
+                html = before + img + after;
+            });
+            return html;
+        };
+
         const sendTwitchChatMessage = () => {
             if (!chatInput.value.trim() || !twitchWs || !twitchChatToken.value) return;
             twitchWs.send(`PRIVMSG #codemiko :${chatInput.value}`);
-            chatMessages.value.push({ username: 'You', html: parseMarkdown(chatInput.value), color: '#9146FF' });
+            chatMessages.value.push({ username: twitchUsername.value || 'You', html: parseMarkdown(chatInput.value), color: '#9146FF' });
             chatInput.value = '';
             nextTick(() => { const list = document.getElementById('twitch-chat-list'); if (list) list.scrollTop = list.scrollHeight; });
         };
@@ -457,8 +510,8 @@ createApp({
         const closeFilterMenu = () => { isFilterMenuOpen.value = false; };
         
         const insertEmote = (name) => {
-            const el = currentTab.value === 'chat' ? document.querySelector('.custom-chat-input') : document.getElementById('gerald-txt-input');
-            if (el) { el.value += `:${name}: `; if (currentTab.value === 'chat') { chatInput.value = el.value; } else { geraldInput.value = el.value; } }
+            const inputEl = document.getElementById('gerald-txt-input'); 
+            if (inputEl) { inputEl.value += `:${name}: `; geraldInput.value = inputEl.value; } 
         };
 
         const playClip = (clip) => { activeClipId.value = clip.id; };
@@ -466,7 +519,7 @@ createApp({
         const scrollToBottom = () => {
             const b = document.getElementById('gerald-msgs');
             if (!b) return;
-            nextTick(() => { b.scrollTo({ top: b.scrollHeight }); setTimeout(() => { b.scrollTop = b.scrollHeight; }, 50); setTimeout(() => { b.scrollTop = b.scrollHeight; }, 200); });
+            nextTick(() => { b.scrollTo({ top: b.scrollHeight, behavior: 'smooth' }); setTimeout(() => { b.scrollTop = b.scrollHeight; }, 50); setTimeout(() => { b.scrollTop = b.scrollHeight; }, 200); });
         };
 
         const sortData = (filterKey) => {
@@ -649,8 +702,14 @@ createApp({
                     currentTab.value = 'chat';
                     
                     fetch('https://id.twitch.tv/oauth2/validate', { headers: { 'Authorization': 'OAuth ' + twitchChatToken.value } })
-                        .then(res => {
-                            if (!res.ok) { twitchChatToken.value = null; localStorage.removeItem('tw_chat_token'); }
+                        .then(res => res.json())
+                        .then(data => {
+                            if (data.login) {
+                                twitchUsername.value = data.login;
+                            } else {
+                                twitchChatToken.value = null; 
+                                localStorage.removeItem('tw_chat_token');
+                            }
                         }).catch(e => console.error(e));
                 }
             }
