@@ -283,61 +283,49 @@ const MoreView = {
     `
 };
 
-const GeraldView = {
-    props: ['currentTab', 'geraldMessages', 'isGeraldTyping', 'geraldInput', 'showEmotePicker', 'showMinigames', 'customEmotes', 'parseMarkdown', 'apiConnected'],
+const HomeView = {
+    props: ['currentTab', 'currentVodIndex', 'recentVods', 'isLive', 'hostname', 'clips', 'activeFilterLabel', 'optimizeTwitchImg', 'formatViews', 'formatDate', 'activeClipId'],
     template: `
-        <div class="gerald-container">
-            <div class="gerald-header" @click="$emit('close-pickers')">
-                <div class="avatar-glow-wrap" :class="apiConnected ? 'glow-online' : 'glow-offline'">
-                    <img src="gerald.png" class="gerald-avatar" alt="Gerald">
-                </div>
-                <div class="gerald-title-block">
-                    <span class="gerald-name-text">Gerald O.S.</span>
-                    <div class="gerald-status-sub" :class="apiConnected ? 'sub-online' : 'sub-offline'">
-                        {{ apiConnected ? 'SYSTEM: ONLINE // CLOUD_STREAM_ACTIVE' : 'SYSTEM: STANDBY // API_DISCONNECTED' }}
+        <div>
+            <div class="hero-section">
+                <div class="header-controls" style="margin-bottom: 12px; display: flex; justify-content: flex-start;">
+                    <div :class="['premium-badge', isLive ? 'live-badge' : 'vod']">
+                        <div class="dot"></div>
+                        <span>{{ isLive ? 'LIVE' : (recentVods[currentVodIndex] ? 'VOD • ' + recentVods[currentVodIndex].date : 'PAST BROADCAST') }}</span>
                     </div>
                 </div>
+                <div class="video-wrapper-outer">
+                    <div class="video-container">
+                        <iframe v-if="currentVodIndex === -1" id="miko-live-player" :src="'https://player.twitch.tv/?channel=codemiko&parent=' + hostname + '&autoplay=true&muted=true'" allow="autoplay; fullscreen" allowfullscreen loading="lazy"></iframe>
+                        <iframe v-else-if="recentVods && recentVods[currentVodIndex]" :src="'https://player.twitch.tv/?video=' + recentVods[currentVodIndex].id + '&parent=' + hostname + '&autoplay=false'" allow="autoplay; fullscreen" allowfullscreen loading="lazy"></iframe>
+                    </div>
+                </div>
+                <div class="carousel-controls" v-if="recentVods && recentVods.length > 0 && !isLive" style="margin-top: 12px; justify-content: flex-end;">
+                    <button class="carousel-btn" :class="{ 'hidden-arrow': currentVodIndex <= 0 }" @click.stop="$emit('prev-vod')"><span class="material-symbols-rounded">chevron_left</span></button>
+                    <button class="carousel-btn" :class="{ 'hidden-arrow': currentVodIndex >= recentVods.length - 1 }" @click.stop="$emit('next-vod')"><span class="material-symbols-rounded">chevron_right</span></button>
+                </div>
             </div>
-            <div class="gerald-messages" id="gerald-msgs" @click="$emit('close-pickers')">
-                <template v-for="(m, i) in geraldMessages" :key="i">
-                    <div v-if="i === 0 && m.role === 'gerald'" class="terminal-intro">
-                        <div class="terminal-text startup-anim">
-                            > Human detected.<br>
-                            > What do you want?
+            <div class="clips-list-container">
+                <div class="clips-header">
+                    <div class="filter-wrapper">
+                        <button class="filter-btn-tiny" @click="$emit('open-filter')">
+                            <span class="material-symbols-rounded" style="font-size: 16px;">sort</span><span>{{ activeFilterLabel }}</span>
+                        </button>
+                    </div>
+                </div>
+                <div class="clip-list-item" v-for="clip in clips" :key="clip.id" @click="$emit('play-clip', clip)">
+                    <div class="clip-thumb-wrapper">
+                        <img v-if="activeClipId !== clip.id" :src="clip.thumbnail_url ? optimizeTwitchImg(clip.thumbnail_url) : ''" loading="lazy" alt="Thumbnail">
+                        <iframe v-else :src="'https://clips.twitch.tv/embed?clip=' + clip.id + '&parent=' + hostname + '&autoplay=true&muted=false'" allow="autoplay; fullscreen" allowfullscreen style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: 5;"></iframe>
+                        <div class="duration-badge" v-if="activeClipId !== clip.id">0:45</div>
+                    </div>
+                    <div class="miko-metadata">
+                        <div class="author-name">{{ clip.title }}</div>
+                        <div class="clip-stats">
+                            <span>Just Chatting • {{ formatDate(clip.created_at) }}</span>
+                            <span>{{ formatViews(clip.view_count) }} views</span>
                         </div>
                     </div>
-                    <div v-else class="chat-bubble" :class="m.role" v-html="parseMarkdown(m.content)"></div>
-                </template>
-                <div v-if="isGeraldTyping" key="typing" class="typing-indicator">COMPUTING...</div>
-            </div>
-            <div class="gerald-action-area">
-                <div class="chat-emote-tray" v-show="showEmotePicker" style="bottom: 100%; border-bottom: none; border-radius: 16px 16px 0 0;">
-                    <div class="emote-picker-grid">
-                        <img v-for="(emote, name) in customEmotes" :key="name"
-                             :src="emote.url ? emote.url : 'https://cdn.discordapp.com/emojis/' + emote.id + '.' + (emote.animated ? 'gif' : 'png') + '?size=44'"
-                             class="emote-picker-img" @mousedown.prevent="$emit('insert-emote', name)">
-                    </div>
-                </div>
-                <div class="chat-emote-tray" v-show="showMinigames" style="bottom: 100%; border-bottom: none; border-radius: 16px 16px 0 0;">
-                    <div class="emote-picker-grid" style="gap: 8px;">
-                        <button class="bribe-btn" @click.stop="$emit('play-game', 'glitch')">🕶️ Glitch Persona</button>
-                        <button class="bribe-btn" @click.stop="$emit('play-game', 'shader')">🔥 Compile UE5</button>
-                        <button class="bribe-btn" @click.stop="$emit('play-game', 'boba')">🥤 Boba Spill</button>
-                        <button class="bribe-btn" @click.stop="$emit('play-game', 'pineapple')">🚪 Pineapple Walk-In</button>
-                        <button class="bribe-btn" @click.stop="$emit('play-game', 'cat')">🐈 Cat on PC</button>
-                        <button class="bribe-btn" @click.stop="$emit('play-game', 'bits')">🎟️ 100K Bits</button>
-                        <button class="bribe-btn" @click.stop="$emit('play-game', 'mute')">🔇 Mute Mic</button>
-                        <button class="bribe-btn" @click.stop="$emit('play-game', 'bald')">🧑‍🦲 Delete Hair</button>
-                        <button class="bribe-btn" @click.stop="$emit('play-game', 'siren')">🚨 Firetruck Siren</button>
-                    </div>
-                </div>
-                <div class="gerald-input-area">
-                    <div class="gerald-input-wrapper">
-                        <button class="emote-toggle-btn" @click="$emit('toggle-emotes')"><span class="material-symbols-rounded" :style="{ color: showEmotePicker ? 'var(--primary)' : 'inherit' }">mood</span></button>
-                        <button class="emote-toggle-btn" @click="$emit('toggle-minigames')"><span class="material-symbols-rounded" :style="{ color: showMinigames ? 'var(--primary)' : 'inherit' }">sports_esports</span></button>
-                        <textarea class="gerald-input" rows="1" placeholder="Message Gerald..." :value="geraldInput" @input="$emit('update-input', $event.target.value)" @keydown="$emit('key-down', $event)" id="gerald-txt-input" @focus="$emit('close-pickers')"></textarea>
-                    </div>
-                    <button class="gerald-send" @click="$emit('send')"><span class="material-symbols-rounded">send</span></button>
                 </div>
             </div>
         </div>
@@ -383,6 +371,9 @@ createApp({
         const twitchAuthUrl = ref('');
         let twitchWs = null;
         let wsAuthenticated = false;
+        
+        const badgeAssets = {};
+        const userCurrentBadges = ref([]);
 
         let touchStartX = 0, touchStartY = 0;
         const handleSwipeStart = (e) => { touchStartX = e.touches[0].clientX; touchStartY = e.touches[0].clientY; };
@@ -428,13 +419,26 @@ createApp({
         };
 
         const parseIrcMessage = (raw) => {
-            if (!raw || !raw.includes('PRIVMSG')) return;
+            if (!raw) return;
+            
             let tags = {}, line = raw;
             if (line.startsWith('@')) {
                 const sp = line.indexOf(' ');
                 line.substring(1, sp).split(';').forEach(t => { const [k, ...v] = t.split('='); tags[k] = v.join('='); });
                 line = line.substring(sp + 1);
             }
+
+            if (raw.includes('USERSTATE') && tags['badges']) {
+                const myBadges = [];
+                tags['badges'].split(',').forEach(b => {
+                    const imgUrl = badgeAssets[b];
+                    if (imgUrl) myBadges.push({ title: b.split('/')[0], img: imgUrl });
+                });
+                userCurrentBadges.value = myBadges;
+                return;
+            }
+
+            if (!raw.includes('PRIVMSG')) return;
             const matchUser = line.match(/:([^!]+)!/);
             const matchText = line.match(/PRIVMSG #[a-zA-Z0-9_]+ :(.+)/);
             if (!matchUser || !matchText) return;
@@ -443,44 +447,43 @@ createApp({
             const color = tags['color'] || '#9146FF';
             const text = matchText[1].trim();
 
-            const badges = [];
-            if (tags['badges']) {
-                tags['badges'].split(',').forEach(b => {
-                    const [type, ver] = b.split('/');
-                    if (type === 'broadcaster') badges.push({ title: 'Broadcaster', img: 'https://static-cdn.jtvnw.net/badges/v1/5527c58c-fb7d-422d-b71b-f309dcb85cc1/1' });
-                    else if (type === 'moderator') badges.push({ title: 'Mod', img: 'https://static-cdn.jtvnw.net/badges/v1/3267646d-33f0-4b17-b3df-f923a41db1d0/1' });
-                    else if (type === 'vip') badges.push({ title: 'VIP', img: 'https://static-cdn.jtvnw.net/badges/v1/b817aba4-fad8-49e2-b88a-7cc744dfa6ec/1' });
-                    else if (type === 'subscriber') badges.push({ title: `Sub`, img: 'https://static-cdn.jtvnw.net/badges/v1/5d9f2208-5dd8-11e7-8513-2ff4adfae661/1' });
-                });
-            }
-
-            sbClient.from('twitch_chat_logs').insert({ username: user, message: text, color: color, badges: badges }).then();
-
-            let html = text.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
-            if (tags['emotes']) {
-                const replacements = [];
-                tags['emotes'].split('/').forEach(e => {
-                    const [id, positions] = e.split(':');
-                    if (!positions) return;
-                    positions.split(',').forEach(pos => {
-                        const [s, en] = pos.split('-').map(Number);
-                        replacements.push({ s, en, id });
+            if (user !== twitchUsername.value) {
+                const badges = [];
+                if (tags['badges']) {
+                    tags['badges'].split(',').forEach(b => {
+                        const imgUrl = badgeAssets[b];
+                        if (imgUrl) badges.push({ title: b.split('/')[0], img: imgUrl });
                     });
-                });
-                replacements.sort((a, b) => b.s - a.s);
-                const chars = [...text];
-                replacements.forEach(({ s, en, id }) => {
-                    const emoteName = chars.slice(s, en + 1).join('');
-                    chars.splice(s, en - s + 1, `<img src="https://static-cdn.jtvnw.net/emoticons/v2/${id}/default/dark/1.0" class="chat-emote-img" title="${emoteName}">`);
-                });
-                html = chars.join('');
-            } else {
-                html = processEmotes(text);
-            }
+                }
 
-            chatMessages.value.push({ username: user, html: html, color: color, badges: badges });
-            if (chatMessages.value.length > 200) chatMessages.value.shift();
-            if (currentTab.value === 'chat') scrollChatToBottom();
+                sbClient.from('twitch_chat_logs').insert({ username: user, message: text, color: color, badges: badges }).then();
+
+                let html = text.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+                if (tags['emotes']) {
+                    const replacements = [];
+                    tags['emotes'].split('/').forEach(e => {
+                        const [id, positions] = e.split(':');
+                        if (!positions) return;
+                        positions.split(',').forEach(pos => {
+                            const [s, en] = pos.split('-').map(Number);
+                            replacements.push({ s, en, id });
+                        });
+                    });
+                    replacements.sort((a, b) => b.s - a.s);
+                    const chars = [...text];
+                    replacements.forEach(({ s, en, id }) => {
+                        const emoteName = chars.slice(s, en + 1).join('');
+                        chars.splice(s, en - s + 1, `<img src="https://static-cdn.jtvnw.net/emoticons/v2/${id}/default/dark/1.0" class="chat-emote-img" title="${emoteName}">`);
+                    });
+                    html = chars.join('');
+                } else {
+                    html = processEmotes(text);
+                }
+
+                chatMessages.value.push({ username: user, html: html, color: color, badges: badges });
+                if (chatMessages.value.length > 200) chatMessages.value.shift();
+                if (currentTab.value === 'chat') scrollChatToBottom();
+            }
         };
 
         const connectTwitchChat = () => {
@@ -528,14 +531,40 @@ createApp({
             if (!msg || !twitchWs || !twitchChatToken.value || !wsAuthenticated) return;
             twitchWs.send(`PRIVMSG #codemiko :${msg}`);
             
-            let myBadges = [];
-            const myLast = chatMessages.value.slice().reverse().find(m => m.username === twitchUsername.value && m.badges && m.badges.length > 0);
-            if (myLast) myBadges = myLast.badges;
+            sbClient.from('twitch_chat_logs').insert({ username: twitchUsername.value || 'You', message: msg, color: '#9146FF', badges: userCurrentBadges.value }).then();
 
-            sbClient.from('twitch_chat_logs').insert({ username: twitchUsername.value || 'You', message: msg, color: '#9146FF', badges: myBadges }).then();
-
-            chatMessages.value.push({ username: twitchUsername.value || 'You', html: processEmotes(msg), color: '#9146FF', badges: myBadges });
+            chatMessages.value.push({ username: twitchUsername.value || 'You', html: processEmotes(msg), color: '#9146FF', badges: userCurrentBadges.value });
             scrollChatToBottom();
+        };
+
+        const loadTwitchBadges = async () => {
+            try {
+                const [globalRes, channelRes] = await Promise.all([
+                    fetch('https://badges.twitch.tv/v1/badges/global/display'),
+                    fetch('https://badges.twitch.tv/v1/badges/channels/500128827/display')
+                ]);
+                const globalData = await globalRes.json();
+                const channelData = await channelRes.json();
+
+                if (globalData?.badge_sets) {
+                    Object.entries(globalData.badge_sets).forEach(([setName, set]) => {
+                        if (set.versions) {
+                            Object.entries(set.versions).forEach(([verName, ver]) => {
+                                badgeAssets[`${setName}/${verName}`] = ver.image_url_1x;
+                            });
+                        }
+                    });
+                }
+                if (channelData?.badge_sets) {
+                    Object.entries(channelData.badge_sets).forEach(([setName, set]) => {
+                        if (set.versions) {
+                            Object.entries(set.versions).forEach(([verName, ver]) => {
+                                badgeAssets[`${setName}/${verName}`] = ver.image_url_1x;
+                            });
+                        }
+                    });
+                }
+            } catch(e) {}
         };
 
         const load7TVEmotes = async () => {
@@ -588,7 +617,7 @@ createApp({
         };
 
         const applyFilter = (filterKey, label) => {
-            currentFilter.value = filterKey; activeFilterLabel.value = label; isFilterMenuOpen.value = false;
+            currentFilter.value = filterKey; activeFilterLabel.value = label; isFilterMenuOpen = false;
             const feedContainer = document.getElementById('home-scroll');
             if(feedContainer) {
                 clips.value = sortData(filterKey);
@@ -752,6 +781,7 @@ createApp({
         const runSync = async () => {
             if (syncState.value !== 'idle') return;
             syncState.value = 'syncing';
+            await loadTwitchBadges();
             await loadData();
             await checkLive();
             await load7TVEmotes();
@@ -774,6 +804,8 @@ createApp({
                     currentTab.value = 'chat';
                 }
             }
+
+            await loadTwitchBadges();
 
             if (twitchChatToken.value) {
                 fetch('https://id.twitch.tv/oauth2/validate', { headers: { 'Authorization': 'OAuth ' + twitchChatToken.value } })
