@@ -16,7 +16,7 @@
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="https://unpkg.com/vue@3/dist/vue.global.prod.js"></script>
     
-    <link rel="stylesheet" href="./styles.css?v=56">
+    <link rel="stylesheet" href="./styles.css?v=57">
 </head>
 <body @click="closeFilterMenu">
     <div id="app-container" v-cloak :class="['theme-' + appTheme, {'gerald-theme': currentTab === 'gerald'}]">
@@ -42,7 +42,7 @@
         <div class="view-port" @touchstart="handleSwipeStart" @touchend="handleSwipeEnd">
             <div class="tab-slider" :style="{ transform: 'translate3d(' + tabOffset + '%, 0, 0)' }">
                 
-                <div class="tab-view scroll-area" id="home-scroll" @scroll="handleScroll">
+                <div class="tab-view scroll-area home-scroll" id="home-scroll" @scroll="handleScroll">
                     <home-view
                         :current-tab="currentTab"
                         :current-vod-index="currentVodIndex"
@@ -149,6 +149,6 @@
 
     </div>
 
-    <script src="./app.js?v=56"></script>
+    <script src="./app.js?v=57"></script>
 </body>
 </html>
