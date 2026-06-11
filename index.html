@@ -16,10 +16,10 @@
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="https://unpkg.com/vue@3/dist/vue.global.prod.js"></script>
     
-    <link rel="stylesheet" href="./styles.css?v=36">
+    <link rel="stylesheet" href="./styles.css?v=37">
 </head>
 <body @click="closeFilterMenu">
-    <div id="app-container" v-cloak :class="'theme-' + appTheme">
+    <div id="app-container" v-cloak :class="['theme-' + appTheme, {'gerald-theme': currentTab === 'gerald'}]">
         
         <toast-popup :toast="toast"></toast-popup>
 
@@ -64,9 +64,9 @@
                 :chat-messages="chatMessages"
                 :chat-input="chatInput"
                 :is-logged-in="!!twitchChatToken"
+                :twitch-auth-url="twitchAuthUrl"
                 @update-input="e => chatInput = e"
-                @send-chat="sendTwitchChatMessage"
-                @login-twitch="loginToTwitch">
+                @send-chat="sendTwitchChatMessage">
             </chat-view>
 
             <feed-view
@@ -88,6 +88,7 @@
                 :show-minigames="showMinigames"
                 :custom-emotes="customEmotes"
                 :parse-markdown="parseMarkdown"
+                :api-connected="!!apiConfig.cid && !!apiConfig.tkn"
                 @close-pickers="closePickers"
                 @insert-emote="insertEmote"
                 @play-game="playMinigame"
@@ -136,6 +137,11 @@
             @nuke-cache="nukeCache">
         </profile-modal>
 
+        <discord-modal
+            :is-open="modals.discord"
+            @close="modals.discord = false">
+        </discord-modal>
+
         <bottom-nav
             :current-tab="currentTab"
             @change-tab="tab => { currentTab = tab; isHeaderVisible = true; }">
@@ -143,6 +149,6 @@
 
     </div>
 
-    <script src="./app.js?v=36"></script>
+    <script src="./app.js?v=37"></script>
 </body>
 </html>
