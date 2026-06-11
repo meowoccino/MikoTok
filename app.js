@@ -282,6 +282,112 @@ const MoreView = {
     `
 };
 
+const GeraldView = {
+    props: ['currentTab', 'geraldMessages', 'isGeraldTyping', 'geraldInput', 'showEmotePicker', 'showMinigames', 'customEmotes', 'parseMarkdown', 'apiConnected'],
+    template: `
+        <div class="gerald-container">
+            <div class="gerald-header" @click="$emit('close-pickers')">
+                <img src="gerald.png" class="gerald-avatar" alt="Gerald">
+                <div class="gerald-title-block">
+                    <span class="gerald-name-text">Gerald O.S.</span>
+                    <div :class="apiConnected ? 'pulse-dot-live' : 'pulse-dot-offline'"></div>
+                </div>
+            </div>
+            <div class="gerald-messages" id="gerald-msgs" @click="$emit('close-pickers')">
+                <template v-for="(m, i) in geraldMessages" :key="i">
+                    <div v-if="i === 0 && m.role === 'gerald'" class="terminal-intro">
+                        <div class="terminal-text startup-anim">
+                            > Human detected.<br>
+                            > What do you want?
+                        </div>
+                    </div>
+                    <div v-else class="chat-bubble" :class="m.role" v-html="parseMarkdown(m.content)"></div>
+                </template>
+                <div v-if="isGeraldTyping" key="typing" class="typing-indicator">COMPUTING...</div>
+            </div>
+            <div class="gerald-action-area">
+                <div class="chat-emote-tray" v-show="showEmotePicker" style="bottom: 100%; border-bottom: none; border-radius: 16px 16px 0 0;">
+                    <div class="emote-picker-grid">
+                        <img v-for="(emote, name) in customEmotes" :key="name"
+                             :src="emote.url ? emote.url : 'https://cdn.discordapp.com/emojis/' + emote.id + '.' + (emote.animated ? 'gif' : 'png') + '?size=44'"
+                             class="emote-picker-img" @click="$emit('insert-emote', name)">
+                    </div>
+                </div>
+                <div class="chat-emote-tray" v-show="showMinigames" style="bottom: 100%; border-bottom: none; border-radius: 16px 16px 0 0;">
+                    <div class="emote-picker-grid" style="gap: 8px;">
+                        <button class="bribe-btn" @click="$emit('play-game', 'glitch')">🕶️ Glitch Persona</button>
+                        <button class="bribe-btn" @click="$emit('play-game', 'shader')">🔥 Compile UE5</button>
+                        <button class="bribe-btn" @click="$emit('play-game', 'boba')">🥤 Boba Spill</button>
+                        <button class="bribe-btn" @click="$emit('play-game', 'pineapple')">🚪 Pineapple Walk-In</button>
+                        <button class="bribe-btn" @click="$emit('play-game', 'cat')">🐈 Cat on PC</button>
+                        <button class="bribe-btn" @click="$emit('play-game', 'bits')">🎟️ 100K Bits</button>
+                        <button class="bribe-btn" @click="$emit('play-game', 'mute')">🔇 Mute Mic</button>
+                        <button class="bribe-btn" @click="$emit('play-game', 'bald')">🧑‍🦲 Delete Hair</button>
+                        <button class="bribe-btn" @click="$emit('play-game', 'siren')">🚨 Firetruck Siren</button>
+                    </div>
+                </div>
+                <div class="gerald-input-area">
+                    <div class="gerald-input-wrapper">
+                        <button class="emote-toggle-btn" @click="$emit('toggle-emotes')"><span class="material-symbols-rounded" :style="{ color: showEmotePicker ? 'var(--primary)' : 'inherit' }">mood</span></button>
+                        <button class="emote-toggle-btn" @click="$emit('toggle-minigames')"><span class="material-symbols-rounded" :style="{ color: showMinigames ? 'var(--primary)' : 'inherit' }">sports_esports</span></button>
+                        <textarea class="gerald-input" rows="1" placeholder="Message Gerald..." :value="geraldInput" @input="$emit('update-input', $event.target.value)" @keydown="$emit('key-down', $event)" id="gerald-txt-input" @focus="$emit('close-pickers')"></textarea>
+                    </div>
+                    <button class="gerald-send" @click="$emit('send')"><span class="material-symbols-rounded">send</span></button>
+                </div>
+            </div>
+        </div>
+    `
+};
+
+const HomeView = {
+    props: ['currentTab', 'currentVodIndex', 'recentVods', 'isLive', 'hostname', 'clips', 'activeFilterLabel', 'optimizeTwitchImg', 'formatViews', 'formatDate', 'activeClipId'],
+    template: `
+        <div>
+            <div class="hero-section">
+                <div class="header-controls" style="margin-bottom: 12px; display: flex; justify-content: flex-start;">
+                    <div :class="['premium-badge', isLive ? 'live-badge' : 'vod']">
+                        <div class="dot"></div>
+                        <span>{{ isLive ? 'LIVE' : (recentVods[currentVodIndex] ? 'VOD • ' + recentVods[currentVodIndex].date : 'PAST BROADCAST') }}</span>
+                    </div>
+                </div>
+                <div class="video-wrapper-outer">
+                    <div class="video-container">
+                        <iframe v-if="currentVodIndex === -1" id="miko-live-player" :src="'https://player.twitch.tv/?channel=codemiko&parent=' + hostname + '&autoplay=true&muted=true'" allow="autoplay; fullscreen" allowfullscreen loading="lazy"></iframe>
+                        <iframe v-else-if="recentVods && recentVods[currentVodIndex]" :src="'https://player.twitch.tv/?video=' + recentVods[currentVodIndex].id + '&parent=' + hostname + '&autoplay=false'" allow="autoplay; fullscreen" allowfullscreen loading="lazy"></iframe>
+                    </div>
+                </div>
+                <div class="carousel-controls" v-if="recentVods && recentVods.length > 0 && !isLive" style="margin-top: 12px; justify-content: flex-end;">
+                    <button class="carousel-btn" :class="{ 'hidden-arrow': currentVodIndex <= 0 }" @click.stop="$emit('prev-vod')"><span class="material-symbols-rounded">chevron_left</span></button>
+                    <button class="carousel-btn" :class="{ 'hidden-arrow': currentVodIndex >= recentVods.length - 1 }" @click.stop="$emit('next-vod')"><span class="material-symbols-rounded">chevron_right</span></button>
+                </div>
+            </div>
+            <div class="clips-list-container">
+                <div class="clips-header">
+                    <div class="filter-wrapper">
+                        <button class="filter-btn-tiny" @click="$emit('open-filter')">
+                            <span class="material-symbols-rounded" style="font-size: 16px;">sort</span><span>{{ activeFilterLabel }}</span>
+                        </button>
+                    </div>
+                </div>
+                <div class="clip-list-item" v-for="clip in clips" :key="clip.id" @click="$emit('play-clip', clip)">
+                    <div class="clip-thumb-wrapper">
+                        <img v-if="activeClipId !== clip.id" :src="clip.thumbnail_url ? optimizeTwitchImg(clip.thumbnail_url) : ''" loading="lazy" alt="Thumbnail">
+                        <iframe v-else :src="'https://clips.twitch.tv/embed?clip=' + clip.id + '&parent=' + hostname + '&autoplay=true&muted=false'" allow="autoplay; fullscreen" allowfullscreen style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: 5;"></iframe>
+                        <div class="duration-badge" v-if="activeClipId !== clip.id">0:45</div>
+                    </div>
+                    <div class="miko-metadata">
+                        <div class="author-name">{{ clip.title }}</div>
+                        <div class="clip-stats">
+                            <span>Just Chatting • {{ formatDate(clip.created_at) }}</span>
+                            <span>{{ formatViews(clip.view_count) }} views</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    `
+};
+
 const { createApp, ref, onMounted, nextTick, computed } = Vue;
 const sbClient = supabase.createClient('https://yhxcuayiwqpjvalyrcqv.supabase.co', 'sb_publishable_VyFcNARHblJg10qlC_O7Dg_coouXK92');
 
@@ -512,7 +618,8 @@ createApp({
         };
 
         const scrollToBottom = () => {
-            setTimeout(() => { const b = document.getElementById('gerald-msgs'); if (b) b.scrollTop = b.scrollHeight; }, 100);
+            const b = document.getElementById('gerald-msgs'); 
+            if (b) b.scrollTop = b.scrollHeight;
         };
 
         const sortData = (filterKey) => {
@@ -579,7 +686,10 @@ createApp({
             if (!game) return;
             geraldMessages.value.push({ role: 'user', content: game.msg });
             closePickers();
-            setTimeout(() => { geraldMessages.value.push({ role: 'gerald', content: game.text }); scrollToBottom(); }, 800);
+            setTimeout(() => { 
+                geraldMessages.value.push({ role: 'gerald', content: game.text }); 
+                nextTick(scrollToBottom);
+            }, 800);
         };
 
         const loadGeraldHistory = async () => {
@@ -589,7 +699,7 @@ createApp({
                 let history = data.map(d => ({ role: d.role, content: d.content }));
                 geraldMessages.value = history;
             }
-            scrollToBottom();
+            nextTick(scrollToBottom);
         };
 
         const clearGeraldHistory = async () => {
@@ -613,7 +723,7 @@ createApp({
             geraldInput.value = ''; 
             if (inputEl) { inputEl.value = ''; inputEl.style.height = 'auto'; } 
             
-            isGeraldTyping.value = true; closePickers(); scrollToBottom();
+            isGeraldTyping.value = true; closePickers(); nextTick(scrollToBottom);
             
             const recentContextWindow = geraldMessages.value.slice(-10);
             const geminiHistory = recentContextWindow.map(m => ({ role: m.role === 'gerald' ? 'model' : 'user', parts: [{ text: m.content }] }));
@@ -628,7 +738,7 @@ createApp({
                 }
             } catch (e) { 
                 geraldMessages.value.push({ role: 'gerald', content: 'SYSTEM ERROR: Offline Subroutines active.' }); 
-            } finally { isGeraldTyping.value = false; scrollToBottom(); }
+            } finally { isGeraldTyping.value = false; nextTick(scrollToBottom); }
         };
 
         const nukeCache = async () => {
@@ -650,11 +760,13 @@ createApp({
         };
 
         const loadData = async () => {
-            const { data: dbEmotes } = await sbClient.from('emotes').select('*');
-            if (dbEmotes) { dbEmotes.forEach(e => { customEmotes.value[e.name] = { id: e.id, animated: e.animated }; }); }
+            try {
+                const { data: dbEmotes } = await sbClient.from('emotes').select('*');
+                if (dbEmotes) { dbEmotes.forEach(e => { customEmotes.value[e.name] = { id: e.id, animated: e.animated }; }); }
 
-            const { data: c } = await sbClient.from('clips').select('*').order('created_at', { ascending: false }).limit(3000);
-            allClips.value = c || []; clips.value = sortData(currentFilter.value);
+                const { data: c } = await sbClient.from('clips').select('*').order('created_at', { ascending: false }).limit(3000);
+                allClips.value = c || []; clips.value = sortData(currentFilter.value);
+            } catch(e) {}
         };
 
         const checkLive = async () => {
@@ -671,7 +783,7 @@ createApp({
             } catch(e) {}
         };
 
-        const runSync = async () => {};
+        const runSync = ref(null);
 
         onMounted(async () => {
             const clientId = apiConfig.value.cid || 'i2fjxfk0oq6ybixle760zryrtvdqjg';
