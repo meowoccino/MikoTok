@@ -53,6 +53,20 @@ const BottomNav = {
     `
 };
 
+const ClipModal = {
+    props: ['clip', 'hostname'],
+    template: `
+        <div class="clip-modal-overlay" :class="{ open: !!clip }" @click.self="$emit('close')">
+            <div class="clip-modal-content" v-if="clip">
+                <button class="clip-close-x" @click="$emit('close')"><span class="material-symbols-rounded">close</span></button>
+                <div class="clip-frame-container">
+                    <iframe :src="'https://clips.twitch.tv/embed?clip=' + clip.id + '&parent=' + hostname + '&autoplay=true&muted=false'" allow="autoplay; fullscreen" allowfullscreen></iframe>
+                </div>
+            </div>
+        </div>
+    `
+};
+
 const FilterMenu = {
     props: ['isOpen', 'currentFilter'],
     template: `
@@ -151,7 +165,6 @@ const ChatView = {
 const MoreView = {
     template: `
         <div class="more-container">
-            <div class="more-header miko-text-gradient" style="font-size: 22px;">Official Links</div>
             <div class="social-grid">
                 <a href="https://www.youtube.com/@CodeMiko" target="_blank" class="social-card yt">
                     <svg viewBox="0 0 24 24" class="social-icon"><path fill="currentColor" d="M23.498 6.186a3.016 3.016 0 0 0-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 0 0 .502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 0 0 2.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 0 0 2.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z"/></svg>
@@ -160,6 +173,14 @@ const MoreView = {
                 <a href="https://www.twitch.tv/codemiko" target="_blank" class="social-card twitch">
                     <svg viewBox="0 0 24 24" class="social-icon"><path fill="currentColor" d="M11.571 4.714h1.715v5.143H11.57zm4.715 0H18v5.143h-1.714zM6 0L1.714 4.286v15.428h5.143V24l4.286-4.286h3.428L22.286 12V0zm14.571 11.143l-3.428 3.428h-3.429l-3 3v-3H6.857V1.714h13.714Z"/></svg>
                     <span>Twitch</span>
+                </a>
+                <a href="https://www.tiktok.com/@codemiko" target="_blank" class="social-card tiktok">
+                    <svg viewBox="0 0 24 24" class="social-icon"><path fill="currentColor" d="M19.59 6.69a4.83 4.83 0 0 1-3.77-4.25V2h-3.45v13.67a2.89 2.89 0 0 1-5.2 1.74 2.89 2.89 0 0 1 2.31-4.64 2.93 2.93 0 0 1 .88.13V9.4a6.84 6.84 0 0 0-1-.05A6.33 6.33 0 0 0 5 20.1a6.34 6.34 0 0 0 10.86-4.43v-7a8.16 8.16 0 0 0 4.77 1.52v-3.4a4.85 4.85 0 0 1-1-.1z"/></svg>
+                    <span>TikTok</span>
+                </a>
+                <a href="https://discord.com/invite/codemiko" target="_blank" class="social-card discord">
+                    <svg viewBox="0 0 24 24" class="social-icon"><path fill="currentColor" d="M20.317 4.3698a19.7913 19.7913 0 00-4.8851-1.5152.0741.0741 0 00-.0785.0371c-.211.3753-.4447.8648-.6083 1.2495-1.8447-.2762-3.68-.2762-5.4868 0-.1636-.3933-.4058-.8742-.6177-1.2495a.077.077 0 00-.0785-.037 19.7363 19.7363 0 00-4.8852 1.515.0699.0699 0 00-.0321.0277C.5334 9.0458-.319 13.5799.0992 18.0578a.0824.0824 0 00.0312.0561c2.0528 1.5076 4.0413 2.4228 5.9929 3.0294a.0777.0777 0 00.0842-.0276c.4616-.6304.8731-1.2952 1.226-1.9942a.076.076 0 00-.0416-.1057c-.6528-.2476-1.2743-.5495-1.8722-.8923a.077.077 0 01-.0076-.1277c.1258-.0943.2517-.1923.3718-.2914a.0743.0743 0 01.0776-.0105c3.9278 1.7933 8.18 1.7933 12.0614 0a.0739.0739 0 01.0785.0095c.1202.099.246.1981.3728.2924a.077.077 0 01-.0066.1276 12.2986 12.2986 0 01-1.873.8914.0766.0766 0 00-.0407.1067c.3604.698.7719 1.3628 1.225 1.9932a.076.076 0 00.0842.0286c1.961-.6067 3.9495-1.5219 6.0023-3.0294a.077.077 0 00.0313-.0552c.5004-5.177-.8382-9.6739-3.5485-13.6604a.061.061 0 00-.0312-.0286zM8.02 15.3312c-1.1825 0-2.1569-1.0857-2.1569-2.419 0-1.3332.9555-2.4189 2.157-2.4189 1.2108 0 2.1757 1.0952 2.1568 2.419 0 1.3332-.9555 2.4189-2.1569 2.4189zm7.9748 0c-1.1825 0-2.1569-1.0857-2.1569-2.419 0-1.3332.9554-2.4189 2.1569-2.4189 1.2108 0 2.1757 1.0952 2.1568 2.419 0 1.3332-.946 2.4189-2.1568 2.4189Z"/></svg>
+                    <span>Discord</span>
                 </a>
                 <a href="https://x.com/thecodemiko" target="_blank" class="social-card x-twitter">
                     <svg viewBox="0 0 24 24" class="social-icon"><path fill="currentColor" d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>
@@ -177,6 +198,10 @@ const MoreView = {
                     <span class="material-symbols-rounded social-icon" style="font-size: 28px;">favorite</span>
                     <span>Fanfix</span>
                 </a>
+                <a href="https://throne.com/codemiko" target="_blank" class="social-card throne">
+                    <span class="material-symbols-rounded social-icon" style="font-size: 28px;">redeem</span>
+                    <span>Throne</span>
+                </a>
             </div>
         </div>
     `
@@ -187,12 +212,10 @@ const GeraldView = {
     template: `
         <div class="gerald-container">
             <div class="gerald-header" @click="$emit('close-pickers')">
-                <div class="gerald-avatar-wrapper">
-                    <img src="gerald.png" class="gerald-avatar" alt="Gerald">
-                    <div class="gerald-title-block">
-                        <span class="gerald-name-text">Gerald OS</span>
-                        <div :class="apiConnected ? 'pulse-dot-live' : 'pulse-dot-offline'"></div>
-                    </div>
+                <img src="gerald.png" class="gerald-avatar" alt="Gerald">
+                <div class="gerald-title-block">
+                    <span class="gerald-name-text">Gerald OS</span>
+                    <div :class="apiConnected ? 'pulse-dot-live' : 'pulse-dot-offline'"></div>
                 </div>
             </div>
             <div class="gerald-messages" id="gerald-msgs" @click="$emit('close-pickers')">
@@ -242,7 +265,7 @@ const GeraldView = {
 };
 
 const HomeView = {
-    props: ['currentTab', 'currentVodIndex', 'recentVods', 'isLive', 'hostname', 'clips', 'activeFilterLabel', 'optimizeTwitchImg', 'formatViews', 'formatDate', 'activeClipId'],
+    props: ['currentTab', 'currentVodIndex', 'recentVods', 'isLive', 'hostname', 'clips', 'activeFilterLabel', 'optimizeTwitchImg', 'formatViews', 'formatDate'],
     template: `
         <div>
             <div class="hero-section">
@@ -270,11 +293,8 @@ const HomeView = {
                 </div>
                 <div class="clip-list-item" v-for="clip in clips" :key="clip.id" @click="$emit('play-clip', clip)">
                     <div class="clip-thumb-wrapper">
-                        <iframe v-if="activeClipId === clip.id" :src="'https://clips.twitch.tv/embed?clip=' + clip.id + '&parent=' + hostname + '&autoplay=true&muted=false'" allow="autoplay; fullscreen" allowfullscreen></iframe>
-                        <template v-else>
-                            <img :src="clip.thumbnail_url ? optimizeTwitchImg(clip.thumbnail_url) : ''" loading="lazy" alt="Thumbnail">
-                            <div class="duration-badge">0:45</div>
-                        </template>
+                        <img :src="clip.thumbnail_url ? optimizeTwitchImg(clip.thumbnail_url) : ''" loading="lazy" alt="Thumbnail">
+                        <div class="duration-badge">0:45</div>
                     </div>
                     <div class="miko-metadata">
                         <div class="author-name">{{ clip.title }}</div>
@@ -295,7 +315,7 @@ const sbClient = supabase.createClient('https://yhxcuayiwqpjvalyrcqv.supabase.co
 createApp({
     components: {
         ToastPopup, SplashScreen, AppHeader, BottomNav, FilterMenu, 
-        ProfileModal, GeraldView, HomeView, ChatView, MoreView
+        ProfileModal, GeraldView, HomeView, ChatView, MoreView, ClipModal
     },
     setup() {
         const tabs = ['home', 'chat', 'gerald', 'more'];
@@ -304,7 +324,7 @@ createApp({
         
         const tabOffset = computed(() => {
             const index = tabs.indexOf(currentTab.value);
-            return -(index * 100); 
+            return -(index * 25); 
         });
 
         const appTheme = ref(localStorage.getItem('miko_theme') || 'light');
@@ -320,7 +340,7 @@ createApp({
         const currentFilter = ref('latest'), activeFilterLabel = ref('Latest'), isFilterMenuOpen = ref(false);
         const recentVods = ref([]), currentVodIndex = ref(0);
         
-        const activeClipId = ref(null);
+        const selectedClip = ref(null);
         const chatMessages = ref([]);
         const chatInput = ref('');
         const twitchChatToken = ref(localStorage.getItem('tw_chat_token') || null);
@@ -436,7 +456,7 @@ createApp({
         const closeFilterMenu = () => { isFilterMenuOpen.value = false; };
         const insertEmote = (name) => { const inputEl = document.getElementById('gerald-txt-input'); if (inputEl) { inputEl.value += `:${name}: `; geraldInput.value = inputEl.value; } else { geraldInput.value += `:${name}: `; } };
 
-        const playClip = (clip) => { activeClipId.value = clip.id; };
+        const playClip = (clip) => { selectedClip.value = clip; };
 
         const scrollToBottom = () => {
             const b = document.getElementById('gerald-msgs');
@@ -604,7 +624,8 @@ createApp({
 
         onMounted(async () => {
             const clientId = apiConfig.value.cid || 'kimne78kx3ncx6brgo4mv6wki5h1ko';
-            twitchAuthUrl.value = 'https://id.twitch.tv/oauth2/authorize?client_id=' + clientId + '&redirect_uri=https://meowoccino.github.io/MikoTok/&response_type=token&scope=chat:read+chat:edit&force_verify=true';
+            // Hardcoded strictly to match exact Twitch Console URI
+            twitchAuthUrl.value = 'https://id.twitch.tv/oauth2/authorize?client_id=' + clientId + '&redirect_uri=' + encodeURIComponent('https://meowoccino.github.io/MikoTok/') + '&response_type=token&scope=chat:read+chat:edit&force_verify=true';
             
             updateThemeClass();
             if (window.location.hash.includes('access_token')) {
@@ -627,7 +648,7 @@ createApp({
         });
 
         return { 
-            hostname, splashVisible, splashOpacity, currentTab, appTheme, toggleTheme, clips, modals, isLive, toast, currentUser, loginEmail, loginPass, apiConfig, geraldInput, geraldMessages, isGeraldTyping, talkToGerald, logoSvg, syncState, wipeState, logoutState, runSync, isHeaderVisible, handleScroll, handleModalTouchStart, handleModalTouchMove, handleModalTouchEnd, currentFilter, activeFilterLabel, isFilterMenuOpen, closeFilterMenu, applyFilter, parseMarkdown, recentVods, currentVodIndex, nextVod, prevVod, customEmotes, showEmotePicker, insertEmote, clearGeraldHistory, handleGeraldEnter, toggleEmotes, toggleMinigames, closePickers, formatNumber, showMinigames, playMinigame, nukeCache, activeClipId, tabOffset, switchTab, handleSwipeStart, handleSwipeEnd,
+            hostname, splashVisible, splashOpacity, currentTab, appTheme, toggleTheme, clips, modals, isLive, toast, currentUser, loginEmail, loginPass, apiConfig, geraldInput, geraldMessages, isGeraldTyping, talkToGerald, logoSvg, syncState, wipeState, logoutState, runSync, isHeaderVisible, handleScroll, handleModalTouchStart, handleModalTouchMove, handleModalTouchEnd, currentFilter, activeFilterLabel, isFilterMenuOpen, closeFilterMenu, applyFilter, parseMarkdown, recentVods, currentVodIndex, nextVod, prevVod, customEmotes, showEmotePicker, insertEmote, clearGeraldHistory, handleGeraldEnter, toggleEmotes, toggleMinigames, closePickers, nukeCache, selectedClip, tabOffset, switchTab, handleSwipeStart, handleSwipeEnd,
             chatMessages, chatInput, twitchChatToken, twitchAuthUrl, sendTwitchChatMessage, playClip,
             handleLogin: async () => { const email = loginEmail.value.includes('@') ? loginEmail.value : `${loginEmail.value}@miko.com`; const { data } = await sbClient.auth.signInWithPassword({ email, password: loginPass.value }); if(data.user) { currentUser.value = data.user; modals.value.profile = false; loadGeraldHistory(); } }, 
             handleLogout: () => { if (logoutState.value !== 'idle') return; logoutState.value = 'logging_out'; setTimeout(() => { sbClient.auth.signOut(); currentUser.value = null; geraldMessages.value = [{role:'gerald', content: ''}]; modals.value.profile = false; logoutState.value = 'idle'; }, 1500); },
