@@ -135,8 +135,8 @@ body, html {
     border-radius: 30px; color: #fff; font-size: 10px; font-weight: 900; text-transform: uppercase;
 }
 .premium-badge .dot { width: 6px; height: 6px; border-radius: 50%; }
-.premium-badge.vod .dot { background: var(--primary); animation: pulse-glow-ring 3s infinite ease-out; }
-.premium-badge.live-badge .dot { background: var(--danger); animation: pulse-glow-ring 2.5s infinite ease-out; }
+.premium-badge.vod .dot { background: var(--primary); animation: pulse-glow-ring 5s infinite ease-out; }
+.premium-badge.live-badge .dot { background: var(--danger); animation: pulse-glow-ring 4s infinite ease-out; }
 
 .video-wrapper-outer { width: 100%; position: relative; }
 .video-container {
@@ -293,7 +293,7 @@ body, html {
 .glow-online {
     border: 2px solid #10b981;
     box-shadow: 0 0 15px rgba(16, 185, 129, 0.5);
-    animation: breathing-glow-live 2.5s infinite ease-in-out;
+    animation: breathing-glow-live 3s infinite ease-in-out;
 }
 .glow-offline {
     border: 2px solid #ff3b30;
