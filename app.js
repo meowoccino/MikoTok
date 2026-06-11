@@ -1,51 +1,319 @@
 const ToastPopup = {
     props: ['toast'],
-    template: '<div class="toast-popup" :class="{ show: toast.visible }" v-html="toast.message"></div>'
+    template: `
+        <div class="toast-popup" :class="{ show: toast.visible }" v-html="toast.message"></div>
+    `
 };
 
 const SplashScreen = {
     props: ['splashVisible', 'splashOpacity', 'logoSvg'],
-    template: '<div id="splash-screen" v-if="splashVisible" :style="{ opacity: splashOpacity }"><div style="width:100px;height:100px;margin-bottom:20px;" v-html="logoSvg(\'splash\')"></div><div style="font-size: 32px; font-weight: 900; color: var(--primary); font-family: \'Outfit\', sans-serif;">MikoTok</div><div class="progress-bar"><div class="progress-fill"></div></div></div>'
+    template: `
+        <div id="splash-screen" v-if="splashVisible" :style="{ opacity: splashOpacity }">
+            <div style="width:100px;height:100px;margin-bottom:20px;" v-html="logoSvg('splash')"></div>
+            <div style="font-size: 32px; font-weight: 900; color: var(--primary); font-family: 'Outfit', sans-serif;">MikoTok</div>
+            <div class="progress-bar"><div class="progress-fill"></div></div>
+        </div>
+    `
 };
 
 const AppHeader = {
     props: ['isHeaderVisible', 'currentTab', 'logoSvg', 'appTheme'],
-    template: '<header class="app-header" :class="{ hidden: !isHeaderVisible }"><div style="display:flex; align-items:center; gap:8px;"><div style="width:24px;height:24px; cursor:pointer;" v-html="logoSvg(\'header\')" @click="$emit(\'open-profile\')"></div><span class="header-title" style="font-size:18px; font-weight:900;">MikoTok</span></div><button class="theme-toggle-btn" @click="$emit(\'toggle-theme\')"><span class="material-symbols-rounded" style="font-size: 22px;">{{ appTheme === \'light\' ? \'dark_mode\' : \'light_mode\' }}</span></button></header>'
+    template: `
+        <header class="app-header" :class="{ hidden: !isHeaderVisible }">
+            <div style="display:flex; align-items:center; gap:8px;">
+                <div style="width:24px;height:24px; cursor:pointer;" v-html="logoSvg('header')" @click="$emit('open-profile')"></div>
+                <span class="header-title" style="font-size:18px; font-weight:900;">MikoTok</span>
+            </div>
+            <button class="theme-toggle-btn" @click="$emit('toggle-theme')">
+                <span class="material-symbols-rounded" style="font-size: 22px;">{{ appTheme === 'light' ? 'dark_mode' : 'light_mode' }}</span>
+            </button>
+        </header>
+    `
 };
 
 const BottomNav = {
     props: ['currentTab'],
-    template: '<nav class="bottom-nav"><div class="nav-item" :class="{ active: currentTab === \'home\' }" @click="$emit(\'change-tab\', \'home\')"><span class="material-symbols-rounded">home</span><span class="nav-label">Home</span></div><div class="nav-item" :class="{ active: currentTab === \'chat\' }" @click="$emit(\'change-tab\', \'chat\')"><span class="material-symbols-rounded">chat</span><span class="nav-label">Chat</span></div><div class="nav-item" :class="{ active: currentTab === \'feed\' }" @click="$emit(\'change-tab\', \'feed\')"><span class="material-symbols-rounded">forum</span><span class="nav-label">Feed</span></div><div class="nav-item" :class="{ \'active-gerald\': currentTab === \'gerald\' }" @click="$emit(\'change-tab\', \'gerald\')"><span class="material-symbols-rounded">graphic_eq</span><span class="nav-label">Gerald</span></div></nav>'
+    template: `
+        <nav class="bottom-nav">
+            <div class="nav-item" :class="{ active: currentTab === 'home' }" @click="$emit('change-tab', 'home')">
+                <span class="material-symbols-rounded">home</span><span class="nav-label">Home</span>
+            </div>
+            <div class="nav-item" :class="{ active: currentTab === 'chat' }" @click="$emit('change-tab', 'chat')">
+                <span class="material-symbols-rounded">chat</span><span class="nav-label">Chat</span>
+            </div>
+            <div class="nav-item" :class="{ active: currentTab === 'feed' }" @click="$emit('change-tab', 'feed')">
+                <span class="material-symbols-rounded">forum</span><span class="nav-label">Feed</span>
+            </div>
+            <div class="nav-item" :class="{ 'active-gerald': currentTab === 'gerald' }" @click="$emit('change-tab', 'gerald')">
+                <span class="material-symbols-rounded">graphic_eq</span><span class="nav-label">Gerald</span>
+            </div>
+        </nav>
+    `
+};
+
+const ClipModal = {
+    props: ['clip', 'hostname'],
+    template: `
+        <div class="clip-modal-overlay" :class="{ open: !!clip }" @click.self="$emit('close')">
+            <div class="clip-modal-content" v-if="clip">
+                <button class="clip-close-x" @click="$emit('close')"><span class="material-symbols-rounded">close</span></button>
+                <div class="clip-frame-container">
+                    <iframe :src="'https://clips.twitch.tv/embed?clip=' + clip.id + '&parent=' + hostname + '&autoplay=true'" allow="autoplay; fullscreen" allowfullscreen></iframe>
+                </div>
+            </div>
+        </div>
+    `
 };
 
 const FilterMenu = {
     props: ['isOpen', 'currentFilter'],
-    template: '<div class="sheet-overlay" :class="{ open: isOpen }" @click.self="$emit(\'close\')"><div class="bottom-sheet" @click.stop><div class="drag-handle"></div><button class="sheet-option" :class="{ active: currentFilter === \'latest\' }" @click="$emit(\'apply\', \'latest\', \'Latest\')">Latest</button><button class="sheet-option" :class="{ active: currentFilter === \'weekly\' }" @click="$emit(\'apply\', \'weekly\', \'Weekly\')">Weekly</button><button class="sheet-option" :class="{ active: currentFilter === \'month\' }" @click="$emit(\'apply\', \'month\', \'Monthly\')">Monthly</button><button class="sheet-option" :class="{ active: currentFilter === \'6months\' }" @click="$emit(\'apply\', \'6months\', \'6 Months\')">6 Months</button><button class="sheet-option" :class="{ active: currentFilter === \'alltime\' }" @click="$emit(\'apply\', \'alltime\', \'All Time\')">All Time</button></div></div>'
+    template: `
+        <div class="sheet-overlay" :class="{ open: isOpen }" @click.self="$emit('close')">
+            <div class="bottom-sheet" @click.stop>
+                <div class="drag-handle"></div>
+                <button class="sheet-option" :class="{ active: currentFilter === 'latest' }" @click="$emit('apply', 'latest', 'Latest')">Latest</button>
+                <button class="sheet-option" :class="{ active: currentFilter === 'weekly' }" @click="$emit('apply', 'weekly', 'Weekly')">Weekly</button>
+                <button class="sheet-option" :class="{ active: currentFilter === 'month' }" @click="$emit('apply', 'month', 'Monthly')">Monthly</button>
+                <button class="sheet-option" :class="{ active: currentFilter === '6months' }" @click="$emit('apply', '6months', '6 Months')">6 Months</button>
+                <button class="sheet-option" :class="{ active: currentFilter === 'alltime' }" @click="$emit('apply', 'alltime', 'All Time')">All Time</button>
+            </div>
+        </div>
+    `
 };
 
 const ProfileModal = {
     props: ['isOpen', 'currentUser', 'loginEmail', 'loginPass', 'apiConfig', 'syncState', 'wipeState', 'logoutState'],
-    template: '<div class="modal-overlay" :class="{ open: isOpen }" @click.self="$emit(\'close\')"><div class="modal-content" @touchstart="$emit(\'touch-start\', $event)" @touchmove="$emit(\'touch-move\', $event)" @touchend="$emit(\'touch-end\', $event)"><div class="drag-handle"></div><div v-if="!currentUser"><input type="text" :value="loginEmail" @change="$emit(\'update-email\', $event.target.value)" class="input-box" style="margin-top: 10px;" placeholder="Email"><input type="password" :value="loginPass" @change="$emit(\'update-pass\', $event.target.value)" class="input-box" @keyup.enter="$emit(\'login\')" placeholder="Password"><button class="sync-btn" @click="$emit(\'login\')">LOGIN</button></div><div v-else><div class="infra-bar"><div class="status-node"><div class="pulse"></div> SYSTEM: READY</div></div><div class="stat-grid"><a href="https://supabase.com/dashboard/project/yhxcuayiwqpjvalyrcqv" target="_blank" class="external-link-btn" style="color:var(--success)"><span class="material-symbols-rounded">database</span>Supabase DB</a><a href="https://github.com/meowoccino/MikoTok" target="_blank" class="external-link-btn"><span class="material-symbols-rounded">code</span>GitHub Repo</a></div><div class="settings-block"><div class="block-title">TWITCH API CONFIG</div><input type="text" class="sleek-input" :value="apiConfig.cid" @change="$emit(\'update-api\', \'cid\', $event.target.value)" placeholder="Client ID"><input type="password" class="sleek-input" :value="apiConfig.tkn" @change="$emit(\'update-api\', \'tkn\', $event.target.value)" placeholder="Access Token"></div><div class="action-menu"><button class="menu-btn sync-row" :style="syncState === \'sync-success\' ? \'color: var(--success);\' : \'\'" @click="$emit(\'sync\')" :disabled="syncState !== \'idle\'"><div class="btn-content"><div class="icon-wrap" :style="syncState === \'sync-success\' ? \'background: rgba(16, 185, 129, 0.15);\' : \'\'"><span class="material-symbols-rounded" :class="{\'spin-anim\': syncState === \'syncing\'}" style="font-size: 18px;">{{ syncState === \'sync-success\' ? \'check\' : \'sync\' }}</span></div><span>{{ syncState === \'syncing\' ? \'SYNCING...\' : (syncState === \'sync-success\' ? \'SUCCESS\' : \'Force Data Sync\') }}</span></div></button><button class="menu-btn wipe-row" :style="wipeState === \'success\' ? \'color: var(--success);\' : \'\'" @click="$emit(\'wipe\')" :disabled="wipeState !== \'idle\'"><div class="btn-content"><div class="icon-wrap"><span class="material-symbols-rounded" :class="{\'shake-anim\': wipeState === \'wiping\'}" style="font-size: 18px;">delete</span></div><span>{{ wipeState === \'wiping\' ? \'WIPING...\' : (wipeState === \'success\' ? \'MEMORY WIPED!\' : \'Wipe Gerald Memory\') }}</span></div></button><button class="menu-btn sync-row" style="color: #ff4500;" @click="$emit(\'nuke-cache\')"><div class="btn-content"><div class="icon-wrap" style="background: rgba(255, 69, 0, 0.15);"><span class="material-symbols-rounded" style="font-size: 18px;">cached</span></div><span>Nuke App Cache</span></div></button><button class="menu-btn logout-row" @click="$emit(\'logout\')" :disabled="logoutState !== 'idle'"><div class="btn-content"><div class="icon-wrap"><span class="material-symbols-rounded" :class="{\'spin-anim\': logoutState === \'logging_out\'}" style="font-size: 18px;">{{ logoutState === \'logging_out\' ? \'hourglass_empty\' : \'logout\' }}</span></div><span>{{ logoutState === \'logging_out\' ? \'SIGNING OUT...\' : \'Sign Out\' }}</span></div></button></div></div></div></div>'
+    template: `
+        <div class="modal-overlay" :class="{ open: isOpen }" @click.self="$emit('close')">
+            <div class="modal-content" @touchstart="$emit('touch-start', $event)" @touchmove="$emit('touch-move', $event)" @touchend="$emit('touch-end', $event)">
+                <div class="drag-handle"></div>
+                <div v-if="!currentUser">
+                    <input type="text" :value="loginEmail" @change="$emit('update-email', $event.target.value)" class="input-box" style="margin-top: 10px;" placeholder="Email">
+                    <input type="password" :value="loginPass" @change="$emit('update-pass', $event.target.value)" class="input-box" @keyup.enter="$emit('login')" placeholder="Password">
+                    <button class="sync-btn" @click="$emit('login')">LOGIN</button>
+                </div>
+                <div v-else>
+                    <div class="infra-bar"><div class="status-node"><div class="pulse"></div> SYSTEM: READY</div></div>
+                    <div class="stat-grid">
+                        <a href="https://supabase.com/dashboard/project/yhxcuayiwqpjvalyrcqv" target="_blank" class="external-link-btn" style="color:var(--success)"><span class="material-symbols-rounded">database</span>Supabase DB</a>
+                        <a href="https://github.com/meowoccino/MikoTok" target="_blank" class="external-link-btn"><span class="material-symbols-rounded">code</span>GitHub Repo</a>
+                    </div>
+                    <div class="settings-block">
+                        <div class="block-title">TWITCH API CONFIG</div>
+                        <input type="text" class="sleek-input" :value="apiConfig.cid" @change="$emit('update-api', 'cid', $event.target.value)" placeholder="Client ID">
+                        <input type="password" class="sleek-input" :value="apiConfig.tkn" @change="$emit('update-api', 'tkn', $event.target.value)" placeholder="Access Token">
+                    </div>
+                    <div class="action-menu">
+                        <button class="menu-btn sync-row" :style="syncState === 'sync-success' ? 'color: var(--success);' : ''" @click="$emit('sync')" :disabled="syncState !== 'idle'">
+                            <div class="btn-content">
+                                <div class="icon-wrap" :style="syncState === 'sync-success' ? 'background: rgba(16, 185, 129, 0.15);' : ''"><span class="material-symbols-rounded" :class="{'spin-anim': syncState === 'syncing'}" style="font-size: 18px;">{{ syncState === 'sync-success' ? 'check' : 'sync' }}</span></div>
+                                <span>{{ syncState === 'syncing' ? 'SYNCING...' : (syncState === 'sync-success' ? 'SUCCESS' : 'Force Data Sync') }}</span>
+                            </div>
+                        </button>
+                        <button class="menu-btn wipe-row" :style="wipeState === 'success' ? 'color: var(--success);' : ''" @click="$emit('wipe')" :disabled="wipeState !== 'idle'">
+                            <div class="btn-content">
+                                <div class="icon-wrap"><span class="material-symbols-rounded" :class="{'shake-anim': wipeState === 'wiping'}" style="font-size: 18px;">delete</span></div>
+                                <span>{{ wipeState === 'wiping' ? 'WIPING...' : (wipeState === 'success' ? 'MEMORY WIPED!' : 'Wipe Gerald Memory') }}</span>
+                            </div>
+                        </button>
+                        <button class="menu-btn sync-row" style="color: #ff4500;" @click="$emit('nuke-cache')">
+                            <div class="btn-content">
+                                <div class="icon-wrap" style="background: rgba(255, 69, 0, 0.15);"><span class="material-symbols-rounded" style="font-size: 18px;">cached</span></div>
+                                <span>Nuke App Cache</span>
+                            </div>
+                        </button>
+                        <button class="menu-btn logout-row" @click="$emit('logout')" :disabled="logoutState !== 'idle'">
+                            <div class="btn-content">
+                                <div class="icon-wrap"><span class="material-symbols-rounded" :class="{'spin-anim': logoutState === 'logging_out'}" style="font-size: 18px;">{{ logoutState === 'logging_out' ? 'hourglass_empty' : 'logout' }}</span></div>
+                                <span>{{ logoutState === 'logging_out' ? 'SIGNING OUT...' : 'Sign Out' }}</span>
+                            </div>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    `
 };
 
 const ChatView = {
     props: ['currentTab', 'chatMessages', 'chatInput', 'isLoggedIn', 'twitchAuthUrl'],
-    template: '<div class="chat-wrapper" v-show="currentTab === \'chat\'"><div class="twitch-chat-list" id="twitch-chat-list"><div v-if="!isLoggedIn" class="chat-login-prompt"><span class="material-symbols-rounded" style="font-size:48px; color:var(--primary); margin-bottom:10px;">login</span><p style="color:var(--text-main); font-weight:700; margin-bottom:15px;">Login to chat and use emotes.</p><a :href="twitchAuthUrl" class="twitch-login-btn">Connect Twitch</a></div><div v-for="(msg, i) in chatMessages" :key="i" class="twitch-msg-row"><span class="twitch-username" :style="{color: msg.color}">{{ msg.username }}</span><span class="twitch-text" v-html="msg.html"></span></div></div><div class="custom-chat-input-area"><input type="text" class="custom-chat-input" placeholder="Send a message..." :value="chatInput" @input="$emit(\'update-input\', $event.target.value)" @keydown.enter="$emit(\'send-chat\')" :disabled="!isLoggedIn"><button class="icon-btn" @click="$emit(\'send-chat\')" :disabled="!isLoggedIn || !chatInput.trim()"><span class="material-symbols-rounded" style="font-size: 20px;">send</span></button></div></div>'
+    template: `
+        <div class="chat-wrapper" v-show="currentTab === 'chat'">
+            <div class="twitch-chat-list" id="twitch-chat-list">
+                <div v-if="!isLoggedIn" class="chat-login-prompt">
+                    <span class="material-symbols-rounded" style="font-size:48px; color:var(--primary); margin-bottom:10px;">login</span>
+                    <p style="color:var(--text-main); font-weight:700; margin-bottom:15px;">Login to chat and use emotes.</p>
+                    <a :href="twitchAuthUrl" class="twitch-login-btn">Connect Twitch</a>
+                </div>
+                <div v-for="(msg, i) in chatMessages" :key="i" class="twitch-msg-row">
+                    <span class="twitch-username" :style="{color: msg.color}">{{ msg.username }}</span>
+                    <span class="twitch-text" v-html="msg.html"></span>
+                </div>
+            </div>
+            <div class="custom-chat-input-area">
+                <input type="text" class="custom-chat-input" placeholder="Send a message..." :value="chatInput" @input="$emit('update-input', $event.target.value)" @keydown.enter="$emit('send-chat')" :disabled="!isLoggedIn">
+                <button class="icon-btn" @click="$emit('send-chat')" :disabled="!isLoggedIn || !chatInput.trim()">
+                    <span class="material-symbols-rounded" style="font-size: 20px;">send</span>
+                </button>
+            </div>
+        </div>
+    `
 };
 
 const FeedView = {
     props: ['currentTab', 'activeFeedSource', 'ytFeed', 'redditFeed', 'formatNumber'],
-    template: '<div class="feed-layout" v-show="currentTab === \'feed\'"><div class="feed-toggle-container"><div class="feed-toggle"><button :class="{active: activeFeedSource === \'youtube\'}" @click="$emit(\'set-feed\', \'youtube\')">YouTube</button><button :class="{active: activeFeedSource === \'reddit\'}" @click="$emit(\'set-feed\', \'reddit\')">Reddit</button></div></div><div class="feed-scroll-container" v-show="activeFeedSource === \'youtube\'"><div v-if="ytFeed.length === 0" style="text-align:center; padding: 40px; color: var(--text-muted);">Fetching YouTube...</div><div v-for="yt in ytFeed" :key="yt.id" class="feed-item card"><div class="video-container yt-thumb-wrapper"><iframe v-if="yt.playing" :src=\"\'https://www.youtube.com/embed/\' + yt.id + \'?autoplay=1\'\" allow="autoplay; encrypted-media" allowfullscreen loading="lazy"></iframe><div v-else @click="$emit(\'play-yt\', yt)" style="width: 100%; height: 100%;"><img :src=\"\'https://i.ytimg.com/vi/\' + yt.id + \'/hqdefault.jpg\'\" alt="Thumbnail"><div class="play-overlay"><span class="material-symbols-rounded">play_arrow</span></div></div></div><div class="yt-info"><div class="yt-title">{{ yt.title }}</div><div class="yt-date">{{ yt.date }}</div></div></div></div><div class="feed-scroll-container" v-show="activeFeedSource === \'reddit\'"><div v-if="redditFeed.length === 0" style="text-align:center; padding: 40px; color: var(--text-muted);">Fetching Reddit...</div><div v-for="post in redditFeed" :key="post.id" class="feed-item reddit-compact-card"><div class="reddit-header"><div class="reddit-author">Posted • {{ post.date }}<br><span>u/{{ post.author }}</span></div><span v-if="post.link_flair_text" class="reddit-flair">{{ post.link_flair_text }}</span></div><div v-if="post.thumbnail && post.thumbnail.startsWith(\'http\')" class="reddit-img-container"><img :src="post.thumbnail" onerror="this.closest(\'div\').style.display=\'none\'" alt="Reddit Media"></div><div class="reddit-post-title" :style="post.thumbnail && post.thumbnail.startsWith(\'http\') ? \'\' : \'flex: 1;\'">{{ post.title }}</div><a :href=\"\'https://reddit.com\' + post.permalink\" target=\"_blank\" class=\"reddit-actions\"><div style=\"display: flex; align-items: center; gap: 4px; color: var(--reddit);\"><span class=\"material-symbols-rounded\" style=\"font-size: 16px;\">arrow_upward</span> {{ formatNumber(post.ups) }}</div><div style=\"display: flex; align-items: center; gap: 4px;\"><span class=\"material-symbols-rounded\" style=\"font-size: 16px;\">chat_bubble</span> {{ formatNumber(post.num_comments) }}</div><div style=\"margin-left: auto; color: var(--text-muted); display: flex; align-items: center; gap: 4px; font-size: 11px; text-transform: uppercase;\">Open <span class=\"material-symbols-rounded\" style=\"font-size: 14px;\">open_in_new</span></div></a></div></div></div>'
+    template: `
+        <div class="feed-layout" v-show="currentTab === 'feed'">
+            <div class="feed-toggle-container">
+                <div class="feed-toggle">
+                    <button :class="{active: activeFeedSource === 'youtube'}" @click="$emit('set-feed', 'youtube')">YouTube</button>
+                    <button :class="{active: activeFeedSource === 'reddit'}" @click="$emit('set-feed', 'reddit')">Reddit</button>
+                </div>
+            </div>
+            
+            <div class="feed-scroll-container" v-show="activeFeedSource === 'youtube'">
+                <div v-if="ytFeed.length === 0" style="text-align:center; padding: 40px; color: var(--text-muted);">Fetching YouTube...</div>
+                <div v-for="yt in ytFeed" :key="yt.id" class="feed-item card">
+                    <div class="video-container yt-thumb-wrapper">
+                        <iframe v-if="yt.playing" :src="'https://www.youtube.com/embed/' + yt.id + '?autoplay=1'" allow="autoplay; encrypted-media" allowfullscreen loading="lazy"></iframe>
+                        <div v-else @click="$emit('play-yt', yt)" style="width: 100%; height: 100%;">
+                            <img :src="'https://i.ytimg.com/vi/' + yt.id + '/hqdefault.jpg'" alt="Thumbnail">
+                            <div class="play-overlay"><span class="material-symbols-rounded">play_arrow</span></div>
+                        </div>
+                    </div>
+                    <div class="yt-info">
+                        <div class="yt-title">{{ yt.title }}</div>
+                        <div class="yt-date">{{ yt.date }}</div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="feed-scroll-container" v-show="activeFeedSource === 'reddit'">
+                <div v-if="redditFeed.length === 0" style="text-align:center; padding: 40px; color: var(--text-muted);">Fetching Reddit...</div>
+                <div v-for="post in redditFeed" :key="post.id" class="feed-item reddit-compact-card">
+                    <div class="reddit-header">
+                        <div class="reddit-author">Posted • {{ post.date }}<br><span>u/{{ post.author }}</span></div>
+                        <span v-if="post.link_flair_text" class="reddit-flair">{{ post.link_flair_text }}</span>
+                    </div>
+                    <div v-if="post.thumbnail && post.thumbnail.startsWith('http')" class="reddit-img-container">
+                        <img :src="post.thumbnail" onerror="this.closest('div').style.display='none'" alt="Reddit Media">
+                    </div>
+                    <div class="reddit-post-title" :style="post.thumbnail && post.thumbnail.startsWith('http') ? '' : 'flex: 1;'">{{ post.title }}</div>
+                    <a :href="'https://reddit.com' + post.permalink" target="_blank" class="reddit-actions">
+                        <div style="display: flex; align-items: center; gap: 4px; color: var(--reddit);"><span class="material-symbols-rounded" style="font-size: 16px;">arrow_upward</span> {{ formatNumber(post.ups) }}</div>
+                        <div style="display: flex; align-items: center; gap: 4px;"><span class="material-symbols-rounded" style="font-size: 16px;">chat_bubble</span> {{ formatNumber(post.num_comments) }}</div>
+                        <div style="margin-left: auto; color: var(--text-muted); display: flex; align-items: center; gap: 4px; font-size: 11px; text-transform: uppercase;">Open <span class="material-symbols-rounded" style="font-size: 14px;">open_in_new</span></div>
+                    </a>
+                </div>
+            </div>
+        </div>
+    `
 };
 
 const GeraldView = {
     props: ['currentTab', 'geraldMessages', 'isGeraldTyping', 'geraldInput', 'showEmotePicker', 'showMinigames', 'customEmotes', 'parseMarkdown', 'apiConnected'],
-    template: '<div class="gerald-container" v-show="currentTab === \'gerald\'"><div class="gerald-header" @click="$emit(\'close-pickers\')"><div class="gerald-avatar-wrapper"><img src="gerald.png" class="gerald-avatar" alt="Gerald"><div class="gerald-title-block"><span class="gerald-name-text">Gerald OS</span><div :class="apiConnected ? \'pulse-dot-live\' : \'pulse-dot-offline\'\"></div></div></div></div></div><div class="gerald-messages" id="gerald-msgs" @click="$emit(\'close-pickers\')"><template v-for="(m, i) in geraldMessages" :key="i"><div v-if=\"i === 0 && m.role === \'gerald\'\" class="terminal-intro"><div class="terminal-text">> Human detected.<br>> State your inquiry.</div><div class="gerald-system-card startup-anim"><div class="gerald-sys-row"><span class="sys-label">CORE:</span> <span class="sys-value">ONLINE</span></div><div class="gerald-sys-row"><span class="sys-label">MOOD:</span> <span class="sys-value">SARCASTIC</span></div><div class="gerald-sys-row"><span class="sys-label">PATIENCE:</span> <span class="sys-value">125ms</span></div></div></div><div v-else class="chat-bubble" :class="m.role" v-html="parseMarkdown(m.content)"></div></template><div v-if="isGeraldTyping" key="typing" class="typing-indicator">COMPUTING...</div></div><div class="gerald-action-area"><transition name="tray"><div class="tray-container" v-show="showEmotePicker"><img v-for="(emote, name) in customEmotes" :key="name" :src="emote.url ? emote.url : \'https://cdn.discordapp.com/emojis/\' + emote.id + \'.\' + (emote.animated ? \'gif\' : \'png\') + \'?size=44\'" class="emote-picker-img" @click="$emit(\'insert-emote\', name)"></div></transition><transition name="tray"><div class="tray-container" v-show="showMinigames"><button class="bribe-btn" @click="$emit(\'play-game\', \'glitch\')">🕶️ Glitch Persona</button><button class="bribe-btn" @click="$emit(\'play-game\', \'shader\')">🔥 Compile UE5</button><button class="bribe-btn" @click="$emit(\'play-game\', \'boba\')">🥤 Boba Spill</button><button class="bribe-btn" @click="$emit(\'play-game', \'pineapple\')">🚪 Pineapple Walk-In</button><button class="bribe-btn" @click="$emit(\'play-game\', \'cat\')">🐈 Cat on PC</button><button class="bribe-btn" @click="$emit(\'play-game\', \'bits\')">🎟️ 100K Bits</button><button class="bribe-btn" @click="$emit(\'play-game\', \'mute\')">🔇 Mute Mic</button><button class="bribe-btn" @click="$emit(\'play-game\', \'bald\')">🧑‍🦲 Delete Hair</button><button class="bribe-btn" @click="$emit(\'play-game\', \'siren\')">🚨 Firetruck Siren</button></div></transition><div class="gerald-input-area"><div class="gerald-input-wrapper"><button class="emote-toggle-btn" @click="$emit(\'toggle-emotes\')"><span class="material-symbols-rounded" :style="{ color: showEmotePicker ? \'var(--primary)\' : \'inherit\' }">mood</span></button><button class="emote-toggle-btn" @click="$emit(\'toggle-minigames\')"><span class="material-symbols-rounded" :style="{ color: showMinigames ? \'var(--primary)\' : \'inherit\' }">sports_esports</span></button><textarea class="gerald-input" rows="1" placeholder="Message Gerald..." :value="geraldInput" @input="$emit(\'update-input\', $event.target.value)" @keydown="$emit(\'key-down\', $event)" id="gerald-txt-input" @focus="$emit(\'close-pickers\')"></textarea></div><button class="gerald-send" @click="$emit(\'send\')"><span class="material-symbols-rounded">send</span></button></div></div></div>'
+    template: `
+        <div class="gerald-container" v-show="currentTab === 'gerald'">
+            <div class="gerald-header" @click="$emit('close-pickers')">
+                <div class="gerald-avatar-wrapper">
+                    <img src="gerald.png" class="gerald-avatar" alt="Gerald">
+                    <div class="gerald-title-block">
+                        <span class="gerald-name-text">Gerald OS</span>
+                        <div :class="apiConnected ? 'pulse-dot-live' : 'pulse-dot-offline'"></div>
+                    </div>
+                </div>
+            </div>
+            <div class="gerald-messages" id="gerald-msgs" @click="$emit('close-pickers')">
+                <template v-for="(m, i) in geraldMessages" :key="i">
+                    <div v-if="i === 0 && m.role === 'gerald'" class="terminal-intro">
+                        <div class="terminal-text startup-anim">
+                            > System ready.<br>
+                            > Mood: Sarcastic<br>
+                            > Patience: 125<br>
+                            --------------------<br>
+                            Human detected.<br>
+                            What do you want?
+                        </div>
+                    </div>
+                    <div v-else class="chat-bubble" :class="m.role" v-html="parseMarkdown(m.content)"></div>
+                </template>
+                <div v-if="isGeraldTyping" key="typing" class="typing-indicator">COMPUTING...</div>
+            </div>
+            <div class="gerald-action-area">
+                <transition name="tray">
+                    <div class="tray-container" v-show="showEmotePicker">
+                        <img v-for="(emote, name) in customEmotes" :key="name" :src="emote.url ? emote.url : 'https://cdn.discordapp.com/emojis/' + emote.id + '.' + (emote.animated ? 'gif' : 'png') + '?size=44'" class="emote-picker-img" @click="$emit('insert-emote', name)">
+                    </div>
+                </transition>
+                <transition name="tray">
+                    <div class="tray-container" v-show="showMinigames">
+                        <button class="bribe-btn" @click="$emit('play-game', 'glitch')">🕶️ Glitch Persona</button>
+                        <button class="bribe-btn" @click="$emit('play-game', 'shader')">🔥 Compile UE5</button>
+                        <button class="bribe-btn" @click="$emit('play-game', 'boba')">🥤 Boba Spill</button>
+                        <button class="bribe-btn" @click="$emit('play-game', 'pineapple')">🚪 Pineapple Walk-In</button>
+                        <button class="bribe-btn" @click="$emit('play-game', 'cat')">🐈 Cat on PC</button>
+                        <button class="bribe-btn" @click="$emit('play-game', 'bits')">🎟️ 100K Bits</button>
+                        <button class="bribe-btn" @click="$emit('play-game', 'mute')">🔇 Mute Mic</button>
+                        <button class="bribe-btn" @click="$emit('play-game', 'bald')">🧑‍🦲 Delete Hair</button>
+                        <button class="bribe-btn" @click="$emit('play-game', 'siren')">🚨 Firetruck Siren</button>
+                    </div>
+                </transition>
+                <div class="gerald-input-area">
+                    <div class="gerald-input-wrapper">
+                        <button class="emote-toggle-btn" @click="$emit('toggle-emotes')"><span class="material-symbols-rounded" :style="{ color: showEmotePicker ? 'var(--primary)' : 'inherit' }">mood</span></button>
+                        <button class="emote-toggle-btn" @click="$emit('toggle-minigames')"><span class="material-symbols-rounded" :style="{ color: showMinigames ? 'var(--primary)' : 'inherit' }">sports_esports</span></button>
+                        <textarea class="gerald-input" rows="1" placeholder="Message Gerald..." :value="geraldInput" @input="$emit('update-input', $event.target.value)" @keydown="$emit('key-down', $event)" id="gerald-txt-input" @focus="$emit('close-pickers')"></textarea>
+                    </div>
+                    <button class="gerald-send" @click="$emit('send')"><span class="material-symbols-rounded">send</span></button>
+                </div>
+            </div>
+        </div>
+    `
 };
 
 const HomeView = {
-    props: ['currentTab', 'currentVodIndex', 'recentVods', 'isLive', 'hostname', 'clips', 'activeFilterLabel', 'optimizeTwitchImg', 'formatViews', 'formatDate', 'activeClipId'],
-    template: '<div class="scroll-area" id="home-scroll" v-show="currentTab === \'home\'" @scroll="$emit(\'scroll\', $event)"><div class="hero-section"><div class="header-controls" style="margin-bottom: 12px; display: flex; justify-content: flex-start;" v-if="!isLive"><div class="premium-badge vod" v-if="recentVods && recentVods.length > 0"><div class="dot"></div><span>{{ recentVods[currentVodIndex] ? (\'VOD • \' + recentVods[currentVodIndex].date) : \'PAST BROADCAST\' }}</span></div></div><div class="video-container" style="border-radius:12px; box-shadow: 0 4px 15px rgba(0,0,0,0.1);"><iframe v-if="currentVodIndex === -1 && currentTab === \'home\'" id="miko-live-player" :src=\"\'https://player.twitch.tv/?channel=codemiko&parent=\' + hostname + \'&autoplay=true&muted=true\'\" allow="autoplay; fullscreen" allowfullscreen loading="lazy"></iframe><iframe v-else-if="recentVods && recentVods[currentVodIndex] && currentTab === \'home\'" :src=\"\'https://player.twitch.tv/?video=\' + recentVods[currentVodIndex].id + \'&parent=\' + hostname + \'&autoplay=true&muted=true\'\" allow="autoplay; fullscreen" allowfullscreen loading="lazy"></iframe></div><div class="carousel-controls" v-if="recentVods && recentVods.length > 0 && !isLive" style="margin-top: 12px; justify-content: flex-end;"><button class="carousel-btn" :class="{ \'hidden-arrow\': currentVodIndex <= 0 }" @click.stop="$emit(\'prev-vod\')"><span class="material-symbols-rounded">chevron_left</span></button><button class="carousel-btn" :class="{ \'hidden-arrow\': currentVodIndex >= recentVods.length - 1 }" @click.stop="$emit(\'next-vod\')"><span class="material-symbols-rounded">chevron_right</span></button></div></div><div class="clips-list-container"><div class="clips-header"><div class="filter-wrapper"><button class="filter-btn-tiny" @click="$emit(\'open-filter\')"><span class="material-symbols-rounded" style="font-size: 16px;">sort</span><span>{{ activeFilterLabel }}</span></button></div></div><div class="clip-list-item" v-for="clip in clips" :key="clip.id" @click="$emit(\'play-clip\', clip)"><div class="clip-thumb-wrapper"><img :src=\"clip.thumbnail_url ? optimizeTwitchImg(clip.thumbnail_url) : \'\'\" loading="lazy" alt="Thumbnail"><iframe v-if="activeClipId === clip.id" :src=\"\'https://clips.twitch.tv/embed?clip=\' + clip.id + \'&parent=\' + hostname + \'&autoplay=true&muted=false\'\" allow="autoplay; fullscreen" allowfullscreen style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: 5;"></iframe><div class="duration-badge">0:45</div></div><div class="miko-metadata"><div class="author-name">{{ clip.title }}</div><div class="clip-stats"><span>Just Chatting • {{ formatDate(clip.created_at) }}</span><span>{{ formatViews(clip.view_count) }} views</span></div></div></div></div></div>'
+    props: ['currentTab', 'currentVodIndex', 'recentVods', 'isLive', 'hostname', 'clips', 'activeFilterLabel', 'optimizeTwitchImg', 'formatViews', 'formatDate'],
+    template: `
+        <div class="scroll-area" id="home-scroll" v-show="currentTab === 'home'" @scroll="$emit('scroll', $event)">
+            <div class="hero-section">
+                <div class="header-controls" style="margin-bottom: 12px; display: flex; justify-content: flex-start;" v-if="!isLive">
+                    <div class="premium-badge vod" v-if="recentVods && recentVods.length > 0">
+                        <div class="dot"></div><span>{{ recentVods[currentVodIndex] ? ('VOD • ' + recentVods[currentVodIndex].date) : 'PAST BROADCAST' }}</span>
+                    </div>
+                </div>
+                <div class="video-container" style="border-radius:12px; box-shadow: 0 4px 15px rgba(0,0,0,0.1);">
+                    <iframe v-if="currentVodIndex === -1 && currentTab === 'home'" id="miko-live-player" :src="'https://player.twitch.tv/?channel=codemiko&parent=' + hostname + '&autoplay=true&muted=true'" allow="autoplay; fullscreen" allowfullscreen loading="lazy"></iframe>
+                    <iframe v-else-if="recentVods && recentVods[currentVodIndex] && currentTab === 'home'" :src="'https://player.twitch.tv/?video=' + recentVods[currentVodIndex].id + '&parent=' + hostname + '&autoplay=true&muted=true'" allow="autoplay; fullscreen" allowfullscreen loading="lazy"></iframe>
+                </div>
+                <div class="carousel-controls" v-if="recentVods && recentVods.length > 0 && !isLive" style="margin-top: 12px; justify-content: flex-end;">
+                    <button class="carousel-btn" :class="{ 'hidden-arrow': currentVodIndex <= 0 }" @click.stop="$emit('prev-vod')"><span class="material-symbols-rounded">chevron_left</span></button>
+                    <button class="carousel-btn" :class="{ 'hidden-arrow': currentVodIndex >= recentVods.length - 1 }" @click.stop="$emit('next-vod')"><span class="material-symbols-rounded">chevron_right</span></button>
+                </div>
+            </div>
+            <div class="clips-list-container">
+                <div class="clips-header">
+                    <div class="filter-wrapper">
+                        <button class="filter-btn-tiny" @click="$emit('open-filter')">
+                            <span class="material-symbols-rounded" style="font-size: 16px;">sort</span><span>{{ activeFilterLabel }}</span>
+                        </button>
+                    </div>
+                </div>
+                <div class="clip-list-item" v-for="clip in clips" :key="clip.id" @click="$emit('play-clip', clip)">
+                    <div class="clip-thumb-wrapper">
+                        <img :src="clip.thumbnail_url ? optimizeTwitchImg(clip.thumbnail_url) : ''" loading="lazy" alt="Thumbnail">
+                        <div class="duration-badge">0:45</div>
+                    </div>
+                    <div class="miko-metadata">
+                        <div class="author-name">{{ clip.title }}</div>
+                        <div class="clip-stats">
+                            <span>Just Chatting • {{ formatDate(clip.created_at) }}</span>
+                            <span>{{ formatViews(clip.view_count) }} views</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    `
 };
 
 const { createApp, ref, onMounted, nextTick, watch } = Vue;
@@ -71,7 +339,6 @@ createApp({
             "mkoSusge": { id: "1273724925743595540", animated: false }, "KEKW": { id: "1456296327964262453", animated: false }, "mkoNOTED": { id: "1369891690898391070", animated: false }, "mkoHype": { id: "870761283035734086", animated: false }, "Shruge": { id: "1456297412875518078", animated: false }, "Bedge": { id: "1369823782084022423", animated: false }, "mkoCoffee": { id: "1369891686544834570", animated: false }, "D_": { id: "1456295688626241619", animated: false }, "mkoLove": { id: "1150505635721519115", animated: false }
         });
 
-        const geraldGreetings = [];
         const geraldInput = ref(''), geraldMessages = ref([{role:'gerald', content: ''}]), isGeraldTyping = ref(false), showEmotePicker = ref(false), showMinigames = ref(false);
         
         const currentFilter = ref('latest'), activeFilterLabel = ref('Latest'), isFilterMenuOpen = ref(false);
@@ -80,13 +347,12 @@ createApp({
         const ytFeed = ref([]);
         const redditFeed = ref([]);
         
-        const activeClipId = ref(null);
         const selectedClip = ref(null);
 
         const chatMessages = ref([]);
         const chatInput = ref('');
         const twitchChatToken = ref(localStorage.getItem('tw_chat_token') || null);
-        const twitchAuthUrl = ref('');
+        const twitchAuthUrl = ref('https://id.twitch.tv/oauth2/authorize?client_id=kimne78kx3ncx6brgo4mv6wki5h1ko&redirect_uri=https://meowoccino.github.io/MikoTok&response_type=token&scope=chat:read+chat:edit&force_verify=true');
         let twitchWs = null;
 
         const updateThemeClass = () => {
@@ -103,29 +369,6 @@ createApp({
             appTheme.value = appTheme.value === 'light' ? 'dark' : 'light';
             localStorage.setItem('miko_theme', appTheme.value);
             updateThemeClass();
-        };
-
-        const parseTwitchEmotes = (text, emotesTag) => {
-            if (!emotesTag) return text;
-            let replacements = [];
-            emotesTag.split('/').forEach(emote => {
-                let [id, positions] = emote.split(':');
-                if(positions) {
-                    positions.split(',').forEach(pos => {
-                        let [start, end] = pos.split('-');
-                        replacements.push({ id, start: parseInt(start), end: parseInt(end) });
-                    });
-                }
-            });
-            replacements.sort((a, b) => b.start - a.start);
-            let html = text;
-            replacements.forEach(r => {
-                let before = html.substring(0, r.start);
-                let after = html.substring(r.end + 1);
-                let img = `<img src="https://static-cdn.jtvnw.net/emoticons/v2/${r.id}/default/dark/1.0" class="twitch-emote" alt="emote">`;
-                html = before + img + after;
-            });
-            return html;
         };
 
         const connectTwitchChat = () => {
@@ -164,9 +407,8 @@ createApp({
                         if (matchUser && matchText) {
                             user = tags['display-name'] || matchUser[1];
                             text = matchText[1].trim();
-                            let html = parseTwitchEmotes(text, tags['emotes']);
                             
-                            chatMessages.value.push({ username: user, html: html, color: tags['color'] || '#9146FF' });
+                            chatMessages.value.push({ username: user, html: text, color: tags['color'] || '#9146FF' });
                             if (chatMessages.value.length > 100) chatMessages.value.shift();
                             
                             if (currentTab.value === 'chat') {
@@ -193,7 +435,7 @@ createApp({
         const closeFilterMenu = () => { isFilterMenuOpen.value = false; };
         const insertEmote = (name) => { const inputEl = document.getElementById('gerald-txt-input'); if (inputEl) { inputEl.value += `:${name}: `; geraldInput.value = inputEl.value; } else { geraldInput.value += `:${name}: `; } };
 
-        const playClip = (clip) => { activeClipId.value = clip.id; };
+        const playClip = (clip) => { selectedClip.value = clip; };
         const playYt = (yt) => { yt.playing = true; };
 
         const scrollToBottom = () => {
@@ -245,17 +487,9 @@ createApp({
             if (!text) return '';
             let html = text.replace(/</g, '<').replace(/>/g, '>');
             html = html.replace(/(^|\W)'([^']+)'(\W|$)/g, '$1<strong>$2</strong>$3');
-            html = html.replace(/\*\*(.*?)\*\"/g, '$1').replace(/\*(.*?)\*/g, '$1'); 
+            html = html.replace(/\*\*(.*?)\*\*/g, '$1').replace(/\*(.*?)\*/g, '$1'); 
             html = html.replace(/\[([^\]]+)\]\((https?:\/\/[^\s]+)\)/gi, '<a href="$2" target="_blank" style="color: var(--primary); text-decoration: underline; font-weight: bold;">$1</a>');
             html = html.replace(/(^|[^"'])(https?:\/\/[^\s<)]+)/gi, '$1<a href="$2" target="_blank" style="color: var(--primary); text-decoration: underline; word-break: break-all;">$2</a>');
-            html = html.replace(/`?:([^:\s]+):`?/g, (match, name) => {
-                const emote = customEmotes.value[name];
-                if (emote) { 
-                    const src = emote.url ? emote.url : `https://cdn.discordapp.com/emojis/${emote.id}.${emote.animated ? 'gif' : 'png'}?size=44`;
-                    return `<img src="${src}" alt=":${name}:" style="height: 1.5em; vertical-align: middle; display: inline-block;">`; 
-                }
-                return match;
-            });
             return html;
         };
 
@@ -359,7 +593,7 @@ createApp({
         };
 
         const fetchSocialFeeds = () => {
-            fetch('https://api.codetabs.com/v1/proxy?quest=' + encodeURIComponent('https://www.reddit.com/r/CodeMiko/new.json?limit=15'))
+            fetch('https://api.allorigins.win/raw?url=' + encodeURIComponent('https://www.reddit.com/r/CodeMiko/new.json?limit=15'))
                 .then(res => res.json())
                 .then(data => {
                     if (data && data.data && data.data.children) {
@@ -374,7 +608,7 @@ createApp({
                     }
                 }).catch(err => { redditFeed.value = []; });
 
-            fetch('https://api.codetabs.com/v1/proxy?quest=' + encodeURIComponent('https://api.rss2json.com/v1/api.json?rss_url=https://www.youtube.com/feeds/videos.xml?channel_id=UCXz_cgB5Lq2kE9Z-2-zU-hg'))
+            fetch('https://api.rss2json.com/v1/api.json?rss_url=' + encodeURIComponent('https://www.youtube.com/feeds/videos.xml?channel_id=UC1wNmbS9K-X9j3t_Ww_gZ3w'))
                 .then(res => res.json())
                 .then(data => {
                     if (data && data.items && data.items.length > 0) {
@@ -404,10 +638,6 @@ createApp({
         const runSync = async () => {};
 
         onMounted(async () => {
-            const clientId = apiConfig.value.cid || 'kimne78kx3ncx6brgo4mv6wki5h1ko';
-            const redirectUri = "https://meowoccino.github.io/MikoTok/";
-            twitchAuthUrl.value = 'https://id.twitch.tv/oauth2/authorize?client_id=' + clientId + '&redirect_uri=' + encodeURIComponent(redirectUri) + '&response_type=token&scope=chat:read+chat:edit&force_verify=true';
-            
             updateThemeClass();
             if (window.location.hash.includes('access_token')) {
                 const params = new URLSearchParams(window.location.hash.substring(1));
@@ -430,7 +660,7 @@ createApp({
         });
 
         return { 
-            hostname, splashVisible, splashOpacity, currentTab, appTheme, toggleTheme, clips, modals, isLive, toast, currentUser, loginEmail, loginPass, apiConfig, geraldInput, geraldMessages, isGeraldTyping, talkToGerald, logoSvg, syncState, wipeState, logoutState, runSync, isHeaderVisible, handleScroll, handleModalTouchStart, handleModalTouchMove, handleModalTouchEnd, currentFilter, activeFilterLabel, isFilterMenuOpen, closeFilterMenu, applyFilter, parseMarkdown, recentVods, currentVodIndex, nextVod, prevVod, customEmotes, showEmotePicker, insertEmote, clearGeraldHistory, handleGeraldEnter, toggleEmotes, toggleMinigames, closePickers, ytFeed, redditFeed, formatNumber, showMinigames, playMinigame, activeFeedSource, nukeCache, activeClipId,
+            hostname, splashVisible, splashOpacity, currentTab, appTheme, toggleTheme, clips, modals, isLive, toast, currentUser, loginEmail, loginPass, apiConfig, geraldInput, geraldMessages, isGeraldTyping, talkToGerald, logoSvg, syncState, wipeState, logoutState, runSync, isHeaderVisible, handleScroll, handleModalTouchStart, handleModalTouchMove, handleModalTouchEnd, currentFilter, activeFilterLabel, isFilterMenuOpen, closeFilterMenu, applyFilter, parseMarkdown, recentVods, currentVodIndex, nextVod, prevVod, customEmotes, showEmotePicker, insertEmote, clearGeraldHistory, handleGeraldEnter, toggleEmotes, toggleMinigames, closePickers, ytFeed, redditFeed, formatNumber, showMinigames, playMinigame, activeFeedSource, nukeCache,
             chatMessages, chatInput, twitchChatToken, twitchAuthUrl, sendTwitchChatMessage, selectedClip, playClip, playYt,
             handleLogin: async () => { const email = loginEmail.value.includes('@') ? loginEmail.value : `${loginEmail.value}@miko.com`; const { data } = await sbClient.auth.signInWithPassword({ email, password: loginPass.value }); if(data.user) { currentUser.value = data.user; modals.value.profile = false; loadGeraldHistory(); } }, 
             handleLogout: () => { if (logoutState.value !== 'idle') return; logoutState.value = 'logging_out'; setTimeout(() => { sbClient.auth.signOut(); currentUser.value = null; geraldMessages.value = [{role:'gerald', content: ''}]; modals.value.profile = false; logoutState.value = 'idle'; }, 1500); },
