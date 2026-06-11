@@ -16,7 +16,7 @@
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="https://unpkg.com/vue@3/dist/vue.global.prod.js"></script>
     
-    <link rel="stylesheet" href="./styles.css?v=39">
+    <link rel="stylesheet" href="./styles.css?v=40">
 </head>
 <body @click="closeFilterMenu">
     <div id="app-container" v-cloak :class="['theme-' + appTheme, {'gerald-theme': currentTab === 'gerald'}]">
@@ -132,11 +132,6 @@
             @nuke-cache="nukeCache">
         </profile-modal>
 
-        <discord-modal
-            :is-open="modals.discord"
-            @close="modals.discord = false">
-        </discord-modal>
-
         <bottom-nav
             :current-tab="currentTab"
             @change-tab="tab => { currentTab = tab; isHeaderVisible = true; }">
@@ -144,6 +139,6 @@
 
     </div>
 
-    <script src="./app.js?v=39"></script>
+    <script src="./app.js?v=40"></script>
 </body>
 </html>
