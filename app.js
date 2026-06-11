@@ -151,7 +151,9 @@ const ChatView = {
             return `https://cdn.discordapp.com/emojis/${emote.id}.${emote.animated ? 'gif' : 'png'}?size=44`;
         },
         insertEmote(name) {
-            this.$emit('insert-chat-emote', name);
+            const cur = this.chatInput || '';
+            const newVal = (cur.length && !cur.endsWith(' ') ? cur + ' ' : cur) + ':' + name + ': ';
+            this.$emit('update-input', newVal);
             this.showPicker = false;
             this.$nextTick(() => this.$refs.chatInput && this.$refs.chatInput.focus());
         },
@@ -250,7 +252,7 @@ const MoreView = {
                     <span style="color: var(--text-main);">TikTok</span>
                 </a>
                 <a href="https://x.com/thecodemiko" target="_blank" class="social-card">
-                    <svg viewBox="0 0 24 24" class="social-icon" style="color: var(--text-main);"><path fill="currentColor" d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73; font-weight: bold;"></path></svg>
+                    <svg viewBox="0 0 24 24" class="social-icon" style="color: var(--text-main);"><path fill="currentColor" d="M18.242 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>
                     <span style="color: var(--text-main);">X (Twitter)</span>
                 </a>
                 <a href="https://www.instagram.com/thecodemiko/" target="_blank" class="social-card">
@@ -310,7 +312,7 @@ const GeraldView = {
                     <div class="emote-picker-grid">
                         <img v-for="(emote, name) in customEmotes" :key="name"
                              :src="emote.url ? emote.url : 'https://cdn.discordapp.com/emojis/' + emote.id + '.' + (emote.animated ? 'gif' : 'png') + '?size=44'"
-                             class="emote-picker-img" @click="$emit('insert-emote', ':' + name + ':')">
+                             class="emote-picker-img" @click="$emit('insert-emote', name)">
                     </div>
                 </div>
                 <div class="chat-emote-tray" v-show="showMinigames" style="bottom: 100%; border-bottom: none; border-radius: 16px 16px 0 0;">
@@ -616,6 +618,10 @@ createApp({
         const closeFilterMenu = () => { isFilterMenuOpen.value = false; };
         const playClip = (clip) => { selectedClip.value = clip; };
 
+        const insertEmote = (name) => {
+            geraldInput.value += (geraldInput.value.length && !geraldInput.value.endsWith(' ') ? ' ' : '') + ':' + name + ': ';
+        };
+
         const scrollToBottom = () => {
             setTimeout(() => { const b = document.getElementById('gerald-msgs'); if (b) b.scrollTop = b.scrollHeight; }, 100);
         };
@@ -818,10 +824,6 @@ createApp({
             if (session?.user) { currentUser.value = session.user; loadGeraldHistory(); }
             load7TVEmotes();
             loadData(); checkLive();
-            
-            setInterval(loadData, 21600000);
-            setInterval(checkLive, 60000); 
-            setTimeout(() => { splashOpacity.value = 0; setTimeout(() => splashVisible.value = false, 400); }, 1500);
         });
 
         return { 
