@@ -189,16 +189,20 @@ const ChatView = {
                 </div>
             </div>
 
-            <div class="chat-emote-tray" v-show="showPicker && isLoggedIn" @click.stop>
-                <input ref="pickerSearch" v-model="pickerQuery" class="emote-search-input" placeholder="Search emotes…">
-                <div class="emote-picker-grid">
-                    <img v-for="([name, emote]) in filteredEmotes" :key="name"
-                         :src="getEmoteUrl(emote)" :title="name"
-                         class="emote-picker-img"
-                         @click="insertEmote(name)">
-                    <div v-if="filteredEmotes.length === 0" style="color:var(--text-muted);font-size:12px;padding:8px;width:100%;">No emotes found</div>
+            <transition name="tray-slide">
+                <div class="chat-emote-tray" v-if="showPicker && isLoggedIn" @click.stop>
+                    <input ref="pickerSearch" v-model="pickerQuery"
+                           class="emote-search-input" placeholder="Search emotes…">
+                    <div class="emote-picker-grid">
+                        <img v-for="([name, emote]) in filteredEmotes" :key="name"
+                             :src="getEmoteUrl(emote)" :title="name"
+                             class="emote-picker-img"
+                             @click="insertEmote(name)">
+                        <div v-if="filteredEmotes.length === 0"
+                             style="color:var(--text-muted);font-size:12px;padding:8px;width:100%;">No emotes found</div>
+                    </div>
                 </div>
-            </div>
+            </transition>
 
             <div v-if="isLoggedIn" class="custom-chat-input-area">
                 <button class="chat-icon-btn" :class="{ 'chat-icon-active': showPicker }" @click.stop="togglePicker" title="Emotes">
@@ -254,7 +258,7 @@ const MoreView = {
                     <span style="color: var(--text-main);">X (Twitter)</span>
                 </a>
                 <a href="https://www.instagram.com/thecodemiko/" target="_blank" class="social-card">
-                    <svg viewBox="0 0 24 24" class="social-icon" style="color: #E1306C;"><path fill="currentColor" d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07; font-weight: bold;"></path></svg>
+                    <svg viewBox="0 0 24 24" class="social-icon" style="color: #E1306C;"><path fill="currentColor" d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zM12 0C8.741 0 8.333.014 7.053.072 2.695.272.273 2.69.073 7.052.014 8.333 0 8.741 0 12c0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98C8.333 23.986 8.741 24 12 24c3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98C15.668.014 15.259 0 12 0zm0 5.838a6.162 6.162 0 1 0 0 12.324 6.162 6.162 0 0 0 0-12.324zM12 16a4 4 0 1 1 0-8 4 4 0 0 1 0 8zm6.406-11.845a1.44 1.44 0 1 0 0 2.881 1.44 1.44 0 0 0 0-2.881z"/></svg>
                     <span style="color: var(--text-main);">Instagram</span>
                 </a>
                 <a href="https://www.snapchat.com/add/codemiko" target="_blank" class="social-card">
@@ -310,7 +314,7 @@ const GeraldView = {
                     <div class="emote-picker-grid">
                         <img v-for="(emote, name) in customEmotes" :key="name"
                              :src="emote.url ? emote.url : 'https://cdn.discordapp.com/emojis/' + emote.id + '.' + (emote.animated ? 'gif' : 'png') + '?size=44'"
-                             class="emote-picker-img" @click="$emit('insert-emote', name)">
+                             class="emote-picker-img" @click="$emit('insert-emote', ':' + name + ':')">
                     </div>
                 </div>
                 <div class="chat-emote-tray" v-show="showMinigames" style="bottom: 100%; border-bottom: none; border-radius: 16px 16px 0 0;">
@@ -493,7 +497,7 @@ createApp({
                 badges: badges
             }).then();
 
-            let html = text.replace(/&/g, '&').replace(/</g, '<').replace(/>/g, '>');
+            let html = text.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
             if (tags['emotes']) {
                 const replacements = [];
                 tags['emotes'].split('/').forEach(e => {
@@ -520,7 +524,7 @@ createApp({
                 });
             }
 
-            chatMessages.value.push({ username: user, html, color: color, badges: badges });
+            chatMessages.value.push({ username: user, html: html, color: color, badges: badges });
             if (chatMessages.value.length > 200) chatMessages.value.shift();
             if (currentTab.value === 'chat') scrollChatToBottom();
         };
@@ -548,7 +552,7 @@ createApp({
                     .then(({ data }) => {
                         if (data) {
                             data.reverse().forEach(row => {
-                                let html = row.message.replace(/&/g, '&').replace(/</g, '<').replace(/>/g, '>');
+                                let html = row.message.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
                                 Object.entries(customEmotes.value).forEach(([name, emote]) => {
                                     if (emote.url) {
                                         const escaped = name.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
@@ -577,7 +581,7 @@ createApp({
             if (!chatInput.value.trim() || !twitchWs || !twitchChatToken.value || !wsAuthenticated) return;
             const msg = chatInput.value.trim();
             twitchWs.send(`PRIVMSG #codemiko :${msg}`);
-            let html = msg.replace(/&/g, '&').replace(/</g, '<').replace(/>/g, '>');
+            let html = msg.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
             Object.entries(customEmotes.value).forEach(([name, emote]) => {
                 if (!emote.url) return;
                 const escaped = name.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
@@ -655,7 +659,7 @@ createApp({
         
         const parseMarkdown = (text) => {
             if (!text) return '';
-            let html = text.replace(/</g, '<').replace(/>/g, '>');
+            let html = text.replace(/</g, '&lt;').replace(/>/g, '&gt;');
             html = html.replace(/(^|\W)'([^']+)'(\W|$)/g, '$1<strong>$2</strong>$3');
             html = html.replace(/\*\*(.*?)\*\*/g, '$1').replace(/\*(.*?)\*/g, '$1'); 
             html = html.replace(/\[([^\]]+)\]\((https?:\/\/[^\s]+)\)/gi, '<a href="$2" target="_blank" style="color: var(--primary); text-decoration: underline; font-weight: bold;">$1</a>');
@@ -685,7 +689,7 @@ createApp({
                 cat: { msg: "🐈 *Moves Cat Off Main PC*", text: "The Savannah Cat was sleeping on the exhaust vent. Temps dropping." },
                 bits: { msg: "🎟️ *Simulates 100K Bit Drop*", text: "Particle explosion rendering! Memory overload!" },
                 mute: { msg: "🔇 *Chat redeems Mute Microphone*", text: "Finally. Blissful silence. Look at her flail." },
-                bald: { msg: "🧑+.?*^ hair assets.*", text: "Bald Miko activated." },
+                bald: { msg: "🧑‍🦲 *Optimizing VRAM by removing hair assets.*", text: "Bald Miko activated." },
                 siren: { msg: "🚨 *Triggers acoustic anomaly.*", text: "Acoustic sensors blown. The Technician is emitting her 'firetruck siren'." }
             };
             const game = games[type];
