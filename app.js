@@ -166,13 +166,11 @@ const ChatView = {
                 <button class="public-disconnect-btn" @click="$emit('disconnect-public-twitch')">Disconnect</button>
             </div>
 
-            <!-- Absolute scroll lock container. Hides perfectly behind the header! -->
             <div class="twitch-chat-list" id="twitch-chat-list" @click="closePicker" style="flex: 1; overflow-y: auto; padding-bottom: 20px;">
                 <div v-if="chatMessages.length === 0" class="chat-empty-state">
                     <span class="material-symbols-rounded" style="font-size:32px; color:var(--text-muted); margin-bottom:8px;">chat_bubble_outline</span>
                     <span style="font-size:13px; color:var(--text-muted); font-weight:600;">Loading channels…</span>
                 </div>
-                <!-- Stacking disabled. Every message shows name, time, and badges! -->
                 <div v-for="(msg, i) in chatMessages" :key="i" class="twitch-msg-row">
                     <span class="chat-timestamp">{{ msg.timestamp }}</span>
                     <span class="twitch-badges">
@@ -216,15 +214,12 @@ const ChatView = {
 
 const MoreView = {
     template: `
-        <!-- Lock height to prevent page scroll bleeding -->
         <div class="more-container" style="height: calc(100vh - 120px); overflow-y: auto; padding: 16px; padding-bottom: 30px;">
             
-            <!-- Pinned Throne Link (Pin pushed to right) -->
             <a href="https://throne.com/codemiko" target="_blank" style="background: #0ea5e9; color: #fff; border-radius: 14px; padding: 18px 20px; display: flex; align-items: center; justify-content: space-between; text-decoration: none; font-weight: bold; margin-bottom: 12px; font-size: 16px;">
                 <span>Throne</span> <span class="material-symbols-rounded" style="font-size: 22px;">push_pin</span>
             </a>
 
-            <!-- Restored original .social-card thick design -->
             <div style="display:flex; flex-direction:column; gap:8px;">
                 <a href="https://www.twitch.tv/codemiko" target="_blank" class="social-card">
                     <svg viewBox="0 0 24 24" class="social-icon" style="color: #9146FF;"><path fill="currentColor" d="M11.571 4.714h1.715v5.143H11.57zm4.715 0H18v5.143h-1.714zM6 0L1.714 4.286v15.428h5.143V24l4.286-4.286h3.428L22.286 12V0zm14.571 11.143l-3.428 3.428h-3.429l-3 3v-3H6.857V1.714h13.714Z"/></svg>
@@ -246,9 +241,18 @@ const MoreView = {
                     <span style="color: var(--text-main);">Discord</span>
                 </a>
 
-                <!-- Custom Star Badge for Fanfix -->
                 <a href="https://app.fanfix.io/@codeyuna" target="_blank" class="social-card">
-                    <img src="17812905164482007423236118693627.jpg" class="social-icon" style="border-radius: 50%; object-fit: cover;">
+                    <svg viewBox="0 0 24 24" class="social-icon" style="width: 24px; height: 24px;">
+                        <defs>
+                            <linearGradient id="fanfix-grad" x1="0%" y1="0%" x2="100%" y2="100%">
+                                <stop offset="0%" stop-color="#80f1f1" />
+                                <stop offset="50%" stop-color="#d4a3fa" />
+                                <stop offset="100%" stop-color="#ffd5af" />
+                            </linearGradient>
+                        </defs>
+                        <path fill="url(#fanfix-grad)" d="M11.23 1.59c.43-.65 1.11-.65 1.54 0l1.19 1.83c.22.33.7.53 1.09.43l2.12-.51c.74-.18 1.22.29 1.04 1.04l-.51 2.12c-.1.39.1.87.43 1.09l1.83 1.19c.65.43.65 1.11 0 1.54l-1.83 1.19c-.33.22-.53.7-.43 1.09l.51 2.12c.18.74-.29 1.22-1.04 1.04l-2.12-.51c-.39-.1-.87.1-1.09.43l-1.19 1.83c-.43.65-1.11.65-1.54 0l-1.19-1.83c-.22-.33-.7-.53-1.09-.43l-2.12.51c-.74.18-1.22-.29-1.04-1.04l.51-2.12c.1-.39-.1-.87-.43-1.09l-1.83-1.19c-.65-.43-.65-1.11 0-1.54l1.83-1.19c.33-.22.53-.7.43-1.09l-.51-2.12c-.18-.74.29-1.22 1.04-1.04l2.12.51c.39.1.87-.1 1.09-.43l1.19-1.83z"/>
+                        <path fill="#000" d="M10.4 15.6l-3.2-3.2 1.4-1.4 1.8 1.8 4.8-4.8 1.4 1.4-6.2 6.2z"/>
+                    </svg>
                     <span style="color: var(--text-main);">Fanfix</span>
                 </a>
                 
@@ -272,7 +276,6 @@ const MoreView = {
                     <span style="color: var(--text-main);">Bluesky</span>
                 </a>
                 
-                <!-- Official Meta Threads SVG -->
                 <a href="https://www.threads.net/@thecodemiko" target="_blank" class="social-card">
                     <svg viewBox="0 0 192 192" class="social-icon" style="color: var(--text-main);"><path fill="currentColor" d="M141.537 88.9883C140.71 88.5919 139.87 88.2104 139.019 87.8451C137.537 60.5382 122.616 44.905 97.5619 44.745C97.4484 44.7443 97.3355 44.7443 97.222 44.7443C82.2364 44.7443 69.7731 51.1409 62.102 62.7807L75.881 72.2328C81.6116 63.5383 90.6052 61.6848 97.2286 61.6848C97.3051 61.6848 97.3819 61.6848 97.4576 61.6855C105.707 61.7381 111.932 64.1366 115.961 68.814C118.893 72.2193 120.854 76.925 121.825 82.8638C114.511 81.6207 106.601 81.2385 98.145 81.7233C74.3247 83.0954 59.0111 96.9879 60.0396 116.292C60.5615 126.084 65.4397 134.508 73.775 140.011C80.8224 144.663 89.899 146.938 99.3323 146.423C111.79 145.74 121.563 140.987 128.381 132.296C133.559 125.696 136.834 117.143 138.28 106.366C144.217 109.949 148.617 114.664 151.047 120.332C155.179 129.967 155.42 145.8 142.501 158.708C131.182 170.016 117.576 174.908 97.0135 175.059C74.2042 174.89 56.9538 167.575 45.7381 153.317C35.2355 139.966 29.8077 120.682 29.6052 96C29.8077 71.3178 35.2355 52.0336 45.7381 38.6827C56.9538 24.4249 74.2039 17.11 97.0132 16.9405C119.988 17.1113 137.539 24.4614 148.82 38.8167C156.92 49.1302 161.965 62.4633 163.606 78.4714L179.626 76.5161C177.625 57.8427 171.603 42.4437 162.016 30.2526C148.337 12.8797 127.351 4.14819 97.0132 4C66.5826 4.15048 45.6416 12.9231 32.2274 30.0097C19.7891 45.8524 13.5676 68.1687 13.3333 96C13.5676 123.831 19.7891 146.148 32.2274 161.99C45.6416 179.077 66.5826 187.85 97.0135 188C120.89 187.828 137.234 181.71 151.782 167.175C168.181 150.793 167.149 127.877 155.839 116.666C153.491 114.339 150.569 112.502 147.289 111.164C145.452 110.387 143.541 109.664 141.537 88.9883ZM98.4405 129.507C88.0005 130.095 77.1544 125.409 76.6196 115.372C76.2232 107.93 81.9158 99.626 99.0812 98.0476C101.066 97.8658 103.146 97.7499 105.311 97.6976C105.328 103.626 104.996 109.431 103.743 114.862C102.593 119.851 100.865 124.316 98.4405 129.507Z"/></svg>
                     <span style="color: var(--text-main);">Threads</span>
@@ -311,7 +314,6 @@ const GeraldMinigames = {
     },
     template: `
         <div class="chat-emote-tray" v-show="showMinigames" style="bottom:100%; border-bottom:none; border-radius:16px 16px 0 0; background: var(--bg-main);">
-            <!-- Restricted Minigames to compact, horizontal pills -->
             <div style="display:flex; flex-wrap:wrap; gap:8px; padding: 12px; justify-content:center;">
                 <button v-for="g in gameDeck" :key="g.id" class="bribe-btn" style="padding: 8px 16px; font-size: 13px; border-radius: 20px; white-space:nowrap; flex: 0 0 auto; background: var(--surface-color); border: 1px solid var(--border-color); color: var(--text-main); font-weight: bold;" @click.stop="$emit('play-game', g)">
                     {{ g.label }}
@@ -329,7 +331,7 @@ const GeraldView = {
     },
     template: `
         <div class="gerald-container" style="height: calc(100vh - 120px); position: relative; display: flex; flex-direction: column;">
-            <div class="gerald-header" @click="$emit('close-pickers')" style="flex-shrink: 0;">
+            <div class="gerald-header" @click="$emit('close-pickers')" style="flex-shrink: 0; z-index: 50;">
                 <div class="os-top-bar">
                     <span class="os-title">GERALD_OS v2</span>
                 </div>
@@ -348,7 +350,6 @@ const GeraldView = {
                 </div>
             </div>
 
-            <!-- Absolute scroll lock container -->
             <div class="gerald-messages" id="gerald-msgs" @click="$emit('close-pickers')" style="flex: 1; overflow-y: auto; padding-bottom: 20px;">
                 <template v-for="(m, i) in geraldMessages" :key="i">
                     <div v-if="i === 0 && m.role === 'gerald' && !m.content" class="chat-bubble gerald startup-anim">
@@ -357,7 +358,6 @@ const GeraldView = {
                     <div v-else-if="m.content" class="chat-bubble" :class="m.role" v-html="parseMarkdown(m.content)"></div>
                 </template>
 
-                <!-- Dots stripped of bubble background styling -->
                 <div v-show="isGeraldTyping" class="dots-thinking-row" style="display:flex; align-items:center; margin-top:8px; padding-left:12px;">
                     <div class="os-dot close"></div>
                     <div class="os-dot min"></div>
@@ -365,7 +365,7 @@ const GeraldView = {
                 </div>
             </div>
             
-            <div class="gerald-action-area" style="flex-shrink: 0;">
+            <div class="gerald-action-area" style="flex-shrink: 0; z-index: 50;">
                 <div class="chat-emote-tray" v-show="showEmotePicker" style="bottom:100%; border-bottom:none; border-radius:16px 16px 0 0;">
                     <div class="emote-picker-grid">
                         <img v-for="(emote, name) in customEmotes" :key="name" :src="getEmoteUrl(emote)" :title="name" class="emote-picker-img" @mousedown.prevent="$emit('insert-emote', name)">
@@ -456,7 +456,6 @@ createApp({
         const wipeState = ref('idle'), logoutState = ref('idle'), nukeState = ref('idle');
         
         const isHeaderVisible = ref(true);
-        let lastScrollY = 0;
 
         const apiConfig = ref({ localCid: localStorage.getItem('miko_twitch_cid') || '', localTkn: localStorage.getItem('twitch_tkn') || '' });
         const hiddenFallbackCid = 'i2fjxfk0oq6ybixle760zryrtvdqjg';
@@ -498,7 +497,7 @@ createApp({
         const scrollChatToBottom = () => { setTimeout(() => { const l = document.getElementById('twitch-chat-list'); if (l) l.scrollTop = l.scrollHeight; }, 100); };
 
         const processEmotes = (text) => {
-            let out = text.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+            let out = text.replace(/&/g, '&').replace(/</g, '<').replace(/>/g, '>');
             const words = out.split(' ');
             const emoteKeys = Object.keys(customEmotes.value);
             for (let i = 0; i < words.length; i++) {
@@ -535,7 +534,7 @@ createApp({
                 tags['badges'].split(',').forEach(b => { const imgUrl = badgeAssets[b]; if (imgUrl) badges.push({ title: b.split('/')[0], img: imgUrl }); });
             }
 
-            let html = text.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+            let html = text.replace(/&/g, '&').replace(/</g, '<').replace(/>/g, '>');
             if (tags['emotes']) {
                 const replacements = [];
                 tags['emotes'].split('/').forEach(e => {
@@ -572,7 +571,6 @@ createApp({
                 }
                 wsAuthenticated = true;
                 
-                // Fetch the latest 50 historical messages correctly
                 sbClient.from('twitch_chat_logs').select('*').order('created_at', { ascending: false }).limit(50).then(({ data }) => {
                     if (data) {
                         const dbHistory = [];
@@ -745,10 +743,7 @@ createApp({
         };
 
         const handleScroll = (e) => {
-            const cur = e.target.scrollTop; if (cur <= 0) isHeaderVisible.value = true;
-            else if (Math.abs(cur - lastScrollY) > 10) isHeaderVisible.value = cur < lastScrollY;
-            lastScrollY = cur;
-            if (e.target.scrollHeight - cur - e.target.clientHeight < 200) { if (currentTab.value === 'home') loadData(true); }
+            if (e.target.scrollHeight - e.target.scrollTop - e.target.clientHeight < 200) { if (currentTab.value === 'home') loadData(true); }
         };
 
         const loadData = async (isLoadMore = false) => {
@@ -811,7 +806,7 @@ createApp({
 
         const parseMarkdown = (t) => {
             if (!t) return ''; 
-            let html = t.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+            let html = t.replace(/&/g, '&').replace(/</g, '<').replace(/>/g, '>');
             html = html.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>').replace(/\*(.*?)\*/g, '<em>$1</em>');
             const words = html.split(' ');
             const emoteKeys = Object.keys(customEmotes.value);
@@ -836,7 +831,6 @@ createApp({
         };
 
         onMounted(async () => {
-            // Hard lock the body scroll! The entire page is frozen, only chat scrolls.
             document.body.style.overflow = 'hidden';
             document.body.style.height = '100vh';
             document.documentElement.style.overflow = 'hidden';
@@ -855,7 +849,6 @@ createApp({
                 fetch('https://id.twitch.tv/oauth2/validate', { headers: { 'Authorization': 'OAuth ' + twitchChatToken.value } }).then(r => r.json()).then(d => { if (d.login) { twitchUsername.value = d.login; localStorage.setItem('tw_username', d.login); connectTwitchChat(); } else disconnectTwitch(); }).catch(() => connectTwitchChat());
             } else connectTwitchChat();
 
-            // Removed Anonymous login override! Only loads if actual user logs in.
             try { 
                 const { data } = await sbClient.auth.getSession(); 
                 if (data?.session?.user) {
@@ -885,14 +878,27 @@ createApp({
         return {
             hostname, splashVisible, splashOpacity, currentTab, appTheme, toggleTheme, clips, allClipsCount, modals, isLive, toast, currentUser, loginEmail, loginPass, apiConfig, geraldInput, geraldMessages, isGeraldTyping, talkToGerald, syncState, wipeState, logoutState, nukeState, isHeaderVisible, handleScroll, currentFilter, activeFilterLabel, isFilterMenuOpen, closeFilterMenu, applyFilter, parseMarkdown, recentVods, currentVodIndex, nextVod, prevVod, customEmotes, showEmotePicker, insertEmote, handleGeraldEnter, toggleEmotes, toggleMinigames, closePickers, nukeCache, activeClipId, switchTab, playClip, selectedClip, showMinigames, runSync, disconnectTwitch, saveApiKeys, triggerAiMinigame, geminiStatus, sysStats, chatMessages, twitchChatToken, twitchAuthUrl, twitchUsername, sendTwitchChatMessage, logoSvg: (id) => `<svg viewBox="0 0 100 100"><defs><linearGradient id="grad-${id}" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stop-color="#9146FF"/><stop offset="100%" stop-color="#a970ff"/></linearGradient></defs><circle cx="50" cy="50" r="40" fill="url(#grad-${id})"/><path d="M 33 38 L 48 62 L 62 38 L 62 55 Q 62 65 69 64" fill="none" stroke="#ffffff" stroke-width="8" stroke-linecap="round" stroke-linejoin="round"/></svg>`,
             handleLogin: async () => { 
-                const email = loginEmail.value.includes('@') ? loginEmail.value : `${loginEmail.value}@miko.com`; 
-                const { data } = await sbClient.auth.signInWithPassword({ email, password: loginPass.value }); 
-                if(data.user) { 
-                    currentUser.value = data.user; 
-                    modals.value.profile = false;
-                    const { data: hist } = await sbClient.from('gerald_history').select('*').eq('user_id', currentUser.value.id).order('created_at', { ascending: true });
-                    if (hist && hist.length > 0) { geraldMessages.value = hist.map(r => ({ role: r.role, content: r.content })); }
-                } 
+                try {
+                    if (currentUser.value && currentUser.value.is_anonymous) { await sbClient.auth.signOut(); }
+                    const email = loginEmail.value.includes('@') ? loginEmail.value : `${loginEmail.value}@miko.com`; 
+                    const { data, error } = await sbClient.auth.signInWithPassword({ email, password: loginPass.value }); 
+                    
+                    if (error) {
+                        showToast(`Login Rejected: ${error.message}`);
+                        return;
+                    }
+                    if (data.user) { 
+                        currentUser.value = data.user; 
+                        modals.value.profile = false;
+                        const { data: hist } = await sbClient.from('gerald_history').select('*').eq('user_id', currentUser.value.id).order('created_at', { ascending: true });
+                        if (hist && hist.length > 0) { 
+                            geraldMessages.value = hist.map(r => ({ role: r.role, content: r.content })); 
+                        }
+                        showToast("Admin Login Successful");
+                    } 
+                } catch (err) {
+                    showToast(`System Error: ${err.message}`);
+                }
             },
             handleLogout: () => { logoutState.value = 'logging_out'; setTimeout(() => { sbClient.auth.signOut(); currentUser.value = null; modals.value.profile = false; logoutState.value = 'idle'; }, 1000); },
             optimizeTwitchImg: (u) => u ? u.replace('%{width}', '480').replace('%{height}', '270') : '',
