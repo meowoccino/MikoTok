@@ -40,7 +40,8 @@
             @toggle-theme="toggleTheme">
         </app-header>
 
-        <div v-show="currentTab !== 'home'" style="height: env(safe-area-inset-top, 24px); width: 100%; flex-shrink: 0; background: var(--bg-color);"></div>
+        <!-- The perfect Safe Area Spacer. Prevents Android/iOS clock overlap! -->
+        <div v-show="currentTab !== 'home'" style="height: env(safe-area-inset-top, 24px); width: 100%; flex-shrink: 0; background: transparent;"></div>
 
         <div class="view-port" @touchstart="handleSwipeStart" @touchend="handleSwipeEnd">
             <div class="tab-slider" :style="{ transform: 'translate3d(' + tabOffset + '%, 0, 0)' }">
@@ -155,6 +156,6 @@
 
     </div>
 
-    <script src="./app.js?v=111"></script>
+    <script src="./app.js?v=113"></script>
 </body>
 </html>
