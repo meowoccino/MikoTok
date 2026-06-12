@@ -171,7 +171,6 @@ const ChatView = {
             const prev = this.chatMessages[index - 1];
             if (prev.username !== msg.username) return false;
             
-            // Check time gap sequence rule limits (30 seconds maximum window)
             const parseTime = (ts) => {
                 const parts = ts.match(/(\d+):(\d+)\s*(AM|PM)/i);
                 if (!parts) return 0;
@@ -626,6 +625,13 @@ createApp({
                 const { data, error } = await sbClient.functions.invoke('gerald-chat', { body: { history: [{ role: 'user', parts: [{ text: 'ping' }] }] } });
                 geminiStatus.value = (!error && data) ? 'ONLINE' : 'OFFLINE';
             } catch { geminiStatus.value = 'OFFLINE'; }
+        };
+
+        const handleGeraldEnter = (e) => {
+            if (!e.shiftKey && e.key === 'Enter') {
+                e.preventDefault();
+                talkToGerald();
+            }
         };
 
         const triggerAiMinigame = (gameObj) => {
