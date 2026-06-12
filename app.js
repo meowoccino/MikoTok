@@ -481,11 +481,46 @@ createApp({
         let wsAuthenticated = false;
         const badgeAssets = {};
 
+        const tabOrder = ['home', 'chat', 'gerald', 'more'];
+        const initialTabIdx = tabOrder.indexOf(tabs.includes(window.location.hash.replace('#','')) ? window.location.hash.replace('#','') : 'home');
+        const tabOffset = ref(initialTabIdx * -25); // drives the tab-slider transform in %
+
         const switchTab = (tab) => {
             currentTab.value = tab;
+            tabOffset.value = tabOrder.indexOf(tab) * -25; // each view is 25% of 400% width
             window.history.pushState(null, '', `#${tab}`);
             if (tab === 'chat') setTimeout(() => { const l = document.getElementById('twitch-chat-list'); if (l) l.scrollTop = l.scrollHeight; }, 150);
             if (tab === 'gerald') setTimeout(scrollToBottom, 150);
+        };
+
+        // Swipe gesture state
+        let swipeStartX = 0;
+        const handleSwipeStart = (e) => { swipeStartX = e.touches[0].clientX; };
+        const handleSwipeEnd = (e) => {
+            const dx = e.changedTouches[0].clientX - swipeStartX;
+            if (Math.abs(dx) < 50) return; // ignore small movements
+            const idx = tabOrder.indexOf(currentTab.value);
+            if (dx < 0 && idx < tabOrder.length - 1) switchTab(tabOrder[idx + 1]); // swipe left
+            if (dx > 0 && idx > 0) switchTab(tabOrder[idx - 1]); // swipe right
+        };
+
+        // Modal drag-to-close state
+        let modalDragStartY = 0;
+        const handleModalTouchStart = (e) => { modalDragStartY = e.touches[0].clientY; };
+        const handleModalTouchMove = () => {};
+        const handleModalTouchEnd = (e) => {
+            const dy = e.changedTouches[0].clientY - modalDragStartY;
+            if (dy > 80) modals.value.profile = false; // drag down 80px closes modal
+        };
+
+        // Clear gerald chat history
+        const clearGeraldHistory = async () => {
+            if (!currentUser.value) return;
+            try {
+                await sbClient.from('gerald_history').delete().eq('user_id', currentUser.value.id);
+                geraldMessages.value = [{ role: 'gerald', content: '' }];
+                showToast('Gerald history cleared');
+            } catch {}
         };
 
         const updateThemeClass = () => {
@@ -913,7 +948,7 @@ createApp({
         });
 
         return {
-            hostname, splashVisible, splashOpacity, currentTab, appTheme, toggleTheme, clips, allClipsCount, modals, isLive, toast, currentUser, loginEmail, loginPass, apiConfig, geraldInput, geraldMessages, isGeraldTyping, talkToGerald, syncState, wipeState, logoutState, nukeState, isHeaderVisible, handleScroll, currentFilter, activeFilterLabel, isFilterMenuOpen, closeFilterMenu, applyFilter, parseMarkdown, recentVods, currentVodIndex, nextVod, prevVod, customEmotes, showEmotePicker, insertEmote, handleGeraldEnter, toggleEmotes, toggleMinigames, closePickers, nukeCache, activeClipId, switchTab, playClip, selectedClip, showMinigames, runSync, disconnectTwitch, saveApiKeys, triggerAiMinigame, geminiStatus, sysStats, chatMessages, twitchChatToken, twitchAuthUrl, twitchUsername, sendTwitchChatMessage, logoSvg: (id) => `<svg viewBox="0 0 100 100"><defs><linearGradient id="grad-${id}" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stop-color="#9146FF"/><stop offset="100%" stop-color="#a970ff"/></linearGradient></defs><circle cx="50" cy="50" r="40" fill="url(#grad-${id})"/><path d="M 33 38 L 48 62 L 62 38 L 62 55 Q 62 65 69 64" fill="none" stroke="#ffffff" stroke-width="8" stroke-linecap="round" stroke-linejoin="round"/></svg>`,
+            hostname, splashVisible, splashOpacity, currentTab, tabOffset, appTheme, toggleTheme, clips, allClipsCount, modals, isLive, toast, currentUser, loginEmail, loginPass, apiConfig, geraldInput, geraldMessages, isGeraldTyping, talkToGerald, syncState, wipeState, logoutState, nukeState, isHeaderVisible, handleScroll, currentFilter, activeFilterLabel, isFilterMenuOpen, closeFilterMenu, applyFilter, parseMarkdown, recentVods, currentVodIndex, nextVod, prevVod, customEmotes, showEmotePicker, insertEmote, handleGeraldEnter, toggleEmotes, toggleMinigames, closePickers, nukeCache, activeClipId, switchTab, playClip, selectedClip, showMinigames, runSync, disconnectTwitch, saveApiKeys, triggerAiMinigame, geminiStatus, sysStats, chatMessages, twitchChatToken, twitchAuthUrl, twitchUsername, sendTwitchChatMessage, handleSwipeStart, handleSwipeEnd, handleModalTouchStart, handleModalTouchMove, handleModalTouchEnd, clearGeraldHistory, logoSvg: (id) => `<svg viewBox="0 0 100 100"><defs><linearGradient id="grad-${id}" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stop-color="#9146FF"/><stop offset="100%" stop-color="#a970ff"/></linearGradient></defs><circle cx="50" cy="50" r="40" fill="url(#grad-${id})"/><path d="M 33 38 L 48 62 L 62 38 L 62 55 Q 62 65 69 64" fill="none" stroke="#ffffff" stroke-width="8" stroke-linecap="round" stroke-linejoin="round"/></svg>`,
             handleLogin: async () => { 
                 try {
                     if (currentUser.value && currentUser.value.is_anonymous) { await sbClient.auth.signOut(); }
@@ -934,7 +969,7 @@ createApp({
                         }
                         // Reload chat history so 50 latest appear immediately after login
                         await loadChatHistory();
-                        showToast("Admin Login Successful");
+                        // Login toast removed
                     } 
                 } catch (err) {
                     showToast(`System Error: ${err.message}`);
