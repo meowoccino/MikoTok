@@ -160,7 +160,7 @@ const ChatView = {
         }
     },
     template: `
-        <div class="chat-wrapper" style="height: calc(100vh - 120px); position: relative; display: flex; flex-direction: column;">
+        <div class="chat-wrapper">
             <div v-if="isLoggedIn" class="chat-public-auth-banner" style="z-index: 60; flex-shrink: 0;">
                 <span class="user-pill">💬 Connected as <b>{{ twitchUsername }}</b></span>
                 <button class="public-disconnect-btn" @click="$emit('disconnect-public-twitch')">Disconnect</button>
@@ -214,7 +214,7 @@ const ChatView = {
 
 const MoreView = {
     template: `
-        <div class="more-container" style="height: calc(100vh - 120px); overflow-y: auto; padding: 16px; padding-bottom: 30px;">
+        <div class="more-container" style="padding: 16px; padding-bottom: 30px;">
             
             <a href="https://throne.com/codemiko" target="_blank" style="background: #0ea5e9; color: #fff; border-radius: 14px; padding: 18px 20px; display: flex; align-items: center; justify-content: space-between; text-decoration: none; font-weight: bold; margin-bottom: 12px; font-size: 16px;">
                 <span>Throne</span> <span class="material-symbols-rounded" style="font-size: 22px;">push_pin</span>
@@ -330,8 +330,8 @@ const GeraldView = {
         getEmoteUrl(emote) { return emote.url || `https://cdn.discordapp.com/emojis/${emote.id}.${emote.animated ? 'gif' : 'png'}?size=44`; }
     },
     template: `
-        <div class="gerald-container" style="height: calc(100vh - 120px); position: relative; display: flex; flex-direction: column;">
-            <div class="gerald-header" @click="$emit('close-pickers')" style="flex-shrink: 0; z-index: 50;">
+        <div class="gerald-container">
+            <div class="gerald-header" @click="$emit('close-pickers')">
                 <div class="os-top-bar">
                     <span class="os-title">GERALD_OS v2</span>
                 </div>
@@ -350,7 +350,7 @@ const GeraldView = {
                 </div>
             </div>
 
-            <div class="gerald-messages" id="gerald-msgs" @click="$emit('close-pickers')" style="flex: 1; overflow-y: auto; padding-bottom: 20px;">
+            <div class="gerald-messages" id="gerald-msgs" @click="$emit('close-pickers')">
                 <template v-for="(m, i) in geraldMessages" :key="i">
                     <div v-if="i === 0 && m.role === 'gerald' && !m.content" class="chat-bubble gerald startup-anim">
                         <span>> GERALD_CORE initialized.<br>> Awaiting human input...</span>
@@ -365,7 +365,7 @@ const GeraldView = {
                 </div>
             </div>
             
-            <div class="gerald-action-area" style="flex-shrink: 0; z-index: 50;">
+            <div class="gerald-action-area">
                 <div class="chat-emote-tray" v-show="showEmotePicker" style="bottom:100%; border-bottom:none; border-radius:16px 16px 0 0;">
                     <div class="emote-picker-grid">
                         <img v-for="(emote, name) in customEmotes" :key="name" :src="getEmoteUrl(emote)" :title="name" class="emote-picker-img" @mousedown.prevent="$emit('insert-emote', name)">
@@ -390,7 +390,7 @@ const GeraldView = {
 const HomeView = {
     props: ['currentTab', 'currentVodIndex', 'recentVods', 'isLive', 'hostname', 'clips', 'activeFilterLabel', 'optimizeTwitchImg', 'formatViews', 'formatDate', 'activeClipId'],
     template: `
-        <div style="height: calc(100vh - 120px); overflow-y: auto;">
+        <div>
             <div class="hero-section">
                 <div class="header-controls" style="margin-bottom:12px; display:flex;">
                     <div :class="['premium-badge', isLive ? 'live-badge' : 'vod']">
