@@ -72,6 +72,9 @@ const ProfileModal = {
                 <div v-if="!currentUser || currentUser.is_anonymous">
                     <input type="text" :value="loginEmail" @input="$emit('update-email', $event.target.value)" class="input-box" style="margin-top: 10px;" placeholder="Email">
                     <input type="password" :value="loginPass" @input="$emit('update-pass', $event.target.value)" class="input-box" @keyup.enter="$emit('login')" placeholder="Password">
+                    
+                    <div v-if="$root.loginError" style="color: var(--danger); font-size: 12px; margin-bottom: 8px; font-weight: bold; text-align: center;">{{ $root.loginError }}</div>
+                    
                     <button class="sync-btn" @click="$emit('login')">LOGIN</button>
                 </div>
                 
@@ -172,17 +175,14 @@ const ChatView = {
                 <button class="public-disconnect-btn" @click="$emit('disconnect-public-twitch')">Disconnect</button>
             </div>
 
-            <!-- Absolute fix for top-down chat: Added a flex-1 empty div that physically pushes all messages to the bottom! -->
             <div class="twitch-chat-list" id="twitch-chat-list" @click="closePicker" style="flex: 1; display: flex; flex-direction: column; overflow-y: auto; overscroll-behavior-y: contain; -webkit-overflow-scrolling: touch; padding: 10px 12px 0;">
                 
-                <div style="flex: 1 1 auto; min-height: 0;"></div> 
-                
-                <div v-if="chatMessages.length === 0" class="chat-empty-state">
+                <div v-if="chatMessages.length === 0" class="chat-empty-state" style="margin-top: auto;">
                     <span class="material-symbols-rounded" style="font-size:32px; color:var(--text-muted); margin-bottom:8px;">chat_bubble_outline</span>
                     <span style="font-size:13px; color:var(--text-muted); font-weight:600;">Loading channels…</span>
                 </div>
                 
-                <div v-for="(msg, i) in chatMessages" :key="i" class="twitch-msg-row">
+                <div v-for="(msg, i) in chatMessages" :key="i" class="twitch-msg-row" :style="i === 0 ? 'margin-top: auto;' : ''">
                     <span class="chat-timestamp">{{ msg.timestamp }}</span>
                     <span class="twitch-badges">
                         <img v-for="(badge, bi) in (msg.badges || [])" :key="bi" :src="badge.img" :title="badge.title" class="badge-img">
@@ -191,7 +191,6 @@ const ChatView = {
                     <span class="twitch-text" v-html="msg.html"></span>
                 </div>
                 
-                <!-- Navbar invisible bumper so messages never go underneath -->
                 <div style="height: 80px; flex-shrink: 0;"></div>
             </div>
 
@@ -208,10 +207,9 @@ const ChatView = {
                 <button class="chat-send-btn" @click="handleSend" :disabled="!isLoggedIn || !localInput.trim()"><span class="material-symbols-rounded" style="font-size:20px;">send</span></button>
             </div>
 
-            <!-- Centered Popup fixed -->
-            <div class="chat-login-popup-overlay" :class="{ open: $root.showLoginPopup }" @click.self="$root.showLoginPopup = false" style="display: flex; align-items: center; justify-content: center; background: rgba(0,0,0,0.6); position: fixed; inset: 0; z-index: 999;">
-                <div class="chat-login-card" style="background: var(--card-bg); padding: 24px; border-radius: 16px; width: 85%; max-width: 340px; text-align: center; position: relative;">
-                    <button @click="$root.showLoginPopup = false" style="position: absolute; top: 12px; right: 12px; background: transparent; border: none; color: var(--text-muted); font-size: 24px; cursor: pointer;">&times;</button>
+            <div class="chat-login-popup-overlay" :class="{ open: $root.showLoginPopup }" @click.self="$root.showLoginPopup = false" style="position: fixed; inset: 0; display: flex; align-items: center; justify-content: center; background: rgba(0,0,0,0.8); z-index: 9999;">
+                <div class="chat-login-card" style="background: var(--card-bg); padding: 24px; border-radius: 16px; width: 85%; max-width: 340px; text-align: center; position: relative; box-shadow: 0 10px 40px rgba(0,0,0,0.2);">
+                    <button @click="$root.showLoginPopup = false" style="position: absolute; top: 12px; right: 12px; background: transparent; border: none; color: var(--text-muted); font-size: 24px; cursor: pointer;">×</button>
                     <svg viewBox="0 0 24 24" class="chat-login-icon" style="width: 48px; height: 48px; margin: 0 auto 16px; color: #9146FF;"><path fill="currentColor" d="M11.571 4.714h1.715v5.143H11.57zm4.715 0H18v5.143h-1.714zM6 0L1.714 4.286v15.428h5.143V24l4.286-4.286h3.428L22.286 12V0zm14.571 11.143l-3.428 3.428h-3.429l-3 3v-3H6.857V1.714h13.714Z"/></svg>
                     <p class="chat-login-title" style="font-size: 20px; font-weight: bold; margin-bottom: 8px;">Join the chat</p>
                     <p class="chat-login-sub" style="font-size: 14px; color: var(--text-muted); margin-bottom: 20px;">Connect your Twitch account to read and send messages live.</p>
@@ -226,7 +224,6 @@ const MoreView = {
     template: `
         <div class="more-container safe-top-padding" style="flex: 1; overflow-y: auto; overscroll-behavior-y: contain; -webkit-overflow-scrolling: touch; padding-left: 16px; padding-right: 16px; display: flex; flex-direction: column; gap: 8px;">
             
-            <!-- Throne moved to top with crown SVG and Pin -->
             <a href="https://throne.com/codemiko" target="_blank" style="flex: 1; background: #0ea5e9; color: #fff; border-radius: 12px; padding: 0 16px; display: flex; align-items: center; justify-content: space-between; text-decoration: none; font-weight: bold; font-size: 15px; min-height: 48px; margin-bottom: 4px;">
                 <div style="display: flex; align-items: center; gap: 8px;">
                     <svg viewBox="0 0 24 24" style="width: 22px; height: 22px; fill: white;"><path d="M2 22h20v-2H2v2zm9-19c-1.1 0-2 .9-2 2 0 .2.1.4.1.6l-3.3 3.3c-.2-.1-.4-.1-.6-.1-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2c0-.2-.1-.4-.1-.6l3.3-3.3c.2.1.4.1.6.1s.4 0 .6-.1l3.3 3.3c-.1.2-.1.4-.1.6 0 1.1.9 2 2 2s2-.9 2-2-.9-2-2-2c-.2 0-.4 0-.6.1l-3.3-3.3c.1-.2.1-.4.1-.6 0-1.1-.9-2-2-2z"/></svg>
@@ -284,11 +281,6 @@ const MoreView = {
                 <svg viewBox="0 0 24 24" class="social-icon" style="width: 22px; height: 22px; color: #E1306C;"><path fill="currentColor" d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zM12 0C8.741 0 8.333.014 7.053.072 2.695.272.273 2.69.073 7.052.014 8.333 0 8.741 0 12c0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98C8.333 23.986 8.741 24 12 24c3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98C15.668.014 15.259 0 12 0zm0 5.838a6.162 6.162 0 100 12.324 6.162 6.162 0 000-12.324zM12 16a4 4 0 110-8 4 4 0 010 8zm6.406-11.845a1.44 1.44 0 100 2.881 1.44 1.44 0 000-2.881z"/></svg>
                 <span style="color: var(--text-main); font-size: 14px;">Instagram</span>
             </a>
-            
-            <a href="https://www.threads.net/@thecodemiko" target="_blank" class="social-card" style="flex: 1; padding: 0 16px; border-radius: 12px; min-height: 48px;">
-                <svg viewBox="0 0 192 192" class="social-icon" style="width: 22px; height: 22px; color: var(--text-main);"><path fill="currentColor" d="M141.537 88.9883C140.71 88.5919 139.87 88.2104 139.019 87.8451C137.537 60.5382 122.616 44.905 97.5619 44.745C97.4484 44.7443 97.3355 44.7443 97.222 44.7443C82.2364 44.7443 69.7731 51.1409 62.102 62.7807L75.881 72.2328C81.6116 63.5383 90.6052 61.6848 97.2286 61.6848C97.3051 61.6848 97.3819 61.6848 97.4576 61.6855C105.707 61.7381 111.932 64.1366 115.961 68.814C118.893 72.2193 120.854 76.925 121.825 82.8638C114.511 81.6207 106.601 81.2385 98.145 81.7233C74.3247 83.0954 59.0111 96.9879 60.0396 116.292C60.5615 126.084 65.4397 134.508 73.775 140.011C80.8224 144.663 89.899 146.938 99.3323 146.423C111.79 145.74 121.563 140.987 128.381 132.296C133.559 125.696 136.834 117.143 138.28 106.366C144.217 109.949 148.617 114.664 151.047 120.332C155.179 129.967 155.42 145.8 142.501 158.708C131.182 170.016 117.576 174.908 97.0135 175.059C74.2042 174.89 56.9538 167.575 45.7381 153.317C35.2355 139.966 29.8077 120.682 29.6052 96C29.8077 71.3178 35.2355 52.0336 45.7381 38.6827C56.9538 24.4249 74.2039 17.11 97.0132 16.9405C119.988 17.1113 137.539 24.4614 148.82 38.8167C156.92 49.1302 161.965 62.4633 163.606 78.4714L179.626 76.5161C177.625 57.8427 171.603 42.4437 162.016 30.2526C148.337 12.8797 127.351 4.14819 97.0132 4C66.5826 4.15048 45.6416 12.9231 32.2274 30.0097C19.7891 45.8524 13.5676 68.1687 13.3333 96C13.5676 123.831 19.7891 146.148 32.2274 161.99C45.6416 179.077 66.5826 187.85 97.0135 188C120.89 187.828 137.234 181.71 151.782 167.175C168.181 150.793 167.149 127.877 155.839 116.666C153.491 114.339 150.569 112.502 147.289 111.164C145.452 110.387 143.541 109.664 141.537 88.9883ZM98.4405 129.507C88.0005 130.095 77.1544 125.409 76.6196 115.372C76.2232 107.93 81.9158 99.626 99.0812 98.0476C101.066 97.8658 103.146 97.7499 105.311 97.6976C105.328 103.626 104.996 109.431 103.743 114.862C102.593 119.851 100.865 124.316 98.4405 129.507Z"/></svg>
-                <span style="color: var(--text-main); font-size: 14px;">Threads</span>
-            </a>
 
             <a href="https://www.snapchat.com/add/codemiko" target="_blank" class="social-card" style="flex: 1; padding: 0 16px; border-radius: 12px; min-height: 48px;">
                 <svg viewBox="0 0 24 24" class="social-icon" style="width: 22px; height: 22px; color: #FFFC00;"><path fill="currentColor" d="M12.126 23.955c-1.472-.036-2.502-.455-3.633-.949-.556-.242-1.077-.384-1.657-.202-1.542.483-3.082 1.054-4.73 1.127-1.393.061-1.777-.52-1.205-1.651.488-.962 1.031-1.895 1.48-2.871.21-.453.208-.857-.042-1.272-1.071-1.782-1.637-3.708-1.764-5.748-.04-.633-.037-1.27-.037-1.936 0-3.923 2.115-6.843 5.437-8.318C8.384.975 10.94.39 13.626.54c4.12.232 7.152 2.647 8.527 6.643.518 1.503.655 3.066.621 4.646-.025 1.156-.168 2.298-.485 3.407-.346 1.208-.887 2.336-1.688 3.32-.429.529-.395.96.012 1.488.35.452.704.9 1.057 1.349.52.661.274 1.236-.532 1.274-1.506.072-2.923-.509-4.321-1.052-.777-.302-1.411-.122-2.072.164-1.045.451-2.146.862-3.32.969-.379.034-.764.03-1.299.207z"/></svg>
@@ -300,7 +292,6 @@ const MoreView = {
                 <span style="color: var(--text-main); font-size: 14px;">Facebook</span>
             </a>
             
-            <!-- Navbar overlap protection block -->
             <div style="height: 80px; flex-shrink: 0;"></div>
         </div>
     `
@@ -349,7 +340,7 @@ const GeraldView = {
         getEmoteUrl(emote) { return emote.url || `https://cdn.discordapp.com/emojis/${emote.id}.${emote.animated ? 'gif' : 'png'}?size=44`; }
     },
     template: `
-        <div class="gerald-container safe-top-padding" style="flex: 1; display: flex; flex-direction: column; height: 100%; overflow: hidden; padding-bottom: calc(85px + env(safe-area-inset-bottom, 0px));">
+        <div class="gerald-container safe-top-padding" style="flex: 1; display: flex; flex-direction: column; height: 100%; overflow: hidden;">
             <div class="gerald-header" @click="$emit('close-pickers')" style="flex-shrink: 0; z-index: 50;">
                 <div class="os-top-bar">
                     <span class="os-title">GERALD_OS v2</span>
@@ -369,10 +360,7 @@ const GeraldView = {
                 </div>
             </div>
 
-            <!-- Added empty flex spacer to force text to bottom -->
             <div class="gerald-messages" id="gerald-msgs" @click="$emit('close-pickers')" style="flex: 1; overflow-y: auto; overscroll-behavior-y: contain; -webkit-overflow-scrolling: touch; display: flex; flex-direction: column; padding: 10px 16px 0;">
-                
-                <div style="flex: 1 1 auto; min-height: 0;"></div> 
                 
                 <template v-for="(m, i) in geraldMessages" :key="i">
                     <div v-if="i === 0 && m.role === 'gerald' && !m.content" class="chat-bubble gerald startup-anim">
@@ -454,8 +442,6 @@ const HomeView = {
                     </div>
                 </div>
             </div>
-            
-            <div style="height: 80px; flex-shrink: 0;"></div>
         </div>
     `
 };
@@ -476,7 +462,12 @@ createApp({
         const modals = ref({ profile: false });
         const isLive = ref(false);
         const currentUser = ref(null);
-        const loginEmail = ref(''), loginPass = ref('');
+        
+        const loginEmail = ref('');
+        const loginPass = ref('');
+        const loginError = ref(''); 
+        const showLoginPopup = ref(false);
+
         const hostname = window.location.hostname || 'meowoccino.github.io';
         const syncState = ref('Force Data Sync');
         const wipeState = ref('Wipe Gerald Memory');
@@ -484,7 +475,6 @@ createApp({
         const nukeState = ref('Nuke App Cache');
         
         const isHeaderVisible = ref(true);
-        const showLoginPopup = ref(false);
 
         const apiConfig = ref({ localCid: localStorage.getItem('miko_twitch_cid') || '', localTkn: localStorage.getItem('twitch_tkn') || '' });
         const hiddenFallbackCid = 'i2fjxfk0oq6ybixle760zryrtvdqjg';
@@ -567,7 +557,7 @@ createApp({
         const scrollChatToBottom = () => { setTimeout(() => { const l = document.getElementById('twitch-chat-list'); if (l) l.scrollTop = l.scrollHeight; }, 100); };
 
         const processEmotes = (text) => {
-            let out = text.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+            let out = text.replace(/&/g, '&').replace(/</g, '<').replace(/>/g, '>');
             const words = out.split(' ');
             const emoteKeys = Object.keys(customEmotes.value);
             for (let i = 0; i < words.length; i++) {
@@ -604,7 +594,7 @@ createApp({
                 tags['badges'].split(',').forEach(b => { const imgUrl = badgeAssets[b]; if (imgUrl) badges.push({ title: b.split('/')[0], img: imgUrl }); });
             }
 
-            let html = text.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+            let html = text.replace(/&/g, '&').replace(/</g, '<').replace(/>/g, '>');
             if (tags['emotes']) {
                 const replacements = [];
                 tags['emotes'].split('/').forEach(e => {
@@ -937,7 +927,7 @@ createApp({
 
         const parseMarkdown = (t) => {
             if (!t) return ''; 
-            let html = t.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+            let html = t.replace(/&/g, '&').replace(/</g, '<').replace(/>/g, '>');
             html = html.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>').replace(/\*(.*?)\*/g, '<em>$1</em>');
             const words = html.split(' ');
             const emoteKeys = Object.keys(customEmotes.value);
@@ -1008,18 +998,23 @@ createApp({
         });
 
         return {
-            hostname, splashVisible, splashOpacity, currentTab, tabOffset, appTheme, toggleTheme, clips, allClipsCount, modals, isLive, currentUser, loginEmail, loginPass, apiConfig, geraldInput, geraldMessages, isGeraldTyping, talkToGerald, syncState, wipeState, logoutState, nukeState, isHeaderVisible, handleScroll, currentFilter, activeFilterLabel, isFilterMenuOpen, closeFilterMenu, applyFilter, parseMarkdown, recentVods, currentVodIndex, nextVod, prevVod, customEmotes, showEmotePicker, insertEmote, handleGeraldEnter, toggleEmotes, toggleMinigames, closePickers, nukeCache, activeClipId, switchTab, playClip, selectedClip, showMinigames, runSync, disconnectTwitch, saveApiKeys, triggerAiMinigame, geminiStatus, sysStats, chatMessages, twitchChatToken, twitchAuthUrl, twitchUsername, sendTwitchChatMessage, handleSwipeStart, handleSwipeEnd, handleModalTouchStart, handleModalTouchMove, handleModalTouchEnd, clearGeraldHistory, logoSvg: (id) => `<svg viewBox="0 0 100 100"><defs><linearGradient id="grad-${id}" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stop-color="#9146FF"/><stop offset="100%" stop-color="#a970ff"/></linearGradient></defs><circle cx="50" cy="50" r="40" fill="url(#grad-${id})"/><path d="M 33 38 L 48 62 L 62 38 L 62 55 Q 62 65 69 64" fill="none" stroke="#ffffff" stroke-width="8" stroke-linecap="round" stroke-linejoin="round"/></svg>`,
+            hostname, splashVisible, splashOpacity, currentTab, tabOffset, appTheme, toggleTheme, clips, allClipsCount, modals, isLive, currentUser, loginEmail, loginPass, loginError, showLoginPopup, apiConfig, geraldInput, geraldMessages, isGeraldTyping, talkToGerald, syncState, wipeState, logoutState, nukeState, isHeaderVisible, handleScroll, currentFilter, activeFilterLabel, isFilterMenuOpen, closeFilterMenu, applyFilter, parseMarkdown, recentVods, currentVodIndex, nextVod, prevVod, customEmotes, showEmotePicker, insertEmote, handleGeraldEnter, toggleEmotes, toggleMinigames, closePickers, nukeCache, activeClipId, switchTab, playClip, selectedClip, showMinigames, runSync, disconnectTwitch, saveApiKeys, triggerAiMinigame, geminiStatus, sysStats, chatMessages, twitchChatToken, twitchAuthUrl, twitchUsername, sendTwitchChatMessage, handleSwipeStart, handleSwipeEnd, handleModalTouchStart, handleModalTouchMove, handleModalTouchEnd, clearGeraldHistory, logoSvg: (id) => `<svg viewBox="0 0 100 100"><defs><linearGradient id="grad-${id}" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stop-color="#9146FF"/><stop offset="100%" stop-color="#a970ff"/></linearGradient></defs><circle cx="50" cy="50" r="40" fill="url(#grad-${id})"/><path d="M 33 38 L 48 62 L 62 38 L 62 55 Q 62 65 69 64" fill="none" stroke="#ffffff" stroke-width="8" stroke-linecap="round" stroke-linejoin="round"/></svg>`,
             handleLogin: async () => { 
+                loginError.value = '';
                 try {
-                    if (!loginEmail.value || !loginPass.value) return; 
+                    if (!loginEmail.value || !loginPass.value) {
+                        loginError.value = 'Please enter email and password.';
+                        return;
+                    }
                     const email = loginEmail.value.includes('@') ? loginEmail.value : `${loginEmail.value}@miko.com`; 
                     const { data, error } = await sbClient.auth.signInWithPassword({ email, password: loginPass.value }); 
                     
-                    if (error) return; 
+                    if (error) {
+                        loginError.value = 'Invalid email or password.';
+                        return;
+                    }
                     if (data.user) { 
                         currentUser.value = data.user; 
-                        
-                        // Modals physically close when you sign in 
                         modals.value.profile = false; 
                         loginEmail.value = '';
                         loginPass.value = '';
@@ -1030,7 +1025,9 @@ createApp({
                         }
                         await loadChatHistory();
                     } 
-                } catch (err) {}
+                } catch (err) {
+                    loginError.value = 'System Error. Please try again.';
+                }
             },
             handleLogout: () => { logoutState.value = 'LOGGING OUT...'; setTimeout(() => { sbClient.auth.signOut(); currentUser.value = null; modals.value.profile = false; logoutState.value = 'Sign Out'; }, 1000); },
             optimizeTwitchImg: (u) => u ? u.replace('%{width}', '480').replace('%{height}', '270') : '',
