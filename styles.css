@@ -157,6 +157,11 @@ body, html {
     70% { box-shadow: 0 0 0 8px rgba(145, 70, 255, 0); }
     100% { box-shadow: 0 0 0 0 rgba(145, 70, 255, 0); }
 }
+@keyframes indicator-pulse-success {
+    0% { box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.7); }
+    70% { box-shadow: 0 0 0 8px rgba(16, 185, 129, 0); }
+    100% { box-shadow: 0 0 0 0 rgba(16, 185, 129, 0); }
+}
 
 .video-wrapper-outer { width: 100%; position: relative; }
 .video-container {
@@ -310,14 +315,13 @@ body, html {
 .gerald-avatar-wrapper { position: relative; width: 64px; height: 64px; flex-shrink: 0; }
 .gerald-avatar { width: 100%; height: 100%; border-radius: 50%; object-fit: cover; border: 1px solid rgba(145, 70, 255, 0.2); }
 
-/* Tiny pulsing dot overlay */
 .status-dot-wrapper {
     position: absolute; bottom: 0; right: 0;
     background: var(--bg-color); padding: 3px; border-radius: 50%;
     display: flex; align-items: center; justify-content: center;
 }
 .status-dot-wrapper .dot { width: 10px; height: 10px; border-radius: 50%; }
-.dot-online { background: var(--success); animation: indicator-pulse-slow 2.5s infinite ease-in-out; }
+.dot-online { background: var(--success); animation: indicator-pulse-success 2.5s infinite ease-in-out; }
 .dot-offline { background: var(--danger); animation: indicator-pulse-slow 2.5s infinite ease-in-out; }
 
 .sys-card-titles { display: flex; flex-direction: column; justify-content: center; }
@@ -340,7 +344,6 @@ body, html {
 .stat-value { font-size: 16px; font-weight: 800; color: var(--text-main); }
 .stat-bar { height: 3px; border-radius: 2px; width: 100%; margin-top: 4px; }
 
-/* Increased bottom padding to fix the bleeding bug */
 .gerald-messages {
     flex: 1; overflow-y: auto; padding: 20px 20px 140px;
     display: flex; flex-direction: column; gap: 12px; background: var(--bg-color);
@@ -402,22 +405,37 @@ body, html {
 .sync-btn { width: 100%; background: var(--primary); border: none; color: white; padding: 15px; border-radius: 12px; font-weight: 800; margin-bottom: 10px; outline: none; cursor: pointer; }
 .infra-bar { background: var(--bg-color); border: 1px solid var(--border-color); border-radius: 14px; padding: 14px; display: flex; justify-content: center; margin-bottom: 16px; }
 .status-node { display: flex; align-items: center; gap: 8px; font-size: 11px; font-weight: 800; text-transform: uppercase; color: var(--text-main); }
-.pulse { width: 8px; height: 8px; border-radius: 50%; background: var(--success); }
+.pulse { width: 8px; height: 8px; border-radius: 50%; background: var(--success); box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.7); animation: indicator-pulse-success 2.5s infinite ease-in-out; }
 .stat-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 16px; }
 .external-link-btn { background: var(--bg-color); border: 1px solid var(--border-color); padding: 15px; border-radius: 14px; display: flex; flex-direction: column; align-items: center; gap: 8px; color: var(--text-main); text-decoration: none; font-weight: 800; font-size: 11px; text-transform: uppercase; }
 .settings-block { background: var(--bg-color); border: 1px solid var(--border-color); border-radius: 16px; padding: 16px; margin-bottom: 20px; }
 .block-title { font-size: 10px; font-weight: 800; color: var(--text-muted); margin-bottom: 12px; }
 .sleek-input { width: 100%; background: var(--card-bg); border: 1px solid var(--border-color); border-radius: 10px; padding: 12px; color: var(--text-main); font-size: 12px; font-weight: 600; outline: none; margin-bottom: 8px; }
+
+/* Admin Panel Buttons & Animations */
 .action-menu { background: var(--bg-color); border: 1px solid var(--border-color); border-radius: 16px; overflow: hidden; }
 .menu-btn { width: 100%; padding: 14px 16px; display: flex; justify-content: space-between; background: transparent; border: none; border-bottom: 1px solid var(--border-color); font-size: 11px; font-weight: 800; text-transform: uppercase; color: var(--text-main); cursor: pointer; outline: none; }
 .btn-content { display: flex; align-items: center; gap: 12px; }
-.icon-wrap { width: 30px; height: 30px; border-radius: 8px; display: flex; align-items: center; justify-content: center; }
+.icon-wrap { width: 30px; height: 30px; border-radius: 8px; display: flex; align-items: center; justify-content: center; transition: background 0.3s; }
+
 .sync-row { color: var(--primary); }
 .sync-row .icon-wrap { background: rgba(145,70,255,0.1); }
 .wipe-row { color: #ff9800; }
 .wipe-row .icon-wrap { background: rgba(255,152,0,0.1); }
+.nuke-row { color: #f59e0b; }
+.nuke-row .icon-wrap { background: rgba(245, 158, 11, 0.1); }
 .logout-row { color: var(--danger); }
 .logout-row .icon-wrap { background: rgba(239, 68, 68, 0.1); }
+
+.spin-anim { animation: icon-spin 1s linear infinite; }
+.shake-anim { animation: icon-shake 0.4s ease-in-out infinite; }
+
+@keyframes icon-spin { 100% { transform: rotate(360deg); } }
+@keyframes icon-shake {
+    0%, 100% { transform: translateX(0); }
+    25% { transform: translateX(-3px) rotate(-5deg); }
+    75% { transform: translateX(3px) rotate(5deg); }
+}
 
 @media (min-width: 768px) {
     body { padding: 2vh; background: #e5e7eb; }
