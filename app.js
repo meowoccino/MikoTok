@@ -86,14 +86,14 @@ const ProfileModal = {
                     </div>
                     <div class="settings-block">
                         <div class="block-title">TWITCH API CONFIG</div>
-                        <input type="text" class="sleek-input" :value="apiConfig.cid" @change="$emit('update-api', 'cid', $event.target.value)" placeholder="Client ID">
-                        <input type="password" class="sleek-input" :value="apiConfig.tkn" @change="$emit('update-api', 'tkn', $event.target.value)" placeholder="Access Token">
+                        <input type="text" class="sleek-input" :value="apiConfig.dbCid" @change="$emit('update-api', 'cid', $event.target.value)" placeholder="Client ID (Cloud Saved)">
+                        <input type="password" class="sleek-input" :value="apiConfig.tkn" @change="$emit('update-api', 'tkn', $event.target.value)" placeholder="Access Token (Device Locked)">
                     </div>
                     <div class="action-menu">
-                        <button class="menu-btn sync-row" :style="syncState === 'sync-success' ? 'color: var(--success);' : ''" @click="$emit('sync')" :disabled="syncState !== 'idle'">
+                        <button class="menu-btn sync-row" :style="syncState.includes('success') ? 'color: var(--success);' : (syncState.includes('ERROR') ? 'color: var(--danger);' : '')" @click="$emit('sync')" :disabled="syncState === 'syncing'">
                             <div class="btn-content">
-                                <div class="icon-wrap" :style="syncState === 'sync-success' ? 'background: rgba(16, 185, 129, 0.15);' : ''"><span class="material-symbols-rounded" :class="{'spin-anim': syncState === 'syncing'}" style="font-size: 18px;">{{ syncState === 'sync-success' ? 'check' : 'sync' }}</span></div>
-                                <span>{{ syncState === 'syncing' ? 'SYNCING...' : (syncState === 'sync-success' ? 'SUCCESS' : 'Force Data Sync') }}</span>
+                                <div class="icon-wrap" :style="syncState.includes('success') ? 'background: rgba(16, 185, 129, 0.15);' : ''"><span class="material-symbols-rounded" :class="{'spin-anim': syncState === 'syncing'}" style="font-size: 18px;">{{ syncState.includes('success') ? 'check' : (syncState.includes('ERROR') ? 'error' : 'sync') }}</span></div>
+                                <span>{{ syncState === 'syncing' ? 'SYNCING...' : syncState }}</span>
                             </div>
                         </button>
                         <button class="menu-btn wipe-row" :style="wipeState === 'success' ? 'color: var(--success);' : ''" @click="$emit('wipe')" :disabled="wipeState !== 'idle'">
@@ -179,10 +179,20 @@ const ChatView = {
             this.$emit('send-chat', this.localInput.trim()); 
             this.localInput = '';
             this.closePicker(); 
+        },
+        isSequential(msg, index) {
+            if (index === 0) return false;
+            return this.chatMessages[index - 1].username === msg.username;
         }
     },
     template: `
         <div class="chat-wrapper">
+            <!-- Public Viewer Logout Header -->
+            <div v-if="isLoggedIn" class="chat-public-auth-banner">
+                <span class="user-pill">💬 Connected as <b>{{ twitchUsername }}</b></span>
+                <button class="public-disconnect-btn" @click="$emit('disconnect-public-twitch')">Disconnect</button>
+            </div>
+
             <div class="twitch-chat-list" id="twitch-chat-list" @click="closePicker">
                 <div v-if="chatMessages.length === 0" class="chat-empty-state">
                     <span class="material-symbols-rounded" style="font-size:32px; color:var(--text-muted); margin-bottom:8px;">chat_bubble_outline</span>
@@ -190,13 +200,16 @@ const ChatView = {
                 </div>
                 <div v-for="(msg, i) in chatMessages" :key="i"
                      class="twitch-msg-row"
-                     :class="{ 'msg-mine': msg.username === twitchUsername }">
-                    <span class="chat-timestamp">{{ msg.timestamp }}</span>
-                    <span class="twitch-badges">
-                        <img v-for="(badge, bi) in (msg.badges || [])" :key="bi"
-                             :src="badge.img" :title="badge.title" class="badge-img">
-                    </span>
-                    <span class="twitch-username" :style="{ color: msg.color }">{{ msg.username }}</span><span class="twitch-colon">: </span><span class="twitch-text" v-html="msg.html"></span>
+                     :class="{ 'msg-mine': msg.username === twitchUsername, 'msg-stacked': isSequential(msg, i) }">
+                    <template v-if="!isSequential(msg, i)">
+                        <span class="chat-timestamp">{{ msg.timestamp }}</span>
+                        <span class="twitch-badges">
+                            <img v-for="(badge, bi) in (msg.badges || [])" :key="bi"
+                                 :src="badge.img" :title="badge.title" class="badge-img">
+                        </span>
+                        <span class="twitch-username" :style="{ color: msg.color }">{{ msg.username }}</span><span class="twitch-colon">: </span>
+                    </template>
+                    <span class="twitch-text" :class="{'text-stacked-padding': isSequential(msg, i)}" v-html="msg.html"></span>
                 </div>
             </div>
 
@@ -228,9 +241,9 @@ const ChatView = {
                 </button>
             </div>
 
+            <!-- Enhanced Back-tappable Centered Login Popup -->
             <div class="chat-login-popup-overlay" :class="{ open: showLoginPopup }" @click.self="showLoginPopup = false">
                 <div class="chat-login-card position-relative">
-                    <button class="clip-close-x" style="top: -15px; right: -15px;" @click="showLoginPopup = false"><span class="material-symbols-rounded">close</span></button>
                     <svg viewBox="0 0 24 24" class="chat-login-icon"><path fill="currentColor" d="M11.571 4.714h1.715v5.143H11.57zm4.715 0H18v5.143h-1.714zM6 0L1.714 4.286v15.428h5.143V24l4.286-4.286h3.428L22.286 12V0zm14.571 11.143l-3.428 3.428h-3.429l-3 3v-3H6.857V1.714h13.714Z"/></svg>
                     <p class="chat-login-title">Join the chat</p>
                     <p class="chat-login-sub">Connect your Twitch account to read and send messages live.</p>
@@ -302,9 +315,14 @@ const MoreView = {
     `
 };
 
-/* ── RE-DECLARED GERALD VIEW COMPONENT (FIXES THE BLANK SCREEN ERR) ── */
 const GeraldView = {
     props: ['currentTab', 'geraldMessages', 'isGeraldTyping', 'geraldInput', 'showEmotePicker', 'showMinigames', 'customEmotes', 'parseMarkdown', 'apiConnected'],
+    methods: {
+        getEmoteUrl(emote) {
+            if (emote.url) return emote.url;
+            return `https://cdn.discordapp.com/emojis/${emote.id}.${emote.animated ? 'gif' : 'png'}?size=44`;
+        }
+    },
     template: `
         <div class="gerald-container">
             <div class="gerald-header" @click="$emit('close-pickers')">
@@ -464,9 +482,12 @@ createApp({
         const loginEmail = ref(''), loginPass = ref('');
         const toast = ref({ visible: false, message: '' });
         const hostname = window.location.hostname || 'meowoccino.github.io';
-        const syncState = ref('idle'), wipeState = ref('idle'), logoutState = ref('idle'), nukeState = ref('idle');
+        const syncState = ref('Force Data Sync');
+        const wipeState = ref('idle'), logoutState = ref('idle'), nukeState = ref('idle');
         
-        const apiConfig = ref({ cid: '', tkn: '' });
+        // Dynamic system settings
+        const apiConfig = ref({ dbCid: '', tkn: '' });
+        const hiddenFallbackCid = 'i2fjxfk0oq6ybixle760zryrtvdqjg';
 
         const customEmotes = ref({});
         const activeClipId = ref(null);
@@ -647,7 +668,7 @@ createApp({
                 });
             };
 
-            twitchWs.onclose = () => { wsAuthenticated = false; setTimeout(connectTwitchChat, 5000); };
+            twitchWs.onclose = () => { wsAuthenticated = false; };
             twitchWs.onerror = () => { wsAuthenticated = false; };
         };
 
@@ -676,15 +697,19 @@ createApp({
         };
 
         const loadTwitchBadges = async () => {
-            const clientId = apiConfig.value.cid || 'i2fjxfk0oq6ybixle760zryrtvdqjg';
-            let token = twitchChatToken.value || apiConfig.value.tkn;
-            if (!token) return; 
+            const clientId = apiConfig.value.dbCid || hiddenFallbackCid;
+            let token = apiConfig.value.tkn || twitchChatToken.value;
+            if (!token) return false; 
+            
             const headers = { 'Client-ID': clientId, 'Authorization': `Bearer ${token}` };
             try {
                 const [globalRes, channelRes] = await Promise.all([
                     fetch('https://api.twitch.tv/helix/chat/badges/global', { headers }),
                     fetch('https://api.twitch.tv/helix/chat/badges?broadcaster_id=500128827', { headers })
                 ]);
+                
+                if (globalRes.status === 401 || channelRes.status === 401) return false;
+
                 const globalData = await globalRes.json();
                 const channelData = await channelRes.json();
 
@@ -694,7 +719,10 @@ createApp({
                 if (channelData?.data) {
                     channelData.data.forEach(set => { set.versions.forEach(ver => { badgeAssets[`${set.set_id}/${ver.id}`] = ver.image_url_1x; }); });
                 }
-            } catch(e) {}
+                return true;
+            } catch(e) {
+                return false;
+            }
         };
 
         const load7TVEmotes = async () => {
@@ -773,7 +801,7 @@ createApp({
         let modalStartY = 0, currentDeltaY = 0;
         const handleModalTouchStart = (e) => { if (e.currentTarget.scrollTop <= 0) { modalStartY = e.touches[0].clientY; currentDeltaY = 0; } };
         const handleModalTouchMove = (e) => { if (!modalStartY) return; currentDeltaY = e.touches[0].clientY - modalStartY; if (currentDeltaY > 0) { e.currentTarget.style.transform = `translateY(${currentDeltaY}px)`; e.currentTarget.style.transition = 'none'; } };
-        const handleModalTouchEnd = (e) => { if (!modalStartY) return; e.currentTarget.style.transition = 'transform 0.3s cubic-bezier(0.2, 0.8, 0.2, 1)'; if (currentDeltaY > 100) { modals.value.profile = false; modals.value.discord = false; } e.currentTarget.style.transform = ''; modalStartY = 0; };
+        const handleModalTouchEnd = (e) => { if (!modalStartY) return; e.currentTarget.style.transition = 'transform 0.3s cubic-bezier(0.2, 0.8, 0.2, 1)'; if (currentDeltaY > 100) { modals.value.profile = false; } e.currentTarget.style.transform = ''; modalStartY = 0; };
 
         const logoSvg = (id) => `<svg viewBox="0 0 100 100"><defs><linearGradient id="grad-${id}" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stop-color="#9146FF"/><stop offset="100%" stop-color="#a970ff"/></linearGradient></defs><circle cx="50" cy="50" r="40" fill="url(#grad-${id})"/><path d="M 33 38 L 48 62 L 62 38 L 62 55 Q 62 65 69 64" fill="none" stroke="#ffffff" stroke-width="8" stroke-linecap="round" stroke-linejoin="round"/></svg>`;
         const showToast = (msg, duration = 6000) => { toast.value.message = msg; toast.value.visible = true; setTimeout(() => toast.value.visible = false, duration); };
@@ -833,8 +861,7 @@ createApp({
             if (!currentUser.value) return;
             const { data } = await sbClient.from('gerald_history').select('*').eq('user_id', currentUser.value.id).order('created_at', { ascending: true });
             if (data && data.length > 0) {
-                let history = data.map(d => ({ role: d.role, content: d.content }));
-                geraldMessages.value = history;
+                geraldMessages.value = data.map(d => ({ role: d.role, content: d.content }));
             }
             nextTick(scrollToBottom);
         };
@@ -948,32 +975,36 @@ createApp({
         };
 
         const runSync = async () => {
-            if (syncState.value !== 'idle') return;
             syncState.value = 'syncing';
-            await loadTwitchBadges();
+            
+            // Fixed Race Conditions: Core dependencies load completely FIRST
+            await load7TVEmotes();
+            const badgeLoadSuccess = await loadTwitchBadges();
+            
+            if (!badgeLoadSuccess && apiConfig.value.tkn) {
+                syncState.value = 'TOKEN ERROR';
+                return;
+            }
+
             await loadData(false);
             await checkLive();
-            await load7TVEmotes();
-            syncState.value = 'sync-success';
-            setTimeout(() => { syncState.value = 'idle'; }, 2000);
+            
+            syncState.value = 'SUCCESS';
+            setTimeout(() => { syncState.value = 'Force Data Sync'; }, 2500);
         };
 
         onMounted(async () => {
             try {
                 const { data: settings } = await sbClient.from('app_settings').select('*').eq('id', 1).single();
-                if (settings) {
-                    apiConfig.value.cid = settings.twitch_cid || 'i2fjxfk0oq6ybixle760zryrtvdqjg';
-                } else {
-                    apiConfig.value.cid = 'i2fjxfk0oq6ybixle760zryrtvdqjg';
+                if (settings && settings.twitch_cid) {
+                    apiConfig.value.dbCid = settings.twitch_cid;
                 }
-            } catch(e) {
-                apiConfig.value.cid = 'i2fjxfk0oq6ybixle760zryrtvdqjg';
-            }
+            } catch(e) {}
             
             apiConfig.value.tkn = localStorage.getItem('twitch_tkn') || '';
 
-            const clientId = apiConfig.value.cid;
-            twitchAuthUrl.value = 'https://id.twitch.tv/oauth2/authorize?client_id=' + clientId + '&redirect_uri=' + encodeURIComponent('https://meowoccino.github.io/MikoTok/') + '&response_type=token&scope=chat:read+chat:edit&force_verify=true';
+            const activeCid = apiConfig.value.dbCid || hiddenFallbackCid;
+            twitchAuthUrl.value = 'https://id.twitch.tv/oauth2/authorize?client_id=' + activeCid + '&redirect_uri=' + encodeURIComponent('https://meowoccino.github.io/MikoTok/') + '&response_type=token&scope=chat:read+chat:edit&force_verify=true';
             
             updateThemeClass();
             
@@ -987,6 +1018,7 @@ createApp({
                 }
             }
 
+            await load7TVEmotes();
             await loadTwitchBadges();
 
             if (twitchChatToken.value) {
@@ -998,13 +1030,9 @@ createApp({
                             localStorage.setItem('tw_username', data.login);
                             connectTwitchChat();
                         } else {
-                            twitchChatToken.value = null; 
-                            twitchUsername.value = null;
-                            localStorage.removeItem('tw_chat_token');
-                            localStorage.removeItem('tw_username');
-                            connectTwitchChat();
+                            disconnectTwitch();
                         }
-                    }).catch(e => { console.error(e); connectTwitchChat(); });
+                    }).catch(e => { connectTwitchChat(); });
             } else {
                 connectTwitchChat();
             }
@@ -1015,11 +1043,11 @@ createApp({
             } catch(e) {}
 
             try {
-                await load7TVEmotes();
                 await loadData(false); 
                 await checkLive();
             } catch(e) {}
 
+            // Reveal application rendering smoothly after boot layout finishes initialization
             setTimeout(() => {
                 splashOpacity.value = 0;
                 setTimeout(() => { splashVisible.value = false; }, 250);
@@ -1030,15 +1058,16 @@ createApp({
             hostname, splashVisible, splashOpacity, currentTab, appTheme, toggleTheme, clips, modals, isLive, toast, currentUser, loginEmail, loginPass, apiConfig, geraldInput, geraldMessages, isGeraldTyping, talkToGerald, logoSvg, syncState, wipeState, logoutState, nukeState, isHeaderVisible, handleScroll, handleModalTouchStart, handleModalTouchMove, handleModalTouchEnd, currentFilter, activeFilterLabel, isFilterMenuOpen, closeFilterMenu, applyFilter, parseMarkdown, recentVods, currentVodIndex, nextVod, prevVod, customEmotes, showEmotePicker, insertEmote, clearGeraldHistory, handleGeraldEnter, toggleEmotes, toggleMinigames, closePickers, nukeCache, activeClipId, tabOffset, switchTab, handleSwipeStart, handleSwipeEnd, playClip, playMinigame, selectedClip, showMinigames, runSync, disconnectTwitch,
             chatMessages, twitchChatToken, twitchAuthUrl, twitchUsername, sendTwitchChatMessage,
             updateApiConfig: async (key, val) => {
-                apiConfig.value[key] = val;
                 if (key === 'cid') {
+                    apiConfig.value.dbCid = val;
                     await sbClient.from('app_settings').update({ twitch_cid: val }).eq('id', 1);
                 } else {
+                    apiConfig.value.tkn = val;
                     localStorage.setItem('twitch_tkn', val);
                 }
             },
             handleLogin: async () => { const email = loginEmail.value.includes('@') ? loginEmail.value : `${loginEmail.value}@miko.com`; const { data } = await sbClient.auth.signInWithPassword({ email, password: loginPass.value }); if(data.user) { currentUser.value = data.user; modals.value.profile = false; loadGeraldHistory(); } }, 
-            handleLogout: () => { if (logoutState.value !== 'idle') return; logoutState.value = 'logging_out'; setTimeout(() => { sbClient.auth.signOut(); currentUser.value = null; geraldMessages.value = [{role:'gerald', content: ''}]; localStorage.removeItem('tw_chat_token'); localStorage.removeItem('tw_username'); twitchChatToken.value = null; twitchUsername.value = null; if (twitchWs) twitchWs.close(); modals.value.profile = false; logoutState.value = 'idle'; }, 1500); },
+            handleLogout: () => { if (logoutState.value !== 'idle') return; logoutState.value = 'logging_out'; setTimeout(() => { sbClient.auth.signOut(); currentUser.value = null; geraldMessages.value = [{role:'gerald', content: ''}]; modals.value.profile = false; logoutState.value = 'idle'; }, 1500); },
             optimizeTwitchImg: (u) => u ? u.replace('%{width}', '480').replace('%{height}', '270') : '', 
             formatViews: (v) => v ? v.toLocaleString() : '0', 
             formatDate: (d) => new Date(d).toLocaleDateString([], {month:'short', day:'numeric'})
