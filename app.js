@@ -74,7 +74,6 @@ const ProfileModal = {
             <div class="modal-content" @touchstart="$emit('touch-start', $event)" @touchmove="$emit('touch-move', $event)" @touchend="$emit('touch-end', $event)">
                 <div class="drag-handle"></div>
                 <div v-if="!currentUser || currentUser.is_anonymous">
-                    <div style="font-size: 12px; color: var(--text-muted); text-align: center; margin-bottom: 10px;">Login to sync your Admin configuration.</div>
                     <input type="text" :value="loginEmail" @input="$emit('update-email', $event.target.value)" class="input-box" style="margin-top: 10px;" placeholder="Email">
                     <input type="password" :value="loginPass" @input="$emit('update-pass', $event.target.value)" class="input-box" @keyup.enter="$emit('login')" placeholder="Password">
                     <button class="sync-btn" @click="$emit('login')">LOGIN</button>
@@ -206,8 +205,8 @@ const ChatView = {
                 <button class="public-disconnect-btn" @click="$emit('disconnect-public-twitch')">Disconnect</button>
             </div>
 
-            <!-- Added safe bottom padding so chat doesn't bleed under nav -->
-            <div class="twitch-chat-list" id="twitch-chat-list" @click="closePicker" style="padding-bottom: 80px;">
+            <!-- Adjusted padding-bottom to 90px to prevent navigation bar bleed -->
+            <div class="twitch-chat-list" id="twitch-chat-list" @click="closePicker" style="padding-bottom: 90px;">
                 <div v-if="chatMessages.length === 0" class="chat-empty-state">
                     <span class="material-symbols-rounded" style="font-size:32px; color:var(--text-muted); margin-bottom:8px;">chat_bubble_outline</span>
                     <span style="font-size:13px; color:var(--text-muted); font-weight:600;">Loading channels…</span>
@@ -260,44 +259,63 @@ const ChatView = {
 const MoreView = {
     template: `
         <div class="more-container">
-            <div class="social-grid">
-                <a href="https://throne.com/codemiko" target="_blank" class="social-card">
-                    <div style="display:flex; align-items:center; gap:15px; flex:1;">
-                        <span class="material-symbols-rounded social-icon" style="font-size: 28px; color: #0ea5e9;">redeem</span>
-                        <span style="color: var(--text-main);">Throne</span>
-                    </div>
-                </a>
-                <a href="https://www.twitch.tv/codemiko" target="_blank" class="social-card">
+            <!-- Pinned Throne Link -->
+            <a href="https://throne.com/codemiko" target="_blank" style="display:flex; padding: 16px; border-radius:14px; background:var(--surface-color); box-shadow: 0 4px 15px rgba(0,0,0,0.05); align-items:center; justify-content:center; gap: 12px; font-weight:700; font-size:16px; margin-bottom:15px; text-decoration:none;">
+                <span class="material-symbols-rounded" style="font-size: 28px; color: #0ea5e9;">redeem</span>
+                <span style="color: var(--text-main);">Support on Throne</span>
+            </a>
+
+            <!-- Compact grid to fit all 11 remaining links on one screen -->
+            <div class="social-grid" style="grid-template-columns: repeat(3, 1fr); gap: 8px;">
+                <a href="https://www.twitch.tv/codemiko" target="_blank" class="social-card" style="padding:12px 6px;">
                     <svg viewBox="0 0 24 24" class="social-icon" style="color: #9146FF;"><path fill="currentColor" d="M11.571 4.714h1.715v5.143H11.57zm4.715 0H18v5.143h-1.714zM6 0L1.714 4.286v15.428h5.143V24l4.286-4.286h3.428L22.286 12V0zm14.571 11.143l-3.428 3.428h-3.429l-3 3v-3H6.857V1.714h13.714Z"/></svg>
-                    <span style="color: var(--text-main);">Twitch</span>
+                    <span style="color: var(--text-main); font-size:13px;">Twitch</span>
                 </a>
-                <a href="https://www.youtube.com/@CodeMiko" target="_blank" class="social-card">
+                <a href="https://www.youtube.com/@CodeMiko" target="_blank" class="social-card" style="padding:12px 6px;">
                     <svg viewBox="0 0 24 24" class="social-icon" style="color: #FF0000;"><path fill="currentColor" d="M23.498 6.186a3.016 3.016 0 0 0-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 0 0 .502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 0 0 2.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 0 0 2.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z"/></svg>
-                    <span style="color: var(--text-main);">YouTube</span>
+                    <span style="color: var(--text-main); font-size:13px;">YouTube</span>
                 </a>
-                <a href="https://kick.com/codemiko" target="_blank" class="social-card">
+                <a href="https://kick.com/codemiko" target="_blank" class="social-card" style="padding:12px 6px;">
                     <svg viewBox="0 0 24 24" class="social-icon" style="color: #53FC18;"><path fill="currentColor" d="M19 2H5a3 3 0 0 0-3 3v14a3 3 0 0 0 3 3h14a3 3 0 0 0 3-3V5a3 3 0 0 0-3-3zM10.1 14.5v3.3H7.4V6.2h2.7v4.6l3.3-4.6h3.4l-3.9 5.1 4.2 6.5h-3.5z"/></svg>
-                    <span style="color: var(--text-main);">Kick</span>
+                    <span style="color: var(--text-main); font-size:13px;">Kick</span>
                 </a>
-                <a href="https://discord.com/invite/codemiko" target="_blank" class="social-card">
+                <a href="https://discord.com/invite/codemiko" target="_blank" class="social-card" style="padding:12px 6px;">
                     <svg viewBox="0 0 24 24" class="social-icon" style="color: #5865F2;"><path fill="currentColor" d="M20.317 4.3698a19.7913 19.7913 0 00-4.8851-1.5152.0741.0741 0 00-.0785.0371c-.211.3753-.4447.8648-.6083 1.2495-1.8447-.2762-3.68-.2762-5.4868 0-.1636-.3933-.4058-.8742-.6177-1.2495a.077.077 0 00-.0785-.037 19.7363 19.7363 0 00-4.8852 1.515.0699.0699 0 00-.0321.0277C.5334 9.0458-.319 13.5799.0992 18.0578a.0824.0824 0 00.0312.0561c2.0528 1.5076 4.0413 2.4228 5.9929 3.0294a.0777.0777 0 00.0842-.0276c.4616-.6304.8731-1.2952 1.226-1.9942a.076.076 0 00-.0416-.1057c-.6528-.2476-1.2743-.5495-1.8722-.8923a.077.077 0 01-.0076-.1277c.1258-.0943.2517-.1923.3718-.2914a.0743.0743 0 01.0776-.0105c3.9278 1.7933 8.18 1.7933 12.0614 0a.0739.0739 0 01.0785.0095c.1202.099.246.1981.3728.2924a.077.077 0 01-.0066.1276 12.2986 12.2986 0 01-1.873.8914.0766.0766 0 00-.0407.1067c.3604.698.7719 1.3628 1.225 1.9932a.076.076 0 00.0842.0286c1.961-.6067 3.9495-1.5219 6.0023-3.0294a.077.077 0 00.0313-.0552c.5004-5.177-.8382-9.6739-3.5485-13.6604a.061.061 0 00-.0312-.0286zM8.02 15.3312c-1.1825 0-2.1569-1.0857-2.1569-2.419 0-1.3332.9555-2.4189 2.157-2.4189 1.2108 0 2.1757 1.0952 2.1568 2.419 0 1.3332-.9555 2.4189-2.1569 2.4189zm7.9748 0c-1.1825 0-2.1569-1.0857-2.1569-2.419 0-1.3332.9554-2.4189 2.1569-2.4189 1.2108 0 2.1757 1.0952 2.1568 2.419 0 1.3332-.946 2.4189-2.1568 2.4189Z"/></svg>
-                    <span style="color: var(--text-main);">Discord</span>
+                    <span style="color: var(--text-main); font-size:13px;">Discord</span>
                 </a>
-                <a href="https://www.tiktok.com/@codemiko" target="_blank" class="social-card">
-                    <svg viewBox="0 0 24 24" class="social-icon" style="color: #fff;"><path fill="currentColor" d="M12.53.02C13.84 0 15.14.01 16.44 0c.08 1.53.63 3.09 1.75 4.17 1.12 1.11 2.7 1.62 4.24 1.79v4.03c-1.44-.05-2.89-.35-4.2-.97-.57-.26-1.1-.59-1.62-.93-.01 2.92.01 5.84-.02 8.75-.08 1.4-.54 2.79-1.35 3.94-1.31 1.92-3.58 3.17-5.91 3.21-1.43.08-2.86-.31-4.08-1.03-2.02-1.12-3.44-3.17-3.64-5.41-.02-.21-.02-.41-.02-.62.07-1.44.62-2.83 1.51-3.89 1.05-1.25 2.55-2.06 4.15-2.28 1.1-.15 2.23-.04 3.27.35v4.06c-.34-.13-.7-.2-1.07-.22-.92-.04-1.84.28-2.51.86-.67.57-1.08 1.4-1.1 2.31-.01.91.38 1.77 1.03 2.38.65.61 1.56.93 2.49.88.92-.04 1.78-.45 2.38-1.11.58-.65.88-1.54.88-2.45V.02h-.03z"/></svg>
-                    <span style="color: var(--text-main);">TikTok</span>
+                <a href="https://fanfix.io/@codemiko" target="_blank" class="social-card" style="padding:12px 6px;">
+                    <svg viewBox="0 0 24 24" class="social-icon" style="color: #FF7B00;"><path fill="currentColor" d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 15h-2v-6H7v-2h2V7h2v2h2v2h-2v6z"/></svg>
+                    <span style="color: var(--text-main); font-size:13px;">Fanfix</span>
                 </a>
-                <a href="https://twitter.com/codemiko" target="_blank" class="social-card">
-                    <svg viewBox="0 0 24 24" class="social-icon" style="color: #fff;"><path fill="currentColor" d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>
-                    <span style="color: var(--text-main);">Twitter / X</span>
+                <!-- Uses currentColor to automatically switch dark/light for TikTok -->
+                <a href="https://www.tiktok.com/@codemiko" target="_blank" class="social-card" style="padding:12px 6px;">
+                    <svg viewBox="0 0 24 24" class="social-icon" style="color: var(--text-main);"><path fill="currentColor" d="M12.53.02C13.84 0 15.14.01 16.44 0c.08 1.53.63 3.09 1.75 4.17 1.12 1.11 2.7 1.62 4.24 1.79v4.03c-1.44-.05-2.89-.35-4.2-.97-.57-.26-1.1-.59-1.62-.93-.01 2.92.01 5.84-.02 8.75-.08 1.4-.54 2.79-1.35 3.94-1.31 1.92-3.58 3.17-5.91 3.21-1.43.08-2.86-.31-4.08-1.03-2.02-1.12-3.44-3.17-3.64-5.41-.02-.21-.02-.41-.02-.62.07-1.44.62-2.83 1.51-3.89 1.05-1.25 2.55-2.06 4.15-2.28 1.1-.15 2.23-.04 3.27.35v4.06c-.34-.13-.7-.2-1.07-.22-.92-.04-1.84.28-2.51.86-.67.57-1.08 1.4-1.1 2.31-.01.91.38 1.77 1.03 2.38.65.61 1.56.93 2.49.88.92-.04 1.78-.45 2.38-1.11.58-.65.88-1.54.88-2.45V.02h-.03z"/></svg>
+                    <span style="color: var(--text-main); font-size:13px;">TikTok</span>
                 </a>
-                <a href="https://www.instagram.com/thecodemiko/" target="_blank" class="social-card">
+                <!-- Uses currentColor to automatically switch dark/light for X -->
+                <a href="https://twitter.com/codemiko" target="_blank" class="social-card" style="padding:12px 6px;">
+                    <svg viewBox="0 0 24 24" class="social-icon" style="color: var(--text-main);"><path fill="currentColor" d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>
+                    <span style="color: var(--text-main); font-size:13px;">X</span>
+                </a>
+                <a href="https://www.instagram.com/thecodemiko/" target="_blank" class="social-card" style="padding:12px 6px;">
                     <svg viewBox="0 0 24 24" class="social-icon" style="color: #E1306C;"><path fill="currentColor" d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zM12 0C8.741 0 8.333.014 7.053.072 2.695.272.273 2.69.073 7.052.014 8.333 0 8.741 0 12c0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98C8.333 23.986 8.741 24 12 24c3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98C15.668.014 15.259 0 12 0zm0 5.838a6.162 6.162 0 100 12.324 6.162 6.162 0 000-12.324zM12 16a4 4 0 110-8 4 4 0 010 8zm6.406-11.845a1.44 1.44 0 100 2.881 1.44 1.44 0 000-2.881z"/></svg>
-                    <span style="color: var(--text-main);">Instagram</span>
+                    <span style="color: var(--text-main); font-size:13px;">Instagram</span>
                 </a>
-                <a href="https://www.snapchat.com/add/codemiko" target="_blank" class="social-card">
+                <a href="https://bsky.app/profile/codemiko.bsky.social" target="_blank" class="social-card" style="padding:12px 6px;">
+                    <svg viewBox="0 0 24 24" class="social-icon" style="color: #1185fe;"><path fill="currentColor" d="M12 10.8c-1.087-2.114-4.046-6.053-6.798-7.905C2.566 1.091 1.818 1.15 1.282 1.624c-.537.475-.583 1.229-.442 2.658.337 3.42 1.765 6.444 3.435 8.163 1.67 1.718 3.553 2.158 5.617 2.158.46 0 .93-.03 1.408-.094-1.258.455-2.615 1.085-4.004 1.905-2.296 1.353-3.612 2.955-3.612 4.498 0 1.283.878 2.21 2.29 2.536 1.346.312 3.19-.115 5.253-1.46 1.488-.968 2.518-2.25 2.773-2.68.255.43 1.285 1.712 2.773 2.68 2.063 1.345 3.907 1.772 5.253 1.46 1.412-.326 2.29-1.253 2.29-2.536 0-1.543-1.316-3.145-3.612-4.498-1.389-.82-2.746-1.45-4.004-1.905.478.064.948.094 1.408.094 2.064 0 3.947-.44 5.617-2.158 1.67-1.719 3.098-4.743 3.435-8.163.141-1.429.095-2.183-.442-2.658-.536-.474-1.284-.533-3.92.271-2.752 1.852-5.711 5.791-6.798 7.905z"/></svg>
+                    <span style="color: var(--text-main); font-size:13px;">Bluesky</span>
+                </a>
+                <a href="https://www.threads.net/@thecodemiko" target="_blank" class="social-card" style="padding:12px 6px;">
+                    <svg viewBox="0 0 24 24" class="social-icon" style="color: var(--text-main);"><path fill="currentColor" d="M12 22a10 10 0 110-20 10 10 0 010 20zm0-2a8 8 0 100-16 8 8 0 000 16zm-2.5-8.5a2.5 2.5 0 115 0 2.5 2.5 0 01-5 0zm2.5-4a4 4 0 100 8 4 4 0 000-8zm5 4a5 5 0 11-10 0 5 5 0 0110 0zm-5 6a6 6 0 100-12 6 6 0 000 12z"/></svg>
+                    <span style="color: var(--text-main); font-size:13px;">Threads</span>
+                </a>
+                <a href="https://www.snapchat.com/add/codemiko" target="_blank" class="social-card" style="padding:12px 6px;">
                     <svg viewBox="0 0 24 24" class="social-icon" style="color: #FFFC00;"><path fill="currentColor" d="M12.126 23.955c-1.472-.036-2.502-.455-3.633-.949-.556-.242-1.077-.384-1.657-.202-1.542.483-3.082 1.054-4.73 1.127-1.393.061-1.777-.52-1.205-1.651.488-.962 1.031-1.895 1.48-2.871.21-.453.208-.857-.042-1.272-1.071-1.782-1.637-3.708-1.764-5.748-.04-.633-.037-1.27-.037-1.936 0-3.923 2.115-6.843 5.437-8.318C8.384.975 10.94.39 13.626.54c4.12.232 7.152 2.647 8.527 6.643.518 1.503.655 3.066.621 4.646-.025 1.156-.168 2.298-.485 3.407-.346 1.208-.887 2.336-1.688 3.32-.429.529-.395.96.012 1.488.35.452.704.9 1.057 1.349.52.661.274 1.236-.532 1.274-1.506.072-2.923-.509-4.321-1.052-.777-.302-1.411-.122-2.072.164-1.045.451-2.146.862-3.32.969-.379.034-.764.03-1.299.207z"/></svg>
-                    <span style="color: var(--text-main);">Snapchat</span>
+                    <span style="color: var(--text-main); font-size:13px;">Snapchat</span>
+                </a>
+                <a href="https://www.facebook.com/codemikoofficial" target="_blank" class="social-card" style="padding:12px 6px;">
+                    <svg viewBox="0 0 24 24" class="social-icon" style="color: #1877F2;"><path fill="currentColor" d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/></svg>
+                    <span style="color: var(--text-main); font-size:13px;">Facebook</span>
                 </a>
             </div>
         </div>
@@ -322,9 +340,10 @@ const GeraldMinigames = {
         };
     },
     template: `
-        <div class="chat-emote-tray" v-show="showMinigames" style="bottom:100%; border-bottom:none; border-radius:16px 16px 0 0;">
-            <div class="emote-picker-grid" style="gap:8px;">
-                <button v-for="g in gameDeck" :key="g.id" class="bribe-btn" @click.stop="$emit('play-game', g)">
+        <div class="chat-emote-tray" v-show="showMinigames" style="bottom:100%; border-bottom:none; border-radius:16px 16px 0 0; max-height: 250px;">
+            <!-- Increased grid button sizes for readability -->
+            <div class="emote-picker-grid" style="grid-template-columns: repeat(auto-fill, minmax(130px, 1fr)); gap:10px; padding: 12px;">
+                <button v-for="g in gameDeck" :key="g.id" class="bribe-btn" style="padding: 10px; font-size: 14px; text-align: center;" @click.stop="$emit('play-game', g)">
                     {{ g.label }}
                 </button>
             </div>
@@ -359,17 +378,16 @@ const GeraldView = {
                 </div>
             </div>
 
-            <div class="gerald-messages" id="gerald-msgs" @click="$emit('close-pickers')">
+            <div class="gerald-messages" id="gerald-msgs" @click="$emit('close-pickers')" style="padding-bottom: 90px;">
                 <template v-for="(m, i) in geraldMessages" :key="i">
-                    <div v-if="i === 0 && m.role === 'gerald'" class="chat-bubble gerald startup-anim">
-                        <span v-if="!m.content">> GERALD_CORE initialized.<br>> Awaiting human input...</span>
-                        <span v-else v-html="parseMarkdown(m.content)"></span>
+                    <div v-if="i === 0 && m.role === 'gerald' && !m.content" class="chat-bubble gerald startup-anim">
+                        <span>> GERALD_CORE initialized.<br>> Awaiting human input...</span>
                     </div>
-                    <div v-else class="chat-bubble" :class="m.role" v-html="parseMarkdown(m.content)"></div>
+                    <div v-else-if="m.content" class="chat-bubble" :class="m.role" v-html="parseMarkdown(m.content)"></div>
                 </template>
 
-                <!-- Moved the thinking animation inside the chat history area -->
-                <div v-show="isGeraldTyping" class="chat-bubble gerald dots-thinking-row" style="display:inline-flex; margin-top:8px;">
+                <!-- Dots are now natively inside the message block -->
+                <div v-show="isGeraldTyping" class="chat-bubble gerald dots-thinking-row" style="display:inline-flex; align-items:center; margin-top:8px; padding: 12px 18px;">
                     <div class="os-dot close"></div>
                     <div class="os-dot min"></div>
                     <div class="os-dot max"></div>
@@ -677,7 +695,13 @@ createApp({
         const triggerAiMinigame = (gameObj) => {
             geraldInput.value = "";
             closePickers();
-            geraldMessages.value.push({ role: 'user', content: `*Triggers ${gameObj.label}*` });
+            
+            // New Bold formatting inside the chat log!
+            const logMsg = `**[EVENT: ${gameObj.label} Protocol Activated]**`;
+            geraldMessages.value.push({ role: 'user', content: logMsg });
+            
+            // PERMANENT MEMORY SAVE
+            if (currentUser.value) sbClient.from('gerald_history').insert({ user_id: currentUser.value.id, role: 'user', content: logMsg }).then();
             
             isGeraldTyping.value = true;
             nextTick(scrollToBottom);
@@ -689,6 +713,8 @@ createApp({
             }).then(({ data, error }) => {
                 if (!error && data?.reply) {
                     geraldMessages.value.push({ role: 'gerald', content: data.reply.trim() });
+                    // PERMANENT MEMORY SAVE
+                    if (currentUser.value) sbClient.from('gerald_history').insert({ user_id: currentUser.value.id, role: 'gerald', content: data.reply.trim() }).then();
                 } else {
                     geraldMessages.value.push({ role: 'gerald', content: '> MALFUNCTION: Internal hardware override processing failure.' });
                 }
@@ -707,6 +733,10 @@ createApp({
 
             const userMsg = geraldInput.value;
             geraldMessages.value.push({ role: 'user', content: userMsg });
+            
+            // PERMANENT MEMORY SAVE
+            if (currentUser.value) sbClient.from('gerald_history').insert({ user_id: currentUser.value.id, role: 'user', content: userMsg }).then();
+
             geraldInput.value = '';
             if (inputEl) { inputEl.value = ''; inputEl.style.height = 'auto'; }
 
@@ -715,8 +745,11 @@ createApp({
 
             try {
                 const { data, error } = await sbClient.functions.invoke('gerald-chat', { body: { history: geminiHistory } });
-                if (!error && data?.reply) geraldMessages.value.push({ role: 'gerald', content: data.reply.trim() });
-                else throw error;
+                if (!error && data?.reply) {
+                    geraldMessages.value.push({ role: 'gerald', content: data.reply.trim() });
+                    // PERMANENT MEMORY SAVE
+                    if (currentUser.value) sbClient.from('gerald_history').insert({ user_id: currentUser.value.id, role: 'gerald', content: data.reply.trim() }).then();
+                } else throw error;
             } catch { geraldMessages.value.push({ role: 'gerald', content: '> SYSTEM FAILURE: Core sync interrupted.' }); }
             finally { isGeraldTyping.value = false; nextTick(scrollToBottom); }
         };
@@ -836,6 +869,7 @@ createApp({
                 fetch('https://id.twitch.tv/oauth2/validate', { headers: { 'Authorization': 'OAuth ' + twitchChatToken.value } }).then(r => r.json()).then(d => { if (d.login) { twitchUsername.value = d.login; localStorage.setItem('tw_username', d.login); connectTwitchChat(); } else disconnectTwitch(); }).catch(() => connectTwitchChat());
             } else connectTwitchChat();
 
+            // Setup Ghost Auth and load Permanent Memory
             try { 
                 const { data } = await sbClient.auth.getSession(); 
                 if (data?.session?.user) {
@@ -843,6 +877,15 @@ createApp({
                 } else {
                     const anonLogin = await sbClient.auth.signInAnonymously();
                     if (anonLogin.data?.user) currentUser.value = anonLogin.data.user;
+                }
+                
+                if (currentUser.value) {
+                    const { data: hist } = await sbClient.from('gerald_history').select('*').eq('user_id', currentUser.value.id).order('created_at', { ascending: true });
+                    if (hist && hist.length > 0) {
+                        geraldMessages.value = hist.map(r => ({ role: r.role, content: r.content }));
+                    } else {
+                        geraldMessages.value = [{ role: 'gerald', content: '' }];
+                    }
                 }
             } catch {}
 
@@ -853,16 +896,22 @@ createApp({
                 sysStats.value.temp = Math.floor(Math.random() * (89 - 68 + 1)) + 68;
             }, 3500);
 
-            // Fast splash screen fade at exactly 1.5 seconds
+            // SNAPPED BACK TO NATIVE 0.5 SECONDS!
             setTimeout(() => { 
                 splashOpacity.value = 0; 
                 setTimeout(() => { splashVisible.value = false; }, 250); 
-            }, 1500);
+            }, 500);
         });
 
         return {
             hostname, splashVisible, splashOpacity, currentTab, appTheme, toggleTheme, clips, allClipsCount, modals, isLive, toast, currentUser, loginEmail, loginPass, apiConfig, geraldInput, geraldMessages, isGeraldTyping, talkToGerald, syncState, wipeState, logoutState, nukeState, isHeaderVisible, handleScroll, handleModalTouchStart, handleModalTouchMove, handleModalTouchEnd, currentFilter, activeFilterLabel, isFilterMenuOpen, closeFilterMenu, applyFilter, parseMarkdown, recentVods, currentVodIndex, nextVod, prevVod, customEmotes, showEmotePicker, insertEmote, handleGeraldEnter, toggleEmotes, toggleMinigames, closePickers, nukeCache, activeClipId, tabOffset, switchTab, handleSwipeStart, handleSwipeEnd, playClip, selectedClip, showMinigames, runSync, disconnectTwitch, saveApiKeys, triggerAiMinigame, geminiStatus, sysStats, chatMessages, twitchChatToken, twitchAuthUrl, twitchUsername, sendTwitchChatMessage, logoSvg: (id) => `<svg viewBox="0 0 100 100"><defs><linearGradient id="grad-${id}" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stop-color="#9146FF"/><stop offset="100%" stop-color="#a970ff"/></linearGradient></defs><circle cx="50" cy="50" r="40" fill="url(#grad-${id})"/><path d="M 33 38 L 48 62 L 62 38 L 62 55 Q 62 65 69 64" fill="none" stroke="#ffffff" stroke-width="8" stroke-linecap="round" stroke-linejoin="round"/></svg>`,
-            handleLogin: async () => { const email = loginEmail.value.includes('@') ? loginEmail.value : `${loginEmail.value}@miko.com`; const { data } = await sbClient.auth.signInWithPassword({ email, password: loginPass.value }); if(data.user) { currentUser.value = data.user; modals.value.profile = false; } },
+            handleLogin: async () => { 
+                // Auto-delete ghost account to allow admin login block free!
+                if (currentUser.value && currentUser.value.is_anonymous) { await sbClient.auth.signOut(); }
+                const email = loginEmail.value.includes('@') ? loginEmail.value : `${loginEmail.value}@miko.com`; 
+                const { data } = await sbClient.auth.signInWithPassword({ email, password: loginPass.value }); 
+                if(data.user) { currentUser.value = data.user; modals.value.profile = false; } 
+            },
             handleLogout: () => { logoutState.value = 'logging_out'; setTimeout(() => { sbClient.auth.signOut(); currentUser.value = null; modals.value.profile = false; logoutState.value = 'idle'; }, 1000); },
             optimizeTwitchImg: (u) => u ? u.replace('%{width}', '480').replace('%{height}', '270') : '',
             formatViews: (v) => v ? v.toLocaleString() : '0',
