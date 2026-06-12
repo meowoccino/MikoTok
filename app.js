@@ -271,7 +271,6 @@ const MoreView = {
     `
 };
 
-// Clean isolated tracking component for Gerald Minigame Triggers
 const GeraldMinigames = {
     props: ['showMinigames'],
     data() {
@@ -338,7 +337,6 @@ const GeraldView = {
             </div>
             
             <div class="gerald-action-area">
-                <!-- Color coded tracking dots shifted here for thinking representation animations -->
                 <div class="dots-thinking-row" v-show="isGeraldTyping">
                     <div class="os-dot close"></div>
                     <div class="os-dot min"></div>
@@ -434,6 +432,9 @@ createApp({
         const syncState = ref('Force Data Sync');
         const wipeState = ref('idle'), logoutState = ref('idle'), nukeState = ref('idle');
         
+        const isHeaderVisible = ref(true);
+        let lastScrollY = 0;
+
         // Dynamic system configurations
         const apiConfig = ref({ localCid: localStorage.getItem('miko_twitch_cid') || '', localTkn: localStorage.getItem('twitch_tkn') || '' });
         const hiddenFallbackCid = 'i2fjxfk0oq6ybixle760zryrtvdqjg';
@@ -589,7 +590,7 @@ createApp({
             showToast("Credentials Saved to Vault", 3000);
             
             const activeCid = apiConfig.value.localCid || hiddenFallbackCid;
-            twitchAuthUrl.value = 'https://id.twitch.tv/oauth2/authorize?client_id=' + activeCid + '&redirect_uri=' + encodeURIComponent('https://meowoccino.github.io/MikoTok/') + '&response_type=token&scope=chat:read+chat:edit&force_verify=true';
+            twitchAuthUrl.value = 'https://id.twitch.tv/oauth2/authorize?client_id=' + activeCid + '&redirect_uri=' + encodeURIComponent('https://meowoccino.github.io/MikoTok/') + '&redirect_uri=' + encodeURIComponent(window.location.origin + window.location.pathname) + '&response_type=token&scope=chat:read+chat:edit&force_verify=true';
         };
 
         const loadTwitchBadges = async () => {
@@ -706,7 +707,6 @@ createApp({
             lastScrollY = cur;
             if (e.target.scrollHeight - cur - e.target.clientHeight < 200) { if (currentTab.value === 'home') loadData(true); }
         };
-        let lastScrollY = 0;
 
         const loadData = async (isLoadMore = false) => {
             if (isLoadingMore.value || allClipsLoaded.value) return; isLoadingMore.value = true;
@@ -786,7 +786,6 @@ createApp({
             try { const { data } = await sbClient.auth.getSession(); if (data?.session?.user) currentUser.value = data.session.user; } catch {}
             await loadData(false); await checkLive(); await testGeminiBrain();
 
-            // Run system resource tracking fluctuate loop mechanics
             setInterval(() => {
                 sysStats.value.cpu = Math.floor(Math.random() * (48 - 14 + 1)) + 14;
                 sysStats.value.temp = Math.floor(Math.random() * (89 - 68 + 1)) + 68;
