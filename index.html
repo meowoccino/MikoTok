@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
     <meta name="theme-color" content="#ffffff">
     
-    <title>MikoTok</title>
+    <title>MikoTok v2</title>
     
     <link rel="manifest" href="manifest.json">
     <meta name="apple-mobile-web-app-capable" content="yes">
@@ -16,7 +16,11 @@
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="https://unpkg.com/vue@3/dist/vue.global.prod.js"></script>
     
-    <link rel="stylesheet" href="./styles.css?v=78">
+    <link rel="stylesheet" href="./styles.css?v=80">
+    <style>
+        /* Eliminates the Splash Screen Boot Flicker completely */
+        [v-cloak] > *:not(#splash-screen) { display: none !important; }
+    </style>
 </head>
 <body @click="closeFilterMenu">
     <div id="app-container" v-cloak :class="['theme-' + appTheme, {'gerald-theme': currentTab === 'gerald'}]">
@@ -71,7 +75,9 @@
                         :custom-emotes="customEmotes"
                         :twitch-username="twitchUsername"
                         @send-chat="sendTwitchChatMessage"
-                        @insert-chat-emote="insertEmote">
+                        @insert-chat-emote="insertEmote"
+                        @disconnect-public-twitch="disconnectTwitch"
+                        @close-login-popup="showLoginPopup = false">
                     </chat-view>
                 </div>
 
@@ -85,7 +91,7 @@
                         :show-minigames="showMinigames"
                         :custom-emotes="customEmotes"
                         :parse-markdown="parseMarkdown"
-                        :api-connected="!!apiConfig.cid && !!apiConfig.tkn"
+                        :api-connected="!!apiConfig.dbCid && !!apiConfig.tkn"
                         @close-pickers="closePickers"
                         @insert-emote="insertEmote"
                         @play-game="playMinigame"
@@ -150,6 +156,6 @@
 
     </div>
 
-    <script src="./app.js?v=79"></script>
+    <script src="./app.js?v=80"></script>
 </body>
 </html>
