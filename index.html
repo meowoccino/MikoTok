@@ -16,7 +16,7 @@
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="https://unpkg.com/vue@3/dist/vue.global.prod.js"></script>
     
-    <link rel="stylesheet" href="./styles.css?v=75">
+    <link rel="stylesheet" href="./styles.css?v=77">
 </head>
 <body @click="closeFilterMenu">
     <div id="app-container" v-cloak :class="['theme-' + appTheme, {'gerald-theme': currentTab === 'gerald'}]">
@@ -127,6 +127,7 @@
             :wipe-state="wipeState"
             :nuke-state="nukeState"
             :logout-state="logoutState"
+            :twitch-username="twitchUsername"
             @close="modals.profile = false"
             @touch-start="handleModalTouchStart"
             @touch-move="handleModalTouchMove"
@@ -138,7 +139,8 @@
             @sync="runSync"
             @wipe="clearGeraldHistory"
             @logout="handleLogout"
-            @nuke-cache="nukeCache">
+            @nuke-cache="nukeCache"
+            @disconnect-twitch="disconnectTwitch">
         </profile-modal>
 
         <bottom-nav
@@ -148,6 +150,6 @@
 
     </div>
 
-    <script src="./app.js?v=75"></script>
+    <script src="./app.js?v=77"></script>
 </body>
 </html>
