@@ -14,7 +14,7 @@ const SplashScreen = {
 const AppHeader = {
     props: ['isHeaderVisible', 'currentTab', 'logoSvg', 'appTheme'],
     template: `
-        <header class="app-header" v-show="currentTab === 'home'" style="background-color: var(--bg-color); z-index: 100; border-bottom: none !important; padding-top: calc(12px + env(safe-area-inset-top, 10px));">
+        <header class="app-header safe-top-padding" v-show="currentTab === 'home'" style="background-color: var(--bg-color); z-index: 100; border-bottom: none !important;">
             <div style="display:flex; align-items:center; gap:8px;">
                 <div style="width:24px;height:24px; cursor:pointer;" v-html="logoSvg('header')" @click="$emit('open-profile')"></div>
                 <span class="miko-text-gradient" style="font-size:22px; letter-spacing: -0.5px;">MikoTok</span>
@@ -78,7 +78,7 @@ const ProfileModal = {
                 <div v-else>
                     <div class="infra-bar">
                         <div class="status-node" style="display: flex; align-items: center; justify-content: center; gap: 8px; font-weight: 800; width: 100%;">
-                            <div style="width: 8px; height: 8px; border-radius: 50%; background: var(--success); animation: pulse-glow 2.5s infinite;"></div> 
+                            <div class="pulse-glow" style="width: 8px; height: 8px; border-radius: 50%; background: var(--success);"></div> 
                             SYSTEM: READY
                         </div>
                     </div>
@@ -166,15 +166,16 @@ const ChatView = {
         handleSend() { if(!this.localInput.trim()) return; this.$emit('send-chat', this.localInput.trim()); this.localInput = ''; this.closePicker(); }
     },
     template: `
-        <div class="chat-wrapper" style="flex: 1; display: flex; flex-direction: column; height: 100%; overflow: hidden; padding-bottom: calc(85px + env(safe-area-inset-bottom, 0px));">
+        <div class="chat-wrapper safe-top-padding" style="flex: 1; display: flex; flex-direction: column; height: 100%; overflow: hidden;">
             <div v-if="isLoggedIn" class="chat-public-auth-banner" style="z-index: 60; flex-shrink: 0;">
                 <span class="user-pill">💬 Connected as <b>{{ twitchUsername }}</b></span>
                 <button class="public-disconnect-btn" @click="$emit('disconnect-public-twitch')">Disconnect</button>
             </div>
 
-            <!-- Absolute fix for Chat alignment: Invisible Flex-1 Spacer at the top pushes messages natively to the bottom -->
+            <!-- Absolute fix for top-down chat: Added a flex-1 empty div that physically pushes all messages to the bottom! -->
             <div class="twitch-chat-list" id="twitch-chat-list" @click="closePicker" style="flex: 1; display: flex; flex-direction: column; overflow-y: auto; overscroll-behavior-y: contain; -webkit-overflow-scrolling: touch; padding: 10px 12px 0;">
-                <div style="flex: 1; min-height: 0;"></div> 
+                
+                <div style="flex: 1 1 auto; min-height: 0;"></div> 
                 
                 <div v-if="chatMessages.length === 0" class="chat-empty-state">
                     <span class="material-symbols-rounded" style="font-size:32px; color:var(--text-muted); margin-bottom:8px;">chat_bubble_outline</span>
@@ -189,27 +190,32 @@ const ChatView = {
                     <span class="twitch-username" :style="{ color: msg.color || '#9146FF' }">{{ msg.username }}</span><span class="twitch-colon">: </span>
                     <span class="twitch-text" v-html="msg.html"></span>
                 </div>
+                
+                <!-- Navbar invisible bumper so messages never go underneath -->
+                <div style="height: 80px; flex-shrink: 0;"></div>
             </div>
 
-            <div class="chat-emote-tray" v-show="showPicker && isLoggedIn" @click.stop style="position: absolute; bottom: calc(65px + 85px + env(safe-area-inset-bottom, 0px)); z-index: 70; width: 100%;">
+            <div class="chat-emote-tray" v-show="showPicker && isLoggedIn" @click.stop style="position: absolute; bottom: 80px; z-index: 70; width: 100%;">
                 <input v-model="pickerQuery" class="emote-search-input" placeholder="Search emotes…">
                 <div class="emote-picker-grid" style="overscroll-behavior-y: contain; -webkit-overflow-scrolling: touch;">
                     <img v-for="([name, emote]) in filteredEmotes" :key="name" :src="getEmoteUrl(emote)" :title="name" class="emote-picker-img" @mousedown.prevent="insertEmote(name)">
                 </div>
             </div>
 
-            <div class="custom-chat-input-area" style="position: relative; bottom: 0; z-index: 60; flex-shrink: 0; padding-bottom: 15px;">
+            <div class="custom-chat-input-area" style="position: absolute; bottom: 0; width: 100%; z-index: 60; padding-bottom: 20px;">
                 <button class="chat-icon-btn" :class="{ 'chat-icon-active': showPicker }" @click.stop="togglePicker"><span class="material-symbols-rounded" style="font-size:22px;">mood</span></button>
                 <input type="text" class="custom-chat-input" placeholder="Send a message…" v-model="localInput" @keydown.enter="handleSend" :readonly="!isLoggedIn">
                 <button class="chat-send-btn" @click="handleSend" :disabled="!isLoggedIn || !localInput.trim()"><span class="material-symbols-rounded" style="font-size:20px;">send</span></button>
             </div>
 
-            <div class="chat-login-popup-overlay" :class="{ open: $root.showLoginPopup }" style="background: transparent;">
-                <div class="chat-login-card" style="margin-bottom: auto; margin-top: 20%; background: var(--card-bg);">
-                    <svg viewBox="0 0 24 24" class="chat-login-icon"><path fill="currentColor" d="M11.571 4.714h1.715v5.143H11.57zm4.715 0H18v5.143h-1.714zM6 0L1.714 4.286v15.428h5.143V24l4.286-4.286h3.428L22.286 12V0zm14.571 11.143l-3.428 3.428h-3.429l-3 3v-3H6.857V1.714h13.714Z"/></svg>
-                    <p class="chat-login-title">Join the chat</p>
-                    <p class="chat-login-sub">Connect your Twitch account to read and send messages live.</p>
-                    <a :href="twitchAuthUrl" class="twitch-login-btn" @click="$root.showLoginPopup = false">Connect with Twitch</a>
+            <!-- Centered Popup fixed -->
+            <div class="chat-login-popup-overlay" :class="{ open: $root.showLoginPopup }" @click.self="$root.showLoginPopup = false" style="display: flex; align-items: center; justify-content: center; background: rgba(0,0,0,0.6); position: fixed; inset: 0; z-index: 999;">
+                <div class="chat-login-card" style="background: var(--card-bg); padding: 24px; border-radius: 16px; width: 85%; max-width: 340px; text-align: center; position: relative;">
+                    <button @click="$root.showLoginPopup = false" style="position: absolute; top: 12px; right: 12px; background: transparent; border: none; color: var(--text-muted); font-size: 24px; cursor: pointer;">&times;</button>
+                    <svg viewBox="0 0 24 24" class="chat-login-icon" style="width: 48px; height: 48px; margin: 0 auto 16px; color: #9146FF;"><path fill="currentColor" d="M11.571 4.714h1.715v5.143H11.57zm4.715 0H18v5.143h-1.714zM6 0L1.714 4.286v15.428h5.143V24l4.286-4.286h3.428L22.286 12V0zm14.571 11.143l-3.428 3.428h-3.429l-3 3v-3H6.857V1.714h13.714Z"/></svg>
+                    <p class="chat-login-title" style="font-size: 20px; font-weight: bold; margin-bottom: 8px;">Join the chat</p>
+                    <p class="chat-login-sub" style="font-size: 14px; color: var(--text-muted); margin-bottom: 20px;">Connect your Twitch account to read and send messages live.</p>
+                    <a :href="twitchAuthUrl" class="twitch-login-btn" @click="$root.showLoginPopup = false" style="display: block; background: #9146FF; color: white; padding: 12px; border-radius: 8px; text-decoration: none; font-weight: bold;">Connect with Twitch</a>
                 </div>
             </div>
         </div>
@@ -218,35 +224,38 @@ const ChatView = {
 
 const MoreView = {
     template: `
-        <div class="more-container" style="flex: 1; overflow-y: auto; overscroll-behavior-y: contain; -webkit-overflow-scrolling: touch; padding: 12px 16px calc(85px + env(safe-area-inset-bottom, 0px)); display: flex; flex-direction: column; gap: 8px;">
+        <div class="more-container safe-top-padding" style="flex: 1; overflow-y: auto; overscroll-behavior-y: contain; -webkit-overflow-scrolling: touch; padding-left: 16px; padding-right: 16px; display: flex; flex-direction: column; gap: 8px;">
             
-            <!-- Throne moved to top with crown SVG and a bottom margin to separate it -->
-            <a href="https://throne.com/codemiko" target="_blank" style="flex: 1; background: #0ea5e9; color: #fff; border-radius: 12px; padding: 0 16px; display: flex; align-items: center; justify-content: space-between; text-decoration: none; font-weight: bold; font-size: 15px; min-height: 40px; margin-bottom: 8px;">
-                <span>Throne</span> 
-                <svg viewBox="0 0 24 24" style="width: 20px; height: 20px; fill: white;"><path d="M5 21h14v-2H5v2zm14-11l-3 4-4-5-4 5-3-4v7h14v-7z"/></svg>
+            <!-- Throne moved to top with crown SVG and Pin -->
+            <a href="https://throne.com/codemiko" target="_blank" style="flex: 1; background: #0ea5e9; color: #fff; border-radius: 12px; padding: 0 16px; display: flex; align-items: center; justify-content: space-between; text-decoration: none; font-weight: bold; font-size: 15px; min-height: 48px; margin-bottom: 4px;">
+                <div style="display: flex; align-items: center; gap: 8px;">
+                    <svg viewBox="0 0 24 24" style="width: 22px; height: 22px; fill: white;"><path d="M2 22h20v-2H2v2zm9-19c-1.1 0-2 .9-2 2 0 .2.1.4.1.6l-3.3 3.3c-.2-.1-.4-.1-.6-.1-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2c0-.2-.1-.4-.1-.6l3.3-3.3c.2.1.4.1.6.1s.4 0 .6-.1l3.3 3.3c-.1.2-.1.4-.1.6 0 1.1.9 2 2 2s2-.9 2-2-.9-2-2-2c-.2 0-.4 0-.6.1l-3.3-3.3c.1-.2.1-.4.1-.6 0-1.1-.9-2-2-2z"/></svg>
+                    <span>Throne</span> 
+                </div>
+                <span class="material-symbols-rounded" style="font-size: 20px; color: white;">push_pin</span>
             </a>
 
-            <a href="https://www.twitch.tv/codemiko" target="_blank" class="social-card" style="flex: 1; padding: 0 16px; border-radius: 12px; min-height: 40px;">
+            <a href="https://www.twitch.tv/codemiko" target="_blank" class="social-card" style="flex: 1; padding: 0 16px; border-radius: 12px; min-height: 48px;">
                 <svg viewBox="0 0 24 24" class="social-icon" style="width: 22px; height: 22px; color: #9146FF;"><path fill="currentColor" d="M11.571 4.714h1.715v5.143H11.57zm4.715 0H18v5.143h-1.714zM6 0L1.714 4.286v15.428h5.143V24l4.286-4.286h3.428L22.286 12V0zm14.571 11.143l-3.428 3.428h-3.429l-3 3v-3H6.857V1.714h13.714Z"/></svg>
                 <span style="color: var(--text-main); font-size: 14px;">Twitch</span>
             </a>
             
-            <a href="https://www.youtube.com/@CodeMiko" target="_blank" class="social-card" style="flex: 1; padding: 0 16px; border-radius: 12px; min-height: 40px;">
+            <a href="https://www.youtube.com/@CodeMiko" target="_blank" class="social-card" style="flex: 1; padding: 0 16px; border-radius: 12px; min-height: 48px;">
                 <svg viewBox="0 0 24 24" class="social-icon" style="width: 22px; height: 22px; color: #FF0000;"><path fill="currentColor" d="M23.498 6.186a3.016 3.016 0 0 0-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 0 0 .502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 0 0 2.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 0 0 2.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z"/></svg>
                 <span style="color: var(--text-main); font-size: 14px;">YouTube</span>
             </a>
             
-            <a href="https://kick.com/codemiko" target="_blank" class="social-card" style="flex: 1; padding: 0 16px; border-radius: 12px; min-height: 40px;">
+            <a href="https://kick.com/codemiko" target="_blank" class="social-card" style="flex: 1; padding: 0 16px; border-radius: 12px; min-height: 48px;">
                 <svg viewBox="0 0 24 24" class="social-icon" style="width: 22px; height: 22px; color: #53FC18;"><path fill="currentColor" d="M19 2H5a3 3 0 0 0-3 3v14a3 3 0 0 0 3 3h14a3 3 0 0 0 3-3V5a3 3 0 0 0-3-3zM10.1 14.5v3.3H7.4V6.2h2.7v4.6l3.3-4.6h3.4l-3.9 5.1 4.2 6.5h-3.5z"/></svg>
                 <span style="color: var(--text-main); font-size: 14px;">Kick</span>
             </a>
             
-            <a href="https://discord.com/invite/codemiko" target="_blank" class="social-card" style="flex: 1; padding: 0 16px; border-radius: 12px; min-height: 40px;">
+            <a href="https://discord.com/invite/codemiko" target="_blank" class="social-card" style="flex: 1; padding: 0 16px; border-radius: 12px; min-height: 48px;">
                 <svg viewBox="0 0 24 24" class="social-icon" style="width: 22px; height: 22px; color: #5865F2;"><path fill="currentColor" d="M20.317 4.3698a19.7913 19.7913 0 00-4.8851-1.5152.0741.0741 0 00-.0785.0371c-.211.3753-.4447.8648-.6083 1.2495-1.8447-.2762-3.68-.2762-5.4868 0-.1636-.3933-.4058-.8742-.6177-1.2495a.077.077 0 00-.0785-.037 19.7363 19.7363 0 00-4.8852 1.515.0699.0699 0 00-.0321.0277C.5334 9.0458-.319 13.5799.0992 18.0578a.0824.0824 0 00.0312.0561c2.0528 1.5076 4.0413 2.4228 5.9929 3.0294a.0777.0777 0 00.0842-.0276c.4616-.6304.8731-1.2952 1.226-1.9942a.076.076 0 00-.0416-.1057c-.6528-.2476-1.2743-.5495-1.8722-.8923a.077.077 0 01-.0076-.1277c.1258-.0943.2517-.1923.3718-.2914a.0743.0743 0 01.0776-.0105c3.9278 1.7933 8.18 1.7933 12.0614 0a.0739.0739 0 01.0785.0095c.1202.099.246.1981.3728.2924a.077.077 0 01-.0066.1276 12.2986 12.2986 0 01-1.873.8914.0766.0766 0 00-.0407.1067c.3604.698.7719 1.3628 1.225 1.9932a.076.076 0 00.0842.0286c1.961-.6067 3.9495-1.5219 6.0023-3.0294a.077.077 0 00.0313-.0552c.5004-5.177-.8382-9.6739-3.5485-13.6604a.061.061 0 00-.0312-.0286zM8.02 15.3312c-1.1825 0-2.1569-1.0857-2.1569-2.419 0-1.3332.9555-2.4189 2.157-2.4189 1.2108 0 2.1757 1.0952 2.1568 2.419 0 1.3332-.9555 2.4189-2.1569 2.4189zm7.9748 0c-1.1825 0-2.1569-1.0857-2.1569-2.419 0-1.3332.9554-2.4189 2.1569-2.4189 1.2108 0 2.1757 1.0952 2.1568 2.419 0 1.3332-.946 2.4189-2.1568 2.4189Z"/></svg>
                 <span style="color: var(--text-main); font-size: 14px;">Discord</span>
             </a>
 
-            <a href="https://app.fanfix.io/@codeyuna" target="_blank" class="social-card" style="flex: 1; padding: 0 16px; border-radius: 12px; min-height: 40px;">
+            <a href="https://app.fanfix.io/@codeyuna" target="_blank" class="social-card" style="flex: 1; padding: 0 16px; border-radius: 12px; min-height: 48px;">
                 <svg viewBox="0 0 24 24" class="social-icon" style="width: 22px; height: 22px;">
                     <defs>
                         <linearGradient id="fanfix-grad" x1="0%" y1="0%" x2="100%" y2="100%">
@@ -261,35 +270,38 @@ const MoreView = {
                 <span style="color: var(--text-main); font-size: 14px;">Fanfix</span>
             </a>
             
-            <a href="https://www.tiktok.com/@codemiko" target="_blank" class="social-card" style="flex: 1; padding: 0 16px; border-radius: 12px; min-height: 40px;">
+            <a href="https://www.tiktok.com/@codemiko" target="_blank" class="social-card" style="flex: 1; padding: 0 16px; border-radius: 12px; min-height: 48px;">
                 <svg viewBox="0 0 24 24" class="social-icon" style="width: 22px; height: 22px; color: var(--text-main);"><path fill="currentColor" d="M12.53.02C13.84 0 15.14.01 16.44 0c.08 1.53.63 3.09 1.75 4.17 1.12 1.11 2.7 1.62 4.24 1.79v4.03c-1.44-.05-2.89-.35-4.2-.97-.57-.26-1.1-.59-1.62-.93-.01 2.92.01 5.84-.02 8.75-.08 1.4-.54 2.79-1.35 3.94-1.31 1.92-3.58 3.17-5.91 3.21-1.43.08-2.86-.31-4.08-1.03-2.02-1.12-3.44-3.17-3.64-5.41-.02-.21-.02-.41-.02-.62.07-1.44.62-2.83 1.51-3.89 1.05-1.25 2.55-2.06 4.15-2.28 1.1-.15 2.23-.04 3.27.35v4.06c-.34-.13-.7-.2-1.07-.22-.92-.04-1.84.28-2.51.86-.67.57-1.08 1.4-1.1 2.31-.01.91.38 1.77 1.03 2.38.65.61 1.56.93 2.49.88.92-.04 1.78-.45 2.38-1.11.58-.65.88-1.54.88-2.45V.02h-.03z"/></svg>
                 <span style="color: var(--text-main); font-size: 14px;">TikTok</span>
             </a>
             
-            <a href="https://twitter.com/codemiko" target="_blank" class="social-card" style="flex: 1; padding: 0 16px; border-radius: 12px; min-height: 40px;">
+            <a href="https://twitter.com/codemiko" target="_blank" class="social-card" style="flex: 1; padding: 0 16px; border-radius: 12px; min-height: 48px;">
                 <svg viewBox="0 0 24 24" class="social-icon" style="width: 22px; height: 22px; color: var(--text-main);"><path fill="currentColor" d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>
                 <span style="color: var(--text-main); font-size: 14px;">X</span>
             </a>
             
-            <a href="https://www.instagram.com/thecodemiko/" target="_blank" class="social-card" style="flex: 1; padding: 0 16px; border-radius: 12px; min-height: 40px;">
+            <a href="https://www.instagram.com/thecodemiko/" target="_blank" class="social-card" style="flex: 1; padding: 0 16px; border-radius: 12px; min-height: 48px;">
                 <svg viewBox="0 0 24 24" class="social-icon" style="width: 22px; height: 22px; color: #E1306C;"><path fill="currentColor" d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zM12 0C8.741 0 8.333.014 7.053.072 2.695.272.273 2.69.073 7.052.014 8.333 0 8.741 0 12c0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98C8.333 23.986 8.741 24 12 24c3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98C15.668.014 15.259 0 12 0zm0 5.838a6.162 6.162 0 100 12.324 6.162 6.162 0 000-12.324zM12 16a4 4 0 110-8 4 4 0 010 8zm6.406-11.845a1.44 1.44 0 100 2.881 1.44 1.44 0 000-2.881z"/></svg>
                 <span style="color: var(--text-main); font-size: 14px;">Instagram</span>
             </a>
             
-            <a href="https://www.threads.net/@thecodemiko" target="_blank" class="social-card" style="flex: 1; padding: 0 16px; border-radius: 12px; min-height: 40px;">
+            <a href="https://www.threads.net/@thecodemiko" target="_blank" class="social-card" style="flex: 1; padding: 0 16px; border-radius: 12px; min-height: 48px;">
                 <svg viewBox="0 0 192 192" class="social-icon" style="width: 22px; height: 22px; color: var(--text-main);"><path fill="currentColor" d="M141.537 88.9883C140.71 88.5919 139.87 88.2104 139.019 87.8451C137.537 60.5382 122.616 44.905 97.5619 44.745C97.4484 44.7443 97.3355 44.7443 97.222 44.7443C82.2364 44.7443 69.7731 51.1409 62.102 62.7807L75.881 72.2328C81.6116 63.5383 90.6052 61.6848 97.2286 61.6848C97.3051 61.6848 97.3819 61.6848 97.4576 61.6855C105.707 61.7381 111.932 64.1366 115.961 68.814C118.893 72.2193 120.854 76.925 121.825 82.8638C114.511 81.6207 106.601 81.2385 98.145 81.7233C74.3247 83.0954 59.0111 96.9879 60.0396 116.292C60.5615 126.084 65.4397 134.508 73.775 140.011C80.8224 144.663 89.899 146.938 99.3323 146.423C111.79 145.74 121.563 140.987 128.381 132.296C133.559 125.696 136.834 117.143 138.28 106.366C144.217 109.949 148.617 114.664 151.047 120.332C155.179 129.967 155.42 145.8 142.501 158.708C131.182 170.016 117.576 174.908 97.0135 175.059C74.2042 174.89 56.9538 167.575 45.7381 153.317C35.2355 139.966 29.8077 120.682 29.6052 96C29.8077 71.3178 35.2355 52.0336 45.7381 38.6827C56.9538 24.4249 74.2039 17.11 97.0132 16.9405C119.988 17.1113 137.539 24.4614 148.82 38.8167C156.92 49.1302 161.965 62.4633 163.606 78.4714L179.626 76.5161C177.625 57.8427 171.603 42.4437 162.016 30.2526C148.337 12.8797 127.351 4.14819 97.0132 4C66.5826 4.15048 45.6416 12.9231 32.2274 30.0097C19.7891 45.8524 13.5676 68.1687 13.3333 96C13.5676 123.831 19.7891 146.148 32.2274 161.99C45.6416 179.077 66.5826 187.85 97.0135 188C120.89 187.828 137.234 181.71 151.782 167.175C168.181 150.793 167.149 127.877 155.839 116.666C153.491 114.339 150.569 112.502 147.289 111.164C145.452 110.387 143.541 109.664 141.537 88.9883ZM98.4405 129.507C88.0005 130.095 77.1544 125.409 76.6196 115.372C76.2232 107.93 81.9158 99.626 99.0812 98.0476C101.066 97.8658 103.146 97.7499 105.311 97.6976C105.328 103.626 104.996 109.431 103.743 114.862C102.593 119.851 100.865 124.316 98.4405 129.507Z"/></svg>
                 <span style="color: var(--text-main); font-size: 14px;">Threads</span>
             </a>
 
-            <a href="https://www.snapchat.com/add/codemiko" target="_blank" class="social-card" style="flex: 1; padding: 0 16px; border-radius: 12px; min-height: 40px;">
+            <a href="https://www.snapchat.com/add/codemiko" target="_blank" class="social-card" style="flex: 1; padding: 0 16px; border-radius: 12px; min-height: 48px;">
                 <svg viewBox="0 0 24 24" class="social-icon" style="width: 22px; height: 22px; color: #FFFC00;"><path fill="currentColor" d="M12.126 23.955c-1.472-.036-2.502-.455-3.633-.949-.556-.242-1.077-.384-1.657-.202-1.542.483-3.082 1.054-4.73 1.127-1.393.061-1.777-.52-1.205-1.651.488-.962 1.031-1.895 1.48-2.871.21-.453.208-.857-.042-1.272-1.071-1.782-1.637-3.708-1.764-5.748-.04-.633-.037-1.27-.037-1.936 0-3.923 2.115-6.843 5.437-8.318C8.384.975 10.94.39 13.626.54c4.12.232 7.152 2.647 8.527 6.643.518 1.503.655 3.066.621 4.646-.025 1.156-.168 2.298-.485 3.407-.346 1.208-.887 2.336-1.688 3.32-.429.529-.395.96.012 1.488.35.452.704.9 1.057 1.349.52.661.274 1.236-.532 1.274-1.506.072-2.923-.509-4.321-1.052-.777-.302-1.411-.122-2.072.164-1.045.451-2.146.862-3.32.969-.379.034-.764.03-1.299.207z"/></svg>
                 <span style="color: var(--text-main); font-size: 14px;">Snapchat</span>
             </a>
             
-            <a href="https://www.facebook.com/codemikoofficial" target="_blank" class="social-card" style="flex: 1; padding: 0 16px; border-radius: 12px; min-height: 40px;">
+            <a href="https://www.facebook.com/codemikoofficial" target="_blank" class="social-card" style="flex: 1; padding: 0 16px; border-radius: 12px; min-height: 48px;">
                 <svg viewBox="0 0 24 24" class="social-icon" style="width: 22px; height: 22px; color: #1877F2;"><path fill="currentColor" d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/></svg>
                 <span style="color: var(--text-main); font-size: 14px;">Facebook</span>
             </a>
+            
+            <!-- Navbar overlap protection block -->
+            <div style="height: 80px; flex-shrink: 0;"></div>
         </div>
     `
 };
@@ -337,7 +349,7 @@ const GeraldView = {
         getEmoteUrl(emote) { return emote.url || `https://cdn.discordapp.com/emojis/${emote.id}.${emote.animated ? 'gif' : 'png'}?size=44`; }
     },
     template: `
-        <div class="gerald-container" style="flex: 1; display: flex; flex-direction: column; height: 100%; overflow: hidden; padding-bottom: calc(85px + env(safe-area-inset-bottom, 0px));">
+        <div class="gerald-container safe-top-padding" style="flex: 1; display: flex; flex-direction: column; height: 100%; overflow: hidden; padding-bottom: calc(85px + env(safe-area-inset-bottom, 0px));">
             <div class="gerald-header" @click="$emit('close-pickers')" style="flex-shrink: 0; z-index: 50;">
                 <div class="os-top-bar">
                     <span class="os-title">GERALD_OS v2</span>
@@ -357,8 +369,11 @@ const GeraldView = {
                 </div>
             </div>
 
-            <!-- Removed margin-top: auto so Gerald text starts naturally from the top -->
-            <div class="gerald-messages" id="gerald-msgs" @click="$emit('close-pickers')" style="flex: 1; overflow-y: auto; overscroll-behavior-y: contain; -webkit-overflow-scrolling: touch; display: flex; flex-direction: column; padding: 10px 16px 20px;">
+            <!-- Added empty flex spacer to force text to bottom -->
+            <div class="gerald-messages" id="gerald-msgs" @click="$emit('close-pickers')" style="flex: 1; overflow-y: auto; overscroll-behavior-y: contain; -webkit-overflow-scrolling: touch; display: flex; flex-direction: column; padding: 10px 16px 0;">
+                
+                <div style="flex: 1 1 auto; min-height: 0;"></div> 
+                
                 <template v-for="(m, i) in geraldMessages" :key="i">
                     <div v-if="i === 0 && m.role === 'gerald' && !m.content" class="chat-bubble gerald startup-anim">
                         <span>> GERALD_CORE initialized.<br>> Awaiting human input...</span>
@@ -371,9 +386,11 @@ const GeraldView = {
                     <div class="os-dot min"></div>
                     <div class="os-dot max"></div>
                 </div>
+                
+                <div style="height: 80px; flex-shrink: 0;"></div>
             </div>
             
-            <div class="gerald-action-area" style="position: relative; bottom: 0; z-index: 50; flex-shrink: 0; padding-bottom: 15px;">
+            <div class="gerald-action-area" style="position: absolute; bottom: 0; width: 100%; z-index: 50; padding-bottom: 20px;">
                 <div class="chat-emote-tray" v-show="showEmotePicker" style="position: absolute; bottom: 100%; border-bottom:none; border-radius:16px 16px 0 0;">
                     <div class="emote-picker-grid" style="overscroll-behavior-y: contain; -webkit-overflow-scrolling: touch;">
                         <img v-for="(emote, name) in customEmotes" :key="name" :src="getEmoteUrl(emote)" :title="name" class="emote-picker-img" @mousedown.prevent="$emit('insert-emote', name)">
@@ -398,7 +415,7 @@ const GeraldView = {
 const HomeView = {
     props: ['currentTab', 'currentVodIndex', 'recentVods', 'isLive', 'hostname', 'clips', 'activeFilterLabel', 'optimizeTwitchImg', 'formatViews', 'formatDate', 'activeClipId'],
     template: `
-        <div style="flex: 1; overflow-y: auto; overscroll-behavior-y: contain; -webkit-overflow-scrolling: touch; padding-bottom: calc(85px + env(safe-area-inset-bottom, 0px)); padding-top: 15px;">
+        <div style="flex: 1; overflow-y: auto; overscroll-behavior-y: contain; -webkit-overflow-scrolling: touch; padding-bottom: calc(85px + env(safe-area-inset-bottom, 0px));">
             <div class="hero-section">
                 <div class="header-controls" style="margin-bottom:12px; display:flex;">
                     <div :class="['premium-badge', isLive ? 'live-badge' : 'vod']">
@@ -437,6 +454,8 @@ const HomeView = {
                     </div>
                 </div>
             </div>
+            
+            <div style="height: 80px; flex-shrink: 0;"></div>
         </div>
     `
 };
@@ -989,7 +1008,7 @@ createApp({
         });
 
         return {
-            hostname, splashVisible, splashOpacity, currentTab, tabOffset, appTheme, toggleTheme, clips, allClipsCount, modals, isLive, currentUser, loginEmail, loginPass, apiConfig, geraldInput, geraldMessages, isGeraldTyping, talkToGerald, syncState, wipeState, logoutState, nukeState, isHeaderVisible, handleScroll, currentFilter, activeFilterLabel, isFilterMenuOpen, closeFilterMenu, applyFilter, parseMarkdown, recentVods, currentVodIndex, nextVod, prevVod, customEmotes, showEmotePicker, insertEmote, handleGeraldEnter, toggleEmotes, toggleMinigames, closePickers, nukeCache, activeClipId, switchTab, playClip, selectedClip, showMinigames, runSync, disconnectTwitch, saveApiKeys, triggerAiMinigame, geminiStatus, sysStats, chatMessages, twitchChatToken, twitchAuthUrl, twitchUsername, sendTwitchChatMessage, handleSwipeStart, handleSwipeEnd, handleModalTouchStart, handleModalTouchMove, handleModalTouchEnd, clearGeraldHistory, showLoginPopup, logoSvg: (id) => `<svg viewBox="0 0 100 100"><defs><linearGradient id="grad-${id}" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stop-color="#9146FF"/><stop offset="100%" stop-color="#a970ff"/></linearGradient></defs><circle cx="50" cy="50" r="40" fill="url(#grad-${id})"/><path d="M 33 38 L 48 62 L 62 38 L 62 55 Q 62 65 69 64" fill="none" stroke="#ffffff" stroke-width="8" stroke-linecap="round" stroke-linejoin="round"/></svg>`,
+            hostname, splashVisible, splashOpacity, currentTab, tabOffset, appTheme, toggleTheme, clips, allClipsCount, modals, isLive, currentUser, loginEmail, loginPass, apiConfig, geraldInput, geraldMessages, isGeraldTyping, talkToGerald, syncState, wipeState, logoutState, nukeState, isHeaderVisible, handleScroll, currentFilter, activeFilterLabel, isFilterMenuOpen, closeFilterMenu, applyFilter, parseMarkdown, recentVods, currentVodIndex, nextVod, prevVod, customEmotes, showEmotePicker, insertEmote, handleGeraldEnter, toggleEmotes, toggleMinigames, closePickers, nukeCache, activeClipId, switchTab, playClip, selectedClip, showMinigames, runSync, disconnectTwitch, saveApiKeys, triggerAiMinigame, geminiStatus, sysStats, chatMessages, twitchChatToken, twitchAuthUrl, twitchUsername, sendTwitchChatMessage, handleSwipeStart, handleSwipeEnd, handleModalTouchStart, handleModalTouchMove, handleModalTouchEnd, clearGeraldHistory, logoSvg: (id) => `<svg viewBox="0 0 100 100"><defs><linearGradient id="grad-${id}" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stop-color="#9146FF"/><stop offset="100%" stop-color="#a970ff"/></linearGradient></defs><circle cx="50" cy="50" r="40" fill="url(#grad-${id})"/><path d="M 33 38 L 48 62 L 62 38 L 62 55 Q 62 65 69 64" fill="none" stroke="#ffffff" stroke-width="8" stroke-linecap="round" stroke-linejoin="round"/></svg>`,
             handleLogin: async () => { 
                 try {
                     if (!loginEmail.value || !loginPass.value) return; 
@@ -999,7 +1018,9 @@ createApp({
                     if (error) return; 
                     if (data.user) { 
                         currentUser.value = data.user; 
-                        modals.value.profile = false; // SILENTLY CLOSES ON SUCCESS
+                        
+                        // Modals physically close when you sign in 
+                        modals.value.profile = false; 
                         loginEmail.value = '';
                         loginPass.value = '';
                         
