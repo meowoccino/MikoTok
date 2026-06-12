@@ -141,8 +141,9 @@ const ChatView = {
     computed: {
         filteredEmotes() {
             const all = Object.entries(this.customEmotes || {});
-            if (!this.pickerQuery) return all;
-            return all.filter(([name]) => name.toLowerCase().includes(this.pickerQuery.toLowerCase()));
+            // PERFORMANCE FIX: Cap the emote picker at 100 items to stop mobile DOM lag
+            if (!this.pickerQuery) return all.slice(0, 100);
+            return all.filter(([name]) => name.toLowerCase().includes(this.pickerQuery.toLowerCase())).slice(0, 100);
         }
     },
     methods: {
@@ -184,6 +185,7 @@ const ChatView = {
                 <div v-for="(msg, i) in chatMessages" :key="i"
                      class="twitch-msg-row"
                      :class="{ 'msg-mine': msg.username === twitchUsername }">
+                    <span class="chat-timestamp">{{ msg.timestamp }}</span>
                     <span class="twitch-badges">
                         <img v-for="(badge, bi) in (msg.badges || [])" :key="bi"
                              :src="badge.img" :title="badge.title" class="badge-img">
@@ -446,7 +448,6 @@ createApp({
         const hostname = window.location.hostname || 'meowoccino.github.io';
         const syncState = ref('idle'), wipeState = ref('idle'), logoutState = ref('idle'), nukeState = ref('idle');
         
-        // Hide fallback ID from showing visually by defaulting to empty string if missing in localStorage
         const savedCid = localStorage.getItem('twitch_cid');
         const apiConfig = ref({ cid: savedCid || '', tkn: localStorage.getItem('twitch_tkn') || '' });
 
@@ -540,6 +541,15 @@ createApp({
             const color = tags['color'] || '#9146FF';
             const text = matchText[1].trim();
 
+            let timestamp = '';
+            if (tags['tmi-sent-ts']) {
+                const d = new Date(parseInt(tags['tmi-sent-ts']));
+                timestamp = d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+            } else {
+                const d = new Date();
+                timestamp = d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+            }
+
             const badges = [];
             if (tags['badges']) {
                 tags['badges'].split(',').forEach(b => {
@@ -572,7 +582,7 @@ createApp({
                 html = processEmotes(text);
             }
 
-            chatMessages.value.push({ username: user, html: html, color: color, badges: badges });
+            chatMessages.value.push({ timestamp: timestamp, username: user, html: html, color: color, badges: badges });
             if (chatMessages.value.length > 200) chatMessages.value.shift();
             if (currentTab.value === 'chat') scrollChatToBottom();
         };
@@ -600,7 +610,7 @@ createApp({
                     .then(({ data }) => {
                         if (data) {
                             data.reverse().forEach(row => {
-                                chatMessages.value.push({ username: row.username, html: processEmotes(row.message), color: row.color, badges: row.badges || [] });
+                                chatMessages.value.push({ timestamp: '', username: row.username, html: processEmotes(row.message), color: row.color, badges: row.badges || [] });
                             });
                             scrollChatToBottom();
                         }
@@ -628,36 +638,30 @@ createApp({
 
             sbClient.from('twitch_chat_logs').insert({ username: twitchUsername.value || 'You', message: msg, color: '#9146FF', badges: myBadges }).then();
 
-            chatMessages.value.push({ username: twitchUsername.value || 'You', html: processEmotes(msg), color: '#9146FF', badges: myBadges });
+            const d = new Date();
+            const timestamp = d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+            chatMessages.value.push({ timestamp: timestamp, username: twitchUsername.value || 'You', html: processEmotes(msg), color: '#9146FF', badges: myBadges });
             scrollChatToBottom();
         };
 
+        // NEW: Restored Badges via modern Twitch Helix API
         const loadTwitchBadges = async () => {
+            if (!twitchChatToken.value) return; 
+            const clientId = apiConfig.value.cid || 'i2fjxfk0oq6ybixle760zryrtvdqjg';
+            const headers = { 'Client-ID': clientId, 'Authorization': `Bearer ${twitchChatToken.value}` };
             try {
                 const [globalRes, channelRes] = await Promise.all([
-                    fetch('https://badges.twitch.tv/v1/badges/global/display'),
-                    fetch('https://badges.twitch.tv/v1/badges/channels/500128827/display')
+                    fetch('https://api.twitch.tv/helix/chat/badges/global', { headers }),
+                    fetch('https://api.twitch.tv/helix/chat/badges?broadcaster_id=500128827', { headers })
                 ]);
                 const globalData = await globalRes.json();
                 const channelData = await channelRes.json();
 
-                if (globalData?.badge_sets) {
-                    Object.entries(globalData.badge_sets).forEach(([setName, set]) => {
-                        if (set.versions) {
-                            Object.entries(set.versions).forEach(([verName, ver]) => {
-                                badgeAssets[`${setName}/${verName}`] = ver.image_url_1x;
-                            });
-                        }
-                    });
+                if (globalData?.data) {
+                    globalData.data.forEach(set => { set.versions.forEach(ver => { badgeAssets[`${set.set_id}/${ver.id}`] = ver.image_url_1x; }); });
                 }
-                if (channelData?.badge_sets) {
-                    Object.entries(channelData.badge_sets).forEach(([setName, set]) => {
-                        if (set.versions) {
-                            Object.entries(set.versions).forEach(([verName, ver]) => {
-                                badgeAssets[`${setName}/${verName}`] = ver.image_url_1x;
-                            });
-                        }
-                    });
+                if (channelData?.data) {
+                    channelData.data.forEach(set => { set.versions.forEach(ver => { badgeAssets[`${set.set_id}/${ver.id}`] = ver.image_url_1x; }); });
                 }
             } catch(e) {}
         };
@@ -850,35 +854,18 @@ createApp({
             } catch (e) { nukeState.value = 'idle'; }
         };
 
+        // PERFORMANCE FIX: Dropped the massive loop back down to a fast 100 clips
         const loadData = async () => {
             try {
                 const { data: dbEmotes } = await sbClient.from('emotes').select('*');
                 if (dbEmotes) { dbEmotes.forEach(e => { customEmotes.value[e.name] = { id: e.id, animated: e.animated }; }); }
 
-                const oneYearAgo = new Date();
-                oneYearAgo.setFullYear(oneYearAgo.getFullYear() - 1);
-                const dateString = oneYearAgo.toISOString();
-
-                let allFetchedClips = [];
-                let keepFetching = true;
-                let currentOffset = 0;
-
-                while (keepFetching) {
-                    const { data: c } = await sbClient.from('clips')
-                        .select('*')
-                        .gte('created_at', dateString)
-                        .order('created_at', { ascending: false })
-                        .range(currentOffset, currentOffset + 999);
-                    
-                    if (c && c.length > 0) {
-                        allFetchedClips.push(...c);
-                        currentOffset += 1000;
-                    } else {
-                        keepFetching = false;
-                    }
-                }
-
-                allClips.value = allFetchedClips || [];
+                const { data: c } = await sbClient.from('clips')
+                    .select('*')
+                    .order('created_at', { ascending: false })
+                    .limit(100);
+                
+                allClips.value = c || [];
                 clips.value = sortData(currentFilter.value);
             } catch(e) {}
         };
@@ -909,7 +896,6 @@ createApp({
         };
 
         onMounted(async () => {
-            // Secretly inject fallback if user left it blank to prevent crashes
             const clientId = apiConfig.value.cid || 'i2fjxfk0oq6ybixle760zryrtvdqjg';
             twitchAuthUrl.value = 'https://id.twitch.tv/oauth2/authorize?client_id=' + clientId + '&redirect_uri=' + encodeURIComponent('https://meowoccino.github.io/MikoTok/') + '&response_type=token&scope=chat:read+chat:edit&force_verify=true';
             
