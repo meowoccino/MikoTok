@@ -288,20 +288,22 @@ const GeraldView = {
     template: `
         <div class="gerald-container">
             <div class="gerald-header" @click="$emit('close-pickers')">
+                <div class="os-top-bar">
+                    <span class="os-title">GERALD_OS v2.4</span>
+                    <div class="os-dots">
+                        <div class="os-dot close"></div>
+                        <div class="os-dot min"></div>
+                        <div class="os-dot max"></div>
+                    </div>
+                </div>
+                
                 <div class="gerald-sys-card">
-                    <div class="sys-card-top">
-                        <div class="gerald-avatar-wrapper">
-                            <img src="gerald.png" class="gerald-avatar" alt="Gerald">
-                            <div class="status-dot-wrapper">
-                                <div class="dot" :class="apiConnected ? 'dot-online' : 'dot-offline'"></div>
-                            </div>
-                        </div>
-                        <div class="sys-card-titles">
-                            <span class="sys-tiny-text">ENTITY_ID • #00042</span>
-                            <span class="sys-name">Gerald O.S.</span>
-                            <span class="sys-sub-text">MIKO'S AI COMPANION</span>
+                    <div class="sys-card-top-centered">
+                        <div class="gerald-avatar-wrapper-centered">
+                            <img src="gerald.png" class="gerald-avatar-lg" alt="Gerald">
                         </div>
                     </div>
+                    
                     <div class="sys-card-stats">
                         <div class="stat-box">
                             <span class="stat-label">CPU</span>
@@ -314,25 +316,30 @@ const GeraldView = {
                             <div class="stat-bar" style="background: var(--primary);"></div>
                         </div>
                         <div class="stat-box">
-                            <span class="stat-label">PING</span>
-                            <span class="stat-value">{{ apiConnected ? '24ms' : 'ERR' }}</span>
-                            <div class="stat-bar" :style="{ background: apiConnected ? 'var(--success)' : 'var(--danger)' }"></div>
+                            <span class="stat-label">TEMP</span>
+                            <span class="stat-value">85&deg;C</span>
+                            <div class="stat-bar" style="background: #ff9800;"></div>
                         </div>
+                    </div>
+
+                    <div class="api-status-pill">
+                        <div class="dot" :class="apiConnected ? 'dot-online' : 'dot-offline'"></div>
+                        <span :class="apiConnected ? 'text-online' : 'text-offline'">{{ apiConnected ? 'API_CONNECTED' : 'API_DISCONNECTED' }}</span>
                     </div>
                 </div>
             </div>
+
             <div class="gerald-messages" id="gerald-msgs" @click="$emit('close-pickers')">
                 <template v-for="(m, i) in geraldMessages" :key="i">
-                    <div v-if="i === 0 && m.role === 'gerald'" class="terminal-intro">
-                        <div class="terminal-text startup-anim">
-                            > Human detected.<br>
-                            > What do you want?
-                        </div>
+                    <div v-if="i === 0 && m.role === 'gerald'" class="chat-bubble gerald startup-anim">
+                        > Human detected.<br>
+                        > What do you want?
                     </div>
                     <div v-else class="chat-bubble" :class="m.role" v-html="parseMarkdown(m.content)"></div>
                 </template>
                 <div v-if="isGeraldTyping" key="typing" class="typing-indicator">COMPUTING...</div>
             </div>
+            
             <div class="gerald-action-area">
                 <div class="chat-emote-tray" v-show="showEmotePicker" style="bottom: 100%; border-bottom: none; border-radius: 16px 16px 0 0;">
                     <div class="emote-picker-grid">
@@ -702,7 +709,7 @@ createApp({
         };
 
         const applyFilter = (filterKey, label) => {
-            currentFilter.value = filterKey; activeFilterLabel.value = label; isFilterMenuOpen.value = false;
+            currentFilter.value = filterKey; activeFilterLabel.value = label; isFilterMenuOpen = false;
             const feedContainer = document.getElementById('home-scroll');
             if(feedContainer) {
                 clips.value = sortData(filterKey);
