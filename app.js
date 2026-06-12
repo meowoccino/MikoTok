@@ -14,7 +14,7 @@ const SplashScreen = {
 const AppHeader = {
     props: ['isHeaderVisible', 'currentTab', 'logoSvg', 'appTheme'],
     template: `
-        <header class="app-header" v-show="currentTab === 'home'" style="background-color: var(--bg-color); z-index: 100; border-bottom: none !important;">
+        <header class="app-header" v-show="currentTab === 'home'" style="background-color: var(--bg-color); z-index: 100; border-bottom: none !important; padding-top: calc(12px + env(safe-area-inset-top, 10px));">
             <div style="display:flex; align-items:center; gap:8px;">
                 <div style="width:24px;height:24px; cursor:pointer;" v-html="logoSvg('header')" @click="$emit('open-profile')"></div>
                 <span class="miko-text-gradient" style="font-size:22px; letter-spacing: -0.5px;">MikoTok</span>
@@ -63,31 +63,45 @@ const FilterMenu = {
 };
 
 const ProfileModal = {
-    props: ['isOpen', 'currentUser', 'loginEmail', 'loginPass', 'apiConfig', 'syncState', 'wipeState', 'logoutState', 'nukeState', 'allClipsCount'],
+    props: ['isOpen', 'apiConfig', 'syncState', 'wipeState', 'logoutState', 'nukeState'],
     template: `
         <div class="modal-overlay" :class="{ open: isOpen }" @click.self="$emit('close')">
+            <!-- Inline styles for guaranteed animations -->
+            <style>
+                @keyframes force-pulse { 0%, 100% { transform: scale(1); opacity: 1; box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.7); } 50% { transform: scale(1.3); opacity: 0.5; box-shadow: 0 0 0 6px rgba(16, 185, 129, 0); } }
+                @keyframes force-spin { 100% { transform: rotate(360deg); } }
+                @keyframes force-shake { 0%, 100% { transform: translateX(0); } 25% { transform: translateX(-2px); } 75% { transform: translateX(2px); } }
+                .force-pulse-anim { animation: force-pulse 2.5s infinite; }
+                .force-spin-anim { animation: force-spin 1s linear infinite; }
+                .force-shake-anim { animation: force-shake 0.4s ease-in-out infinite; }
+            </style>
+            
             <div class="modal-content" @touchstart="$emit('touch-start', $event)" @touchmove="$emit('touch-move', $event)" @touchend="$emit('touch-end', $event)">
                 <div class="drag-handle"></div>
-                <div v-if="!currentUser || currentUser.is_anonymous">
-                    <input type="text" :value="loginEmail" @input="$emit('update-email', $event.target.value)" class="input-box" style="margin-top: 10px;" placeholder="Email">
-                    <input type="password" :value="loginPass" @input="$emit('update-pass', $event.target.value)" class="input-box" @keyup.enter="$emit('login')" placeholder="Password">
-                    <button class="sync-btn" @click="$emit('login')">LOGIN</button>
+                
+                <!-- Bypassing props, reading directly from root to guarantee reactivity -->
+                <div v-if="!$root.currentUser || $root.currentUser.is_anonymous">
+                    <input type="text" :value="$root.loginEmail" @input="$root.loginEmail = $event.target.value" class="input-box" style="margin-top: 10px;" placeholder="Email">
+                    <input type="password" :value="$root.loginPass" @input="$root.loginPass = $event.target.value" class="input-box" @keyup.enter="$root.handleLogin()" placeholder="Password">
+                    <button class="sync-btn" @click="$root.handleLogin()">LOGIN</button>
                 </div>
+                
                 <div v-else>
                     <div class="infra-bar">
-                        <div class="status-node">
-                            <div class="dot" style="width: 6px; height: 6px; border-radius: 50%; background: var(--success); animation: pulse-glow 2.5s infinite;"></div> 
+                        <div class="status-node" style="display: flex; align-items: center; justify-content: center; gap: 8px; font-weight: 800; width: 100%;">
+                            <div class="force-pulse-anim" style="width: 8px; height: 8px; border-radius: 50%; background: var(--success);"></div> 
                             SYSTEM: READY
                         </div>
                     </div>
+                    
                     <div class="stat-grid">
                         <a href="https://supabase.com/dashboard/project/yhxcuayiwqpjvalyrcqv" target="_blank" class="external-link-btn" style="color:var(--success)"><span class="material-symbols-rounded">database</span>Supabase DB</a>
                         <a href="https://github.com/meowoccino/MikoTok" target="_blank" class="external-link-btn"><span class="material-symbols-rounded">code</span>GitHub Repo</a>
                     </div>
                     
-                    <div class="settings-block">
-                        <div style="font-size:36px; color:var(--primary); font-weight:900; text-align:center; padding: 10px 0;">
-                            {{ allClipsCount || 0 }}
+                    <div class="settings-block" style="padding-bottom: 5px;">
+                        <div style="font-size:42px; color:var(--primary); font-family: monospace; font-weight:900; text-align:center;">
+                            {{ $root.allClipsCount || 0 }}
                         </div>
                     </div>
 
@@ -101,26 +115,26 @@ const ProfileModal = {
                     <div class="action-menu">
                         <button class="menu-btn sync-row" :style="syncState === 'SUCCESS' ? 'color: var(--success);' : ''" @click="$emit('sync')">
                             <div class="btn-content">
-                                <div class="icon-wrap"><span class="material-symbols-rounded" :class="{'spin-anim': syncState === 'syncing'}" style="font-size: 18px;">{{ syncState === 'SUCCESS' ? 'check' : 'sync' }}</span></div>
-                                <span>{{ syncState === 'syncing' ? 'SYNCING...' : syncState }}</span>
+                                <div class="icon-wrap"><span class="material-symbols-rounded" :class="{'force-spin-anim': syncState === 'SYNCING...'}" style="font-size: 18px;">{{ syncState === 'SUCCESS' ? 'check' : 'sync' }}</span></div>
+                                <span>{{ syncState }}</span>
                             </div>
                         </button>
                         <button class="menu-btn wipe-row" :style="wipeState === 'SUCCESS' ? 'color: var(--success);' : ''" @click="$emit('wipe')">
                             <div class="btn-content">
-                                <div class="icon-wrap"><span class="material-symbols-rounded" :class="{'shake-anim': wipeState === 'wiping'}" style="font-size: 18px;">{{ wipeState === 'SUCCESS' ? 'check' : 'delete' }}</span></div>
-                                <span>{{ wipeState === 'wiping' ? 'WIPING...' : (wipeState === 'SUCCESS' ? 'SUCCESS' : 'Wipe Gerald Memory') }}</span>
+                                <div class="icon-wrap"><span class="material-symbols-rounded" :class="{'force-shake-anim': wipeState === 'WIPING...'}" style="font-size: 18px;">{{ wipeState === 'SUCCESS' ? 'check' : 'delete' }}</span></div>
+                                <span>{{ wipeState }}</span>
                             </div>
                         </button>
                         <button class="menu-btn nuke-row" :style="nukeState === 'SUCCESS' ? 'color: var(--success);' : ''" @click="$emit('nuke-cache')">
                             <div class="btn-content">
-                                <div class="icon-wrap"><span class="material-symbols-rounded" :class="{'spin-anim': nukeState === 'nuking'}" style="font-size: 18px;">{{ nukeState === 'SUCCESS' ? 'check' : 'cached' }}</span></div>
-                                <span>{{ nukeState === 'nuking' ? 'NUKING...' : (nukeState === 'SUCCESS' ? 'SUCCESS' : 'Nuke App Cache') }}</span>
+                                <div class="icon-wrap"><span class="material-symbols-rounded" :class="{'force-spin-anim': nukeState === 'NUKING...'}" style="font-size: 18px;">{{ nukeState === 'SUCCESS' ? 'check' : 'cached' }}</span></div>
+                                <span>{{ nukeState }}</span>
                             </div>
                         </button>
                         <button class="menu-btn logout-row" @click="$emit('logout')">
                             <div class="btn-content">
-                                <div class="icon-wrap"><span class="material-symbols-rounded" :class="{'spin-anim': logoutState === 'logging out'}" style="font-size: 18px;">{{ logoutState === 'logging out' ? 'hourglass_empty' : 'logout' }}</span></div>
-                                <span>{{ logoutState === 'logging out' ? 'SIGNING OUT...' : 'Sign Out' }}</span>
+                                <div class="icon-wrap"><span class="material-symbols-rounded" :class="{'force-spin-anim': logoutState === 'LOGGING OUT...'}" style="font-size: 18px;">{{ logoutState === 'LOGGING OUT...' ? 'hourglass_empty' : 'logout' }}</span></div>
+                                <span>{{ logoutState }}</span>
                             </div>
                         </button>
                     </div>
@@ -157,13 +171,14 @@ const ChatView = {
     methods: {
         getEmoteUrl(emote) { return emote.url || `https://cdn.discordapp.com/emojis/${emote.id}.${emote.animated ? 'gif' : 'png'}?size=44`; },
         insertEmote(name) { this.localInput = (this.localInput + ' ' + name + ' ').replace(/\s+/g, ' ').trimStart(); this.showPicker = false; },
-        handleInteraction() { if (!this.isLoggedIn) { this.showLoginPopup = true; return false; } return true; },
+        handleInteraction() { if (!this.isLoggedIn) { this.$root.showLoginPopup = true; return false; } return true; },
         togglePicker() { if (!this.handleInteraction()) return; this.showPicker = !this.showPicker; },
         closePicker() { this.showPicker = false; this.pickerQuery = ''; },
         handleSend() { if(!this.localInput.trim()) return; this.$emit('send-chat', this.localInput.trim()); this.localInput = ''; this.closePicker(); }
     },
     template: `
-        <div class="chat-wrapper" style="flex: 1; display: flex; flex-direction: column; height: 100%; overflow: hidden;">
+        <!-- padding-top clears the Android status bar precisely -->
+        <div class="chat-wrapper" style="flex: 1; display: flex; flex-direction: column; height: 100%; padding-top: max(env(safe-area-inset-top, 24px), 50px); padding-bottom: calc(85px + env(safe-area-inset-bottom, 0px)); overflow: hidden;">
             <div v-if="isLoggedIn" class="chat-public-auth-banner" style="z-index: 60; flex-shrink: 0;">
                 <span class="user-pill">💬 Connected as <b>{{ twitchUsername }}</b></span>
                 <button class="public-disconnect-btn" @click="$emit('disconnect-public-twitch')">Disconnect</button>
@@ -198,12 +213,12 @@ const ChatView = {
                 <button class="chat-send-btn" @click="handleSend" :disabled="!isLoggedIn || !localInput.trim()"><span class="material-symbols-rounded" style="font-size:20px;">send</span></button>
             </div>
 
-            <div class="chat-login-popup-overlay" :class="{ open: !isLoggedIn }" style="background: transparent;">
+            <div class="chat-login-popup-overlay" :class="{ open: $root.showLoginPopup }" style="background: transparent;">
                 <div class="chat-login-card" style="margin-bottom: auto; margin-top: 20%; background: var(--card-bg);">
                     <svg viewBox="0 0 24 24" class="chat-login-icon"><path fill="currentColor" d="M11.571 4.714h1.715v5.143H11.57zm4.715 0H18v5.143h-1.714zM6 0L1.714 4.286v15.428h5.143V24l4.286-4.286h3.428L22.286 12V0zm14.571 11.143l-3.428 3.428h-3.429l-3 3v-3H6.857V1.714h13.714Z"/></svg>
                     <p class="chat-login-title">Join the chat</p>
                     <p class="chat-login-sub">Connect your Twitch account to read and send messages live.</p>
-                    <a :href="twitchAuthUrl" class="twitch-login-btn">Connect with Twitch</a>
+                    <a :href="twitchAuthUrl" class="twitch-login-btn" @click="$root.showLoginPopup = false">Connect with Twitch</a>
                 </div>
             </div>
         </div>
@@ -212,7 +227,7 @@ const ChatView = {
 
 const MoreView = {
     template: `
-        <div class="more-container" style="display: flex; flex-direction: column; height: 100%; gap: 8px;">
+        <div class="more-container" style="display: flex; flex-direction: column; height: 100%; padding: max(env(safe-area-inset-top, 24px), 50px) 16px calc(85px + env(safe-area-inset-bottom, 0px)); gap: 8px; overflow-y: auto;">
             
             <a href="https://throne.com/codemiko" target="_blank" style="flex: 1; background: #0ea5e9; color: #fff; border-radius: 12px; padding: 0 16px; display: flex; align-items: center; justify-content: space-between; text-decoration: none; font-weight: bold; font-size: 15px; min-height: 40px;">
                 <span>Throne</span> 
@@ -313,10 +328,10 @@ const GeraldMinigames = {
     },
     template: `
         <div class="chat-emote-tray" v-show="showMinigames" style="position: absolute; bottom: 100%; border-bottom:none; border-radius:16px 16px 0 0; background: var(--bg-color); width: 100%;">
-            <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 4px; padding: 8px; width: 100%;">
-                <button v-for="g in gameDeck" :key="g.id" class="bribe-btn" style="padding: 6px 0; border-radius: 8px; background: var(--card-bg); border: 1px solid var(--border-color); color: var(--text-main); font-weight: bold; text-align: center; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px;" @click.stop="$emit('play-game', g)">
-                    <span style="font-size: 15px;">{{ g.label.split(' ')[0] }}</span>
-                    <span style="font-size: 9px; line-height: 1.1; white-space: pre-wrap; padding: 0 2px;">{{ g.label.substring(g.label.indexOf(' ') + 1) }}</span>
+            <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 4px; padding: 6px; width: 100%;">
+                <button v-for="g in gameDeck" :key="g.id" class="bribe-btn" style="padding: 4px 2px; border-radius: 8px; background: var(--card-bg); border: 1px solid var(--border-color); color: var(--text-main); font-weight: bold; text-align: center; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px;" @click.stop="$emit('play-game', g)">
+                    <span style="font-size: 14px;">{{ g.label.split(' ')[0] }}</span>
+                    <span style="font-size: 9px; line-height: 1; white-space: pre-wrap; padding: 0 2px;">{{ g.label.substring(g.label.indexOf(' ') + 1) }}</span>
                 </button>
             </div>
         </div>
@@ -330,7 +345,7 @@ const GeraldView = {
         getEmoteUrl(emote) { return emote.url || `https://cdn.discordapp.com/emojis/${emote.id}.${emote.animated ? 'gif' : 'png'}?size=44`; }
     },
     template: `
-        <div class="gerald-container" style="flex: 1; display: flex; flex-direction: column; height: 100%; padding-top: calc(max(env(safe-area-inset-top), 20px) + 10px); padding-bottom: calc(85px + env(safe-area-inset-bottom, 0px)); overflow: hidden;">
+        <div class="gerald-container" style="flex: 1; display: flex; flex-direction: column; height: 100%; padding-top: max(env(safe-area-inset-top, 24px), 50px); padding-bottom: calc(85px + env(safe-area-inset-bottom, 0px)); overflow: hidden;">
             <div class="gerald-header" @click="$emit('close-pickers')" style="flex-shrink: 0; z-index: 50;">
                 <div class="os-top-bar">
                     <span class="os-title">GERALD_OS v2</span>
@@ -390,7 +405,7 @@ const GeraldView = {
 const HomeView = {
     props: ['currentTab', 'currentVodIndex', 'recentVods', 'isLive', 'hostname', 'clips', 'activeFilterLabel', 'optimizeTwitchImg', 'formatViews', 'formatDate', 'activeClipId'],
     template: `
-        <div style="flex: 1; overflow-y: auto; overscroll-behavior-y: contain; -webkit-overflow-scrolling: touch; padding-bottom: calc(85px + env(safe-area-inset-bottom, 0px));">
+        <div style="flex: 1; overflow-y: auto; overscroll-behavior-y: contain; -webkit-overflow-scrolling: touch; padding-bottom: calc(85px + env(safe-area-inset-bottom, 0px)); padding-top: 15px;">
             <div class="hero-section">
                 <div class="header-controls" style="margin-bottom:12px; display:flex;">
                     <div :class="['premium-badge', isLive ? 'live-badge' : 'vod']">
@@ -457,6 +472,7 @@ createApp({
         const nukeState = ref('Nuke App Cache');
         
         const isHeaderVisible = ref(true);
+        const showLoginPopup = ref(false);
 
         const apiConfig = ref({ localCid: localStorage.getItem('miko_twitch_cid') || '', localTkn: localStorage.getItem('twitch_tkn') || '' });
         const hiddenFallbackCid = 'i2fjxfk0oq6ybixle760zryrtvdqjg';
@@ -464,7 +480,7 @@ createApp({
         const sysStats = ref({ cpu: 23, mem: 1.8, temp: 74 });
 
         const customEmotes = ref({});
-        const myTwitchBadges = ref([]); // Tracks YOUR specific badges
+        const myTwitchBadges = ref([]); 
         const activeClipId = ref(null);
         const currentClipOffset = ref(0);
         const isLoadingMore = ref(false);
@@ -515,7 +531,7 @@ createApp({
 
         const clearGeraldHistory = async () => {
             if (!currentUser.value) return;
-            wipeState.value = 'wiping';
+            wipeState.value = 'WIPING...';
             try {
                 await sbClient.from('gerald_history').delete().eq('user_id', currentUser.value.id);
                 geraldMessages.value = [{ role: 'gerald', content: '' }];
@@ -539,7 +555,7 @@ createApp({
         const scrollChatToBottom = () => { setTimeout(() => { const l = document.getElementById('twitch-chat-list'); if (l) l.scrollTop = l.scrollHeight; }, 100); };
 
         const processEmotes = (text) => {
-            let out = text.replace(/&/g, '&').replace(/</g, '<').replace(/>/g, '>');
+            let out = text.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
             const words = out.split(' ');
             const emoteKeys = Object.keys(customEmotes.value);
             for (let i = 0; i < words.length; i++) {
@@ -576,7 +592,7 @@ createApp({
                 tags['badges'].split(',').forEach(b => { const imgUrl = badgeAssets[b]; if (imgUrl) badges.push({ title: b.split('/')[0], img: imgUrl }); });
             }
 
-            let html = text.replace(/&/g, '&').replace(/</g, '<').replace(/>/g, '>');
+            let html = text.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
             if (tags['emotes']) {
                 const replacements = [];
                 tags['emotes'].split('/').forEach(e => {
@@ -709,6 +725,7 @@ createApp({
         const saveApiKeys = () => {
             localStorage.setItem('miko_twitch_cid', apiConfig.value.localCid);
             localStorage.setItem('twitch_tkn', apiConfig.value.localTkn);
+            
             const activeCid = apiConfig.value.localCid || hiddenFallbackCid;
             twitchAuthUrl.value = 'https://id.twitch.tv/oauth2/authorize?client_id=' + activeCid + '&redirect_uri=' + encodeURIComponent('https://meowoccino.github.io/MikoTok/') + '&redirect_uri=' + encodeURIComponent(window.location.origin + window.location.pathname) + '&response_type=token&scope=chat:read+chat:edit&force_verify=true';
         };
@@ -893,10 +910,10 @@ createApp({
         };
 
         const runSync = async () => {
-            syncState.value = 'syncing';
+            syncState.value = 'SYNCING...';
             await load7TVEmotes();
             const success = await loadTwitchBadges();
-            if (!success && apiConfig.value.localTkn) { syncState.value = 'ERROR'; return; }
+            if (!success && apiConfig.value.localTkn) { syncState.value = 'ERROR'; setTimeout(() => { syncState.value = 'Force Data Sync'; }, 2500); return; }
             await loadData(false); await checkLive(); await testGeminiBrain();
             syncState.value = 'SUCCESS'; setTimeout(() => { syncState.value = 'Force Data Sync'; }, 2500);
         };
@@ -919,7 +936,7 @@ createApp({
         };
 
         const nukeCache = async () => {
-            if (nukeState.value !== 'Nuke App Cache') return; nukeState.value = 'nuking';
+            if (nukeState.value !== 'Nuke App Cache') return; nukeState.value = 'NUKING...';
             try {
                 if ('serviceWorker' in navigator) { const regs = await navigator.serviceWorker.getRegistrations(); for (let r of regs) await r.unregister(); }
                 if ('caches' in window) { const keys = await caches.keys(); for (let k of keys) await caches.delete(k); }
@@ -974,16 +991,17 @@ createApp({
         });
 
         return {
-            hostname, splashVisible, splashOpacity, currentTab, tabOffset, appTheme, toggleTheme, clips, allClipsCount, modals, isLive, currentUser, loginEmail, loginPass, apiConfig, geraldInput, geraldMessages, isGeraldTyping, talkToGerald, syncState, wipeState, logoutState, nukeState, isHeaderVisible, handleScroll, currentFilter, activeFilterLabel, isFilterMenuOpen, closeFilterMenu, applyFilter, parseMarkdown, recentVods, currentVodIndex, nextVod, prevVod, customEmotes, showEmotePicker, insertEmote, handleGeraldEnter, toggleEmotes, toggleMinigames, closePickers, nukeCache, activeClipId, switchTab, playClip, selectedClip, showMinigames, runSync, disconnectTwitch, saveApiKeys, triggerAiMinigame, geminiStatus, sysStats, chatMessages, twitchChatToken, twitchAuthUrl, twitchUsername, sendTwitchChatMessage, handleSwipeStart, handleSwipeEnd, handleModalTouchStart, handleModalTouchMove, handleModalTouchEnd, clearGeraldHistory, logoSvg: (id) => `<svg viewBox="0 0 100 100"><defs><linearGradient id="grad-${id}" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stop-color="#9146FF"/><stop offset="100%" stop-color="#a970ff"/></linearGradient></defs><circle cx="50" cy="50" r="40" fill="url(#grad-${id})"/><path d="M 33 38 L 48 62 L 62 38 L 62 55 Q 62 65 69 64" fill="none" stroke="#ffffff" stroke-width="8" stroke-linecap="round" stroke-linejoin="round"/></svg>`,
+            hostname, splashVisible, splashOpacity, currentTab, tabOffset, appTheme, toggleTheme, clips, allClipsCount, modals, isLive, currentUser, loginEmail, loginPass, apiConfig, geraldInput, geraldMessages, isGeraldTyping, talkToGerald, syncState, wipeState, logoutState, nukeState, isHeaderVisible, handleScroll, currentFilter, activeFilterLabel, isFilterMenuOpen, closeFilterMenu, applyFilter, parseMarkdown, recentVods, currentVodIndex, nextVod, prevVod, customEmotes, showEmotePicker, insertEmote, handleGeraldEnter, toggleEmotes, toggleMinigames, closePickers, nukeCache, activeClipId, switchTab, playClip, selectedClip, showMinigames, runSync, disconnectTwitch, saveApiKeys, triggerAiMinigame, geminiStatus, sysStats, chatMessages, twitchChatToken, twitchAuthUrl, twitchUsername, sendTwitchChatMessage, handleSwipeStart, handleSwipeEnd, handleModalTouchStart, handleModalTouchMove, handleModalTouchEnd, clearGeraldHistory, showLoginPopup, logoSvg: (id) => `<svg viewBox="0 0 100 100"><defs><linearGradient id="grad-${id}" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stop-color="#9146FF"/><stop offset="100%" stop-color="#a970ff"/></linearGradient></defs><circle cx="50" cy="50" r="40" fill="url(#grad-${id})"/><path d="M 33 38 L 48 62 L 62 38 L 62 55 Q 62 65 69 64" fill="none" stroke="#ffffff" stroke-width="8" stroke-linecap="round" stroke-linejoin="round"/></svg>`,
             handleLogin: async () => { 
                 try {
-                    if (!loginEmail.value || !loginPass.value) return; // Fails silently
+                    if (!loginEmail.value || !loginPass.value) return; 
                     const email = loginEmail.value.includes('@') ? loginEmail.value : `${loginEmail.value}@miko.com`; 
                     const { data, error } = await sbClient.auth.signInWithPassword({ email, password: loginPass.value }); 
                     
-                    if (error) return; // Fails silently
+                    if (error) return; 
                     if (data.user) { 
                         currentUser.value = data.user; 
+                        
                         const { data: hist } = await sbClient.from('gerald_history').select('*').eq('user_id', currentUser.value.id).order('created_at', { ascending: true });
                         if (hist && hist.length > 0) { 
                             geraldMessages.value = hist.map(r => ({ role: r.role, content: r.content })); 
@@ -992,7 +1010,7 @@ createApp({
                     } 
                 } catch (err) {}
             },
-            handleLogout: () => { logoutState.value = 'logging out'; setTimeout(() => { sbClient.auth.signOut(); currentUser.value = null; modals.value.profile = false; logoutState.value = 'Sign Out'; }, 1000); },
+            handleLogout: () => { logoutState.value = 'LOGGING OUT...'; setTimeout(() => { sbClient.auth.signOut(); currentUser.value = null; modals.value.profile = false; logoutState.value = 'Sign Out'; }, 1000); },
             optimizeTwitchImg: (u) => u ? u.replace('%{width}', '480').replace('%{height}', '270') : '',
             formatViews: (v) => v ? v.toLocaleString() : '0',
             formatDate: (d) => new Date(d).toLocaleDateString([], {month:'short', day:'numeric'})
