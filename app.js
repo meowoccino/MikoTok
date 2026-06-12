@@ -289,7 +289,7 @@ const GeraldView = {
         <div class="gerald-container">
             <div class="gerald-header" @click="$emit('close-pickers')">
                 <div class="os-top-bar">
-                    <span class="os-title">GERALD_OS v2.4</span>
+                    <span class="os-title">GERALD_OS v2</span>
                     <div class="os-dots">
                         <div class="os-dot close"></div>
                         <div class="os-dot min"></div>
@@ -332,8 +332,8 @@ const GeraldView = {
             <div class="gerald-messages" id="gerald-msgs" @click="$emit('close-pickers')">
                 <template v-for="(m, i) in geraldMessages" :key="i">
                     <div v-if="i === 0 && m.role === 'gerald'" class="chat-bubble gerald startup-anim">
-                        > Human detected.<br>
-                        > What do you want?
+                        <span v-if="!m.content">> Human detected.<br>> What do you want?</span>
+                        <span v-else v-html="parseMarkdown(m.content)"></span>
                     </div>
                     <div v-else class="chat-bubble" :class="m.role" v-html="parseMarkdown(m.content)"></div>
                 </template>
@@ -445,7 +445,10 @@ createApp({
         const toast = ref({ visible: false, message: '' });
         const hostname = window.location.hostname || 'meowoccino.github.io';
         const syncState = ref('idle'), wipeState = ref('idle'), logoutState = ref('idle'), nukeState = ref('idle');
-        const apiConfig = ref({ cid: localStorage.getItem('twitch_cid') || 'i2fjxfk0oq6ybixle760zryrtvdqjg', tkn: localStorage.getItem('twitch_tkn') || '' });
+        
+        // Hide fallback ID from showing visually by defaulting to empty string if missing in localStorage
+        const savedCid = localStorage.getItem('twitch_cid');
+        const apiConfig = ref({ cid: savedCid || '', tkn: localStorage.getItem('twitch_tkn') || '' });
 
         const customEmotes = ref({});
         const activeClipId = ref(null);
@@ -709,7 +712,7 @@ createApp({
         };
 
         const applyFilter = (filterKey, label) => {
-            currentFilter.value = filterKey; activeFilterLabel.value = label; isFilterMenuOpen = false;
+            currentFilter.value = filterKey; activeFilterLabel.value = label; isFilterMenuOpen.value = false;
             const feedContainer = document.getElementById('home-scroll');
             if(feedContainer) {
                 clips.value = sortData(filterKey);
@@ -906,6 +909,7 @@ createApp({
         };
 
         onMounted(async () => {
+            // Secretly inject fallback if user left it blank to prevent crashes
             const clientId = apiConfig.value.cid || 'i2fjxfk0oq6ybixle760zryrtvdqjg';
             twitchAuthUrl.value = 'https://id.twitch.tv/oauth2/authorize?client_id=' + clientId + '&redirect_uri=' + encodeURIComponent('https://meowoccino.github.io/MikoTok/') + '&response_type=token&scope=chat:read+chat:edit&force_verify=true';
             
