@@ -599,8 +599,8 @@ createApp({
         const connectTwitchChat = () => {
             if (twitchWs) { try { twitchWs.close(); } catch(e) {} }
             wsAuthenticated = false;
-            // Load history right away, before WS handshake completes
-            loadChatHistory();
+            // Note: loadChatHistory() is called from onMounted after badges are ready.
+            // connectTwitchChat only manages the WS connection.
             twitchWs = new WebSocket('wss://irc-ws.chat.twitch.tv:443');
             twitchWs.onopen = () => {
                 twitchWs.send('CAP REQ :twitch.tv/tags twitch.tv/commands');
@@ -636,7 +636,7 @@ createApp({
         const disconnectTwitch = () => {
             twitchChatToken.value = null; twitchUsername.value = null;
             localStorage.removeItem('tw_chat_token'); localStorage.removeItem('tw_username');
-            connectTwitchChat();
+            loadChatHistory().then(() => connectTwitchChat());
         };
 
         const saveApiKeys = () => {
@@ -876,7 +876,12 @@ createApp({
             const activeCid = apiConfig.value.localCid || hiddenFallbackCid;
             twitchAuthUrl.value = 'https://id.twitch.tv/oauth2/authorize?client_id=' + activeCid + '&redirect_uri=' + encodeURIComponent('https://meowoccino.github.io/MikoTok/') + '&redirect_uri=' + encodeURIComponent(window.location.origin + window.location.pathname) + '&response_type=token&scope=chat:read+chat:edit&force_verify=true';
 
-            await load7TVEmotes(); await loadTwitchBadges();
+            // Load emotes and badges FIRST — must complete before chat history
+            // renders so badge images are available in badgeAssets map
+            await load7TVEmotes();
+            await loadTwitchBadges();
+            // Now load history (badges are ready) then connect WS
+            await loadChatHistory();
             if (twitchChatToken.value) {
                 fetch('https://id.twitch.tv/oauth2/validate', { headers: { 'Authorization': 'OAuth ' + twitchChatToken.value } }).then(r => r.json()).then(d => { if (d.login) { twitchUsername.value = d.login; localStorage.setItem('tw_username', d.login); connectTwitchChat(); } else disconnectTwitch(); }).catch(() => connectTwitchChat());
             } else connectTwitchChat();
