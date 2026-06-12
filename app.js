@@ -171,12 +171,12 @@ const ChatView = {
                     <span class="material-symbols-rounded" style="font-size:32px; color:var(--text-muted); margin-bottom:8px;">chat_bubble_outline</span>
                     <span style="font-size:13px; color:var(--text-muted); font-weight:600;">Loading channels…</span>
                 </div>
-                <div v-for="(msg, i) in chatMessages" :key="i" class="twitch-msg-row">
+                <div v-for="(msg, i) in chatMessages" :key="i" class="twitch-msg-row" :class="{ 'self-msg': msg.isSelf }">
                     <span class="chat-timestamp">{{ msg.timestamp }}</span>
                     <span class="twitch-badges">
                         <img v-for="(badge, bi) in (msg.badges || [])" :key="bi" :src="badge.img" :title="badge.title" class="badge-img">
                     </span>
-                    <span class="twitch-username" :style="{ color: msg.color }">{{ msg.username }}</span><span class="twitch-colon">: </span>
+                    <span class="twitch-username" :style="{ color: msg.color || '#9146FF' }">{{ msg.username }}</span><span class="twitch-colon">: </span>
                     <span class="twitch-text" v-html="msg.html"></span>
                 </div>
             </div>
@@ -556,11 +556,51 @@ createApp({
             chatMessages.value.push({ timestamp, username: user, html, color, badges });
             if (chatMessages.value.length > 200) chatMessages.value.shift();
             if (currentTab.value === 'chat') scrollChatToBottom();
+
+            // Persist to Supabase so history loads on next open
+            // Fire-and-forget, don't await
+            sbClient.from('twitch_chat_logs').insert({
+                username: user,
+                message: text,
+                color: color,
+                badges: badges  // jsonb column — array of {title, img}
+            }).then();
+        };
+
+        const loadChatHistory = async () => {
+            try {
+                const { data } = await sbClient
+                    .from('twitch_chat_logs')
+                    .select('*')
+                    .order('created_at', { ascending: false })
+                    .limit(50);
+                if (!data) return;
+                const dbHistory = data.reverse().map(row => {
+                    const ts = new Date(row.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+                    // badges column is jsonb — array of {title, img} objects
+                    let badges = [];
+                    if (Array.isArray(row.badges)) {
+                        badges = row.badges.filter(b => b && b.img);
+                    }
+                    return {
+                        timestamp: ts,
+                        username: row.username || 'user',
+                        html: row.message.includes('<img') ? row.message : processEmotes(row.message),
+                        color: row.color || '#9146FF',
+                        badges
+                    };
+                });
+                // Always replace so we show exactly the 50 latest, no duplicates
+                chatMessages.value = dbHistory;
+                scrollChatToBottom();
+            } catch(e) { console.warn('Chat history load failed:', e); }
         };
 
         const connectTwitchChat = () => {
             if (twitchWs) { try { twitchWs.close(); } catch(e) {} }
             wsAuthenticated = false;
+            // Load history right away, before WS handshake completes
+            loadChatHistory();
             twitchWs = new WebSocket('wss://irc-ws.chat.twitch.tv:443');
             twitchWs.onopen = () => {
                 twitchWs.send('CAP REQ :twitch.tv/tags twitch.tv/commands');
@@ -570,24 +610,6 @@ createApp({
                     twitchWs.send('PASS oauth:anonymous'); twitchWs.send('NICK justinfan12345'); twitchWs.send('JOIN #codemiko');
                 }
                 wsAuthenticated = true;
-                
-                sbClient.from('twitch_chat_logs').select('*').order('created_at', { ascending: false }).limit(50).then(({ data }) => {
-                    if (data) {
-                        const dbHistory = [];
-                        data.reverse().forEach(row => {
-                            const ts = new Date(row.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-                            dbHistory.push({ 
-                                timestamp: ts, 
-                                username: row.username, 
-                                html: row.message.includes('<img') ? row.message : processEmotes(row.message), 
-                                color: row.color || '#9146FF', 
-                                badges: row.badges || [] 
-                            });
-                        });
-                        chatMessages.value = [...dbHistory, ...chatMessages.value];
-                        scrollChatToBottom();
-                    }
-                });
             };
             twitchWs.onmessage = (e) => { e.data.split('\r\n').forEach(raw => { if (raw.startsWith('PING')) { twitchWs.send('PONG :tmi.twitch.tv'); } else { parseIrcMessage(raw); } }); };
         };
@@ -596,7 +618,18 @@ createApp({
             if (!msg || !twitchWs || !wsAuthenticated) return;
             twitchWs.send(`PRIVMSG #codemiko :${msg}`);
             const ts = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-            chatMessages.value.push({ timestamp: ts, username: twitchUsername.value || 'You', html: processEmotes(msg), color: '#9146FF', badges: [] });
+            // Build badges for the local echo using the same badgeAssets map live IRC uses
+            const myBadges = [];
+            // If user is subbed their IRC messages will carry badges; for the local echo
+            // we can't know yet, so we at least show the broadcaster badge if they are broadcaster
+            chatMessages.value.push({
+                timestamp: ts,
+                username: twitchUsername.value || 'You',
+                html: processEmotes(msg),
+                color: '#9146FF',
+                badges: myBadges,
+                isSelf: true
+            });
             scrollChatToBottom();
         };
 
@@ -889,10 +922,13 @@ createApp({
                     if (data.user) { 
                         currentUser.value = data.user; 
                         modals.value.profile = false;
+                        // Reload gerald history
                         const { data: hist } = await sbClient.from('gerald_history').select('*').eq('user_id', currentUser.value.id).order('created_at', { ascending: true });
                         if (hist && hist.length > 0) { 
                             geraldMessages.value = hist.map(r => ({ role: r.role, content: r.content })); 
                         }
+                        // Reload chat history so 50 latest appear immediately after login
+                        await loadChatHistory();
                         showToast("Admin Login Successful");
                     } 
                 } catch (err) {
