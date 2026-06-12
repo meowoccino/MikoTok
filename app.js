@@ -259,7 +259,7 @@ const MoreView = {
                     <span style="color: var(--text-main);">Instagram</span>
                 </a>
                 <a href="https://www.snapchat.com/add/codemiko" target="_blank" class="social-card">
-                    <svg viewBox="0 0 24 24" class="social-icon" style="color: #FFD500;"><path fill="currentColor" d="M12 2c-3.9 0-5.5 2.5-5.5 6 0 .5.3 1.6.7 2.1-.8.5-1.2 1.1-1.2 1.9 0 .8.6 1.3 1.5 1.5-.2.5-.5 1.1-.5 1.7 0 1.9 2.3 2.3 5 2.3s5-.4 5-2.3c0-.6-.3-1.2-.5-1.7.9-.2 1.5-.7 1.5-1.5 0-.8-.4-1.4-1.2-1.9.4-.5.7-1.6.7-2.1 0-3.5-1.6-6-5.5-6z"/></svg>
+                    <svg viewBox="0 0 24 24" class="social-icon" style="color: #FFD500; transform: scale(1.2);"><path fill="currentColor" d="M12 2c-3.9 0-5.5 2.5-5.5 6 0 .5.3 1.6.7 2.1-.8.5-1.2 1.1-1.2 1.9 0 .8.6 1.3 1.5 1.5-.2.5-.5 1.1-.5 1.7 0 1.9 2.3 2.3 5 2.3s5-.4 5-2.3c0-.6-.3-1.2-.5-1.7.9-.2 1.5-.7 1.5-1.5 0-.8-.4-1.4-1.2-1.9.4-.5.7-1.6.7-2.1 0-3.5-1.6-6-5.5-6z"/></svg>
                     <span style="color: var(--text-main);">Snapchat</span>
                 </a>
                 <a href="https://www.facebook.com/thecodemiko/" target="_blank" class="social-card">
@@ -288,13 +288,36 @@ const GeraldView = {
     template: `
         <div class="gerald-container">
             <div class="gerald-header" @click="$emit('close-pickers')">
-                <div class="avatar-glow-wrap" :class="apiConnected ? 'glow-online' : 'glow-offline'">
-                    <img src="gerald.png" class="gerald-avatar" alt="Gerald">
-                </div>
-                <div class="gerald-title-block">
-                    <span class="gerald-name-text">Gerald O.S.</span>
-                    <div class="gerald-status-sub" :class="apiConnected ? 'sub-online' : 'sub-offline'">
-                        {{ apiConnected ? 'SYSTEM: ONLINE // CLOUD_STREAM_ACTIVE' : 'SYSTEM: STANDBY // API_DISCONNECTED' }}
+                <div class="gerald-sys-card">
+                    <div class="sys-card-top">
+                        <div class="gerald-avatar-wrapper">
+                            <img src="gerald.png" class="gerald-avatar" alt="Gerald">
+                            <div class="status-dot-wrapper">
+                                <div class="dot" :class="apiConnected ? 'dot-online' : 'dot-offline'"></div>
+                            </div>
+                        </div>
+                        <div class="sys-card-titles">
+                            <span class="sys-tiny-text">ENTITY_ID • #00042</span>
+                            <span class="sys-name">Gerald O.S.</span>
+                            <span class="sys-sub-text">MIKO'S AI COMPANION</span>
+                        </div>
+                    </div>
+                    <div class="sys-card-stats">
+                        <div class="stat-box">
+                            <span class="stat-label">CPU</span>
+                            <span class="stat-value">23%</span>
+                            <div class="stat-bar" style="background: var(--primary);"></div>
+                        </div>
+                        <div class="stat-box">
+                            <span class="stat-label">MEM</span>
+                            <span class="stat-value">1.8GB</span>
+                            <div class="stat-bar" style="background: var(--primary);"></div>
+                        </div>
+                        <div class="stat-box">
+                            <span class="stat-label">PING</span>
+                            <span class="stat-value">{{ apiConnected ? '24ms' : 'ERR' }}</span>
+                            <div class="stat-bar" :style="{ background: apiConnected ? 'var(--success)' : 'var(--danger)' }"></div>
+                        </div>
                     </div>
                 </div>
             </div>
