@@ -993,4 +993,20 @@ createApp({
                     if (data.user) { 
                         currentUser.value = data.user; 
                         
-                        const { data: hist } = await sbClient.
+                        const { data: hist } = await sbClient.from('gerald_history').select('*').eq('user_id', currentUser.value.id).order('created_at', { ascending: true });
+                        if (hist && hist.length > 0) { 
+                            geraldMessages.value = hist.map(r => ({ role: r.role, content: r.content })); 
+                        }
+                        await loadChatHistory();
+                    } 
+                } catch (err) {
+                    console.error("System Error:", err.message);
+                }
+            },
+            handleLogout: () => { logoutState.value = 'LOGGING OUT...'; setTimeout(() => { sbClient.auth.signOut(); currentUser.value = null; modals.value.profile = false; logoutState.value = 'Sign Out'; }, 1000); },
+            optimizeTwitchImg: (u) => u ? u.replace('%{width}', '480').replace('%{height}', '270') : '',
+            formatViews: (v) => v ? v.toLocaleString() : '0',
+            formatDate: (d) => new Date(d).toLocaleDateString([], {month:'short', day:'numeric'})
+        };
+    }
+}).mount('#app-container');
