@@ -68,7 +68,7 @@ const FilterMenu = {
 };
 
 const ProfileModal = {
-    props: ['isOpen', 'currentUser', 'loginEmail', 'loginPass', 'apiConfig', 'syncState', 'wipeState', 'logoutState'],
+    props: ['isOpen', 'currentUser', 'loginEmail', 'loginPass', 'apiConfig', 'syncState', 'wipeState', 'logoutState', 'nukeState'],
     template: `
         <div class="modal-overlay" :class="{ open: isOpen }" @click.self="$emit('close')">
             <div class="modal-content" @touchstart="$emit('touch-start', $event)" @touchmove="$emit('touch-move', $event)" @touchend="$emit('touch-end', $event)">
@@ -86,8 +86,8 @@ const ProfileModal = {
                     </div>
                     <div class="settings-block">
                         <div class="block-title">TWITCH API CONFIG</div>
-                        <input type="text" class="sleek-input" :value="apiConfig.cid" @change="$emit('update-api', 'cid', $event.target.value)" placeholder="Client ID">
-                        <input type="password" class="sleek-input" :value="apiConfig.tkn" @change="$emit('update-api', 'tkn', $event.target.value)" placeholder="Access Token">
+                        <input type="text" class="sleek-input" :value="apiConfig.cid" @change="$emit('update-api', 'cid', $event.target.value); localStorage.setItem('twitch_cid', $event.target.value)" placeholder="Client ID">
+                        <input type="password" class="sleek-input" :value="apiConfig.tkn" @change="$emit('update-api', 'tkn', $event.target.value); localStorage.setItem('twitch_tkn', $event.target.value)" placeholder="Access Token">
                     </div>
                     <div class="action-menu">
                         <button class="menu-btn sync-row" :style="syncState === 'sync-success' ? 'color: var(--success);' : ''" @click="$emit('sync')" :disabled="syncState !== 'idle'">
@@ -98,14 +98,14 @@ const ProfileModal = {
                         </button>
                         <button class="menu-btn wipe-row" :style="wipeState === 'success' ? 'color: var(--success);' : ''" @click="$emit('wipe')" :disabled="wipeState !== 'idle'">
                             <div class="btn-content">
-                                <div class="icon-wrap"><span class="material-symbols-rounded" :class="{'shake-anim': wipeState === 'wiping'}" style="font-size: 18px;">delete</span></div>
-                                <span>{{ wipeState === 'wiping' ? 'WIPING...' : (wipeState === 'success' ? 'MEMORY WIPED!' : 'Wipe Gerald Memory') }}</span>
+                                <div class="icon-wrap" :style="wipeState === 'success' ? 'background: rgba(16, 185, 129, 0.15);' : ''"><span class="material-symbols-rounded" :class="{'shake-anim': wipeState === 'wiping'}" style="font-size: 18px;">{{ wipeState === 'success' ? 'check' : 'delete' }}</span></div>
+                                <span>{{ wipeState === 'wiping' ? 'WIPING...' : (wipeState === 'success' ? 'SUCCESS' : 'Wipe Gerald Memory') }}</span>
                             </div>
                         </button>
-                        <button class="menu-btn sync-row" style="color: #ff4500;" @click="$emit('nuke-cache')">
+                        <button class="menu-btn nuke-row" :style="nukeState === 'success' ? 'color: var(--success);' : ''" @click="$emit('nuke-cache')" :disabled="nukeState !== 'idle'">
                             <div class="btn-content">
-                                <div class="icon-wrap" style="background: rgba(255, 69, 0, 0.15);"><span class="material-symbols-rounded" style="font-size: 18px;">cached</span></div>
-                                <span>Nuke App Cache</span>
+                                <div class="icon-wrap" :style="nukeState === 'success' ? 'background: rgba(16, 185, 129, 0.15);' : ''"><span class="material-symbols-rounded" :class="{'spin-anim': nukeState === 'nuking'}" style="font-size: 18px;">{{ nukeState === 'success' ? 'check' : 'cached' }}</span></div>
+                                <span>{{ nukeState === 'nuking' ? 'NUKING...' : (nukeState === 'success' ? 'SUCCESS' : 'Nuke App Cache') }}</span>
                             </div>
                         </button>
                         <button class="menu-btn logout-row" @click="$emit('logout')" :disabled="logoutState !== 'idle'">
@@ -141,8 +141,8 @@ const ChatView = {
     computed: {
         filteredEmotes() {
             const all = Object.entries(this.customEmotes || {});
-            if (!this.pickerQuery) return all.slice(0, 80);
-            return all.filter(([name]) => name.toLowerCase().includes(this.pickerQuery.toLowerCase())).slice(0, 80);
+            if (!this.pickerQuery) return all;
+            return all.filter(([name]) => name.toLowerCase().includes(this.pickerQuery.toLowerCase()));
         }
     },
     methods: {
@@ -437,7 +437,7 @@ createApp({
         const loginEmail = ref(''), loginPass = ref('');
         const toast = ref({ visible: false, message: '' });
         const hostname = window.location.hostname || 'meowoccino.github.io';
-        const syncState = ref('idle'), wipeState = ref('idle'), logoutState = ref('idle');
+        const syncState = ref('idle'), wipeState = ref('idle'), logoutState = ref('idle'), nukeState = ref('idle');
         const apiConfig = ref({ cid: localStorage.getItem('twitch_cid') || 'i2fjxfk0oq6ybixle760zryrtvdqjg', tkn: localStorage.getItem('twitch_tkn') || '' });
 
         const customEmotes = ref({});
@@ -489,7 +489,7 @@ createApp({
         };
 
         const processEmotes = (text) => {
-            let out = text.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+            let out = text.replace(/&/g, '&').replace(/</g, '<').replace(/>/g, '>');
             const words = out.split(' ');
             for (let i = 0; i < words.length; i++) {
                 const cleanWord = words[i].replace(/^:|:$/g, '');
@@ -540,7 +540,7 @@ createApp({
 
             sbClient.from('twitch_chat_logs').insert({ username: user, message: text, color: color, badges: badges }).then();
 
-            let html = text.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+            let html = text.replace(/&/g, '&').replace(/</g, '<').replace(/>/g, '>');
             if (tags['emotes']) {
                 const replacements = [];
                 tags['emotes'].split('/').forEach(e => {
@@ -725,7 +725,7 @@ createApp({
         
         const parseMarkdown = (text) => {
             if (!text) return '';
-            let html = text.replace(/</g, '&lt;').replace(/>/g, '&gt;');
+            let html = text.replace(/</g, '<').replace(/>/g, '>');
             html = html.replace(/(^|\W)'([^']+)'(\W|$)/g, '$1<strong>$2</strong>$3');
             html = html.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>').replace(/\*(.*?)\*/g, '<em>$1</em>'); 
             html = html.replace(/\[([^\]]+)\]\((https?:\/\/[^\s]+)\)/gi, '<a href="$2" target="_blank" style="color: var(--primary); text-decoration: underline; font-weight: bold;">$1</a>');
@@ -822,7 +822,8 @@ createApp({
         };
 
         const nukeCache = async () => {
-            showToast("Nuking app cache storage layers...");
+            if (nukeState.value !== 'idle') return;
+            nukeState.value = 'nuking';
             try {
                 if ('serviceWorker' in navigator) {
                     const registrations = await navigator.serviceWorker.getRegistrations();
@@ -832,11 +833,11 @@ createApp({
                     const cacheNames = await caches.keys();
                     for (let name of cacheNames) { await caches.delete(name); }
                 }
-                showToast("Cache purged cleanly. Re-loading pipeline...", 2000);
+                nukeState.value = 'success';
                 setTimeout(() => {
                     window.location.href = window.location.origin + window.location.pathname + '?cb=' + Date.now() + window.location.hash;
                 }, 1000);
-            } catch (e) { showToast("Cache purge error."); }
+            } catch (e) { nukeState.value = 'idle'; }
         };
 
         const loadData = async () => {
@@ -844,8 +845,31 @@ createApp({
                 const { data: dbEmotes } = await sbClient.from('emotes').select('*');
                 if (dbEmotes) { dbEmotes.forEach(e => { customEmotes.value[e.name] = { id: e.id, animated: e.animated }; }); }
 
-                const { data: c } = await sbClient.from('clips').select('*').order('created_at', { ascending: false }).limit(3000);
-                allClips.value = c || []; clips.value = sortData(currentFilter.value);
+                const oneYearAgo = new Date();
+                oneYearAgo.setFullYear(oneYearAgo.getFullYear() - 1);
+                const dateString = oneYearAgo.toISOString();
+
+                let allFetchedClips = [];
+                let keepFetching = true;
+                let currentOffset = 0;
+
+                while (keepFetching) {
+                    const { data: c } = await sbClient.from('clips')
+                        .select('*')
+                        .gte('created_at', dateString)
+                        .order('created_at', { ascending: false })
+                        .range(currentOffset, currentOffset + 999);
+                    
+                    if (c && c.length > 0) {
+                        allFetchedClips.push(...c);
+                        currentOffset += 1000;
+                    } else {
+                        keepFetching = false;
+                    }
+                }
+
+                allClips.value = allFetchedClips || [];
+                clips.value = sortData(currentFilter.value);
             } catch(e) {}
         };
 
@@ -925,12 +949,12 @@ createApp({
 
             setTimeout(() => {
                 splashOpacity.value = 0;
-                setTimeout(() => { splashVisible.value = false; }, 400);
-            }, 1200);
+                setTimeout(() => { splashVisible.value = false; }, 250);
+            }, 400);
         });
 
         return { 
-            hostname, splashVisible, splashOpacity, currentTab, appTheme, toggleTheme, clips, modals, isLive, toast, currentUser, loginEmail, loginPass, apiConfig, geraldInput, geraldMessages, isGeraldTyping, talkToGerald, logoSvg, syncState, wipeState, logoutState, isHeaderVisible, handleScroll, handleModalTouchStart, handleModalTouchMove, handleModalTouchEnd, currentFilter, activeFilterLabel, isFilterMenuOpen, closeFilterMenu, applyFilter, parseMarkdown, recentVods, currentVodIndex, nextVod, prevVod, customEmotes, showEmotePicker, insertEmote, clearGeraldHistory, handleGeraldEnter, toggleEmotes, toggleMinigames, closePickers, nukeCache, activeClipId, tabOffset, switchTab, handleSwipeStart, handleSwipeEnd, playClip, playMinigame, selectedClip, showMinigames, runSync,
+            hostname, splashVisible, splashOpacity, currentTab, appTheme, toggleTheme, clips, modals, isLive, toast, currentUser, loginEmail, loginPass, apiConfig, geraldInput, geraldMessages, isGeraldTyping, talkToGerald, logoSvg, syncState, wipeState, logoutState, nukeState, isHeaderVisible, handleScroll, handleModalTouchStart, handleModalTouchMove, handleModalTouchEnd, currentFilter, activeFilterLabel, isFilterMenuOpen, closeFilterMenu, applyFilter, parseMarkdown, recentVods, currentVodIndex, nextVod, prevVod, customEmotes, showEmotePicker, insertEmote, clearGeraldHistory, handleGeraldEnter, toggleEmotes, toggleMinigames, closePickers, nukeCache, activeClipId, tabOffset, switchTab, handleSwipeStart, handleSwipeEnd, playClip, playMinigame, selectedClip, showMinigames, runSync,
             chatMessages, twitchChatToken, twitchAuthUrl, twitchUsername, sendTwitchChatMessage,
             handleLogin: async () => { const email = loginEmail.value.includes('@') ? loginEmail.value : `${loginEmail.value}@miko.com`; const { data } = await sbClient.auth.signInWithPassword({ email, password: loginPass.value }); if(data.user) { currentUser.value = data.user; modals.value.profile = false; loadGeraldHistory(); } }, 
             handleLogout: () => { if (logoutState.value !== 'idle') return; logoutState.value = 'logging_out'; setTimeout(() => { sbClient.auth.signOut(); currentUser.value = null; geraldMessages.value = [{role:'gerald', content: ''}]; localStorage.removeItem('tw_chat_token'); localStorage.removeItem('tw_username'); twitchChatToken.value = null; twitchUsername.value = null; if (twitchWs) twitchWs.close(); modals.value.profile = false; logoutState.value = 'idle'; }, 1500); },
