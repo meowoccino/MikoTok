@@ -308,7 +308,7 @@ body, html {
     border-bottom: 1px solid var(--border-color);
     position: relative;
     z-index: 10;
-    box-shadow: 0 4px 20px rgba(0,0,0,0.05); /* Stops messages from bleeding flush against the line */
+    box-shadow: 0 4px 20px rgba(0,0,0,0.05);
 }
 
 @keyframes os-dot-blink {
@@ -337,7 +337,6 @@ body, html {
 
 .sys-card-top-centered { display: flex; justify-content: center; }
 
-/* Perfect Circle Avatar */
 .gerald-avatar-wrapper-centered { 
     width: 80px; height: 80px; 
     border-radius: 50%; 
@@ -378,7 +377,6 @@ body, html {
     display: flex; flex-direction: column; gap: 12px; background: var(--bg-color);
 }
 .gerald-messages::-webkit-scrollbar { display: none; }
-/* Creates a 15px invisible barrier at the top so messages never touch the header */
 .gerald-messages::before { content: ''; display: block; min-height: 10px; flex-shrink: 0; }
 .gerald-messages::after { content: ''; display: block; min-height: 140px; flex-shrink: 0; }
 
