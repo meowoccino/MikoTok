@@ -831,9 +831,8 @@ createApp({
         };
 
         onMounted(async () => {
-            document.body.style.overflow = 'hidden';
-            document.body.style.height = '100vh';
-            document.documentElement.style.overflow = 'hidden';
+            // Do NOT lock body overflow — it blocks touch events on mobile nav/buttons.
+            // Each view container handles its own scroll via overflow-y:auto + fixed height.
 
             updateThemeClass();
             if (window.location.hash.includes('access_token')) {
