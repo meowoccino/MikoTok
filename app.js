@@ -93,25 +93,33 @@ const ProfileModal = {
                     <div class="action-menu">
                         <button class="menu-btn sync-row" :style="syncState.includes('SUCCESS') ? 'color: var(--success);' : (syncState.includes('ERROR') ? 'color: var(--danger);' : '')" @click="$emit('sync')" :disabled="syncState === 'syncing'">
                             <div class="btn-content">
-                                <div class="icon-wrap" :style="syncState.includes('SUCCESS') ? 'background: rgba(16, 185, 129, 0.15);' : ''"><span class="material-symbols-rounded" :class="{\`spin-anim\`: syncState === 'syncing'}" style="font-size: 18px;">{{ syncState.includes('SUCCESS') ? 'check' : (syncState.includes('ERROR') ? 'error' : 'sync') }}</span></div>
+                                <div class="icon-wrap" :style="syncState.includes('SUCCESS') ? 'background: rgba(16, 185, 129, 0.15);' : ''">
+                                    <span class="material-symbols-rounded" :class="{'spin-anim': syncState === 'syncing'}" style="font-size: 18px;">{{ syncState.includes('SUCCESS') ? 'check' : (syncState.includes('ERROR') ? 'error' : 'sync') }}</span>
+                                </div>
                                 <span>{{ syncState === 'syncing' ? 'SYNCING...' : syncState }}</span>
                             </div>
                         </button>
                         <button class="menu-btn wipe-row" :style="wipeState === 'success' ? 'color: var(--success);' : ''" @click="$emit('wipe')" :disabled="wipeState !== 'idle'">
                             <div class="btn-content">
-                                <div class="icon-wrap" :style="wipeState === 'success' ? 'background: rgba(16, 185, 129, 0.15);' : ''"><span class="material-symbols-rounded" :class="{\`shake-anim\`: wipeState === 'wiping'}" style="font-size: 18px;">{{ wipeState === 'success' ? 'check' : 'delete' }}</span></div>
+                                <div class="icon-wrap" :style="wipeState === 'success' ? 'background: rgba(16, 185, 129, 0.15);' : ''">
+                                    <span class="material-symbols-rounded" :class="{'shake-anim': wipeState === 'wiping'}" style="font-size: 18px;">{{ wipeState === 'success' ? 'check' : 'delete' }}</span>
+                                </div>
                                 <span>{{ wipeState === 'wiping' ? 'WIPING...' : (wipeState === 'success' ? 'SUCCESS' : 'Wipe Gerald Memory') }}</span>
                             </div>
                         </button>
                         <button class="menu-btn nuke-row" :style="nukeState === 'success' ? 'color: var(--success);' : ''" @click="$emit('nuke-cache')" :disabled="nukeState !== 'idle'">
                             <div class="btn-content">
-                                <div class="icon-wrap" :style="nukeState === 'success' ? 'background: rgba(16, 185, 129, 0.15);' : ''"><span class="material-symbols-rounded" :class="{\`spin-anim\`: nukeState === 'nuking'}" style="font-size: 18px;">{{ nukeState === 'success' ? 'check' : 'cached' }}</span></div>
+                                <div class="icon-wrap" :style="nukeState === 'success' ? 'background: rgba(16, 185, 129, 0.15);' : ''">
+                                    <span class="material-symbols-rounded" :class="{'spin-anim': nukeState === 'nuking'}" style="font-size: 18px;">{{ nukeState === 'success' ? 'check' : 'cached' }}</span>
+                                </div>
                                 <span>{{ nukeState === 'nuking' ? 'NUKING...' : (nukeState === 'success' ? 'SUCCESS' : 'Nuke App Cache') }}</span>
                             </div>
                         </button>
                         <button class="menu-btn logout-row" @click="$emit('logout')" :disabled="logoutState !== 'idle'">
                             <div class="btn-content">
-                                <div class="icon-wrap"><span class="material-symbols-rounded" :class="{\`spin-anim\`: logoutState === 'logging_out'}" style="font-size: 18px;">{{ logoutState === 'logging_out' ? 'hourglass_empty' : 'logout' }}</span></div>
+                                <div class="icon-wrap">
+                                    <span class="material-symbols-rounded" :class="{'spin-anim': logoutState === 'logging_out'}" style="font-size: 18px;">{{ logoutState === 'logging_out' ? 'hourglass_empty' : 'logout' }}</span>
+                                </div>
                                 <span>{{ logoutState === 'logging_out' ? 'SIGNING OUT...' : 'Sign Out' }}</span>
                             </div>
                         </button>
