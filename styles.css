@@ -234,6 +234,9 @@ body, html {
 .twitch-msg-row:hover { background: rgba(145,70,255,0.05); }
 .msg-mine { background: rgba(145,70,255,0.08) !important; }
 
+/* Timestamps for chat */
+.chat-timestamp { font-size: 11px; color: var(--text-muted); margin-right: 6px; font-variant-numeric: tabular-nums; display: inline-block; }
+
 .twitch-badges { display: inline; }
 .badge-img { width: 16px; height: 16px; vertical-align: middle; margin-right: 3px; border-radius: 2px; position: relative; top: -1px; }
 .twitch-username { font-weight: 700; font-size: 13.5px; }
@@ -302,7 +305,6 @@ body, html {
     z-index: 10;
 }
 
-/* Restored & Animated 3 Dots */
 @keyframes os-dot-blink {
     0%, 100% { opacity: 1; transform: scale(1); }
     50% { opacity: 0.5; transform: scale(0.85); }
@@ -352,7 +354,6 @@ body, html {
 .stat-value { font-size: 16px; font-weight: 800; color: var(--text-main); }
 .stat-bar { height: 3px; border-radius: 2px; width: 100%; margin-top: 4px; }
 
-/* Fixed overlapping glowing dots by expanding gap and adding margin */
 .api-status-pill {
     display: flex; align-items: center; justify-content: center; gap: 14px;
     background: var(--card-bg); border: 1px solid var(--border-color);
@@ -364,7 +365,6 @@ body, html {
 .text-online { color: var(--success); font-family: monospace; font-weight: 700; font-size: 11px; letter-spacing: 1px; }
 .text-offline { color: var(--danger); font-family: monospace; font-weight: 700; font-size: 11px; letter-spacing: 1px; }
 
-/* Replaced unreliable bottom-padding with an invisible bottom spacer for perfect scrolling */
 .gerald-messages {
     flex: 1; overflow-y: auto; padding: 20px 20px 0;
     display: flex; flex-direction: column; gap: 12px; background: var(--bg-color);
@@ -429,7 +429,6 @@ body, html {
 .sync-btn { width: 100%; background: var(--primary); border: none; color: white; padding: 15px; border-radius: 12px; font-weight: 800; margin-bottom: 10px; outline: none; cursor: pointer; }
 .infra-bar { background: var(--bg-color); border: 1px solid var(--border-color); border-radius: 14px; padding: 14px; display: flex; justify-content: center; margin-bottom: 16px; }
 
-/* Fixed Admin Dot Overlap */
 .status-node { display: flex; align-items: center; gap: 14px; font-size: 11px; font-weight: 800; text-transform: uppercase; color: var(--text-main); }
 .pulse { width: 8px; height: 8px; border-radius: 50%; background: var(--success); box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.7); animation: indicator-pulse-success 2.5s infinite ease-in-out; margin-right: 4px; }
 
@@ -439,7 +438,6 @@ body, html {
 .block-title { font-size: 10px; font-weight: 800; color: var(--text-muted); margin-bottom: 12px; }
 .sleek-input { width: 100%; background: var(--card-bg); border: 1px solid var(--border-color); border-radius: 10px; padding: 12px; color: var(--text-main); font-size: 12px; font-weight: 600; outline: none; margin-bottom: 8px; }
 
-/* Admin Panel Buttons & Animations */
 .action-menu { background: var(--bg-color); border: 1px solid var(--border-color); border-radius: 16px; overflow: hidden; }
 .menu-btn { width: 100%; padding: 14px 16px; display: flex; justify-content: space-between; background: transparent; border: none; border-bottom: 1px solid var(--border-color); font-size: 11px; font-weight: 800; text-transform: uppercase; color: var(--text-main); cursor: pointer; outline: none; }
 .btn-content { display: flex; align-items: center; gap: 12px; }
@@ -450,7 +448,6 @@ body, html {
 .wipe-row { color: #ff9800; }
 .wipe-row .icon-wrap { background: rgba(255,152,0,0.1); }
 
-/* Changed Nuke Cache to Neon Fuschia/Pink */
 .nuke-row { color: #d946ef; }
 .nuke-row .icon-wrap { background: rgba(217, 70, 239, 0.1); }
 
