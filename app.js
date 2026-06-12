@@ -68,7 +68,7 @@ const FilterMenu = {
 };
 
 const ProfileModal = {
-    props: ['isOpen', 'currentUser', 'loginEmail', 'loginPass', 'apiConfig', 'syncState', 'wipeState', 'logoutState', 'nukeState'],
+    props: ['isOpen', 'currentUser', 'loginEmail', 'loginPass', 'apiConfig', 'syncState', 'wipeState', 'logoutState', 'nukeState', 'twitchUsername'],
     template: `
         <div class="modal-overlay" :class="{ open: isOpen }" @click.self="$emit('close')">
             <div class="modal-content" @touchstart="$emit('touch-start', $event)" @touchmove="$emit('touch-move', $event)" @touchend="$emit('touch-end', $event)">
@@ -108,6 +108,14 @@ const ProfileModal = {
                                 <span>{{ nukeState === 'nuking' ? 'NUKING...' : (nukeState === 'success' ? 'SUCCESS' : 'Nuke App Cache') }}</span>
                             </div>
                         </button>
+                        
+                        <button v-if="twitchUsername" class="menu-btn wipe-row" @click="$emit('disconnect-twitch')">
+                            <div class="btn-content">
+                                <div class="icon-wrap" style="background: rgba(255, 152, 0, 0.1);"><span class="material-symbols-rounded" style="font-size: 18px;">link_off</span></div>
+                                <span>Disconnect Twitch ({{ twitchUsername }})</span>
+                            </div>
+                        </button>
+
                         <button class="menu-btn logout-row" @click="$emit('logout')" :disabled="logoutState !== 'idle'">
                             <div class="btn-content">
                                 <div class="icon-wrap"><span class="material-symbols-rounded" :class="{'spin-anim': logoutState === 'logging_out'}" style="font-size: 18px;">{{ logoutState === 'logging_out' ? 'hourglass_empty' : 'logout' }}</span></div>
@@ -137,13 +145,12 @@ const ClipModal = {
 
 const ChatView = {
     props: ['chatMessages', 'isLoggedIn', 'twitchAuthUrl', 'customEmotes', 'twitchUsername'],
-    data() { return { showPicker: false, pickerQuery: '', localInput: '' }; },
+    data() { return { showPicker: false, pickerQuery: '', localInput: '', showLoginPopup: false }; },
     computed: {
         filteredEmotes() {
             const all = Object.entries(this.customEmotes || {});
-            // PERFORMANCE FIX: Cap the emote picker at 100 items to stop mobile DOM lag
-            if (!this.pickerQuery) return all.slice(0, 100);
-            return all.filter(([name]) => name.toLowerCase().includes(this.pickerQuery.toLowerCase())).slice(0, 100);
+            if (!this.pickerQuery) return all;
+            return all.filter(([name]) => name.toLowerCase().includes(this.pickerQuery.toLowerCase()));
         }
     },
     methods: {
@@ -155,7 +162,15 @@ const ChatView = {
             this.localInput = (this.localInput + ' ' + name + ' ').replace(/\s+/g, ' ').trimStart();
             this.showPicker = false;
         },
+        handleInteraction() {
+            if (!this.isLoggedIn) {
+                this.showLoginPopup = true;
+                return false;
+            }
+            return true;
+        },
         togglePicker() {
+            if (!this.handleInteraction()) return;
             this.showPicker = !this.showPicker;
         },
         closePicker() { this.showPicker = false; this.pickerQuery = ''; },
@@ -168,16 +183,7 @@ const ChatView = {
     },
     template: `
         <div class="chat-wrapper">
-            <div v-if="!isLoggedIn" class="chat-login-screen">
-                <div class="chat-login-card">
-                    <svg viewBox="0 0 24 24" class="chat-login-icon"><path fill="currentColor" d="M11.571 4.714h1.715v5.143H11.57zm4.715 0H18v5.143h-1.714zM6 0L1.714 4.286v15.428h5.143V24l4.286-4.286h3.428L22.286 12V0zm14.571 11.143l-3.428 3.428h-3.429l-3 3v-3H6.857V1.714h13.714Z"/></svg>
-                    <p class="chat-login-title">Join the chat</p>
-                    <p class="chat-login-sub">Connect your Twitch account to read and send messages live.</p>
-                    <a :href="twitchAuthUrl" class="twitch-login-btn">Connect with Twitch</a>
-                </div>
-            </div>
-
-            <div v-else class="twitch-chat-list" id="twitch-chat-list" @click="closePicker">
+            <div class="twitch-chat-list" id="twitch-chat-list" @click="closePicker">
                 <div v-if="chatMessages.length === 0" class="chat-empty-state">
                     <span class="material-symbols-rounded" style="font-size:32px; color:var(--text-muted); margin-bottom:8px;">chat_bubble_outline</span>
                     <span style="font-size:13px; color:var(--text-muted); font-weight:600;">Loading recent messages…</span>
@@ -205,7 +211,7 @@ const ChatView = {
                 </div>
             </div>
 
-            <div v-if="isLoggedIn" class="custom-chat-input-area">
+            <div class="custom-chat-input-area">
                 <button class="chat-icon-btn" :class="{ 'chat-icon-active': showPicker }" @click.stop="togglePicker" title="Emotes">
                     <span class="material-symbols-rounded" style="font-size:22px;">mood</span>
                 </button>
@@ -214,11 +220,22 @@ const ChatView = {
                        placeholder="Send a message…"
                        v-model="localInput"
                        @keydown.enter="handleSend"
-                       @focus="closePicker"
+                       @focus="handleInteraction"
+                       :readonly="!isLoggedIn"
                        maxlength="500">
-                <button class="chat-send-btn" @click="handleSend" :disabled="!localInput || !localInput.trim()">
+                <button class="chat-send-btn" @click="handleSend" :disabled="!isLoggedIn || !localInput || !localInput.trim()">
                     <span class="material-symbols-rounded" style="font-size:20px;">send</span>
                 </button>
+            </div>
+
+            <div class="chat-login-popup-overlay" :class="{ open: showLoginPopup }" @click.self="showLoginPopup = false">
+                <div class="chat-login-card position-relative">
+                    <button class="clip-close-x" style="top: -15px; right: -15px;" @click="showLoginPopup = false"><span class="material-symbols-rounded">close</span></button>
+                    <svg viewBox="0 0 24 24" class="chat-login-icon"><path fill="currentColor" d="M11.571 4.714h1.715v5.143H11.57zm4.715 0H18v5.143h-1.714zM6 0L1.714 4.286v15.428h5.143V24l4.286-4.286h3.428L22.286 12V0zm14.571 11.143l-3.428 3.428h-3.429l-3 3v-3H6.857V1.714h13.714Z"/></svg>
+                    <p class="chat-login-title">Join the chat</p>
+                    <p class="chat-login-sub">Connect your Twitch account to read and send messages live.</p>
+                    <a :href="twitchAuthUrl" class="twitch-login-btn">Connect with Twitch</a>
+                </div>
             </div>
         </div>
     `
@@ -285,146 +302,6 @@ const MoreView = {
     `
 };
 
-const GeraldView = {
-    props: ['currentTab', 'geraldMessages', 'isGeraldTyping', 'geraldInput', 'showEmotePicker', 'showMinigames', 'customEmotes', 'parseMarkdown', 'apiConnected'],
-    template: `
-        <div class="gerald-container">
-            <div class="gerald-header" @click="$emit('close-pickers')">
-                <div class="os-top-bar">
-                    <span class="os-title">GERALD_OS v2</span>
-                    <div class="os-dots">
-                        <div class="os-dot close"></div>
-                        <div class="os-dot min"></div>
-                        <div class="os-dot max"></div>
-                    </div>
-                </div>
-                
-                <div class="gerald-sys-card">
-                    <div class="sys-card-top-centered">
-                        <div class="gerald-avatar-wrapper-centered">
-                            <img src="gerald.png" class="gerald-avatar-lg" alt="Gerald">
-                        </div>
-                    </div>
-                    
-                    <div class="sys-card-stats">
-                        <div class="stat-box">
-                            <span class="stat-label">CPU</span>
-                            <span class="stat-value">23%</span>
-                            <div class="stat-bar" style="background: var(--primary);"></div>
-                        </div>
-                        <div class="stat-box">
-                            <span class="stat-label">MEM</span>
-                            <span class="stat-value">1.8GB</span>
-                            <div class="stat-bar" style="background: var(--primary);"></div>
-                        </div>
-                        <div class="stat-box">
-                            <span class="stat-label">TEMP</span>
-                            <span class="stat-value">85&deg;C</span>
-                            <div class="stat-bar" style="background: #ff9800;"></div>
-                        </div>
-                    </div>
-
-                    <div class="api-status-pill">
-                        <div class="dot" :class="apiConnected ? 'dot-online' : 'dot-offline'"></div>
-                        <span :class="apiConnected ? 'text-online' : 'text-offline'">{{ apiConnected ? 'API_CONNECTED' : 'API_DISCONNECTED' }}</span>
-                    </div>
-                </div>
-            </div>
-
-            <div class="gerald-messages" id="gerald-msgs" @click="$emit('close-pickers')">
-                <template v-for="(m, i) in geraldMessages" :key="i">
-                    <div v-if="i === 0 && m.role === 'gerald'" class="chat-bubble gerald startup-anim">
-                        <span v-if="!m.content">> Human detected.<br>> What do you want?</span>
-                        <span v-else v-html="parseMarkdown(m.content)"></span>
-                    </div>
-                    <div v-else class="chat-bubble" :class="m.role" v-html="parseMarkdown(m.content)"></div>
-                </template>
-                <div v-if="isGeraldTyping" key="typing" class="typing-indicator">COMPUTING...</div>
-            </div>
-            
-            <div class="gerald-action-area">
-                <div class="chat-emote-tray" v-show="showEmotePicker" style="bottom: 100%; border-bottom: none; border-radius: 16px 16px 0 0;">
-                    <div class="emote-picker-grid">
-                        <img v-for="(emote, name) in customEmotes" :key="name"
-                             :src="emote.url ? emote.url : 'https://cdn.discordapp.com/emojis/' + emote.id + '.' + (emote.animated ? 'gif' : 'png') + '?size=44'"
-                             class="emote-picker-img" @mousedown.prevent="$emit('insert-emote', name)">
-                    </div>
-                </div>
-                <div class="chat-emote-tray" v-show="showMinigames" style="bottom: 100%; border-bottom: none; border-radius: 16px 16px 0 0;">
-                    <div class="emote-picker-grid" style="gap: 8px;">
-                        <button class="bribe-btn" @click.stop="$emit('play-game', 'glitch')">🕶️ Glitch Persona</button>
-                        <button class="bribe-btn" @click.stop="$emit('play-game', 'shader')">🔥 Compile UE5</button>
-                        <button class="bribe-btn" @click.stop="$emit('play-game', 'boba')">🥤 Boba Spill</button>
-                        <button class="bribe-btn" @click.stop="$emit('play-game', 'pineapple')">🚪 Pineapple Walk-In</button>
-                        <button class="bribe-btn" @click.stop="$emit('play-game', 'cat')">🐈 Cat on PC</button>
-                        <button class="bribe-btn" @click.stop="$emit('play-game', 'bits')">🎟️ 100K Bits</button>
-                        <button class="bribe-btn" @click.stop="$emit('play-game', 'mute')">🔇 Mute Mic</button>
-                        <button class="bribe-btn" @click.stop="$emit('play-game', 'bald')">🧑‍🦲 Delete Hair</button>
-                        <button class="bribe-btn" @click.stop="$emit('play-game', 'siren')">🚨 Firetruck Siren</button>
-                    </div>
-                </div>
-                <div class="gerald-input-area">
-                    <div class="gerald-input-wrapper">
-                        <button class="emote-toggle-btn" @click="$emit('toggle-emotes')"><span class="material-symbols-rounded" :style="{ color: showEmotePicker ? 'var(--primary)' : 'inherit' }">mood</span></button>
-                        <button class="emote-toggle-btn" @click="$emit('toggle-minigames')"><span class="material-symbols-rounded" :style="{ color: showMinigames ? 'var(--primary)' : 'inherit' }">sports_esports</span></button>
-                        <textarea class="gerald-input" rows="1" placeholder="Message Gerald..." :value="geraldInput" @input="$emit('update-input', $event.target.value)" @keydown="$emit('key-down', $event)" id="gerald-txt-input" @focus="$emit('close-pickers')"></textarea>
-                    </div>
-                    <button class="gerald-send" @click="$emit('send')"><span class="material-symbols-rounded">send</span></button>
-                </div>
-            </div>
-        </div>
-    `
-};
-
-const HomeView = {
-    props: ['currentTab', 'currentVodIndex', 'recentVods', 'isLive', 'hostname', 'clips', 'activeFilterLabel', 'optimizeTwitchImg', 'formatViews', 'formatDate', 'activeClipId'],
-    template: `
-        <div>
-            <div class="hero-section">
-                <div class="header-controls" style="margin-bottom: 12px; display: flex; justify-content: flex-start;">
-                    <div :class="['premium-badge', isLive ? 'live-badge' : 'vod']">
-                        <div class="dot"></div>
-                        <span>{{ isLive ? 'LIVE' : (recentVods[currentVodIndex] ? 'VOD • ' + recentVods[currentVodIndex].date : 'PAST BROADCAST') }}</span>
-                    </div>
-                </div>
-                <div class="video-wrapper-outer">
-                    <div class="video-container">
-                        <iframe v-if="currentVodIndex === -1" id="miko-live-player" :src="'https://player.twitch.tv/?channel=codemiko&parent=' + hostname + '&autoplay=true&muted=true'" allow="autoplay; fullscreen" allowfullscreen loading="lazy"></iframe>
-                        <iframe v-else-if="recentVods && recentVods[currentVodIndex]" :src="'https://player.twitch.tv/?video=' + recentVods[currentVodIndex].id + '&parent=' + hostname + '&autoplay=false'" allow="autoplay; fullscreen" allowfullscreen loading="lazy"></iframe>
-                    </div>
-                </div>
-                <div class="carousel-controls" v-if="recentVods && recentVods.length > 0 && !isLive" style="margin-top: 12px; justify-content: flex-end;">
-                    <button class="carousel-btn" :class="{ 'hidden-arrow': currentVodIndex <= 0 }" @click.stop="$emit('prev-vod')"><span class="material-symbols-rounded">chevron_left</span></button>
-                    <button class="carousel-btn" :class="{ 'hidden-arrow': currentVodIndex >= recentVods.length - 1 }" @click.stop="$emit('next-vod')"><span class="material-symbols-rounded">chevron_right</span></button>
-                </div>
-            </div>
-            <div class="clips-list-container">
-                <div class="clips-header">
-                    <div class="filter-wrapper">
-                        <button class="filter-btn-tiny" @click="$emit('open-filter')">
-                            <span class="material-symbols-rounded" style="font-size: 16px;">sort</span><span>{{ activeFilterLabel }}</span>
-                        </button>
-                    </div>
-                </div>
-                <div class="clip-list-item" v-for="clip in clips" :key="clip.id" @click="$emit('play-clip', clip)">
-                    <div class="clip-thumb-wrapper">
-                        <img v-if="activeClipId !== clip.id" :src="clip.thumbnail_url ? optimizeTwitchImg(clip.thumbnail_url) : ''" loading="lazy" alt="Thumbnail">
-                        <iframe v-else :src="'https://clips.twitch.tv/embed?clip=' + clip.id + '&parent=' + hostname + '&autoplay=true&muted=false'" allow="autoplay; fullscreen" allowfullscreen style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: 5;"></iframe>
-                        <div class="duration-badge" v-if="activeClipId !== clip.id">0:45</div>
-                    </div>
-                    <div class="miko-metadata">
-                        <div class="author-name">{{ clip.title }}</div>
-                        <div class="clip-stats">
-                            <span>Just Chatting • {{ formatDate(clip.created_at) }}</span>
-                            <span>{{ formatViews(clip.view_count) }} views</span>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    `
-};
-
 const { createApp, ref, onMounted, nextTick, computed } = Vue;
 const sbClient = supabase.createClient('https://yhxcuayiwqpjvalyrcqv.supabase.co', 'sb_publishable_VyFcNARHblJg10qlC_O7Dg_coouXK92');
 
@@ -453,6 +330,10 @@ createApp({
 
         const customEmotes = ref({});
         const activeClipId = ref(null);
+
+        const currentClipOffset = ref(0);
+        const isLoadingMore = ref(false);
+        const allClipsLoaded = ref(false);
 
         const geraldInput = ref(''), geraldMessages = ref([{ role: 'gerald', content: '' }]);
         const isGeraldTyping = ref(false), showEmotePicker = ref(false), showMinigames = ref(false);
@@ -610,7 +491,9 @@ createApp({
                     .then(({ data }) => {
                         if (data) {
                             data.reverse().forEach(row => {
-                                chatMessages.value.push({ timestamp: '', username: row.username, html: processEmotes(row.message), color: row.color, badges: row.badges || [] });
+                                const d = new Date(row.created_at);
+                                const ts = d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+                                chatMessages.value.push({ timestamp: ts, username: row.username, html: processEmotes(row.message), color: row.color, badges: row.badges || [] });
                             });
                             scrollChatToBottom();
                         }
@@ -644,11 +527,19 @@ createApp({
             scrollChatToBottom();
         };
 
-        // NEW: Restored Badges via modern Twitch Helix API
+        const disconnectTwitch = () => {
+            twitchChatToken.value = null;
+            twitchUsername.value = null;
+            localStorage.removeItem('tw_chat_token');
+            localStorage.removeItem('tw_username');
+            connectTwitchChat();
+        };
+
         const loadTwitchBadges = async () => {
-            if (!twitchChatToken.value) return; 
             const clientId = apiConfig.value.cid || 'i2fjxfk0oq6ybixle760zryrtvdqjg';
-            const headers = { 'Client-ID': clientId, 'Authorization': `Bearer ${twitchChatToken.value}` };
+            let token = twitchChatToken.value || apiConfig.value.tkn;
+            if (!token) return; 
+            const headers = { 'Client-ID': clientId, 'Authorization': `Bearer ${token}` };
             try {
                 const [globalRes, channelRes] = await Promise.all([
                     fetch('https://api.twitch.tv/helix/chat/badges/global', { headers }),
@@ -727,7 +618,17 @@ createApp({
         window.addEventListener('popstate', () => { const hash = window.location.hash.replace('#', ''); if (tabs.includes(hash)) { currentTab.value = hash; } else { currentTab.value = 'home'; }});
         
         const isHeaderVisible = ref(true); let lastScrollY = 0;
-        const handleScroll = (e) => { const currentScrollY = e.target.scrollTop; if (currentScrollY <= 0) { isHeaderVisible.value = true; return; } if (Math.abs(currentScrollY - lastScrollY) < 10) return; isHeaderVisible.value = currentScrollY < lastScrollY; lastScrollY = currentScrollY; };
+        
+        const handleScroll = (e) => { 
+            const currentScrollY = e.target.scrollTop; 
+            if (currentScrollY <= 0) { isHeaderVisible.value = true; } 
+            else if (Math.abs(currentScrollY - lastScrollY) > 10) { isHeaderVisible.value = currentScrollY < lastScrollY; } 
+            lastScrollY = currentScrollY; 
+
+            if (e.target.scrollHeight - currentScrollY - e.target.clientHeight < 200) {
+                if (currentTab.value === 'home') { loadData(true); }
+            }
+        };
 
         let modalStartY = 0, currentDeltaY = 0;
         const handleModalTouchStart = (e) => { if (e.currentTarget.scrollTop <= 0) { modalStartY = e.touches[0].clientY; currentDeltaY = 0; } };
@@ -778,10 +679,12 @@ createApp({
             if (!game) return;
             
             geraldMessages.value.push({ role: 'user', content: game.msg });
+            if (currentUser.value) { sbClient.from('gerald_history').insert({ role: 'user', content: game.msg, user_id: currentUser.value.id }).then(); }
             closePickers();
             
             setTimeout(() => { 
                 geraldMessages.value.push({ role: 'gerald', content: game.text }); 
+                if (currentUser.value) { sbClient.from('gerald_history').insert({ role: 'gerald', content: game.text, user_id: currentUser.value.id }).then(); }
                 nextTick(scrollToBottom);
             }, 600);
         };
@@ -854,20 +757,40 @@ createApp({
             } catch (e) { nukeState.value = 'idle'; }
         };
 
-        // PERFORMANCE FIX: Dropped the massive loop back down to a fast 100 clips
-        const loadData = async () => {
+        const loadData = async (isLoadMore = false) => {
+            if (isLoadingMore.value || allClipsLoaded.value) return;
+            isLoadingMore.value = true;
+
             try {
-                const { data: dbEmotes } = await sbClient.from('emotes').select('*');
-                if (dbEmotes) { dbEmotes.forEach(e => { customEmotes.value[e.name] = { id: e.id, animated: e.animated }; }); }
+                if (!isLoadMore) {
+                    currentClipOffset.value = 0;
+                    allClipsLoaded.value = false;
+                    allClips.value = [];
+                    const { data: dbEmotes } = await sbClient.from('emotes').select('*');
+                    if (dbEmotes) { dbEmotes.forEach(e => { customEmotes.value[e.name] = { id: e.id, animated: e.animated }; }); }
+                }
+
+                const oneYearAgo = new Date();
+                oneYearAgo.setFullYear(oneYearAgo.getFullYear() - 1);
+                const dateString = oneYearAgo.toISOString();
 
                 const { data: c } = await sbClient.from('clips')
                     .select('*')
+                    .gte('created_at', dateString)
                     .order('created_at', { ascending: false })
-                    .limit(100);
+                    .range(currentClipOffset.value, currentClipOffset.value + 99);
                 
-                allClips.value = c || [];
-                clips.value = sortData(currentFilter.value);
-            } catch(e) {}
+                if (c && c.length > 0) {
+                    allClips.value.push(...c);
+                    currentClipOffset.value += 100;
+                    clips.value = sortData(currentFilter.value);
+                } else {
+                    allClipsLoaded.value = true;
+                }
+            } catch(e) {
+            } finally {
+                isLoadingMore.value = false;
+            }
         };
 
         const checkLive = async () => {
@@ -888,7 +811,7 @@ createApp({
             if (syncState.value !== 'idle') return;
             syncState.value = 'syncing';
             await loadTwitchBadges();
-            await loadData();
+            await loadData(false);
             await checkLive();
             await load7TVEmotes();
             syncState.value = 'sync-success';
@@ -940,7 +863,7 @@ createApp({
 
             try {
                 await load7TVEmotes();
-                await loadData(); 
+                await loadData(false); 
                 await checkLive();
             } catch(e) {}
 
@@ -951,7 +874,7 @@ createApp({
         });
 
         return { 
-            hostname, splashVisible, splashOpacity, currentTab, appTheme, toggleTheme, clips, modals, isLive, toast, currentUser, loginEmail, loginPass, apiConfig, geraldInput, geraldMessages, isGeraldTyping, talkToGerald, logoSvg, syncState, wipeState, logoutState, nukeState, isHeaderVisible, handleScroll, handleModalTouchStart, handleModalTouchMove, handleModalTouchEnd, currentFilter, activeFilterLabel, isFilterMenuOpen, closeFilterMenu, applyFilter, parseMarkdown, recentVods, currentVodIndex, nextVod, prevVod, customEmotes, showEmotePicker, insertEmote, clearGeraldHistory, handleGeraldEnter, toggleEmotes, toggleMinigames, closePickers, nukeCache, activeClipId, tabOffset, switchTab, handleSwipeStart, handleSwipeEnd, playClip, playMinigame, selectedClip, showMinigames, runSync,
+            hostname, splashVisible, splashOpacity, currentTab, appTheme, toggleTheme, clips, modals, isLive, toast, currentUser, loginEmail, loginPass, apiConfig, geraldInput, geraldMessages, isGeraldTyping, talkToGerald, logoSvg, syncState, wipeState, logoutState, nukeState, isHeaderVisible, handleScroll, handleModalTouchStart, handleModalTouchMove, handleModalTouchEnd, currentFilter, activeFilterLabel, isFilterMenuOpen, closeFilterMenu, applyFilter, parseMarkdown, recentVods, currentVodIndex, nextVod, prevVod, customEmotes, showEmotePicker, insertEmote, clearGeraldHistory, handleGeraldEnter, toggleEmotes, toggleMinigames, closePickers, nukeCache, activeClipId, tabOffset, switchTab, handleSwipeStart, handleSwipeEnd, playClip, playMinigame, selectedClip, showMinigames, runSync, disconnectTwitch,
             chatMessages, twitchChatToken, twitchAuthUrl, twitchUsername, sendTwitchChatMessage,
             handleLogin: async () => { const email = loginEmail.value.includes('@') ? loginEmail.value : `${loginEmail.value}@miko.com`; const { data } = await sbClient.auth.signInWithPassword({ email, password: loginPass.value }); if(data.user) { currentUser.value = data.user; modals.value.profile = false; loadGeraldHistory(); } }, 
             handleLogout: () => { if (logoutState.value !== 'idle') return; logoutState.value = 'logging_out'; setTimeout(() => { sbClient.auth.signOut(); currentUser.value = null; geraldMessages.value = [{role:'gerald', content: ''}]; localStorage.removeItem('tw_chat_token'); localStorage.removeItem('tw_username'); twitchChatToken.value = null; twitchUsername.value = null; if (twitchWs) twitchWs.close(); modals.value.profile = false; logoutState.value = 'idle'; }, 1500); },
