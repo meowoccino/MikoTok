@@ -72,9 +72,7 @@ const ProfileModal = {
                 <div v-if="!currentUser || currentUser.is_anonymous">
                     <input type="text" :value="loginEmail" @input="$emit('update-email', $event.target.value)" class="input-box" style="margin-top: 10px;" placeholder="Email">
                     <input type="password" :value="loginPass" @input="$emit('update-pass', $event.target.value)" class="input-box" @keyup.enter="$emit('login')" placeholder="Password">
-                    
                     <div v-if="$root.loginError" style="color: var(--danger); font-size: 12px; margin-bottom: 8px; font-weight: bold; text-align: center;">{{ $root.loginError }}</div>
-                    
                     <button class="sync-btn" @click="$emit('login')">LOGIN</button>
                 </div>
                 
@@ -169,20 +167,23 @@ const ChatView = {
         handleSend() { if(!this.localInput.trim()) return; this.$emit('send-chat', this.localInput.trim()); this.localInput = ''; this.closePicker(); }
     },
     template: `
-        <div class="chat-wrapper safe-top-padding" style="flex: 1; display: flex; flex-direction: column; height: 100%; overflow: hidden;">
+        <!-- Viewport height strict column bounds -->
+        <div class="chat-wrapper safe-top-padding" style="flex: 1; display: flex; flex-direction: column; height: 100%; position: relative; overflow: hidden;">
             <div v-if="isLoggedIn" class="chat-public-auth-banner" style="z-index: 60; flex-shrink: 0;">
                 <span class="user-pill">💬 Connected as <b>{{ twitchUsername }}</b></span>
                 <button class="public-disconnect-btn" @click="$emit('disconnect-public-twitch')">Disconnect</button>
             </div>
 
+            <!-- Absolute Bottom Layout: Flex spacer pushes list structure to base window layout natively -->
             <div class="twitch-chat-list" id="twitch-chat-list" @click="closePicker" style="flex: 1; display: flex; flex-direction: column; overflow-y: auto; overscroll-behavior-y: contain; -webkit-overflow-scrolling: touch; padding: 10px 12px 0;">
+                <div style="flex: 1 1 auto; min-height: 0;"></div>
                 
-                <div v-if="chatMessages.length === 0" class="chat-empty-state" style="margin-top: auto;">
+                <div v-if="chatMessages.length === 0" class="chat-empty-state">
                     <span class="material-symbols-rounded" style="font-size:32px; color:var(--text-muted); margin-bottom:8px;">chat_bubble_outline</span>
                     <span style="font-size:13px; color:var(--text-muted); font-weight:600;">Loading channels…</span>
                 </div>
                 
-                <div v-for="(msg, i) in chatMessages" :key="i" class="twitch-msg-row" :style="i === 0 ? 'margin-top: auto;' : ''">
+                <div v-for="(msg, i) in chatMessages" :key="i" class="twitch-msg-row">
                     <span class="chat-timestamp">{{ msg.timestamp }}</span>
                     <span class="twitch-badges">
                         <img v-for="(badge, bi) in (msg.badges || [])" :key="bi" :src="badge.img" :title="badge.title" class="badge-img">
@@ -191,25 +192,28 @@ const ChatView = {
                     <span class="twitch-text" v-html="msg.html"></span>
                 </div>
                 
-                <div style="height: 80px; flex-shrink: 0;"></div>
+                <!-- Bottom buffer clears input area space cleanly -->
+                <div style="height: 75px; flex-shrink: 0; min-height: 75px;"></div>
             </div>
 
-            <div class="chat-emote-tray" v-show="showPicker && isLoggedIn" @click.stop style="position: absolute; bottom: 80px; z-index: 70; width: 100%;">
+            <div class="chat-emote-tray" v-show="showPicker && isLoggedIn" @click.stop style="position: absolute; bottom: calc(65px + 75px + env(safe-area-inset-bottom, 0px)); z-index: 70; width: 100%;">
                 <input v-model="pickerQuery" class="emote-search-input" placeholder="Search emotes…">
                 <div class="emote-picker-grid" style="overscroll-behavior-y: contain; -webkit-overflow-scrolling: touch;">
                     <img v-for="([name, emote]) in filteredEmotes" :key="name" :src="getEmoteUrl(emote)" :title="name" class="emote-picker-img" @mousedown.prevent="insertEmote(name)">
                 </div>
             </div>
 
-            <div class="custom-chat-input-area" style="position: absolute; bottom: 0; width: 100%; z-index: 60; padding-bottom: 20px;">
+            <!-- Absolute Lift: Fixed above navigation layout explicitly -->
+            <div class="custom-chat-input-area" style="position: absolute; bottom: calc(65px + env(safe-area-inset-bottom, 0px)); width: 100%; z-index: 60; padding-bottom: 5px;">
                 <button class="chat-icon-btn" :class="{ 'chat-icon-active': showPicker }" @click.stop="togglePicker"><span class="material-symbols-rounded" style="font-size:22px;">mood</span></button>
-                <input type="text" class="custom-chat-input" placeholder="Send a message…" v-model="localInput" @keydown.enter="handleSend" :readonly="!isLoggedIn">
+                <input type="text" class="custom-chat-input" placeholder="Send a message…" v-model="localInput" @keydown.enter="handleSend" @focus="handleInteraction" :readonly="!isLoggedIn">
                 <button class="chat-send-btn" @click="handleSend" :disabled="!isLoggedIn || !localInput.trim()"><span class="material-symbols-rounded" style="font-size:20px;">send</span></button>
             </div>
 
-            <div class="chat-login-popup-overlay" :class="{ open: $root.showLoginPopup }" @click.self="$root.showLoginPopup = false" style="position: fixed; inset: 0; display: flex; align-items: center; justify-content: center; background: rgba(0,0,0,0.8); z-index: 9999;">
-                <div class="chat-login-card" style="background: var(--card-bg); padding: 24px; border-radius: 16px; width: 85%; max-width: 340px; text-align: center; position: relative; box-shadow: 0 10px 40px rgba(0,0,0,0.2);">
-                    <button @click="$root.showLoginPopup = false" style="position: absolute; top: 12px; right: 12px; background: transparent; border: none; color: var(--text-muted); font-size: 24px; cursor: pointer;">×</button>
+            <!-- Centered Popup Layout Constraint -->
+            <div class="chat-login-popup-overlay" v-if="$root.showLoginPopup" @click.self="$root.showLoginPopup = false" style="position: fixed; inset: 0; display: flex; align-items: center; justify-content: center; background: rgba(0,0,0,0.8); z-index: 99999;">
+                <div class="chat-login-card" style="background: var(--card-bg); padding: 24px; border-radius: 16px; width: 85%; max-width: 340px; text-align: center; position: relative;">
+                    <button @click="$root.showLoginPopup = false" style="position: absolute; top: 12px; right: 12px; background: transparent; border: none; color: var(--text-muted); font-size: 24px; line-height:1; cursor: pointer;">×</button>
                     <svg viewBox="0 0 24 24" class="chat-login-icon" style="width: 48px; height: 48px; margin: 0 auto 16px; color: #9146FF;"><path fill="currentColor" d="M11.571 4.714h1.715v5.143H11.57zm4.715 0H18v5.143h-1.714zM6 0L1.714 4.286v15.428h5.143V24l4.286-4.286h3.428L22.286 12V0zm14.571 11.143l-3.428 3.428h-3.429l-3 3v-3H6.857V1.714h13.714Z"/></svg>
                     <p class="chat-login-title" style="font-size: 20px; font-weight: bold; margin-bottom: 8px;">Join the chat</p>
                     <p class="chat-login-sub" style="font-size: 14px; color: var(--text-muted); margin-bottom: 20px;">Connect your Twitch account to read and send messages live.</p>
@@ -224,12 +228,14 @@ const MoreView = {
     template: `
         <div class="more-container safe-top-padding" style="flex: 1; overflow-y: auto; overscroll-behavior-y: contain; -webkit-overflow-scrolling: touch; padding-left: 16px; padding-right: 16px; display: flex; flex-direction: column; gap: 8px;">
             
-            <a href="https://throne.com/codemiko" target="_blank" style="flex: 1; background: #0ea5e9; color: #fff; border-radius: 12px; padding: 0 16px; display: flex; align-items: center; justify-content: space-between; text-decoration: none; font-weight: bold; font-size: 15px; min-height: 48px; margin-bottom: 4px;">
-                <div style="display: flex; align-items: center; gap: 8px;">
-                    <svg viewBox="0 0 24 24" style="width: 22px; height: 22px; fill: white;"><path d="M2 22h20v-2H2v2zm9-19c-1.1 0-2 .9-2 2 0 .2.1.4.1.6l-3.3 3.3c-.2-.1-.4-.1-.6-.1-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2c0-.2-.1-.4-.1-.6l3.3-3.3c.2.1.4.1.6.1s.4 0 .6-.1l3.3 3.3c-.1.2-.1.4-.1.6 0 1.1.9 2 2 2s2-.9 2-2-.9-2-2-2c-.2 0-.4 0-.6.1l-3.3-3.3c.1-.2.1-.4.1-.6 0-1.1-.9-2-2-2z"/></svg>
-                    <span>Throne</span> 
+            <!-- Throne layout matched exactly to social row structure, sitting below safe bar -->
+            <a href="https://throne.com/codemiko" target="_blank" class="social-card" style="flex: 1; padding: 0 16px; border-radius: 12px; min-height: 48px; margin-bottom: 4px; background: var(--card-bg);">
+                <div style="display: flex; align-items: center; gap: 12px; width: 100%;">
+                    <!-- Gift Box SVG Icon next to Throne text -->
+                    <svg viewBox="0 0 24 24" style="width: 22px; height: 22px; fill: #0ea5e9; flex-shrink:0;"><path d="M20 6h-2.18c.11-.31.18-.65.18-1 0-1.66-.84-3-2-3-1.22 0-2.42 1.55-3 2.52-.58-.97-1.78-2.52-3-2.52-1.16 0-2 1.34-2 3 0 .35.07.69.18 1H4c-1.11 0-1.99.89-1.99 2L2 19c0 1.11.89 2 2 2h16c1.11 0 2-.89 2-2V8c0-1.11-.89-2-2-2zm-5-3c.55 0 1 .45 1 1s-.45 1-1 1-1-.45-1-1 .45-1 1-1zm-6 0c.55 0 1 .45 1 1s-.45 1-1 1-1-.45-1-1 .45-1 1-1zm11 16H4V8h16v11z"/></svg>
+                    <span style="color: var(--text-main); font-size: 14px; font-weight: 600;">Throne</span> 
+                    <span class="material-symbols-rounded" style="font-size: 20px; color: var(--text-muted); margin-left: auto;">push_pin</span>
                 </div>
-                <span class="material-symbols-rounded" style="font-size: 20px; color: white;">push_pin</span>
             </a>
 
             <a href="https://www.twitch.tv/codemiko" target="_blank" class="social-card" style="flex: 1; padding: 0 16px; border-radius: 12px; min-height: 48px;">
@@ -281,6 +287,11 @@ const MoreView = {
                 <svg viewBox="0 0 24 24" class="social-icon" style="width: 22px; height: 22px; color: #E1306C;"><path fill="currentColor" d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zM12 0C8.741 0 8.333.014 7.053.072 2.695.272.273 2.69.073 7.052.014 8.333 0 8.741 0 12c0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98C8.333 23.986 8.741 24 12 24c3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98C15.668.014 15.259 0 12 0zm0 5.838a6.162 6.162 0 100 12.324 6.162 6.162 0 000-12.324zM12 16a4 4 0 110-8 4 4 0 010 8zm6.406-11.845a1.44 1.44 0 100 2.881 1.44 1.44 0 000-2.881z"/></svg>
                 <span style="color: var(--text-main); font-size: 14px;">Instagram</span>
             </a>
+            
+            <a href="https://www.threads.net/@thecodemiko" target="_blank" class="social-card" style="flex: 1; padding: 0 16px; border-radius: 12px; min-height: 48px;">
+                <svg viewBox="0 0 192 192" class="social-icon" style="width: 22px; height: 22px; color: var(--text-main);"><path fill="currentColor" d="M141.537 88.9883C140.71 88.5919 139.87 88.2104 139.019 87.8451C137.537 60.5382 122.616 44.905 97.5619 44.745C97.4484 44.7443 97.3355 44.7443 97.222 44.7443C82.2364 44.7443 69.7731 51.1409 62.102 62.7807L75.881 72.2328C81.6116 63.5383 90.6052 61.6848 97.2286 61.6848C97.3051 61.6848 97.3819 61.6848 97.4576 61.6855C105.707 61.7381 111.932 64.1366 115.961 68.814C118.893 72.2193 120.854 76.925 121.825 82.8638C114.511 81.6207 106.601 81.2385 98.145 81.7233C74.3247 83.0954 59.0111 96.9879 60.0396 116.292C60.5615 126.084 65.4397 134.508 73.775 140.011C80.8224 144.663 89.899 146.938 99.3323 146.423C111.79 145.74 121.563 140.987 128.381 132.296C133.559 125.696 136.834 117.143 138.28 106.366C144.217 109.949 148.617 114.664 151.047 120.332C155.179 129.967 155.42 145.8 142.501 158.708C131.182 170.016 117.576 174.908 97.0135 175.059C74.2042 174.89 56.9538 167.575 45.7381 153.317C35.2355 139.966 29.8077 120.682 29.6052 96C29.8077 71.3178 35.2355 52.0336 45.7381 38.6827C56.9538 24.4249 74.2039 17.11 97.0132 16.9405C119.988 17.1113 137.539 24.4614 148.82 38.8167C156.92 49.1302 161.965 62.4633 163.606 78.4714L179.626 76.5161C177.625 57.8427 171.603 42.4437 162.016 30.2526C148.337 12.8797 127.351 4.14819 97.0132 4C66.5826 4.15048 45.6416 12.9231 32.2274 30.0097C19.7891 45.8524 13.5676 68.1687 13.3333 96C13.5676 123.831 19.7891 146.148 32.2274 161.99C45.6416 179.077 66.5826 187.85 97.0135 188C120.89 187.828 137.234 181.71 151.782 167.175C168.181 150.793 167.149 127.877 155.839 116.666C153.491 114.339 150.569 112.502 147.289 111.164C145.452 110.387 143.541 109.664 141.537 88.9883ZM98.4405 129.507C88.0005 130.095 77.1544 125.409 76.6196 115.372C76.2232 107.93 81.9158 99.626 99.0812 98.0476C101.066 97.8658 103.146 97.7499 105.311 97.6976C105.328 103.626 104.996 109.431 103.743 114.862C102.593 119.851 100.865 124.316 98.4405 129.507Z"/></svg>
+                <span style="color: var(--text-main); font-size: 14px;">Threads</span>
+            </a>
 
             <a href="https://www.snapchat.com/add/codemiko" target="_blank" class="social-card" style="flex: 1; padding: 0 16px; border-radius: 12px; min-height: 48px;">
                 <svg viewBox="0 0 24 24" class="social-icon" style="width: 22px; height: 22px; color: #FFFC00;"><path fill="currentColor" d="M12.126 23.955c-1.472-.036-2.502-.455-3.633-.949-.556-.242-1.077-.384-1.657-.202-1.542.483-3.082 1.054-4.73 1.127-1.393.061-1.777-.52-1.205-1.651.488-.962 1.031-1.895 1.48-2.871.21-.453.208-.857-.042-1.272-1.071-1.782-1.637-3.708-1.764-5.748-.04-.633-.037-1.27-.037-1.936 0-3.923 2.115-6.843 5.437-8.318C8.384.975 10.94.39 13.626.54c4.12.232 7.152 2.647 8.527 6.643.518 1.503.655 3.066.621 4.646-.025 1.156-.168 2.298-.485 3.407-.346 1.208-.887 2.336-1.688 3.32-.429.529-.395.96.012 1.488.35.452.704.9 1.057 1.349.52.661.274 1.236-.532 1.274-1.506.072-2.923-.509-4.321-1.052-.777-.302-1.411-.122-2.072.164-1.045.451-2.146.862-3.32.969-.379.034-.764.03-1.299.207z"/></svg>
@@ -324,9 +335,9 @@ const GeraldMinigames = {
     template: `
         <div class="chat-emote-tray" v-show="showMinigames" style="position: absolute; bottom: 100%; border-bottom:none; border-radius:16px 16px 0 0; background: var(--bg-color); width: 100%;">
             <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 4px; padding: 8px; width: 100%;">
-                <button v-for="g in gameDeck" :key="g.id" class="bribe-btn" style="padding: 6px 0; border-radius: 8px; background: var(--card-bg); border: 1px solid var(--border-color); color: var(--text-main); font-weight: bold; text-align: center; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px;" @click.stop="$emit('play-game', g)">
-                    <span style="font-size: 15px;">{{ g.label.split(' ')[0] }}</span>
-                    <span style="font-size: 9px; line-height: 1.1; white-space: pre-wrap; padding: 0 2px;">{{ g.label.substring(g.label.indexOf(' ') + 1) }}</span>
+                <button v-for="g in gameDeck" :key="g.id" class="bribe-btn" style="padding: 4px 2px; border-radius: 8px; background: var(--card-bg); border: 1px solid var(--border-color); color: var(--text-main); font-weight: bold; text-align: center; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px;" @click.stop="$emit('play-game', g)">
+                    <span style="font-size: 14px;">{{ g.label.split(' ')[0] }}</span>
+                    <span style="font-size: 9px; line-height: 1; white-space: pre-wrap; padding: 0 2px;">{{ g.label.substring(g.label.indexOf(' ') + 1) }}</span>
                 </button>
             </div>
         </div>
@@ -340,13 +351,14 @@ const GeraldView = {
         getEmoteUrl(emote) { return emote.url || `https://cdn.discordapp.com/emojis/${emote.id}.${emote.animated ? 'gif' : 'png'}?size=44`; }
     },
     template: `
-        <div class="gerald-container safe-top-padding" style="flex: 1; display: flex; flex-direction: column; height: 100%; overflow: hidden;">
-            <div class="gerald-header" @click="$emit('close-pickers')" style="flex-shrink: 0; z-index: 50;">
+        <div class="gerald-container safe-top-padding" style="flex: 1; display: flex; flex-direction: column; height: 100%; overflow: hidden; position: relative;">
+            <!-- Removed border-bottom styling to wipe the thin browser line error -->
+            <div class="gerald-header" @click="$emit('close-pickers')" style="flex-shrink: 0; z-index: 50; border-bottom: none !important; box-shadow: none !important;">
                 <div class="os-top-bar">
                     <span class="os-title">GERALD_OS v2</span>
                 </div>
                 
-                <div class="gerald-sys-card-compressed">
+                <div class="gerald-sys-card-compressed" style="border-bottom: none !important;">
                     <img src="gerald.png" class="gerald-avatar-sm">
                     <div class="sys-metrics-row">
                         <div class="mini-metric"><span class="lbl">CPU</span><span class="val">{{ sysStats.cpu }}%</span></div>
@@ -361,7 +373,6 @@ const GeraldView = {
             </div>
 
             <div class="gerald-messages" id="gerald-msgs" @click="$emit('close-pickers')" style="flex: 1; overflow-y: auto; overscroll-behavior-y: contain; -webkit-overflow-scrolling: touch; display: flex; flex-direction: column; padding: 10px 16px 0;">
-                
                 <template v-for="(m, i) in geraldMessages" :key="i">
                     <div v-if="i === 0 && m.role === 'gerald' && !m.content" class="chat-bubble gerald startup-anim">
                         <span>> GERALD_CORE initialized.<br>> Awaiting human input...</span>
@@ -375,10 +386,10 @@ const GeraldView = {
                     <div class="os-dot max"></div>
                 </div>
                 
-                <div style="height: 80px; flex-shrink: 0;"></div>
+                <div style="height: 75px; flex-shrink: 0; min-height: 75px;"></div>
             </div>
             
-            <div class="gerald-action-area" style="position: absolute; bottom: 0; width: 100%; z-index: 50; padding-bottom: 20px;">
+            <div class="gerald-action-area" style="position: absolute; bottom: calc(65px + env(safe-area-inset-bottom, 0px)); width: 100%; z-index: 50; padding-bottom: 5px;">
                 <div class="chat-emote-tray" v-show="showEmotePicker" style="position: absolute; bottom: 100%; border-bottom:none; border-radius:16px 16px 0 0;">
                     <div class="emote-picker-grid" style="overscroll-behavior-y: contain; -webkit-overflow-scrolling: touch;">
                         <img v-for="(emote, name) in customEmotes" :key="name" :src="getEmoteUrl(emote)" :title="name" class="emote-picker-img" @mousedown.prevent="$emit('insert-emote', name)">
@@ -557,7 +568,7 @@ createApp({
         const scrollChatToBottom = () => { setTimeout(() => { const l = document.getElementById('twitch-chat-list'); if (l) l.scrollTop = l.scrollHeight; }, 100); };
 
         const processEmotes = (text) => {
-            let out = text.replace(/&/g, '&').replace(/</g, '<').replace(/>/g, '>');
+            let out = text.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
             const words = out.split(' ');
             const emoteKeys = Object.keys(customEmotes.value);
             for (let i = 0; i < words.length; i++) {
@@ -594,7 +605,7 @@ createApp({
                 tags['badges'].split(',').forEach(b => { const imgUrl = badgeAssets[b]; if (imgUrl) badges.push({ title: b.split('/')[0], img: imgUrl }); });
             }
 
-            let html = text.replace(/&/g, '&').replace(/</g, '<').replace(/>/g, '>');
+            let html = text.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
             if (tags['emotes']) {
                 const replacements = [];
                 tags['emotes'].split('/').forEach(e => {
@@ -927,7 +938,7 @@ createApp({
 
         const parseMarkdown = (t) => {
             if (!t) return ''; 
-            let html = t.replace(/&/g, '&').replace(/</g, '<').replace(/>/g, '>');
+            let html = t.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
             html = html.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>').replace(/\*(.*?)\*/g, '<em>$1</em>');
             const words = html.split(' ');
             const emoteKeys = Object.keys(customEmotes.value);
@@ -963,7 +974,7 @@ createApp({
             }
 
             const activeCid = apiConfig.value.localCid || hiddenFallbackCid;
-            twitchAuthUrl.value = 'https://id.twitch.tv/oauth2/authorize?client_id=' + activeCid + '&redirect_uri=' + encodeURIComponent('https://meowoccino.github.io/MikoTok/') + '&redirect_uri=' + encodeURIComponent(window.location.origin + window.location.pathname) + '&response_type=token&scope=chat:read+chat:edit&force_verify=true';
+            twitchAuthUrl.value = 'https://id.twitch.tv/oauth2/authorize?client_id=' + activeCid + '&redirect_uri = ' + encodeURIComponent('https://meowoccino.github.io/MikoTok/') + '&redirect_uri=' + encodeURIComponent(window.location.origin + window.location.pathname) + '&response_type=token&scope=chat:read+chat:edit&force_verify=true';
 
             await load7TVEmotes();
             await loadTwitchBadges();
