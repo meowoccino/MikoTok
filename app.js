@@ -63,33 +63,22 @@ const FilterMenu = {
 };
 
 const ProfileModal = {
-    props: ['isOpen', 'apiConfig', 'syncState', 'wipeState', 'logoutState', 'nukeState'],
+    props: ['isOpen', 'currentUser', 'loginEmail', 'loginPass', 'apiConfig', 'syncState', 'wipeState', 'logoutState', 'nukeState', 'allClipsCount'],
     template: `
         <div class="modal-overlay" :class="{ open: isOpen }" @click.self="$emit('close')">
-            <!-- Inline styles for guaranteed animations -->
-            <style>
-                @keyframes force-pulse { 0%, 100% { transform: scale(1); opacity: 1; box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.7); } 50% { transform: scale(1.3); opacity: 0.5; box-shadow: 0 0 0 6px rgba(16, 185, 129, 0); } }
-                @keyframes force-spin { 100% { transform: rotate(360deg); } }
-                @keyframes force-shake { 0%, 100% { transform: translateX(0); } 25% { transform: translateX(-2px); } 75% { transform: translateX(2px); } }
-                .force-pulse-anim { animation: force-pulse 2.5s infinite; }
-                .force-spin-anim { animation: force-spin 1s linear infinite; }
-                .force-shake-anim { animation: force-shake 0.4s ease-in-out infinite; }
-            </style>
-            
             <div class="modal-content" @touchstart="$emit('touch-start', $event)" @touchmove="$emit('touch-move', $event)" @touchend="$emit('touch-end', $event)">
                 <div class="drag-handle"></div>
                 
-                <!-- Bypassing props, reading directly from root to guarantee reactivity -->
-                <div v-if="!$root.currentUser || $root.currentUser.is_anonymous">
-                    <input type="text" :value="$root.loginEmail" @input="$root.loginEmail = $event.target.value" class="input-box" style="margin-top: 10px;" placeholder="Email">
-                    <input type="password" :value="$root.loginPass" @input="$root.loginPass = $event.target.value" class="input-box" @keyup.enter="$root.handleLogin()" placeholder="Password">
-                    <button class="sync-btn" @click="$root.handleLogin()">LOGIN</button>
+                <div v-if="!currentUser || currentUser.is_anonymous">
+                    <input type="text" :value="loginEmail" @input="$emit('update-email', $event.target.value)" class="input-box" style="margin-top: 10px;" placeholder="Email">
+                    <input type="password" :value="loginPass" @input="$emit('update-pass', $event.target.value)" class="input-box" @keyup.enter="$emit('login')" placeholder="Password">
+                    <button class="sync-btn" @click="$emit('login')">LOGIN</button>
                 </div>
                 
                 <div v-else>
                     <div class="infra-bar">
                         <div class="status-node" style="display: flex; align-items: center; justify-content: center; gap: 8px; font-weight: 800; width: 100%;">
-                            <div class="force-pulse-anim" style="width: 8px; height: 8px; border-radius: 50%; background: var(--success);"></div> 
+                            <div style="width: 8px; height: 8px; border-radius: 50%; background: var(--success); animation: pulse-glow 2.5s infinite;"></div> 
                             SYSTEM: READY
                         </div>
                     </div>
@@ -101,7 +90,7 @@ const ProfileModal = {
                     
                     <div class="settings-block" style="padding-bottom: 5px;">
                         <div style="font-size:42px; color:var(--primary); font-family: monospace; font-weight:900; text-align:center;">
-                            {{ $root.allClipsCount || 0 }}
+                            {{ allClipsCount || 0 }}
                         </div>
                     </div>
 
@@ -115,25 +104,25 @@ const ProfileModal = {
                     <div class="action-menu">
                         <button class="menu-btn sync-row" :style="syncState === 'SUCCESS' ? 'color: var(--success);' : ''" @click="$emit('sync')">
                             <div class="btn-content">
-                                <div class="icon-wrap"><span class="material-symbols-rounded" :class="{'force-spin-anim': syncState === 'SYNCING...'}" style="font-size: 18px;">{{ syncState === 'SUCCESS' ? 'check' : 'sync' }}</span></div>
+                                <div class="icon-wrap"><span class="material-symbols-rounded" :class="{'spin-anim': syncState === 'SYNCING...'}" style="font-size: 18px;">{{ syncState === 'SUCCESS' ? 'check' : 'sync' }}</span></div>
                                 <span>{{ syncState }}</span>
                             </div>
                         </button>
                         <button class="menu-btn wipe-row" :style="wipeState === 'SUCCESS' ? 'color: var(--success);' : ''" @click="$emit('wipe')">
                             <div class="btn-content">
-                                <div class="icon-wrap"><span class="material-symbols-rounded" :class="{'force-shake-anim': wipeState === 'WIPING...'}" style="font-size: 18px;">{{ wipeState === 'SUCCESS' ? 'check' : 'delete' }}</span></div>
+                                <div class="icon-wrap"><span class="material-symbols-rounded" :class="{'shake-anim': wipeState === 'WIPING...'}" style="font-size: 18px;">{{ wipeState === 'SUCCESS' ? 'check' : 'delete' }}</span></div>
                                 <span>{{ wipeState }}</span>
                             </div>
                         </button>
                         <button class="menu-btn nuke-row" :style="nukeState === 'SUCCESS' ? 'color: var(--success);' : ''" @click="$emit('nuke-cache')">
                             <div class="btn-content">
-                                <div class="icon-wrap"><span class="material-symbols-rounded" :class="{'force-spin-anim': nukeState === 'NUKING...'}" style="font-size: 18px;">{{ nukeState === 'SUCCESS' ? 'check' : 'cached' }}</span></div>
+                                <div class="icon-wrap"><span class="material-symbols-rounded" :class="{'spin-anim': nukeState === 'NUKING...'}" style="font-size: 18px;">{{ nukeState === 'SUCCESS' ? 'check' : 'cached' }}</span></div>
                                 <span>{{ nukeState }}</span>
                             </div>
                         </button>
                         <button class="menu-btn logout-row" @click="$emit('logout')">
                             <div class="btn-content">
-                                <div class="icon-wrap"><span class="material-symbols-rounded" :class="{'force-spin-anim': logoutState === 'LOGGING OUT...'}" style="font-size: 18px;">{{ logoutState === 'LOGGING OUT...' ? 'hourglass_empty' : 'logout' }}</span></div>
+                                <div class="icon-wrap"><span class="material-symbols-rounded" :class="{'spin-anim': logoutState === 'LOGGING OUT...'}" style="font-size: 18px;">{{ logoutState === 'LOGGING OUT...' ? 'hourglass_empty' : 'logout' }}</span></div>
                                 <span>{{ logoutState }}</span>
                             </div>
                         </button>
@@ -177,20 +166,22 @@ const ChatView = {
         handleSend() { if(!this.localInput.trim()) return; this.$emit('send-chat', this.localInput.trim()); this.localInput = ''; this.closePicker(); }
     },
     template: `
-        <!-- padding-top clears the Android status bar precisely -->
-        <div class="chat-wrapper" style="flex: 1; display: flex; flex-direction: column; height: 100%; padding-top: max(env(safe-area-inset-top, 24px), 50px); padding-bottom: calc(85px + env(safe-area-inset-bottom, 0px)); overflow: hidden;">
+        <div class="chat-wrapper" style="flex: 1; display: flex; flex-direction: column; height: 100%; overflow: hidden; padding-bottom: calc(85px + env(safe-area-inset-bottom, 0px));">
             <div v-if="isLoggedIn" class="chat-public-auth-banner" style="z-index: 60; flex-shrink: 0;">
                 <span class="user-pill">💬 Connected as <b>{{ twitchUsername }}</b></span>
                 <button class="public-disconnect-btn" @click="$emit('disconnect-public-twitch')">Disconnect</button>
             </div>
 
-            <div class="twitch-chat-list" id="twitch-chat-list" @click="closePicker" style="flex: 1; display: flex; flex-direction: column; overflow-y: auto; overscroll-behavior-y: contain; -webkit-overflow-scrolling: touch; padding: 10px 12px; padding-bottom: 20px;">
-                <div v-if="chatMessages.length === 0" class="chat-empty-state" style="margin-top: auto;">
+            <!-- Absolute fix for Chat alignment: Invisible Flex-1 Spacer at the top pushes messages natively to the bottom -->
+            <div class="twitch-chat-list" id="twitch-chat-list" @click="closePicker" style="flex: 1; display: flex; flex-direction: column; overflow-y: auto; overscroll-behavior-y: contain; -webkit-overflow-scrolling: touch; padding: 10px 12px 0;">
+                <div style="flex: 1; min-height: 0;"></div> 
+                
+                <div v-if="chatMessages.length === 0" class="chat-empty-state">
                     <span class="material-symbols-rounded" style="font-size:32px; color:var(--text-muted); margin-bottom:8px;">chat_bubble_outline</span>
                     <span style="font-size:13px; color:var(--text-muted); font-weight:600;">Loading channels…</span>
                 </div>
                 
-                <div v-for="(msg, i) in chatMessages" :key="i" class="twitch-msg-row" :style="i === 0 ? 'margin-top: auto;' : ''">
+                <div v-for="(msg, i) in chatMessages" :key="i" class="twitch-msg-row">
                     <span class="chat-timestamp">{{ msg.timestamp }}</span>
                     <span class="twitch-badges">
                         <img v-for="(badge, bi) in (msg.badges || [])" :key="bi" :src="badge.img" :title="badge.title" class="badge-img">
@@ -227,11 +218,12 @@ const ChatView = {
 
 const MoreView = {
     template: `
-        <div class="more-container" style="display: flex; flex-direction: column; height: 100%; padding: max(env(safe-area-inset-top, 24px), 50px) 16px calc(85px + env(safe-area-inset-bottom, 0px)); gap: 8px; overflow-y: auto;">
+        <div class="more-container" style="flex: 1; overflow-y: auto; overscroll-behavior-y: contain; -webkit-overflow-scrolling: touch; padding: 12px 16px calc(85px + env(safe-area-inset-bottom, 0px)); display: flex; flex-direction: column; gap: 8px;">
             
-            <a href="https://throne.com/codemiko" target="_blank" style="flex: 1; background: #0ea5e9; color: #fff; border-radius: 12px; padding: 0 16px; display: flex; align-items: center; justify-content: space-between; text-decoration: none; font-weight: bold; font-size: 15px; min-height: 40px;">
+            <!-- Throne moved to top with crown SVG and a bottom margin to separate it -->
+            <a href="https://throne.com/codemiko" target="_blank" style="flex: 1; background: #0ea5e9; color: #fff; border-radius: 12px; padding: 0 16px; display: flex; align-items: center; justify-content: space-between; text-decoration: none; font-weight: bold; font-size: 15px; min-height: 40px; margin-bottom: 8px;">
                 <span>Throne</span> 
-                <svg viewBox="0 0 24 24" style="width: 20px; height: 20px; fill: white;"><path d="M16 12V4h1V2H7v2h1v8l-2 2v2h5.2v6h1.6v-6H18v-2l-2-2z"/></svg>
+                <svg viewBox="0 0 24 24" style="width: 20px; height: 20px; fill: white;"><path d="M5 21h14v-2H5v2zm14-11l-3 4-4-5-4 5-3-4v7h14v-7z"/></svg>
             </a>
 
             <a href="https://www.twitch.tv/codemiko" target="_blank" class="social-card" style="flex: 1; padding: 0 16px; border-radius: 12px; min-height: 40px;">
@@ -328,10 +320,10 @@ const GeraldMinigames = {
     },
     template: `
         <div class="chat-emote-tray" v-show="showMinigames" style="position: absolute; bottom: 100%; border-bottom:none; border-radius:16px 16px 0 0; background: var(--bg-color); width: 100%;">
-            <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 4px; padding: 6px; width: 100%;">
-                <button v-for="g in gameDeck" :key="g.id" class="bribe-btn" style="padding: 4px 2px; border-radius: 8px; background: var(--card-bg); border: 1px solid var(--border-color); color: var(--text-main); font-weight: bold; text-align: center; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px;" @click.stop="$emit('play-game', g)">
-                    <span style="font-size: 14px;">{{ g.label.split(' ')[0] }}</span>
-                    <span style="font-size: 9px; line-height: 1; white-space: pre-wrap; padding: 0 2px;">{{ g.label.substring(g.label.indexOf(' ') + 1) }}</span>
+            <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 4px; padding: 8px; width: 100%;">
+                <button v-for="g in gameDeck" :key="g.id" class="bribe-btn" style="padding: 6px 0; border-radius: 8px; background: var(--card-bg); border: 1px solid var(--border-color); color: var(--text-main); font-weight: bold; text-align: center; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px;" @click.stop="$emit('play-game', g)">
+                    <span style="font-size: 15px;">{{ g.label.split(' ')[0] }}</span>
+                    <span style="font-size: 9px; line-height: 1.1; white-space: pre-wrap; padding: 0 2px;">{{ g.label.substring(g.label.indexOf(' ') + 1) }}</span>
                 </button>
             </div>
         </div>
@@ -345,7 +337,7 @@ const GeraldView = {
         getEmoteUrl(emote) { return emote.url || `https://cdn.discordapp.com/emojis/${emote.id}.${emote.animated ? 'gif' : 'png'}?size=44`; }
     },
     template: `
-        <div class="gerald-container" style="flex: 1; display: flex; flex-direction: column; height: 100%; padding-top: max(env(safe-area-inset-top, 24px), 50px); padding-bottom: calc(85px + env(safe-area-inset-bottom, 0px)); overflow: hidden;">
+        <div class="gerald-container" style="flex: 1; display: flex; flex-direction: column; height: 100%; overflow: hidden; padding-bottom: calc(85px + env(safe-area-inset-bottom, 0px));">
             <div class="gerald-header" @click="$emit('close-pickers')" style="flex-shrink: 0; z-index: 50;">
                 <div class="os-top-bar">
                     <span class="os-title">GERALD_OS v2</span>
@@ -365,12 +357,13 @@ const GeraldView = {
                 </div>
             </div>
 
-            <div class="gerald-messages" id="gerald-msgs" @click="$emit('close-pickers')" style="flex: 1; overflow-y: auto; overscroll-behavior-y: contain; -webkit-overflow-scrolling: touch; display: flex; flex-direction: column; padding: 10px 16px; padding-bottom: 20px;">
+            <!-- Removed margin-top: auto so Gerald text starts naturally from the top -->
+            <div class="gerald-messages" id="gerald-msgs" @click="$emit('close-pickers')" style="flex: 1; overflow-y: auto; overscroll-behavior-y: contain; -webkit-overflow-scrolling: touch; display: flex; flex-direction: column; padding: 10px 16px 20px;">
                 <template v-for="(m, i) in geraldMessages" :key="i">
-                    <div v-if="i === 0 && m.role === 'gerald' && !m.content" class="chat-bubble gerald startup-anim" style="margin-top: auto;">
+                    <div v-if="i === 0 && m.role === 'gerald' && !m.content" class="chat-bubble gerald startup-anim">
                         <span>> GERALD_CORE initialized.<br>> Awaiting human input...</span>
                     </div>
-                    <div v-else-if="m.content" class="chat-bubble" :class="m.role" :style="i === 0 ? 'margin-top: auto;' : ''" v-html="parseMarkdown(m.content)"></div>
+                    <div v-else-if="m.content" class="chat-bubble" :class="m.role" v-html="parseMarkdown(m.content)"></div>
                 </template>
 
                 <div v-show="isGeraldTyping" class="dots-thinking-row" style="display:flex; align-items:center; margin-top:8px; padding-left:12px;">
@@ -668,7 +661,6 @@ createApp({
                     if (raw.startsWith('PING')) { 
                         twitchWs.send('PONG :tmi.twitch.tv'); 
                     } else { 
-                        // Intercept USERSTATE to grab YOUR exact badges instantly!
                         if (raw.includes('USERSTATE') || raw.includes('GLOBALUSERSTATE')) {
                             let tags = {};
                             const tagsPart = raw.split(' ')[0];
@@ -695,6 +687,12 @@ createApp({
             twitchWs.send(`PRIVMSG #codemiko :${msg}`);
             const ts = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
             
+            let myBadges = [];
+            try {
+                const storedBadges = localStorage.getItem('my_twitch_badges');
+                if (storedBadges) myBadges = JSON.parse(storedBadges);
+            } catch(e) {}
+
             const htmlMsg = processEmotes(msg);
 
             chatMessages.value.push({
@@ -920,7 +918,7 @@ createApp({
 
         const parseMarkdown = (t) => {
             if (!t) return ''; 
-            let html = t.replace(/&/g, '&').replace(/</g, '<').replace(/>/g, '>');
+            let html = t.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
             html = html.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>').replace(/\*(.*?)\*/g, '<em>$1</em>');
             const words = html.split(' ');
             const emoteKeys = Object.keys(customEmotes.value);
@@ -1001,6 +999,9 @@ createApp({
                     if (error) return; 
                     if (data.user) { 
                         currentUser.value = data.user; 
+                        modals.value.profile = false; // SILENTLY CLOSES ON SUCCESS
+                        loginEmail.value = '';
+                        loginPass.value = '';
                         
                         const { data: hist } = await sbClient.from('gerald_history').select('*').eq('user_id', currentUser.value.id).order('created_at', { ascending: true });
                         if (hist && hist.length > 0) { 
