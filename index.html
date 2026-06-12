@@ -23,8 +23,8 @@
         [v-cloak] #splash-screen { display: flex !important; opacity: 1 !important; }
     </style>
 </head>
-<body @click="closeFilterMenu">
-    <div id="app-container" v-cloak :class="['theme-' + appTheme, {'gerald-theme': currentTab === 'gerald'}]">
+<body>
+    <div id="app-container" v-cloak :class="['theme-' + appTheme, {'gerald-theme': currentTab === 'gerald'}]" @click="closeFilterMenu">
         
         <toast-popup :toast="toast"></toast-popup>
 
@@ -156,6 +156,6 @@
 
     </div>
 
-    <script src="./app.js?v=100"></script>
+    <script src="./app.js?v=101"></script>
 </body>
 </html>
