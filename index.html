@@ -16,9 +16,20 @@
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="https://unpkg.com/vue@3/dist/vue.global.prod.js"></script>
     
-    <link rel="stylesheet" href="./styles.css?v=80">
+    <link rel="stylesheet" href="./styles.css?v=81">
     <style>
-        /* Eliminates the Splash Screen Boot Flicker completely */
+        /* Forces Splash Screen to cover unrendered components instantly before Vue mounts */
+        #splash-screen {
+            position: fixed !important;
+            inset: 0 !important;
+            background: #f8f9fa !important;
+            z-index: 99999 !important;
+            display: flex !important;
+            flex-direction: column !important;
+            align-items: center !important;
+            justify-content: center !important;
+        }
+        .theme-dark #splash-screen { background: #0d0d11 !important; }
         [v-cloak] > *:not(#splash-screen) { display: none !important; }
     </style>
 </head>
@@ -27,11 +38,13 @@
         
         <toast-popup :toast="toast"></toast-popup>
 
-        <splash-screen 
-            :splash-visible="splashVisible" 
-            :splash-opacity="splashOpacity" 
-            :logo-svg="logoSvg">
-        </splash-screen>
+        <div id="splash-screen" v-if="splashVisible" :style="{ opacity: splashOpacity }">
+            <div class="splash-logo-container">
+                <div class="orbit-ring"></div>
+                <div class="splash-svg-wrapper" v-html="logoSvg('splash')"></div>
+            </div>
+            <div class="miko-text-gradient" style="font-size: 36px; letter-spacing: -1px; margin-bottom: 20px;">MikoTok</div>
+        </div>
 
         <app-header 
             v-show="currentTab === 'home'"
@@ -91,7 +104,8 @@
                         :show-minigames="showMinigames"
                         :custom-emotes="customEmotes"
                         :parse-markdown="parseMarkdown"
-                        :api-connected="!!apiConfig.dbCid && !!apiConfig.tkn"
+                        :gemini-connected="geminiConnected"
+                        :sys-stats="sysStats"
                         @close-pickers="closePickers"
                         @insert-emote="insertEmote"
                         @play-game="playMinigame"
@@ -133,7 +147,6 @@
             :wipe-state="wipeState"
             :nuke-state="nukeState"
             :logout-state="logoutState"
-            :twitch-username="twitchUsername"
             @close="modals.profile = false"
             @touch-start="handleModalTouchStart"
             @touch-move="handleModalTouchMove"
@@ -142,11 +155,10 @@
             @update-pass="e => loginPass = e"
             @login="handleLogin"
             @update-api="updateApiConfig"
-            @sync="runSync"
+            @save-keys="saveApiKeys"
             @wipe="clearGeraldHistory"
             @logout="handleLogout"
-            @nuke-cache="nukeCache"
-            @disconnect-twitch="disconnectTwitch">
+            @nuke-cache="nukeCache">
         </profile-modal>
 
         <bottom-nav
@@ -156,6 +168,6 @@
 
     </div>
 
-    <script src="./app.js?v=80"></script>
+    <script src="./app.js?v=81"></script>
 </body>
 </html>
