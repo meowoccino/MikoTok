@@ -33,7 +33,7 @@ const SplashScreen = {
 const AppHeader = {
     props: ['isHeaderVisible', 'currentTab', 'logoSvg', 'appTheme'],
     template: `
-        <header class="app-header" v-show="currentTab === 'home'" style="padding-top: max(env(safe-area-inset-top, 24px), 24px);">
+        <header class="app-header" v-show="currentTab === 'home'">
             <div style="display:flex; align-items:center; gap:8px;">
                 <div style="width:24px;height:24px; cursor:pointer;" v-html="logoSvg('header')" @click="$emit('open-profile')"></div>
                 <span class="miko-text-gradient" style="font-size:22px; letter-spacing: -0.5px;">MikoTok</span>
@@ -183,7 +183,7 @@ const ChatView = {
         handleSend() { if(!this.localInput.trim()) return; this.$emit('send-chat', this.localInput.trim()); this.localInput = ''; this.closePicker(); }
     },
     template: `
-        <div class="chat-wrapper" style="display: flex; flex-direction: column; height: 100%; width: 100%; background: var(--bg-color); padding-top: max(env(safe-area-inset-top, 24px), 24px);">
+        <div class="chat-wrapper" style="display: flex; flex-direction: column; height: 100%; width: 100%; background: var(--bg-color);">
             <div v-if="isLoggedIn" class="chat-public-auth-banner" style="z-index: 60; flex-shrink: 0;">
                 <span class="user-pill">💬 Connected as <b>{{ twitchUsername }}</b></span>
                 <button class="public-disconnect-btn" @click="$emit('disconnect-public-twitch')">Disconnect</button>
@@ -237,7 +237,7 @@ const ChatView = {
 
 const MoreView = {
     template: `
-        <div class="more-container" style="display: flex; flex-direction: column; height: 100%; width: 100%; padding: max(env(safe-area-inset-top, 24px), 24px) 16px 16px; gap: 8px; overflow-y: auto;">
+        <div class="more-container" style="display: flex; flex-direction: column; height: 100%; width: 100%; padding: 16px; gap: 8px; overflow-y: auto;">
             
             <a href="https://throne.com/codemiko" target="_blank" class="social-card" style="display: flex; align-items: center; padding: 0 16px; border-radius: 12px; min-height: 48px; height: 48px; background: var(--card-bg); text-decoration: none; flex-shrink: 0; margin-top: 10px;">
                 <div style="display: flex; align-items: center; gap: 12px; width: 100%;">
@@ -361,7 +361,7 @@ const GeraldView = {
         formatMarkdown(text) { return parseMarkdownText(text, this.customEmotes); }
     },
     template: `
-        <div class="gerald-container" style="display: flex; flex-direction: column; height: 100%; width: 100%; background: var(--bg-color); padding-top: max(env(safe-area-inset-top, 24px), 24px);">
+        <div class="gerald-container" style="display: flex; flex-direction: column; height: 100%; width: 100%; background: var(--bg-color);">
             <div class="gerald-header" @click="$emit('close-pickers')" style="flex-shrink: 0; padding: 12px 16px; background: var(--bg-color); z-index: 10;">
                 <div class="os-top-bar">
                     <span class="os-title">GERALD_OS v2</span>
