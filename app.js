@@ -499,8 +499,9 @@ createApp({
         
         const isHeaderVisible = ref(true);
 
-        // PERFECTLY ALIGNED TWITCH CLIENT ID
-        const TWITCH_CLIENT_ID = 'gp762nuuoqcoxypju8c569th9wz7q5';
+        // SEPARATE CLIENT IDS FOR AUTHORIZATION vs PUBLIC TWITCH APIs
+        const TWITCH_APP_CLIENT_ID = 'gp762nuuoqcoxypju8c569th9wz7q5';
+        const TWITCH_PUBLIC_CLIENT_ID = 'kimne78kx3ncx6brgo4mv6wki5h1ko';
         
         const geminiStatus = ref('TESTING BRAIN...');
         const sysStats = ref({ cpu: 23, mem: 1.8, temp: 74 });
@@ -779,8 +780,8 @@ createApp({
         const loadTwitchBadges = async () => {
             try {
                 const [gRes, cRes] = await Promise.all([
-                    fetch('https://api.twitch.tv/helix/chat/badges/global', { headers: { 'Client-ID': TWITCH_CLIENT_ID } }),
-                    fetch('https://api.twitch.tv/helix/chat/badges?broadcaster_id=500128827', { headers: { 'Client-ID': TWITCH_CLIENT_ID } })
+                    fetch('https://api.twitch.tv/helix/chat/badges/global', { headers: { 'Client-ID': TWITCH_PUBLIC_CLIENT_ID } }),
+                    fetch('https://api.twitch.tv/helix/chat/badges?broadcaster_id=500128827', { headers: { 'Client-ID': TWITCH_PUBLIC_CLIENT_ID } })
                 ]);
                 const gData = await gRes.json(), cData = await cRes.json();
                 if (gData?.data) gData.data.forEach(s => s.versions.forEach(v => { badgeAssets[`${s.set_id}/${v.id}`] = v.image_url_1x; }));
@@ -942,7 +943,11 @@ createApp({
             try {
                 const res = await fetch('https://decapi.me/twitch/uptime/codemiko');
                 isLive.value = !(await res.text()).includes('offline');
-                const gql = await fetch('https://gql.twitch.tv/gql', { method: 'POST', headers: { 'Client-ID': TWITCH_CLIENT_ID }, body: JSON.stringify({ query: `query{user(login:"codemiko"){videos(first:10){edges{node{id createdAt}}}}}` }) });
+                const gql = await fetch('https://gql.twitch.tv/gql', { 
+                    method: 'POST', 
+                    headers: { 'Client-ID': TWITCH_PUBLIC_CLIENT_ID }, 
+                    body: JSON.stringify({ query: `query{user(login:"codemiko"){videos(first:10){edges{node{id createdAt}}}}}` }) 
+                });
                 const edges = (await gql.json()).data.user.videos.edges;
                 recentVods.value = edges.map(e => ({ id: e.node.id, date: new Date(e.node.createdAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric' }).toUpperCase() }));
                 if (currentVodIndex.value === 0 || currentVodIndex.value === -1) currentVodIndex.value = isLive.value ? -1 : 0;
@@ -957,7 +962,7 @@ createApp({
             updateThemeClass();
             
             const redirectUri = encodeURIComponent(window.location.origin + window.location.pathname);
-            twitchAuthUrl.value = `https://id.twitch.tv/oauth2/authorize?client_id=${TWITCH_CLIENT_ID}&redirect_uri=${redirectUri}&response_type=token&scope=chat:read+chat:edit&force_verify=true`;
+            twitchAuthUrl.value = `https://id.twitch.tv/oauth2/authorize?client_id=${TWITCH_APP_CLIENT_ID}&redirect_uri=${redirectUri}&response_type=token&scope=chat:read+chat:edit&force_verify=true`;
 
             if (window.location.hash.includes('access_token')) {
                 const params = new URLSearchParams(window.location.hash.substring(1));
@@ -993,7 +998,6 @@ createApp({
                 }
             });
 
-            // ALL DATA WAITS BEFORE THE SPLASH SCREEN DISAPPEARS
             Promise.all([
                 loadAllEmotes(),
                 loadTwitchBadges(),
