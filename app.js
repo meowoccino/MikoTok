@@ -1,3 +1,23 @@
+// Global Helper safely isolated from Vue setup scoping rules to prevent execution crashes
+const parseMarkdownText = (text, emotesMap) => {
+    if (!text) return ''; 
+    let html = text.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+    html = html.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>').replace(/\*(.*?)\*/g, '<em>$1</em>');
+    
+    const words = html.split(' ');
+    const emoteKeys = Object.keys(emotesMap || {});
+    for (let i = 0; i < words.length; i++) {
+        const clean = words[i].replace(/^:|:$/g, ''); 
+        const actualKey = emoteKeys.find(k => k.toLowerCase() === clean.toLowerCase());
+        if (actualKey) {
+            const m = emotesMap[actualKey];
+            const imgSrc = m.url || 'https://cdn.discordapp.com/emojis/' + m.id + '.png';
+            words[i] = '<img src="' + imgSrc + '" style="height:1.65em; vertical-align:middle; display:inline-block; margin:0 2px;" title="' + actualKey + '">';
+        }
+    }
+    return words.join(' ');
+};
+
 const SplashScreen = {
     props: ['splashVisible', 'splashOpacity', 'logoSvg'],
     template: `
@@ -14,7 +34,7 @@ const SplashScreen = {
 const AppHeader = {
     props: ['isHeaderVisible', 'currentTab', 'logoSvg', 'appTheme'],
     template: `
-        <header class="app-header safe-top-padding" v-show="currentTab === 'home'" style="background-color: var(--bg-color); z-index: 100; border-bottom: none !important;">
+        <header class="app-header safe-top-padding" v-show="currentTab === 'home'">
             <div style="display:flex; align-items:center; gap:8px;">
                 <div style="width:24px;height:24px; cursor:pointer;" v-html="logoSvg('header')" @click="$emit('open-profile')"></div>
                 <span class="miko-text-gradient" style="font-size:22px; letter-spacing: -0.5px;">MikoTok</span>
@@ -29,7 +49,7 @@ const AppHeader = {
 const BottomNav = {
     props: ['currentTab'],
     template: `
-        <nav class="bottom-nav" style="z-index: 1000; background-color: var(--card-bg);">
+        <nav class="bottom-nav">
             <div class="nav-item" :class="{ active: currentTab === 'home' }" @click="$emit('change-tab', 'home')">
                 <span class="material-symbols-rounded">home</span><span class="nav-label">Home</span>
             </div>
@@ -77,7 +97,7 @@ const ProfileModal = {
                 </div>
                 
                 <div v-else>
-                    <div class="infra-bar" style="border: none !important; margin-bottom: 20px;">
+                    <div class="infra-bar">
                         <div class="status-node" style="display: flex; align-items: center; justify-content: center; gap: 8px; font-weight: 800; width: 100%;">
                             <div class="pulse-glow" style="width: 8px; height: 8px; border-radius: 50%; background: var(--success);"></div> 
                             SYSTEM: READY
@@ -170,6 +190,7 @@ const ChatView = {
                 <button class="public-disconnect-btn" @click="$emit('disconnect-public-twitch')">Disconnect</button>
             </div>
 
+            <!-- Absolute bounding parameters prevent the bottom bar from squishing messages underneath -->
             <div class="twitch-chat-list" id="twitch-chat-list" @click="closePicker" style="position: absolute; top: 40px; left: 0; right: 0; bottom: calc(65px + 70px + env(safe-area-inset-bottom, 0px)); overflow-y: auto; overscroll-behavior-y: contain; -webkit-overflow-scrolling: touch; padding: 10px 12px; display: flex; flex-direction: column;">
                 <div style="flex: 1 1 auto; min-height: 0;"></div>
                 
@@ -178,7 +199,7 @@ const ChatView = {
                     <span style="font-size:13px; color:var(--text-muted); font-weight:600;">Loading channels…</span>
                 </div>
                 
-                <div v-for="(msg, i) in chatMessages" :key="i" class="twitch-msg-row">
+                <div v-for="(msg, i) in chatMessages" :key="i" class="twitch-msg-row" :style="i === 0 ? 'margin-top: auto;' : ''">
                     <span class="chat-timestamp">{{ msg.timestamp }}</span>
                     <span class="twitch-badges">
                         <img v-for="(badge, bi) in (msg.badges || [])" :key="bi" :src="badge.img" :title="badge.title" class="badge-img">
@@ -201,7 +222,7 @@ const ChatView = {
                 <button class="chat-send-btn" @click="handleSend" :disabled="!isLoggedIn || !localInput.trim()"><span class="material-symbols-rounded" style="font-size:20px;">send</span></button>
             </div>
 
-            <div class="chat-login-popup-overlay" v-if="$root.showLoginPopup" @click.self="$root.showLoginPopup = false" style="position: fixed; inset: 0; display: flex; align-items: center; justify-content: center; background: rgba(0,0,0,0.8); z-index: 99999;">
+            <div class="chat-login-popup-overlay" :class="{ open: $root.showLoginPopup }" @click.self="$root.showLoginPopup = false" style="position: fixed; inset: 0; display: flex; align-items: center; justify-content: center; background: rgba(0,0,0,0.8); z-index: 99999;">
                 <div class="chat-login-card" style="background: var(--card-bg); padding: 24px; border-radius: 16px; width: 85%; max-width: 340px; text-align: center; position: relative; box-shadow: 0 10px 30px rgba(0,0,0,0.3);">
                     <button @click="$root.showLoginPopup = false" style="position: absolute; top: 12px; right: 12px; background: transparent; border: none; color: var(--text-muted); font-size: 24px; line-height:1; cursor: pointer;">×</button>
                     <svg viewBox="0 0 24 24" class="chat-login-icon" style="width: 48px; height: 48px; margin: 0 auto 16px; color: #9146FF;"><path fill="currentColor" d="M11.571 4.714h1.715v5.143H11.57zm4.715 0H18v5.143h-1.714zM6 0L1.714 4.286v15.428h5.143V24l4.286-4.286h3.428L22.286 12V0zm14.571 11.143l-3.428 3.428h-3.429l-3 3v-3H6.857V1.714h13.714Z"/></svg>
@@ -272,7 +293,7 @@ const MoreView = {
             </a>
             
             <a href="https://www.instagram.com/thecodemiko/" target="_blank" class="social-card" style="display: flex; align-items: center; padding: 0 16px; border-radius: 12px; min-height: 48px; height: 48px; flex-shrink: 0;">
-                <svg viewBox="0 0 24 24" class="social-icon" style="width: 22px; height: 22px; color: #E1306C;"><path fill="currentColor" d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07; -4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zM12 0C8.741 0 8.333.014 7.053.072 2.695.272.273 2.69.073 7.052.014 8.333 0 8.741 0 12c0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98C8.333 23.986 8.741 24 12 24c3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98C15.668.014 15.259 0 12 0zm0 5.838a6.162 6.162 0 100 12.324 6.162 6.162 0 000-12.324zM12 16a4 4 0 110-8 4 4 0 010 8zm6.406-11.845a1.44 1.44 0 100 2.881 1.44 1.44 0 000-2.881z"/></svg>
+                <svg viewBox="0 0 24 24" class="social-icon" style="width: 22px; height: 22px; color: #E1306C;"><path fill="currentColor" d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zM12 0C8.741 0 8.333.014 7.053.072 2.695.272.273 2.69.073 7.052.014 8.333 0 8.741 0 12c0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98C8.333 23.986 8.741 24 12 24c3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98C15.668.014 15.259 0 12 0zm0 5.838a6.162 6.162 0 100 12.324 6.162 6.162 0 000-12.324zM12 16a4 4 0 110-8 4 4 0 010 8zm6.406-11.845a1.44 1.44 0 100 2.881 1.44 1.44 0 000-2.881z"/></svg>
                 <span style="color: var(--text-main); font-size: 14px;">Instagram</span>
             </a>
             
@@ -334,9 +355,10 @@ const GeraldMinigames = {
 
 const GeraldView = {
     components: { GeraldMinigames },
-    props: ['currentTab', 'geraldMessages', 'isGeraldTyping', 'geraldInput', 'showEmotePicker', 'showMinigames', 'customEmotes', 'parseMarkdown', 'geminiStatus', 'sysStats'],
+    props: ['currentTab', 'geraldMessages', 'isGeraldTyping', 'geraldInput', 'showEmotePicker', 'showMinigames', 'customEmotes', 'geminiStatus', 'sysStats'],
     methods: {
-        getEmoteUrl(emote) { return emote.url || `https://cdn.discordapp.com/emojis/${emote.id}.${emote.animated ? 'gif' : 'png'}?size=44`; }
+        getEmoteUrl(emote) { return emote.url || `https://cdn.discordapp.com/emojis/${emote.id}.${emote.animated ? 'gif' : 'png'}?size=44`; },
+        formatMarkdown(text) { return parseMarkdownText(text, this.customEmotes); }
     },
     template: `
         <div class="gerald-container safe-top-padding" style="position: absolute; inset: 0; display: flex; flex-direction: column; height: calc(100% - max(env(safe-area-inset-top, 24px), 24px)); overflow: hidden;">
@@ -364,7 +386,7 @@ const GeraldView = {
                     <div v-if="i === 0 && m.role === 'gerald' && !m.content" class="chat-bubble gerald startup-anim">
                         <span>> GERALD_CORE initialized.<br>> Awaiting human input...</span>
                     </div>
-                    <div v-else-if="m.content" class="chat-bubble" :class="m.role" v-html="parseMarkdown(m.content)"></div>
+                    <div v-else-if="m.content" class="chat-bubble" :class="m.role" v-html="formatMarkdown(m.content)"></div>
                 </template>
 
                 <div v-show="isGeraldTyping" class="dots-thinking-row" style="display:flex; align-items:center; margin-top:8px; padding-left:12px;">
@@ -448,26 +470,6 @@ const sbClient = supabase.createClient('https://yhxcuayiwqpjvalyrcqv.supabase.co
 createApp({
     components: { SplashScreen, AppHeader, BottomNav, FilterMenu, ProfileModal, GeraldView, HomeView, ChatView, MoreView, ClipModal },
     setup() {
-        const customEmotes = ref({});
-        
-        // DECLARE INNER FUNCTION FIRST BEFORE LIFECYCLE CALLBACKS RUN
-        const parseMarkdown = (t) => {
-            if (!t) return ''; 
-            let html = t.replace(/&/g, '&').replace(/</g, '<').replace(/>/g, '>');
-            html = html.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>').replace(/\*(.*?)\*/g, '<em>$1</em>');
-            const words = html.split(' ');
-            const emoteKeys = Object.keys(customEmotes.value);
-            for (let i = 0; i < words.length; i++) {
-                const clean = words[i].replace(/^:|:$/g, ''); 
-                const actualKey = emoteKeys.find(k => k.toLowerCase() === clean.toLowerCase());
-                if (actualKey) {
-                    const m = customEmotes.value[actualKey];
-                    words[i] = '<img src="' + (m.url || 'https://cdn.discordapp.com/emojis/' + m.id + '.png') + '" style="height:1.65em; vertical-align:middle; display:inline-block; margin:0 2px;" title="' + actualKey + '">';
-                }
-            }
-            return words.join(' ');
-        };
-
         const tabs = ['home', 'chat', 'gerald', 'more'];
         const initialHash = window.location.hash.replace('#', '');
         const currentTab = ref(tabs.includes(initialHash) ? initialHash : 'home');
@@ -498,6 +500,7 @@ createApp({
         const geminiStatus = ref('TESTING BRAIN...');
         const sysStats = ref({ cpu: 23, mem: 1.8, temp: 74 });
 
+        const customEmotes = ref({});
         const myTwitchBadges = ref([]); 
         const activeClipId = ref(null);
         const currentClipOffset = ref(0);
@@ -610,7 +613,7 @@ createApp({
                 tags['badges'].split(',').forEach(b => { const imgUrl = badgeAssets[b]; if (imgUrl) badges.push({ title: b.split('/')[0], img: imgUrl }); });
             }
 
-            let html = text.replace(/&/g, '&').replace(/</g, '<').replace(/>/g, '>');
+            let html = text.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
             if (tags['emotes']) {
                 const replacements = [];
                 tags['emotes'].split('/').forEach(e => {
@@ -788,94 +791,6 @@ createApp({
             } catch { geminiStatus.value = 'API_DISCONNECTED'; }
         };
 
-        const triggerAiMinigame = (gameObj) => {
-            geraldInput.value = "";
-            closePickers();
-            
-            const logMsg = `**[EVENT: ${gameObj.label} Protocol Activated]**`;
-            geraldMessages.value.push({ role: 'user', content: logMsg });
-            
-            if (currentUser.value) {
-                sbClient.from('gerald_history').insert({ user_id: currentUser.value.id, role: 'user', content: logMsg }).then();
-            }
-            
-            isGeraldTyping.value = true;
-            nextTick(scrollToBottom);
-
-            const contextHistory = geraldMessages.value.slice(-10).map(m => ({ role: m.role === 'gerald' ? 'model' : 'user', parts: [{ text: m.content }] }));
-
-            sbClient.functions.invoke('gerald-chat', { 
-                body: { history: contextHistory, system_directive: gameObj.prompt } 
-            }).then(({ data, error }) => {
-                if (!error && data?.reply) {
-                    geraldMessages.value.push({ role: 'gerald', content: data.reply.trim() });
-                    if (currentUser.value) {
-                        sbClient.from('gerald_history').insert({ user_id: currentUser.value.id, role: 'gerald', content: data.reply.trim() }).then();
-                    }
-                } else {
-                    geraldMessages.value.push({ role: 'gerald', content: '> MALFUNCTION: Internal hardware override processing failure.' });
-                }
-            }).catch(() => {
-                geraldMessages.value.push({ role: 'gerald', content: '> MALFUNCTION: Core logic offline.' });
-            }).finally(() => {
-                isGeraldTyping.value = false;
-                nextTick(scrollToBottom);
-            });
-        };
-
-        const talkToGerald = async () => {
-            const inputEl = document.getElementById('gerald-txt-input');
-            if (inputEl && inputEl.value !== geraldInput.value) { geraldInput.value = inputEl.value; }
-            if (!geraldInput.value.trim() || isGeraldTyping.value) return;
-
-            const userMsg = geraldInput.value;
-            geraldMessages.value.push({ role: 'user', content: userMsg });
-
-            if (currentUser.value) {
-                sbClient.from('gerald_history').insert({ user_id: currentUser.value.id, role: 'user', content: userMsg }).then();
-            }
-
-            geraldInput.value = '';
-            if (inputEl) { inputEl.value = ''; inputEl.style.height = 'auto'; }
-
-            isGeraldTyping.value = true; closePickers(); nextTick(scrollToBottom);
-            const geminiHistory = geraldMessages.value.slice(-12).map(m => ({ role: m.role === 'gerald' ? 'model' : 'user', parts: [{ text: m.content }] }));
-
-            try {
-                const { data, error } = await sbClient.functions.invoke('gerald-chat', { body: { history: geminiHistory } });
-                if (!error && data?.reply) {
-                    geraldMessages.value.push({ role: 'gerald', content: data.reply.trim() });
-                    if (currentUser.value) {
-                        sbClient.from('gerald_history').insert({ user_id: currentUser.value.id, role: 'gerald', content: data.reply.trim() }).then();
-                    }
-                } else throw error;
-            } catch { geraldMessages.value.push({ role: 'gerald', content: '> SYSTEM FAILURE: Core sync interrupted.' }); }
-            finally { isGeraldTyping.value = false; nextTick(scrollToBottom); }
-        };
-
-        const nextVod = () => { if (currentVodIndex.value < recentVods.value.length - 1) currentVodIndex.value++; };
-        const prevVod = () => { if (currentVodIndex.value > (isLive.value ? -1 : 0)) currentVodIndex.value--; };
-        const closeFilterMenu = () => { isFilterMenuOpen.value = false; };
-        const playClip = (clip) => { selectedClip.value = clip; };
-        const insertEmote = (name) => { if (currentTab.value === 'gerald') geraldInput.value += ` :${name}: `; };
-        const scrollToBottom = () => { const b = document.getElementById('gerald-msgs'); if (b) b.scrollTop = b.scrollHeight; };
-        const toggleEmotes = () => { showEmotePicker.value = !showEmotePicker.value; showMinigames.value = false; };
-        const toggleMinigames = () => { showMinigames.value = !showMinigames.value; showEmotePicker.value = false; };
-        const closePickers = () => { showEmotePicker.value = false; showMinigames.value = false; };
-
-        const applyFilter = (key, label) => {
-            currentFilter.value = key; activeFilterLabel.value = label; isFilterMenuOpen.value = false;
-            allClipsLoaded.value = false;
-            allClips.value = [];
-            currentClipOffset.value = 0;
-            const el = document.getElementById('home-scroll'); if (el) nextTick(() => el.scrollTop = 0);
-            loadData(false);
-        };
-
-        const handleScroll = (e) => {
-            if (e.target.scrollHeight - e.target.scrollTop - e.target.clientHeight < 200) { if (currentTab.value === 'home') loadData(true); }
-        };
-
         const loadData = async (isLoadMore = false) => {
             if (isLoadingMore.value || allClipsLoaded.value) return; isLoadingMore.value = true;
             try {
@@ -923,24 +838,6 @@ createApp({
                 recentVods.value = edges.map(e => ({ id: e.node.id, date: new Date(e.node.createdAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric' }).toUpperCase() }));
                 if (currentVodIndex.value === 0 || currentVodIndex.value === -1) currentVodIndex.value = isLive.value ? -1 : 0;
             } catch {}
-        };
-
-        const runSync = async () => {
-            syncState.value = 'SYNCING...';
-            await load7TVEmotes();
-            const success = await loadTwitchBadges();
-            if (!success && apiConfig.value.localTkn) { syncState.value = 'ERROR'; setTimeout(() => { syncState.value = 'Force Data Sync'; }, 2500); return; }
-            await loadData(false); await checkLive(); await testGeminiBrain();
-            syncState.value = 'SUCCESS'; setTimeout(() => { syncState.value = 'Force Data Sync'; }, 2500);
-        };
-
-        const nukeCache = async () => {
-            if (nukeState.value !== 'Nuke App Cache') return; nukeState.value = 'NUKING...';
-            try {
-                if ('serviceWorker' in navigator) { const regs = await navigator.serviceWorker.getRegistrations(); for (let r of regs) await r.unregister(); }
-                if ('caches' in window) { const keys = await caches.keys(); for (let k of keys) await caches.delete(k); }
-                nukeState.value = 'SUCCESS'; setTimeout(() => { window.location.reload(); }, 1000);
-            } catch { nukeState.value = 'ERROR'; setTimeout(() => { nukeState.value = 'Nuke App Cache'; }, 2500); }
         };
 
         onMounted(async () => {
