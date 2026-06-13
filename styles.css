@@ -96,7 +96,7 @@ body, html {
 .scroll-area { flex: 1; width: 100%; overflow-y: auto; padding: 15px 20px calc(90px + env(safe-area-inset-bottom, 0px)); }
 .scroll-area::-webkit-scrollbar { display: none; }
 .home-scroll { padding-top: calc(75px + env(safe-area-inset-top, 0px)); }
-.more-scroll { padding-top: 10px; }
+.more-scroll { padding-top: calc(20px + env(safe-area-inset-top, 24px)); }
 
 .hero-section { background: transparent; margin-bottom: 25px; width: 100%; }
 .premium-badge { display: inline-flex; align-items: center; gap: 8px; background: rgba(0,0,0,0.7); backdrop-filter: blur(10px); padding: 6px 14px; border-radius: 30px; color: #fff; font-size: 10px; font-weight: 900; }
@@ -218,7 +218,7 @@ body, html {
 
 .sheet-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 2000; opacity: 0; pointer-events: none; transition: 0.3s; }
 .sheet-overlay.open { opacity: 1; pointer-events: auto; }
-.bottom-sheet { position: absolute; bottom: 0; width: 100%; max-width: 540px; background: var(--card-bg); border-radius: 24px 24px 0 0; padding: 20px; transform: translateY(100%); transition: transform 0.3s; }
+.bottom-sheet { position: absolute; bottom: 0; width: 100%; max-width: 540px; background: var(--card-bg); border-radius: 24px 24px 0 0; padding: 20px 20px calc(85px + env(safe-area-inset-bottom, 0px)); transform: translateY(100%); transition: transform 0.3s; }
 .sheet-overlay.open .bottom-sheet { transform: translateY(0); }
 .sheet-option { width: 100%; background: transparent; border: none; color: var(--text-muted); padding: 14px; font-size: 13px; font-weight: 800; text-transform: uppercase; }
 .sheet-option.active { background: rgba(145,70,255,0.1); color: var(--primary); border: 1px solid rgba(145,70,255,0.2); border-radius: 12px; }
