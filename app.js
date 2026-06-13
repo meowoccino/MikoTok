@@ -3,26 +3,26 @@ const parseMarkdownText = (text, emotesMap) => {
     let html = text.replace(/&/g, '&').replace(/</g, '<').replace(/>/g, '>');
     html = html.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>').replace(/\*(.*?)\*/g, '<em>$1</em>');
     
-    // Automatic link parser for raw URLs inside Gerald bubbles
     const urlPattern = /(\b(https?|ftp|file):\/\/[-A-Z0-9+&@#\/%?=~_|!:,.;]*[-A-Z0-9+&@#\/%=~_|])/ig;
     html = html.replace(urlPattern, "<a href='$1' target='_blank'>$1</a>");
     
     if (emotesMap) {
-        // Protect emote text blocks with stable un-breachable layout token keys
+        // Enforce strong case-insensitive sorting by total length to catch matching variants flawlessly
         const sortedKeys = Object.keys(emotesMap).sort((a, b) => b.length - a.length);
         
         sortedKeys.forEach(key => {
             const escapeKey = key.replace(/[-\/\\^$*+?.()|[\]{}]/g, '\\$&');
+            // Complete case-insensitive match loop
             const colonRegex = new RegExp(`:${escapeKey}:`, 'gi');
             html = html.replace(colonRegex, ` %%%M_EMOTE_${key}%%% `);
             
-            const boundaryRegex = new RegExp(`\\b${escapeKey}\\b`, 'g');
+            const boundaryRegex = new RegExp(`\\b${escapeKey}\\b`, 'gi');
             html = html.replace(boundaryRegex, ` %%%M_EMOTE_${key}%%% `);
         });
         
         sortedKeys.forEach(key => {
             const imgUrl = emotesMap[key].url;
-            const targetToken = new RegExp(`%%%M_EMOTE_${key}%%%`, 'g');
+            const targetToken = new RegExp(`%%%M_EMOTE_${key}%%\%`, 'g');
             html = html.replace(targetToken, `<img src="${imgUrl}" class="chat-emote-img" title="${key}">`);
         });
     }
@@ -293,7 +293,7 @@ const GeraldView = {
     },
     template: `
         <div class="gerald-container" style="display: flex; flex-direction: column; height: 100%; width: 100%; background: var(--bg-color); padding-top: 0px;">
-            <div class="gerald-header" @click="$emit('close-pickers')" style="flex-shrink: 0; padding: 4px 16px 6px; background: var(--bg-color); z-index: 10;">
+            <div class="gerald-header" @click="$emit('close-pickers')" style="flex-shrink: 0; padding: 12px 16px 6px; background: var(--bg-color); z-index: 10;">
                 <div class="os-top-bar" style="margin-top: 0px;">
                     <span class="os-title">GERALD_OS v2</span>
                 </div>
@@ -355,7 +355,7 @@ const MoreView = {
             
             <a href="https://throne.com/codemiko" target="_blank" class="social-card" style="display: flex; align-items: center; padding: 0 16px; border-radius: 12px; min-height: 48px; height: 48px; background: var(--card-bg); text-decoration: none; flex-shrink: 0; margin-top: 10px;">
                 <div style="display: flex; align-items: center; gap: 12px; width: 100%;">
-                    <svg viewBox="0 0 24 24" style="width: 24px; height: 24px; fill: #ef4444; flex-shrink:0;">
+                    <svg viewBox="0 0 24 24" class="social-icon" style="width: 24px; height: 24px; fill: #ef4444; flex-shrink:0;">
                         <path d="M20 6h-2.18c.11-.31.18-.65.18-1 0-1.66-.84-3-2-3-1.22 0-2.42 1.55-3 2.52-.58-.97-1.78-2.52-3-2.52-1.16 0-2 1.34-2 3 0 .35.07.69.18 1H4c-1.11 0-1.99.89-1.99 2L2 19c0 1.11.89 2 2 2h16c1.11 0 2-.89 2-2V8c0-1.11-.89-2-2-2zm-5-3c.55 0 1 .45 1 1s-.45 1-1 1-1-.45-1-1 .45-1 1-1zm-6 0c.55 0 1 .45 1 1s-.45 1-1 1-1-.45-1-1 .45-1 1-1zm11 16H4V8h16v11z"/>
                     </svg>
                     <span style="color: var(--text-main); font-size: 14px; font-weight: 600;">Throne</span> 
@@ -390,41 +390,6 @@ const MoreView = {
                 <span style="color: var(--text-main); font-size: 14px;">Discord</span>
             </a>
 
-            <a href="https://app.fanfix.io/@codeyuna" target="_blank" class="social-card" style="display: flex; align-items: center; padding: 0 16px; border-radius: 12px; min-height: 48px; height: 48px; flex-shrink: 0;">
-                <svg viewBox="0 0 24 24" class="social-icon" style="width: 22px; height: 22px;">
-                    <defs>
-                        <linearGradient id="fanfix-grad" x1="0%" y1="0%" x2="100%" y2="100%">
-                            <stop offset="0%" stop-color="#80f1f1" />
-                            <stop offset="50%" stop-color="#d4a3fa" />
-                            <stop offset="100%" stop-color="#ffd5af" />
-                        </linearGradient>
-                    </defs>
-                    <path fill="url(#fanfix-grad)" d="M11.23 1.59c.43-.65 1.11-.65 1.54 0l1.19 1.83c.22.33.7.53 1.09.43l2.12-.51c.74-.18 1.22.29 1.04 1.04l-.51 2.12c-.1.39.1.87.43 1.09l1.83 1.19c.65.43.65 1.11 0 1.54l-1.83 1.19c-.33.22-.53.7-.43 1.09l.51 2.12c.18.74-.29 1.22-1.04 1.04l-2.12-.51c-.39-.1-.87.1-1.09.43l-1.19 1.83c-.43.65-1.11.65-1.54 0l-1.19-1.83c-.22-.33-.7-.53-1.09-.43l-2.12.51c-.74.18-1.22-.29-1.04-1.04l.51-2.12c.1-.39-.1-.87-.43-1.09l-1.83-1.19c-.65-.43-.65-1.11 0-1.54l1.83-1.19c.33-.22.53-.7.43-1.09l-.51-2.12c-.18-.74.29-1.22 1.04-1.04l2.12.51c.39.1.87-.1 1.09-.43l1.19-1.83z"/>
-                    <path fill="#000" d="M10.4 15.6l-3.2-3.2 1.4-1.4 1.8 1.8 4.8-4.8 1.4 1.4-6.2 6.2z"/>
-                </svg>
-                <span style="color: var(--text-main); font-size: 14px;">Fanfix</span>
-            </a>
-            
-            <a href="https://www.tiktok.com/@codemiko" target="_blank" class="social-card" style="display: flex; align-items: center; padding: 0 16px; border-radius: 12px; min-height: 48px; height: 48px; flex-shrink: 0;">
-                <svg viewBox="0 0 24 24" class="social-icon" style="width: 22px; height: 22px; color: var(--text-main);"><path fill="currentColor" d="M12.53.02C13.84 0 15.14.01 16.44 0c.08 1.53.63 3.09 1.75 4.17 1.12 1.11 2.7 1.62 4.24 1.79v4.03c-1.44-.05-2.89-.35-4.2-.97-.57-.26-1.1-.59-1.62-.93-.01 2.92.01 5.84-.02 8.75-.08 1.4-.54 2.79-1.35 3.94-1.31 1.92-3.58 3.17-5.91 3.21-1.43.08-2.86-.31-4.08-1.03-2.02-1.12-3.44-3.17-3.64-5.41-.02-.21-.02-.41-.02-.62.07-1.44.62-2.83 1.51-3.89 1.05-1.25 2.55-2.06 4.15-2.28 1.1-.15 2.23-.04 3.27.35v4.06c-.34-.13-.7-.2-1.07-.22-.92-.04-1.84.28-2.51.86-.67.57-1.08 1.4-1.1 2.31-.01.91.38 1.77 1.03 2.38.65.61 1.56.93 2.49.88.92-.04 1.78-.45 2.38-1.11.58-.65.88-1.54.88-2.45V.02h-.03z"/></svg>
-                <span style="color: var(--text-main); font-size: 14px;">TikTok</span>
-            </a>
-            
-            <a href="https://twitter.com/codemiko" target="_blank" class="social-card" style="display: flex; align-items: center; padding: 0 16px; border-radius: 12px; min-height: 48px; height: 48px; flex-shrink: 0;">
-                <svg viewBox="0 0 24 24" class="social-icon" style="width: 22px; height: 22px; color: var(--text-main);"><path fill="currentColor" d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>
-                <span style="color: var(--text-main); font-size: 14px;">X</span>
-            </a>
-            
-            <a href="https://www.instagram.com/thecodemiko/" target="_blank" class="social-card" style="display: flex; align-items: center; padding: 0 16px; border-radius: 12px; min-height: 48px; height: 48px; flex-shrink: 0;">
-                <svg viewBox="0 0 24 24" class="social-icon" style="width: 22px; height: 22px; color: #E1306C;"><path fill="currentColor" d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zM12 0C8.741 0 8.333.014 7.053.072 2.695.272.273 2.69.073 7.052.014 8.333 0 8.741 0 12c0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98C8.333 23.986 8.741 24 12 24c3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98C15.668.014 15.259 0 12 0zm0 5.838a6.162 6.162 0 100 12.324 6.162 6.162 0 000-12.324zM12 16a4 4 0 110-8 4 4 0 010 8zm6.406-11.845a1.44 1.44 0 100 2.881 1.44 1.44 0 000-2.881z"/></svg>
-                <span style="color: var(--text-main); font-size: 14px;">Instagram</span>
-            </a>
-            
-            <a href="https://www.threads.net/@thecodemiko" target="_blank" class="social-card" style="display: flex; align-items: center; padding: 0 16px; border-radius: 12px; min-height: 48px; height: 48px; flex-shrink: 0;">
-                <svg viewBox="0 0 192 192" class="social-icon" style="width: 22px; height: 22px; color: var(--text-main);"><path fill="currentColor" d="M141.537 88.9883C140.71 88.5919 139.87 88.2104 139.019 87.8451C137.537 60.5382 122.616 44.905 97.5619 44.745C97.4484 44.7443 97.3355 44.7443 97.222 44.7443C82.2364 44.7443 69.7731 51.1409 62.102 62.7807L75.881 72.2328C81.6116 63.5383 90.6052 61.6848 97.2286 61.6848C97.3051 61.6848 97.3819 61.6848 97.4576 61.6855C105.707 61.7381 111.932 64.1366 115.961 68.814C118.893 72.2193 120.854 76.925 121.825 82.8638C114.511 81.6207 106.601 81.2385 98.145 81.7233C74.3247 83.0954 59.0111 96.9879 60.0396 116.292C60.5615 126.084 65.4397 134.508 73.775 140.011C80.8224 144.663 89.899 146.938 99.3323 146.423C111.79 145.74 121.563 140.987 128.381 132.296C133.559 125.696 136.834 117.143 138.28 106.366C144.217 109.949 148.617 114.664 151.047 120.332C155.179 129.967 155.42 145.8 142.501 158.708C131.182 170.016 117.576 174.908 97.0135 175.059C74.2042 174.89 56.9538 167.575 45.7381 153.317C35.2355 139.966 29.8077 120.682 29.6052 96C29.8077 71.3178 35.2355 52.0336 45.7381 38.6827C56.9538 24.4249 74.2039 17.11 97.0132 16.9405C119.988 17.1113 137.539 24.4614 148.82 38.8167C156.92 49.1302 161.965 62.4633 163.606 78.4714L179.626 76.5161C177.625 57.8427 171.603 42.4437 162.016 30.2526C148.337 12.8797 127.351 4.14819 97.0132 4C66.5826 4.15048 45.6416 12.9231 32.2274 30.0097C19.7891 45.8524 13.5676 68.1687 13.3333 96C13.5676 123.831 19.7891 146.148 32.2274 161.99C45.6416 179.077 66.5826 187.85 97.0135 188C120.89 187.828 137.234 181.71 151.782 167.175C168.181 150.793 167.149 127.877 155.839 116.666C153.491 114.339 150.569 112.502 147.289 111.164C145.452 110.387 143.541 109.664 141.537 88.9883ZM98.4405 129.507C88.0005 130.095 77.1544 125.409 76.6196 115.372C76.2232 107.93 81.9158 99.626 99.0812 98.0476C101.066 97.8658 103.146 97.7499 105.311 97.6976C105.328 103.626 104.996 109.431 103.743 114.862C102.593 119.851 100.865 124.316 98.4405 129.507Z"/></svg>
-                <span style="color: var(--text-main); font-size: 14px;">Threads</span>
-            </a>
-
             <a href="https://www.snapchat.com/add/codemiko" target="_blank" class="social-card" style="display: flex; align-items: center; padding: 0 16px; border-radius: 12px; min-height: 48px; height: 48px; flex-shrink: 0;">
                 <svg viewBox="0 0 24 24" class="social-icon" style="width: 22px; height: 22px; color: #FFFC00;"><path fill="currentColor" d="M12.126 23.955c-1.472-.036-2.502-.455-3.633-.949-.556-.242-1.077-.384-1.657-.202-1.542.483-3.082 1.054-4.73 1.127-1.393.061-1.777-.52-1.205-1.651.488-.962 1.031-1.895 1.48-2.871.21-.453.208-.857-.042-1.272-1.071-1.782-1.637-3.708-1.764-5.748-.04-.633-.037-1.27-.037-1.936 0-3.923 2.115-6.843 5.437-8.318C8.384.975 10.94.39 13.626.54c4.12.232 7.152 2.647 8.527 6.643.518 1.503.655 3.066.621 4.646-.025 1.156-.168 2.298-.485 3.407-.346 1.208-.887 2.336-1.688 3.32-.429.529-.395.96.012 1.488.35.452.704.9 1.057 1.349.52.661.274 1.236-.532 1.274-1.506.072-2.923-.509-4.321-1.052-.777-.302-1.411-.122-2.072.164-1.045.451-2.146.862-3.32.969-.379.034-.764.03-1.299.207z"/></svg>
                 <span style="color: var(--text-main); font-size: 14px;">Snapchat</span>
@@ -443,7 +408,7 @@ const MoreView = {
 const HomeView = {
     props: ['currentTab', 'currentVodIndex', 'recentVods', 'isLive', 'hostname', 'clips', 'activeFilterLabel', 'optimizeTwitchImg', 'formatViews', 'formatDate', 'activeClipId'],
     template: `
-        <div style="flex: 1; overflow-y: auto; overscroll-behavior-y: contain; -webkit-overflow-scrolling: touch; padding-bottom: 20px;" @scroll="$emit('home-scroll', $event)">
+        <div style="flex: 1; overflow-y: auto; overscroll-behavior-y: contain; -webkit-overflow-scrolling: touch; padding-bottom: 20px;" @scroll="$emit('home-scroll', $event)" id="home-scroll-element">
             <div class="hero-section">
                 <div class="header-controls" style="margin-bottom:12px; display:flex;">
                     <div :class="['premium-badge', isLive ? 'live-badge' : 'vod']">
@@ -829,9 +794,12 @@ createApp({
                 body: { history: contextHistory, system_directive: gameObj.prompt } 
             }).then(({ data, error }) => {
                 if (!error && data?.reply) {
-                    geraldMessages.value.push({ role: 'gerald', content: data.reply.trim() });
+                    // Clean text and force first letter uppercase syntax formatting perfectly
+                    let rawReply = data.reply.trim();
+                    let formattedReply = rawReply.charAt(0).toUpperCase() + rawReply.slice(1);
+                    geraldMessages.value.push({ role: 'gerald', content: formattedReply });
                     if (currentUser.value) {
-                        sbClient.from('gerald_history').insert({ user_id: currentUser.value.id, role: 'gerald', content: data.reply.trim() }).then();
+                        sbClient.from('gerald_history').insert({ user_id: currentUser.value.id, role: 'gerald', content: formattedReply }).then();
                     }
                 } else {
                     geraldMessages.value.push({ role: 'gerald', content: 'MALFUNCTION: Internal hardware override processing failure.' });
@@ -865,9 +833,11 @@ createApp({
             try {
                 const { data, error } = await sbClient.functions.invoke('gerald-chat', { body: { history: geminiHistory } });
                 if (!error && data?.reply) {
-                    geraldMessages.value.push({ role: 'gerald', content: data.reply.trim() });
+                    let rawReply = data.reply.trim();
+                    let formattedReply = rawReply.charAt(0).toUpperCase() + rawReply.slice(1);
+                    geraldMessages.value.push({ role: 'gerald', content: formattedReply });
                     if (currentUser.value) {
-                        sbClient.from('gerald_history').insert({ user_id: currentUser.value.id, role: 'gerald', content: data.reply.trim() }).then();
+                        sbClient.from('gerald_history').insert({ user_id: currentUser.value.id, role: 'gerald', content: formattedReply }).then();
                     }
                 } else throw error;
             } catch { geraldMessages.value.push({ role: 'gerald', content: 'SYSTEM FAILURE: Core sync interrupted.' }); }
@@ -895,7 +865,7 @@ createApp({
             allClipsLoaded.value = false;
             allClips.value = [];
             currentClipOffset.value = 0;
-            const el = document.getElementById('home-scroll'); if (el) nextTick(() => el.scrollTop = 0);
+            const el = document.getElementById('home-scroll-element'); if (el) nextTick(() => el.scrollTop = 0);
             loadData(false);
         };
 
@@ -925,7 +895,6 @@ createApp({
                 
                 let query = sbClient.from('clips').select('*');
                 
-                // Unified dynamic fallback window to grab clips completely flawlessly
                 if (currentFilter.value === 'latest') {
                     query = query.order('created_at', { ascending: false });
                 } else if (currentFilter.value === 'weekly') {
@@ -1001,8 +970,11 @@ createApp({
                 sysStats.value.temp = Math.floor(Math.random() * (89 - 68 + 1)) + 68;
             }, 3500);
 
-            splashOpacity.value = 0; 
-            splashVisible.value = false;
+            // Hide the splash panel cleanly after fully mounting assets
+            setTimeout(() => {
+                splashOpacity.value = 0; 
+                setTimeout(() => { splashVisible.value = false; }, 300);
+            }, 800);
         });
 
         return {
@@ -1016,7 +988,7 @@ createApp({
                         return;
                     }
                     const email = loginEmail.value.includes('@') ? loginEmail.value : `${loginEmail.value}@miko.com`; 
-                    const { data, error } = await sbClient.auth.signInWithPassword({ email, password: loginPass.value }); 
+                    const { data, error = null } = await sbClient.auth.signInWithPassword({ email, password: loginPass.value }); 
                     
                     if (error) {
                         loginError.value = 'Invalid email or password.';
