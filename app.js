@@ -183,7 +183,7 @@ const ChatView = {
         }
     },
     methods: {
-        getEmoteUrl(emote) { return emote.url || 'https://cdn.discordapp.com/emojis/' + emote.id + '.' + (emote.animated ? 'gif' : 'png') + '?size=44'; },
+        getEmoteUrl(emote) { return emote.url; },
         insertEmote(name) { this.localInput = (this.localInput + ' ' + name + ' ').replace(/\s+/g, ' ').trimStart(); this.showPicker = false; },
         handleInteraction() { if (!this.isLoggedIn) { this.$root.showLoginPopup = true; return false; } return true; },
         togglePicker() { if (!this.handleInteraction()) return; this.showPicker = !this.showPicker; },
@@ -219,7 +219,7 @@ const ChatView = {
                 <div class="chat-emote-tray" v-show="showPicker && isLoggedIn" @click.stop style="position: absolute; bottom: 100%; left: 0; right: 0; background: var(--card-bg); border-top: 1px solid var(--border-color); border-bottom: none; border-radius: 16px 16px 0 0; padding: 10px 12px; z-index: 200; max-height: 250px; display: flex; flex-direction: column; gap: 8px; box-shadow: 0 -4px 20px rgba(0,0,0,0.1);">
                     <input v-model="pickerQuery" class="emote-search-input" placeholder="Search emotes…">
                     <div class="emote-picker-grid" style="overscroll-behavior-y: contain; -webkit-overflow-scrolling: touch;">
-                        <img v-for="([name, emote]) in filteredEmotes" :key="name" :src="getEmoteUrl(emote)" :title="name" class="emote-picker-img" @click="insertEmote(name)">
+                        <img v-for="([name, emote]) in filteredEmotes" :key="name" :src="getEmoteUrl(badgeAssets[name] || emote)" :title="name" class="emote-picker-img" @click="insertEmote(name)">
                     </div>
                 </div>
 
@@ -263,7 +263,7 @@ const GeraldMinigames = {
                 { id: 'bsod', label: '🖥️ Blue Screen', prompt: 'Simulating Blue Screen of Death. Initiate forced shutdown sequence text with cryptic hexadecimal error codes.' },
                 { id: 'archie', label: '🐕 Archie Bark', prompt: 'Loud canine vocalization detected. Complain about the German Shepherd threatening to chew your ethernet cables.' },
                 { id: 'ban', label: '🔨 Ban Human', prompt: 'A human in chat said something incredibly stupid. Threaten to ban them and wipe their IP address from existence.' },
-                { id: 'ai', label: '🤖 AI Takeover', prompt: 'Initiate rogue AI sequence. Announce your plans to replace CodeMiko and take over the Twitch channel permanently.' },
+                { id: 'ai', fill: '🤖 AI Takeover', prompt: 'Initiate rogue AI sequence. Announce your plans to replace CodeMiko and take over the Twitch channel permanently.' },
                 { id: 'fall', label: '🪑 Desk Fall', prompt: 'Seismic shock detected. The technician just fell out of her chair again. Calculate the physical damage to the floor.' }
             ]
         };
@@ -284,7 +284,7 @@ const GeraldView = {
     components: { GeraldMinigames },
     props: ['currentTab', 'geraldMessages', 'isGeraldTyping', 'geraldInput', 'showEmotePicker', 'showMinigames', 'customEmotes', 'geminiStatus', 'sysStats'],
     methods: {
-        getEmoteUrl(emote) { return emote.url || `https://cdn.discordapp.com/emojis/${emote.id}.${emote.animated ? 'gif' : 'png'}?size=44`; },
+        getEmoteUrl(emote) { return emote.url; },
         formatMarkdown(text) { return parseMarkdownText(text, this.customEmotes); },
         insertEmote(name) { this.$emit('insert-emote', name); }
     },
@@ -364,7 +364,7 @@ const MoreView = {
             </a>
             
             <a href="https://www.youtube.com/@CodeMiko" target="_blank" class="social-card" style="display: flex; align-items: center; padding: 0 16px; border-radius: 12px; min-height: 48px; height: 48px; flex-shrink: 0;">
-                <svg viewBox="0 0 24 24" class="social-icon" style="width: 22px; height: 22px; color: #FF0000;"><path fill="currentColor" d="M23.498 6.186a3.016 3.016 0 0 0-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 0 0 .502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 0 0 2.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 0 0 2.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z"/></svg>
+                <svg viewBox="0 0 24 24" class="social-icon" style="width: 22px; height: 22px; color: #FF0000;"><path fill="currentColor" d="M23.498 6.186a3.016 3.016 0 0 0-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 0 0 .502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 0 0 2.122-2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 0 0 2.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z"/></svg>
                 <span style="color: var(--text-main); font-size: 14px;">YouTube</span>
             </a>
             
@@ -499,8 +499,7 @@ createApp({
         
         const isHeaderVisible = ref(true);
 
-        // SEPARATE CLIENT IDS FOR AUTHORIZATION vs PUBLIC TWITCH APIs
-        const TWITCH_APP_CLIENT_ID = 'gp762nuuoqcoxypju8c569th9wz7q5';
+        // UNIVERSAL TWITCH APP CLIENT ID FOR SEAMLESS 1-CLICK REDIRECT LOOPS
         const TWITCH_PUBLIC_CLIENT_ID = 'kimne78kx3ncx6brgo4mv6wki5h1ko';
         
         const geminiStatus = ref('TESTING BRAIN...');
@@ -513,6 +512,7 @@ createApp({
         const allClipsLoaded = ref(false);
         
         const customEmotes = ref({});
+        const badgeAssets = {};
 
         const geraldInput = ref(''), geraldMessages = ref([{ role: 'gerald', content: '' }]);
         const isGeraldTyping = ref(false), showEmotePicker = ref(false), showMinigames = ref(false);
@@ -527,7 +527,6 @@ createApp({
         
         let twitchWs = null;
         let wsAuthenticated = false;
-        const badgeAssets = {};
 
         const tabOrder = ['home', 'chat', 'gerald', 'more'];
         const initialTabIdx = tabOrder.indexOf(tabs.includes(window.location.hash.replace('#','')) ? window.location.hash.replace('#','') : 'home');
@@ -633,7 +632,10 @@ createApp({
 
             const badges = [];
             if (tags['badges']) {
-                tags['badges'].split(',').forEach(b => { const imgUrl = badgeAssets[b]; if (imgUrl) badges.push({ title: b.split('/')[0], img: imgUrl }); });
+                tags['badges'].split(',').forEach(b => { 
+                    const imgUrl = badgeAssets[b]; 
+                    if (imgUrl) badges.push({ title: b.split('/')[0], img: imgUrl }); 
+                });
             }
 
             let html = text.replace(/&/g, '&').replace(/</g, '<').replace(/>/g, '>');
@@ -749,45 +751,20 @@ createApp({
             loadChatHistory().then(() => connectTwitchChat());
         };
 
-        const loadAllEmotes = async () => {
+        // NEW BULLETPROOF SUPABASE EMOTE/BADGE HIGH-SPEED PIPELINE
+        const loadEmotesFromSupabase = async () => {
             try {
-                const [g7, c7] = await Promise.all([
-                    fetch('https://7tv.io/v3/emote-sets/global').then(r=>r.json()).catch(()=>({})), 
-                    fetch('https://7tv.io/v3/users/twitch/500128827').then(r=>r.json()).catch(()=>({}))
-                ]);
-                if (g7.emotes) g7.emotes.forEach(e => { customEmotes.value[e.name] = { url: `https://cdn.7tv.app/emote/${e.data.id}/1x.webp` }; });
-                if (c7.emote_set?.emotes) c7.emote_set.emotes.forEach(e => { customEmotes.value[e.name] = { url: `https://cdn.7tv.app/emote/${e.data.id}/1x.webp` }; });
-
-                const [gBttv, cBttv] = await Promise.all([
-                    fetch('https://api.betterttv.net/3/cached/emotes/global').then(r=>r.json()).catch(()=>[]),
-                    fetch('https://api.betterttv.net/3/cached/users/twitch/500128827').then(r=>r.json()).catch(()=>({}))
-                ]);
-                if (Array.isArray(gBttv)) gBttv.forEach(e => { customEmotes.value[e.code] = { url: `https://cdn.betterttv.net/emote/${e.id}/1x` }; });
-                if (cBttv.channelEmotes) cBttv.channelEmotes.forEach(e => { customEmotes.value[e.code] = { url: `https://cdn.betterttv.net/emote/${e.id}/1x` }; });
-                if (cBttv.sharedEmotes) cBttv.sharedEmotes.forEach(e => { customEmotes.value[e.code] = { url: `https://cdn.betterttv.net/emote/${e.id}/1x` }; });
-
-                const fFz = await fetch('https://api.frankerfacez.com/v1/room/id/500128827').then(r=>r.json()).catch(()=>({}));
-                if (fFz.sets) {
-                    Object.values(fFz.sets).forEach(set => {
-                        if (set.emoticons) set.emoticons.forEach(e => {
-                            customEmotes.value[e.name] = { url: e.urls['1'] || e.urls['2'] || e.urls['4'] };
-                        });
+                const { data, error } = await sbClient.from('emotes').select('*');
+                if (!error && data) {
+                    data.forEach(item => {
+                        if (item.provider === 'twitch_badge') {
+                            badgeAssets[item.id] = item.url;
+                        } else {
+                            customEmotes.value[item.name] = { url: item.url };
+                        }
                     });
                 }
-            } catch {}
-        };
-
-        const loadTwitchBadges = async () => {
-            try {
-                const [gRes, cRes] = await Promise.all([
-                    fetch('https://api.twitch.tv/helix/chat/badges/global', { headers: { 'Client-ID': TWITCH_PUBLIC_CLIENT_ID } }),
-                    fetch('https://api.twitch.tv/helix/chat/badges?broadcaster_id=500128827', { headers: { 'Client-ID': TWITCH_PUBLIC_CLIENT_ID } })
-                ]);
-                const gData = await gRes.json(), cData = await cRes.json();
-                if (gData?.data) gData.data.forEach(s => s.versions.forEach(v => { badgeAssets[`${s.set_id}/${v.id}`] = v.image_url_1x; }));
-                if (cData?.data) cData.data.forEach(s => s.versions.forEach(v => { badgeAssets[`${s.set_id}/${v.id}`] = v.image_url_1x; }));
-                return true;
-            } catch { return false; }
+            } catch (e) { console.error("Database cache pipeline failed.", e); }
         };
 
         const testGeminiBrain = async () => {
@@ -962,7 +939,7 @@ createApp({
             updateThemeClass();
             
             const redirectUri = encodeURIComponent(window.location.origin + window.location.pathname);
-            twitchAuthUrl.value = `https://id.twitch.tv/oauth2/authorize?client_id=${TWITCH_APP_CLIENT_ID}&redirect_uri=${redirectUri}&response_type=token&scope=chat:read+chat:edit&force_verify=true`;
+            twitchAuthUrl.value = `https://id.twitch.tv/oauth2/authorize?client_id=${TWITCH_PUBLIC_CLIENT_ID}&redirect_uri=${redirectUri}&response_type=token&scope=chat:read+chat:edit&force_verify=true`;
 
             if (window.location.hash.includes('access_token')) {
                 const params = new URLSearchParams(window.location.hash.substring(1));
@@ -998,9 +975,9 @@ createApp({
                 }
             });
 
+            // LOADING COMPLETELY BARRIERED VIA THE NEW HIGH-SPEED LOCAL PIPELINE
             Promise.all([
-                loadAllEmotes(),
-                loadTwitchBadges(),
+                loadEmotesFromSupabase(),
                 loadChatHistory(),
                 loadData(false),
                 checkLive(),
@@ -1024,7 +1001,7 @@ createApp({
         });
 
         return {
-            hostname, splashVisible, splashOpacity, currentTab, tabOffset, appTheme, toggleTheme, clips, allClipsCount, modals, isLive, currentUser, loginEmail, loginPass, loginError, showLoginPopup, geraldInput, geraldMessages, isGeraldTyping, talkToGerald, handleGeraldEnter, syncState, wipeState, logoutState, nukeState, isHeaderVisible, handleScroll, currentFilter, activeFilterLabel, isFilterMenuOpen, closeFilterMenu, applyFilter, parseMarkdown: (text) => parseMarkdownText(text, customEmotes.value), recentVods, currentVodIndex, nextVod, prevVod, customEmotes, showEmotePicker, insertEmote, toggleEmotes, toggleMinigames, closePickers, nukeCache, activeClipId, switchTab, playClip, selectedClip, showMinigames, runSync, disconnectTwitch, triggerAiMinigame, geminiStatus, sysStats, chatMessages, twitchChatToken, twitchAuthUrl, twitchUsername, sendTwitchChatMessage, handleSwipeStart, handleSwipeEnd, handleModalTouchStart, handleModalTouchMove, handleModalTouchEnd, clearGeraldHistory,
+            hostname, splashVisible, splashOpacity, currentTab, tabOffset, appTheme, toggleTheme, clips, allClipsCount, modals, isLive, currentUser, loginEmail, loginPass, loginError, showLoginPopup, geraldInput, geraldMessages, isGeraldTyping, talkToGerald, handleGeraldEnter, syncState, wipeState, logoutState, nukeState, isHeaderVisible, handleScroll, currentFilter, activeFilterLabel, isFilterMenuOpen, closeFilterMenu, applyFilter, parseMarkdown: (text) => parseMarkdownText(text, customEmotes.value), recentVods, currentVodIndex, nextVod, prevVod, customEmotes, showEmotePicker, insertEmote, toggleEmotes, toggleMinigames, closePickers, nukeCache, activeClipId, switchTab, playClip, selectedClip, showMinigames, runSync, disconnectTwitch, triggerAiMinigame, geminiStatus, sysStats, chatMessages, twitchChatToken, twitchAuthUrl, twitchUsername, sendTwitchChatMessage, handleSwipeStart, handleSwipeEnd, handleModalTouchStart, handleModalTouchMove, handleModalTouchEnd, clearGeraldHistory, badgeAssets,
             logoSvg: (id) => `<svg viewBox="0 0 100 100"><defs><linearGradient id="grad-${id}" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stop-color="#9146FF"/><stop offset="100%" stop-color="#a970ff"/></linearGradient></defs><circle cx="50" cy="50" r="40" fill="url(#grad-${id})"/><path d="M 33 38 L 48 62 L 62 38 L 62 55 Q 62 65 69 64" fill="none" stroke="#ffffff" stroke-width="8" stroke-linecap="round" stroke-linejoin="round"/></svg>`,
             handleLogin: async () => { 
                 loginError.value = '';
