@@ -844,7 +844,7 @@ createApp({
 
         const nextVod = () => { if (currentVodIndex.value < recentVods.value.length - 1) currentVodIndex.value++; };
         const prevVod = () => { if (currentVodIndex.value > (isLive.value ? -1 : 0)) currentVodIndex.value--; };
-        const closeFilterMenu = () => { isFilterMenuOpen = false; };
+        const closeFilterMenu = () => { isFilterMenuOpen.value = false; };
         const playClip = (clip) => { selectedClip.value = clip; };
         const insertEmote = (name) => { if (currentTab.value === 'gerald') geraldInput.value += ' ' + name + ' '; };
         const toggleEmotes = () => { showEmotePicker.value = !showEmotePicker.value; showMinigames.value = false; };
