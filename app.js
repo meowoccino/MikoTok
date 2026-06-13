@@ -661,6 +661,18 @@ createApp({
                 html = parseMarkdownText(text, customEmotes.value);
             }
 
+            // Deduplicate: if we already added this as a local echo, drop the IRC echo
+            const lowerUser = user.toLowerCase();
+            const myName = (twitchUsername.value || '').toLowerCase();
+            if (lowerUser === myName) {
+                const echoIdx = chatMessages.value.findIndex(m => m._localEcho && m.username.toLowerCase() === lowerUser);
+                if (echoIdx !== -1) {
+                    // Replace the optimistic echo with the confirmed message (has correct badges from IRC)
+                    chatMessages.value.splice(echoIdx, 1, { timestamp, username: user, html, color, badges });
+                    if (currentTab.value === 'chat') scrollChatToBottom();
+                    return;
+                }
+            }
             chatMessages.value.push({ timestamp, username: user, html, color, badges });
             if (chatMessages.value.length > 200) chatMessages.value.shift();
             if (currentTab.value === 'chat') scrollChatToBottom();
@@ -733,6 +745,20 @@ createApp({
         const sendTwitchChatMessage = (msg) => {
             if (!msg || !twitchWs || !wsAuthenticated) return;
             twitchWs.send(`PRIVMSG #codemiko :${msg}`);
+            // Optimistic local echo — show instantly without waiting for Twitch's IRC echo
+            const now = new Date();
+            const timestamp = now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+            const safeHtml = msg.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+            chatMessages.value.push({
+                timestamp,
+                username: twitchUsername.value,
+                html: parseMarkdownText(safeHtml, customEmotes.value),
+                color: '#9146FF',
+                badges: myTwitchBadges.value || [],
+                _localEcho: true
+            });
+            if (chatMessages.value.length > 200) chatMessages.value.shift();
+            scrollChatToBottom();
         };
 
         const disconnectTwitch = () => {
@@ -966,6 +992,20 @@ createApp({
             });
 
             loadEmotesFromSupabase().then(() => {
+                // Connect chat only after badges/emotes are loaded so they render correctly
+                if (twitchChatToken.value) {
+                    fetch('https://id.twitch.tv/oauth2/validate', { headers: { 'Authorization': 'OAuth ' + twitchChatToken.value } })
+                        .then(r => r.json())
+                        .then(d => { 
+                            if (d.login) { 
+                                twitchUsername.value = d.login; 
+                                localStorage.setItem('tw_username', d.login); 
+                                connectTwitchChat(); 
+                            } else disconnectTwitch(); 
+                        })
+                        .catch(() => connectTwitchChat()); 
+                } else connectTwitchChat();
+
                 Promise.all([
                     loadChatHistory(),
                     loadData(false),
@@ -976,19 +1016,6 @@ createApp({
                     setTimeout(() => { splashVisible.value = false; }, 300);
                 });
             });
-
-            if (twitchChatToken.value) {
-                fetch('https://id.twitch.tv/oauth2/validate', { headers: { 'Authorization': 'OAuth ' + twitchChatToken.value } })
-                    .then(r => r.json())
-                    .then(d => { 
-                        if (d.login) { 
-                            twitchUsername.value = d.login; 
-                            localStorage.setItem('tw_username', d.login); 
-                            connectTwitchChat(); 
-                        } else disconnectTwitch(); 
-                    })
-                    .catch(() => connectTwitchChat()); 
-            } else connectTwitchChat();
 
             setInterval(() => {
                 sysStats.value.cpu = Math.floor(Math.random() * (48 - 14 + 1)) + 14;
