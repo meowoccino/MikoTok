@@ -584,8 +584,6 @@ createApp({
             const bgHex = appTheme.value === 'light' ? '#f8f9fa' : '#0d0d11';
             const m = document.querySelector('meta[name="theme-color"]');
             if (m) m.setAttribute('content', bgHex);
-            document.documentElement.style.backgroundColor = bgHex;
-            document.body.style.backgroundColor = bgHex;
         };
         
         const toggleTheme = () => { appTheme.value = appTheme.value === 'light' ? 'dark' : 'light'; localStorage.setItem('miko_theme', appTheme.value); updateThemeClass(); };
