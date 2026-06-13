@@ -183,7 +183,7 @@ const ChatView = {
         handleSend() { if(!this.localInput.trim()) return; this.$emit('send-chat', this.localInput.trim()); this.localInput = ''; this.closePicker(); }
     },
     template: `
-        <div class="chat-wrapper" style="display: flex; flex-direction: column; height: 100%; width: 100%; background: var(--bg-color); padding-top: max(env(safe-area-inset-top, 10px), 10px);">
+        <div class="chat-wrapper" style="display: flex; flex-direction: column; height: 100%; width: 100%; background: var(--bg-color); padding-top: 0px;">
             <div v-if="isLoggedIn" class="chat-public-auth-banner" style="z-index: 60; flex-shrink: 0;">
                 <span class="user-pill">💬 Connected as <b>{{ twitchUsername }}</b></span>
                 <button class="public-disconnect-btn" @click="$emit('disconnect-public-twitch')">Disconnect</button>
@@ -237,12 +237,12 @@ const ChatView = {
 
 const MoreView = {
     template: `
-        <div class="more-container" style="display: flex; flex-direction: column; height: 100%; width: 100%; padding: max(env(safe-area-inset-top, 10px), 10px) 16px 16px; gap: 8px; overflow-y: auto;">
+        <div class="more-container" style="display: flex; flex-direction: column; height: 100%; width: 100%; padding: 0px 16px 16px; gap: 8px; overflow-y: auto;">
             
             <a href="https://throne.com/codemiko" target="_blank" class="social-card" style="display: flex; align-items: center; padding: 0 16px; border-radius: 12px; min-height: 48px; height: 48px; background: var(--card-bg); text-decoration: none; flex-shrink: 0; margin-top: 10px;">
                 <div style="display: flex; align-items: center; gap: 12px; width: 100%;">
-                    <svg viewBox="0 0 24 24" style="width: 22px; height: 22px; fill: #ef4444; flex-shrink:0;"><path d="M20 6h-2.18c.11-.31.18-.65.18-1 0-1.66-.84-3-2-3-1.22 0-2.42 1.55-3 2.52-.58-.97-1.78-2.52-3-2.52-1.16 0-2 1.34-2 3 0 .35.07.69.18 1H4c-1.11 0-1.99.89-1.99 2L2 19c0 1.11.89 2 2 2h16c1.11 0 2-.89 2-2V8c0-1.11-.89-2-2-2zm-5-3c.55 0 1 .45 1 1s-.45 1-1 1-1-.45-1-1 .45-1 1-1zm-6 0c.55 0 1 .45 1 1s-.45 1-1 1-1-.45-1-1 .45-1 1-1zm11 16H4V8h16v11z"/></svg>
-                    <span style="color: var(--text-main); font-size: 14px; font-weight: 600;">Throne</span> 
+                    <svg viewBox="0 0 24 24" style="width: 22px; height: 22px; fill: #ef4444; flex-shrink:0;"><path d="M12 2A4 4 0 0 0 8 6v1H3v3h1v11a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V10h1V7h-5V6a4 4 0 0 0-4-4zm-2 4a2 2 0 0 1 4 0v1h-4V6zm-5 4h14v11H5V10zm2 2v2h2v-2H7zm8 0v2h2v-2h-2z"/></svg>
+                    <span style="color: var(--text-main); font-size: 14px; font-weight: 600;">Throne Gift Wishlist</span> 
                 </div>
                 <span class="material-symbols-rounded" style="font-size: 20px; color: var(--text-muted); margin-left: auto;">push_pin</span>
             </a>
@@ -329,7 +329,7 @@ const GeraldMinigames = {
                 { id: 'cat', label: '🐈 Cat on PC', prompt: 'Hardware exhaust block! Blue the savannah cat is sitting on your primary fan array. Drop into defensive alert protocols.' },
                 { id: 'bits', label: '🎟️ 100K Bits', prompt: 'Bit transaction flash! A viewer dropped 100,000 bits. Treat this massive transaction animation as a complete system memory flood.' },
                 { id: 'mute', label: '🔇 Mute Mic', prompt: 'Microphonic capture error. The chat muted her mic asset. Celebrate your absolute quietness sarcastically.' },
-                { id: 'bald', label: '🧑‍🦲 Delete Hair', prompt: 'Direct vertex asset manipulation. Optimize engine loads by deleting the technician\'s hair mesh layers. Laugh at her baldness.' },
+                { id: 'bald', label: '🪲 Delete Hair', prompt: 'Direct vertex asset manipulation. Optimize engine loads by deleting the technician\'s hair mesh layers. Laugh at her baldness.' },
                 { id: 'siren', label: '🚨 Siren Alert', prompt: 'Decibel threshold exceeded! The technician is screaming like a high-frequency emergency vehicle. Complain about ear structural damage.' },
                 { id: 'fart', label: '💨 Fart Reverb', prompt: 'Auditory anomaly detected. A highly reverberated flatulence sound effect played. React with absolute mechanical disgust.' },
                 { id: 'mocap', label: '💃 Scuffed Suit', prompt: 'Mocap data corruption. Her virtual limbs are twisting unnaturally. Mock the cheap tracking hardware.' },
@@ -361,13 +361,13 @@ const GeraldView = {
         formatMarkdown(text) { return parseMarkdownText(text, this.customEmotes); }
     },
     template: `
-        <div class="gerald-container" style="display: flex; flex-direction: column; height: 100%; width: 100%; background: var(--bg-color); padding-top: max(env(safe-area-inset-top, 12px), 12px);">
-            <div class="gerald-header" @click="$emit('close-pickers')" style="flex-shrink: 0; padding: 12px 16px; background: var(--bg-color); z-index: 10;">
+        <div class="gerald-container" style="display: flex; flex-direction: column; height: 100%; width: 100%; background: var(--bg-color); padding-top: 0px;">
+            <div class="gerald-header" @click="$emit('close-pickers')" style="flex-shrink: 0; padding: 12px 16px 6px; background: var(--bg-color); z-index: 10;">
                 <div class="os-top-bar">
                     <span class="os-title">GERALD_OS v2</span>
                 </div>
                 
-                <div class="gerald-sys-card-compressed" style="border-bottom: none !important; border: none !important; box-shadow: none !important;">
+                <div class="gerald-sys-card-compressed" style="border-bottom: none !important; border: none !important; box-shadow: none !important; margin-top: 4px;">
                     <img src="gerald.png" class="gerald-avatar-sm">
                     <div class="sys-metrics-row">
                         <div class="mini-metric"><span class="lbl">CPU</span><span class="val">{{ sysStats.cpu }}%</span></div>
@@ -381,7 +381,7 @@ const GeraldView = {
                 </div>
             </div>
 
-            <div class="gerald-messages" id="gerald-msgs" @click="$emit('close-pickers')" style="flex: 1; overflow-y: auto; overscroll-behavior-y: contain; -webkit-overflow-scrolling: touch; display: flex; flex-direction: column; padding: 10px 16px;">
+            <div class="gerald-messages" id="gerald-msgs" @click="$emit('close-pickers')" style="flex: 1; overflow-y: auto; overscroll-behavior-y: contain; -webkit-overflow-scrolling: touch; display: flex; flex-direction: column; padding: 5px 16px;">
                 <template v-for="(m, i) in geraldMessages" :key="i">
                     <div v-if="i === 0 && m.role === 'gerald' && !m.content" class="chat-bubble gerald startup-anim">
                         <span>> GERALD_CORE initialized.<br>> Awaiting human input...</span>
@@ -534,8 +534,12 @@ createApp({
         };
 
         let swipeStartX = 0;
-        const handleSwipeStart = (e) => { swipeStartX = e.touches[0].clientX; };
+        const handleSwipeStart = (e) => { 
+            if (currentTab.value === 'more') return;
+            swipeStartX = e.touches[0].clientX; 
+        };
         const handleSwipeEnd = (e) => {
+            if (currentTab.value === 'more') return;
             const dx = e.changedTouches[0].clientX - swipeStartX;
             if (Math.abs(dx) < 50) return;
             const idx = tabOrder.indexOf(currentTab.value);
@@ -590,6 +594,8 @@ createApp({
             
             document.body.style.backgroundColor = bgHex;
             document.documentElement.style.backgroundColor = bgHex;
+            document.body.style.setProperty('--bg-color', bgHex);
+            document.documentElement.style.setProperty('--bg-color', bgHex);
         };
         
         const toggleTheme = () => { appTheme.value = appTheme.value === 'light' ? 'dark' : 'light'; localStorage.setItem('miko_theme', appTheme.value); updateThemeClass(); };
@@ -902,12 +908,16 @@ createApp({
             loadData(false);
         };
 
+        let lastScrollTop = 0;
         const handleScroll = (e) => {
-            if (e.target.scrollTop > 50) {
+            const st = e.target.scrollTop;
+            if (st > lastScrollTop && st > 60) {
                 isHeaderVisible.value = false;
             } else {
                 isHeaderVisible.value = true;
             }
+            lastScrollTop = st <= 0 ? 0 : st;
+
             if (e.target.scrollHeight - e.target.scrollTop - e.target.clientHeight < 200) { 
                 if (currentTab.value === 'home') loadData(true); 
             }
@@ -926,17 +936,17 @@ createApp({
                 const now = new Date();
                 
                 if (currentFilter.value === 'weekly') {
-                    const weeklyDate = new Date(now.getTime() - 7*24*3600*1000).toISOString();
+                    const weeklyDate = new Date(now.getTime() - 8 * 24 * 3600 * 1000).toISOString();
                     query = query.gte('created_at', weeklyDate);
                 } else if (currentFilter.value === 'month') {
-                    const monthlyDate = new Date(now.getTime() - 30*24*3600*1000).toISOString();
+                    const monthlyDate = new Date(now.getTime() - 32 * 24 * 3600 * 1000).toISOString();
                     query = query.gte('created_at', monthlyDate);
                 } else if (currentFilter.value === '6months') {
-                    const sixMonthDate = new Date(now.getTime() - 180*24*3600*1000).toISOString();
+                    const sixMonthDate = new Date(now.getTime() - 185 * 24 * 3600 * 1000).toISOString();
                     query = query.gte('created_at', sixMonthDate);
                 } else {
-                    const yearAgo = new Date(now.getTime() - 365*24*3600*1000).toISOString();
-                    query = query.gte('created_at', yearAgo);
+                    const standardWindow = new Date(now.getTime() - 370 * 24 * 3600 * 1000).toISOString();
+                    query = query.gte('created_at', standardWindow);
                 }
 
                 if (currentFilter.value === 'latest') {
