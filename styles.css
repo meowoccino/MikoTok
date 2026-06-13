@@ -39,9 +39,10 @@ body, html {
 }
 
 #app-container {
-    width: 100%; max-width: 540px; height: 100%; position: relative;
+    width: 100%; max-width: 540px; height: 100dvh; position: relative;
     background: var(--bg-color); overflow: hidden; display: flex;
     flex-direction: column; transition: background-color 0.2s;
+    padding-top: max(env(safe-area-inset-top, 24px), 24px);
 }
 
 [v-cloak] { display: none !important; }
@@ -78,9 +79,8 @@ body, html {
 }
 @keyframes spin-orbit { 0% { transform: rotate(0deg) scale(0.8); } 50% { transform: rotate(180deg) scale(1.1); } 100% { transform: rotate(360deg) scale(0.8); } }
 
-/* Header is back to normal document flow */
 .app-header {
-    width: 100%; padding: calc(12px + env(safe-area-inset-top, 0px)) 20px 12px;
+    width: 100%; padding: 12px 20px;
     display: flex; align-items: center; justify-content: space-between;
     z-index: 200; flex-shrink: 0; background: var(--bg-color);
     border-bottom: 1px solid var(--border-color);
@@ -174,7 +174,7 @@ body, html {
 .pulse-red { background: var(--danger); }
 .pulse-lbl { font-size: 9px; font-family: monospace; font-weight: 700; }
 
-.chat-bubble { max-width: 85%; padding: 10px 16px; font-size: 13.5px; line-height: 1.45; background: var(--card-bg); border: 1px solid var(--border-color); border-radius: 18px; color: var(--text-main); word-wrap: break-word; }
+.chat-bubble { max-width: 85%; padding: 10px 16px; font-size: 13.5px; line-height: 1.45; background: var(--card-bg); border: 1px solid var(--border-color); border-radius: 18px; color: var(--text-main); word-wrap: break-word; margin-bottom: 12px; }
 .chat-bubble.gerald { border-color: var(--primary); align-self: flex-start; }
 .chat-bubble.user { align-self: flex-end; background: var(--border-color); border-color: transparent; }
 
@@ -203,14 +203,14 @@ body, html {
 .nav-item.active, .nav-item.active-gerald { color: var(--primary) !important; }
 .nav-item.active .material-symbols-rounded, .nav-item.active-gerald .material-symbols-rounded { font-variation-settings: 'FILL' 1; }
 
-.sheet-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 2000; opacity: 0; pointer-events: none; transition: 0.3s; }
+.sheet-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 6000; opacity: 0; pointer-events: none; transition: 0.3s; }
 .sheet-overlay.open { opacity: 1; pointer-events: auto; }
 .bottom-sheet { position: absolute; bottom: 0; width: 100%; max-width: 540px; background: var(--card-bg); border-radius: 24px 24px 0 0; padding: 20px 20px calc(20px + env(safe-area-inset-bottom, 0px)); transform: translateY(100%); transition: transform 0.3s; }
 .sheet-overlay.open .bottom-sheet { transform: translateY(0); }
 .sheet-option { width: 100%; background: transparent; border: none; color: var(--text-muted); padding: 14px; font-size: 13px; font-weight: 800; text-transform: uppercase; }
 .sheet-option.active { background: rgba(145,70,255,0.1); color: var(--primary); border: 1px solid rgba(145,70,255,0.2); border-radius: 12px; }
 
-.modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 2000; display: flex; justify-content: center; align-items: flex-end; opacity: 0; pointer-events: none; transition: 0.3s; }
+.modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 6000; display: flex; justify-content: center; align-items: flex-end; opacity: 0; pointer-events: none; transition: 0.3s; }
 .modal-overlay.open { opacity: 1; pointer-events: auto; }
 .modal-content { background: var(--modal-bg); border-radius: 30px 30px 0 0; padding: 25px; border-top: 1px solid var(--border-color); width: 100%; max-width: 540px; transform: translateY(100%); transition: transform 0.3s; max-height: 90vh; overflow-y: auto; }
 .modal-overlay.open .modal-content { transform: translateY(0); }
