@@ -42,7 +42,6 @@ body, html {
     width: 100%; max-width: 540px; height: 100dvh; position: relative;
     background: var(--bg-color); overflow: hidden; display: flex;
     flex-direction: column; transition: background-color 0.2s;
-    padding-top: max(env(safe-area-inset-top, 24px), 24px);
 }
 
 [v-cloak] { display: none !important; }
@@ -79,11 +78,17 @@ body, html {
 }
 @keyframes spin-orbit { 0% { transform: rotate(0deg) scale(0.8); } 50% { transform: rotate(180deg) scale(1.1); } 100% { transform: rotate(360deg) scale(0.8); } }
 
+/* Header is now tight and animates away when scrolling */
 .app-header {
-    width: 100%; padding: 12px 20px;
+    width: 100%; padding: max(env(safe-area-inset-top, 10px), 10px) 16px 10px;
     display: flex; align-items: center; justify-content: space-between;
     z-index: 200; flex-shrink: 0; background: var(--bg-color);
     border-bottom: 1px solid var(--border-color);
+    transition: transform 0.3s ease;
+}
+.app-header.header-hidden {
+    transform: translateY(-100%);
+    position: absolute; 
 }
 .theme-toggle-btn { background: transparent; border: none; color: var(--text-main); padding: 4px; display: flex; }
 
@@ -128,9 +133,6 @@ body, html {
 .chat-public-auth-banner { display: flex; justify-content: space-between; align-items: center; background: var(--card-bg); border-bottom: 1px solid var(--border-color); padding: 10px 16px; font-size: 12px; z-index: 10; }
 .public-disconnect-btn { background: rgba(239,68,68,0.1); border: 1px solid rgba(239,68,68,0.2); color: var(--danger); padding: 5px 12px; border-radius: 12px; font-weight: 700; }
 
-.chat-login-popup-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.6); backdrop-filter: blur(5px); z-index: 5000; display: flex; align-items: center; justify-content: center; opacity: 0; pointer-events: none; transition: 0.3s; }
-.chat-login-popup-overlay.open { opacity: 1; pointer-events: auto; }
-.chat-login-card { display: flex; flex-direction: column; align-items: center; text-align: center; background: var(--card-bg); border: 1px solid var(--border-color); border-radius: 24px; padding: 36px 28px; width: 85%; max-width: 320px; box-shadow: 0 10px 40px rgba(0,0,0,0.2); }
 .chat-login-icon { width: 48px; height: 48px; fill: #9146FF; margin-bottom: 16px; }
 .chat-login-title { font-family: 'Outfit', sans-serif; font-size: 22px; font-weight: 900; margin: 0 0 8px; }
 .chat-login-sub { font-size: 13px; color: var(--text-muted); margin: 0 0 24px; line-height: 1.5; }
@@ -191,7 +193,6 @@ body, html {
 .gerald-input { flex: 1; background: transparent; border: none; padding: 12px 8px; color: var(--text-main); outline: none; font-size: 14px; resize: none; max-height: 120px; }
 .gerald-send { background: var(--primary); border: none; width: 44px; height: 44px; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: #ffffff; flex-shrink: 0; }
 
-/* Navbar is now a standard, docked flex item */
 .bottom-nav {
     width: 100%; background: var(--nav-bg); 
     border-top: 1px solid var(--border-color); 
