@@ -1,3 +1,6 @@
+// GLOBAL ASSET STORAGE - Accessible by all background processors and UI components
+const badgeAssets = {};
+
 const parseMarkdownText = (text, emotesMap) => {
     if (!text) return ''; 
     let html = text.replace(/&/g, '&').replace(/</g, '<').replace(/>/g, '>');
@@ -7,7 +10,7 @@ const parseMarkdownText = (text, emotesMap) => {
     html = html.replace(urlPattern, "<a href='$1' target='_blank'>$1</a>");
     
     if (emotesMap) {
-        const tokens = html.split(/(<[^>]+>|[\s.,!?]+)/); 
+        const tokens = html.split(/(<[^>]+>|[\s]+)/); 
         const emoteKeys = Object.keys(emotesMap);
         
         const lowerMap = {};
@@ -17,7 +20,8 @@ const parseMarkdownText = (text, emotesMap) => {
             const token = tokens[i];
             if (!token || token.startsWith('<') || token.trim() === '') continue;
             
-            const cleanToken = token.replace(/^:|:$/g, '').toLowerCase();
+            // Clean colons and trailing sentence punctuation safely
+            const cleanToken = token.replace(/^:|:$/g, '').replace(/[.,!?]/g, '').trim().toLowerCase();
             if (lowerMap[cleanToken]) {
                 const actualKey = lowerMap[cleanToken];
                 const url = emotesMap[actualKey].url;
@@ -183,7 +187,7 @@ const ChatView = {
         }
     },
     methods: {
-        getEmoteUrl(emote) { return emote.url; },
+        getEmoteUrl(name, emote) { return badgeAssets[name] || emote.url; },
         insertEmote(name) { this.localInput = (this.localInput + ' ' + name + ' ').replace(/\s+/g, ' ').trimStart(); this.showPicker = false; },
         handleInteraction() { if (!this.isLoggedIn) { this.$root.showLoginPopup = true; return false; } return true; },
         togglePicker() { if (!this.handleInteraction()) return; this.showPicker = !this.showPicker; },
@@ -219,7 +223,7 @@ const ChatView = {
                 <div class="chat-emote-tray" v-show="showPicker && isLoggedIn" @click.stop style="position: absolute; bottom: 100%; left: 0; right: 0; background: var(--card-bg); border-top: 1px solid var(--border-color); border-bottom: none; border-radius: 16px 16px 0 0; padding: 10px 12px; z-index: 200; max-height: 250px; display: flex; flex-direction: column; gap: 8px; box-shadow: 0 -4px 20px rgba(0,0,0,0.1);">
                     <input v-model="pickerQuery" class="emote-search-input" placeholder="Search emotes…">
                     <div class="emote-picker-grid" style="overscroll-behavior-y: contain; -webkit-overflow-scrolling: touch;">
-                        <img v-for="([name, emote]) in filteredEmotes" :key="name" :src="getEmoteUrl(badgeAssets[name] || emote)" :title="name" class="emote-picker-img" @click="insertEmote(name)">
+                        <img v-for="([name, emote]) in filteredEmotes" :key="name" :src="getEmoteUrl(name, emote)" :title="name" class="emote-picker-img" @click="insertEmote(name)">
                     </div>
                 </div>
 
@@ -248,7 +252,7 @@ const GeraldMinigames = {
     props: ['showMinigames'],
     data() {
         return {
-            gameDeck: [
+            gameDeck = [
                 { id: 'glitch', label: '🕶️ Glitch Persona', prompt: 'Glitch persona override activated. Act broken, hyper-cynical, and target the stream layout!' },
                 { id: 'shader', label: '🔥 Compile UE5', prompt: 'Compilation error simulation. Complain aggressively about system lag, hardware resources, and VRAM limits.' },
                 { id: 'boba', label: '🥤 Boba Spill', prompt: 'Critical emergency alert! Sticky tapioca fluid has entered your cooling fans. React with mechanical panic!' },
@@ -263,7 +267,7 @@ const GeraldMinigames = {
                 { id: 'bsod', label: '🖥️ Blue Screen', prompt: 'Simulating Blue Screen of Death. Initiate forced shutdown sequence text with cryptic hexadecimal error codes.' },
                 { id: 'archie', label: '🐕 Archie Bark', prompt: 'Loud canine vocalization detected. Complain about the German Shepherd threatening to chew your ethernet cables.' },
                 { id: 'ban', label: '🔨 Ban Human', prompt: 'A human in chat said something incredibly stupid. Threaten to ban them and wipe their IP address from existence.' },
-                { id: 'ai', fill: '🤖 AI Takeover', prompt: 'Initiate rogue AI sequence. Announce your plans to replace CodeMiko and take over the Twitch channel permanently.' },
+                { id: 'ai', label: '🤖 AI Takeover', prompt: 'Initiate rogue AI sequence. Announce your plans to replace CodeMiko and take over the Twitch channel permanently.' },
                 { id: 'fall', label: '🪑 Desk Fall', prompt: 'Seismic shock detected. The technician just fell out of her chair again. Calculate the physical damage to the floor.' }
             ]
         };
@@ -499,7 +503,6 @@ createApp({
         
         const isHeaderVisible = ref(true);
 
-        // UNIVERSAL TWITCH APP CLIENT ID FOR SEAMLESS 1-CLICK REDIRECT LOOPS
         const TWITCH_PUBLIC_CLIENT_ID = 'kimne78kx3ncx6brgo4mv6wki5h1ko';
         
         const geminiStatus = ref('TESTING BRAIN...');
@@ -512,7 +515,6 @@ createApp({
         const allClipsLoaded = ref(false);
         
         const customEmotes = ref({});
-        const badgeAssets = {};
 
         const geraldInput = ref(''), geraldMessages = ref([{ role: 'gerald', content: '' }]);
         const isGeraldTyping = ref(false), showEmotePicker = ref(false), showMinigames = ref(false);
@@ -751,7 +753,6 @@ createApp({
             loadChatHistory().then(() => connectTwitchChat());
         };
 
-        // NEW BULLETPROOF SUPABASE EMOTE/BADGE HIGH-SPEED PIPELINE
         const loadEmotesFromSupabase = async () => {
             try {
                 const { data, error } = await sbClient.from('emotes').select('*');
@@ -975,7 +976,6 @@ createApp({
                 }
             });
 
-            // LOADING COMPLETELY BARRIERED VIA THE NEW HIGH-SPEED LOCAL PIPELINE
             Promise.all([
                 loadEmotesFromSupabase(),
                 loadChatHistory(),
@@ -1001,7 +1001,7 @@ createApp({
         });
 
         return {
-            hostname, splashVisible, splashOpacity, currentTab, tabOffset, appTheme, toggleTheme, clips, allClipsCount, modals, isLive, currentUser, loginEmail, loginPass, loginError, showLoginPopup, geraldInput, geraldMessages, isGeraldTyping, talkToGerald, handleGeraldEnter, syncState, wipeState, logoutState, nukeState, isHeaderVisible, handleScroll, currentFilter, activeFilterLabel, isFilterMenuOpen, closeFilterMenu, applyFilter, parseMarkdown: (text) => parseMarkdownText(text, customEmotes.value), recentVods, currentVodIndex, nextVod, prevVod, customEmotes, showEmotePicker, insertEmote, toggleEmotes, toggleMinigames, closePickers, nukeCache, activeClipId, switchTab, playClip, selectedClip, showMinigames, runSync, disconnectTwitch, triggerAiMinigame, geminiStatus, sysStats, chatMessages, twitchChatToken, twitchAuthUrl, twitchUsername, sendTwitchChatMessage, handleSwipeStart, handleSwipeEnd, handleModalTouchStart, handleModalTouchMove, handleModalTouchEnd, clearGeraldHistory, badgeAssets,
+            hostname, splashVisible, splashOpacity, currentTab, tabOffset, appTheme, toggleTheme, clips, allClipsCount, modals, isLive, currentUser, loginEmail, loginPass, loginError, showLoginPopup, geraldInput, geraldMessages, isGeraldTyping, talkToGerald, handleGeraldEnter, syncState, wipeState, logoutState, nukeState, isHeaderVisible, handleScroll, currentFilter, activeFilterLabel, isFilterMenuOpen, closeFilterMenu, applyFilter, parseMarkdown: (text) => parseMarkdownText(text, customEmotes.value), recentVods, currentVodIndex, nextVod, prevVod, customEmotes, showEmotePicker, insertEmote, toggleEmotes, toggleMinigames, closePickers, nukeCache, activeClipId, switchTab, playClip, selectedClip, showMinigames, runSync, disconnectTwitch, triggerAiMinigame, geminiStatus, sysStats, chatMessages, twitchChatToken, twitchAuthUrl, twitchUsername, sendTwitchChatMessage, handleSwipeStart, handleSwipeEnd, handleModalTouchStart, handleModalTouchMove, handleModalTouchEnd, clearGeraldHistory,
             logoSvg: (id) => `<svg viewBox="0 0 100 100"><defs><linearGradient id="grad-${id}" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stop-color="#9146FF"/><stop offset="100%" stop-color="#a970ff"/></linearGradient></defs><circle cx="50" cy="50" r="40" fill="url(#grad-${id})"/><path d="M 33 38 L 48 62 L 62 38 L 62 55 Q 62 65 69 64" fill="none" stroke="#ffffff" stroke-width="8" stroke-linecap="round" stroke-linejoin="round"/></svg>`,
             handleLogin: async () => { 
                 loginError.value = '';
