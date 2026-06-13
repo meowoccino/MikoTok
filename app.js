@@ -1015,8 +1015,9 @@ createApp({
                             twitchUsername.value = d.login; 
                             localStorage.setItem('tw_username', d.login); 
                             
-                            // Let's grab every single badge straight from Twitch!
-                            loadTwitchBadges(twitchChatToken.value).then(() => connectTwitchChat()); 
+                            // 🚀 ASYNCHRONOUS BACKGROUND LOADING (FIXED SPEED DELAY):
+                            connectTwitchChat(); 
+                            loadTwitchBadges(twitchChatToken.value); 
                             
                         } else disconnectTwitch(); 
                     })
