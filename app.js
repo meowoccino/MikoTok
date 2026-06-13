@@ -293,7 +293,77 @@ const MoreView = {
             </a>
             
             <a href="https://www.instagram.com/thecodemiko/" target="_blank" class="social-card" style="display: flex; align-items: center; padding: 0 16px; border-radius: 12px; min-height: 48px; height: 48px; flex-shrink: 0;">
-                <svg viewBox="0 0 24 24" class="social-icon" style="width: 22px; height: 22px; color: #E1306C;"><path fill="currentColor" d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zM12 0C8.741 0 8.333.014 7.053.072 2.695.272.273 2.69.073 7.052.014 8.333 0 8.741 0 12c0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98C8.333 23.986 8.741 24 12 24c3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98C15.668.014 15.259 0 12 0zm0 5.838a6.162 6.162 0 100 12.324 6.162 6.162 0 000-12.324zM12 16a4 4 0 110-8 4 4 0 010 8zm6.406-11.845a1.44 1.44 0 100 2.881 1.44 1.44 0 000-2.881z"/></svg>
+                <svg viewBox="0 0 24 24" class="social-icon" style="width: 22px; height: 22px; color: #E1306C;"><path fill="currentColor" d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07; top: 12px; right: 12px; background: transparent; border: none; color: var(--text-muted); font-size: 24px; line-height:1; cursor: pointer;">×</button>
+                        <svg viewBox="0 0 24 24" class="chat-login-icon" style="width: 48px; height: 48px; margin: 0 auto 16px; color: #9146FF;"><path fill="currentColor" d="M11.571 4.714h1.715v5.143H11.57zm4.715 0H18v5.143h-1.714zM6 0L1.714 4.286v15.428h5.143V24l4.286-4.286h3.428L22.286 12V0zm14.571 11.143l-3.428 3.428h-3.429l-3 3v-3H6.857V1.714h13.714Z"/></svg>
+                        <p class="chat-login-title" style="font-size: 20px; font-weight: bold; margin-bottom: 8px;">Join the chat</p>
+                        <p class="chat-login-sub" style="font-size: 14px; color: var(--text-muted); margin-bottom: 20px;">Connect your Twitch account to read and send messages live.</p>
+                        <a :href="twitchAuthUrl" target="_blank" class="twitch-login-btn" @click="$root.showLoginPopup = false" style="display: block; background: #9146FF; color: white; padding: 12px; border-radius: 8px; text-decoration: none; font-weight: bold;">Connect with Twitch</a>
+                    </div>
+                </div>
+            </teleport>
+        </div>
+    `
+};
+
+const MoreView = {
+    template: `
+        <div class="more-container" style="display: flex; flex-direction: column; height: 100%; width: 100%; padding: 0px 16px 16px; gap: 8px; overflow-y: auto;">
+            
+            <a href="https://throne.com/codemiko" target="_blank" class="social-card" style="display: flex; align-items: center; padding: 0 16px; border-radius: 12px; min-height: 48px; height: 48px; background: var(--card-bg); text-decoration: none; flex-shrink: 0; margin-top: 10px;">
+                <div style="display: flex; align-items: center; gap: 12px; width: 100%;">
+                    <svg viewBox="0 0 24 24" style="width: 22px; height: 22px; fill: #ef4444; flex-shrink:0;"><path d="M12 2A4 4 0 0 0 8 6v1H3v3h1v11a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V10h1V7h-5V6a4 4 0 0 0-4-4zm-2 4a2 2 0 0 1 4 0v1h-4V6zm-5 4h14v11H5V10zm2 2v2h2v-2H7zm8 0v2h2v-2h-2z"/></svg>
+                    <span style="color: var(--text-main); font-size: 14px; font-weight: 600;">Throne Gift Wishlist</span> 
+                </div>
+                <span class="material-symbols-rounded" style="font-size: 20px; color: var(--text-muted); margin-left: auto;">push_pin</span>
+            </a>
+
+            <a href="https://www.twitch.tv/codemiko" target="_blank" class="social-card" style="display: flex; align-items: center; padding: 0 16px; border-radius: 12px; min-height: 48px; height: 48px; flex-shrink: 0;">
+                <svg viewBox="0 0 24 24" class="social-icon" style="width: 22px; height: 22px; color: #9146FF;"><path fill="currentColor" d="M11.571 4.714h1.715v5.143H11.57zm4.715 0H18v5.143h-1.714zM6 0L1.714 4.286v15.428h5.143V24l4.286-4.286h3.428L22.286 12V0zm14.571 11.143l-3.428 3.428h-3.429l-3 3v-3H6.857V1.714h13.714Z"/></svg>
+                <span style="color: var(--text-main); font-size: 14px;">Twitch</span>
+            </a>
+            
+            <a href="https://www.youtube.com/@CodeMiko" target="_blank" class="social-card" style="display: flex; align-items: center; padding: 0 16px; border-radius: 12px; min-height: 48px; height: 48px; flex-shrink: 0;">
+                <svg viewBox="0 0 24 24" class="social-icon" style="width: 22px; height: 22px; color: #FF0000;"><path fill="currentColor" d="M23.498 6.186a3.016 3.016 0 0 0-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 0 0 .502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 0 0 2.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 0 0 2.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z"/></svg>
+                <span style="color: var(--text-main); font-size: 14px;">YouTube</span>
+            </a>
+            
+            <a href="https://kick.com/codemiko" target="_blank" class="social-card" style="display: flex; align-items: center; padding: 0 16px; border-radius: 12px; min-height: 48px; height: 48px; flex-shrink: 0;">
+                <svg viewBox="0 0 24 24" class="social-icon" style="width: 22px; height: 22px; color: #53FC18;"><path fill="currentColor" d="M19 2H5a3 3 0 0 0-3 3v14a3 3 0 0 0 3 3h14a3 3 0 0 0 3-3V5a3 3 0 0 0-3-3zM10.1 14.5v3.3H7.4V6.2h2.7v4.6l3.3-4.6h3.4l-3.9 5.1 4.2 6.5h-3.5z"/></svg>
+                <span style="color: var(--text-main); font-size: 14px;">Kick</span>
+            </a>
+            
+            <a href="https://discord.com/invite/codemiko" target="_blank" class="social-card" style="display: flex; align-items: center; padding: 0 16px; border-radius: 12px; min-height: 48px; height: 48px; flex-shrink: 0;">
+                <svg viewBox="0 0 24 24" class="social-icon" style="width: 22px; height: 22px; color: #5865F2;"><path fill="currentColor" d="M20.317 4.3698a19.7913 19.7913 0 00-4.8851-1.5152.0741.0741 0 00-.0785.0371c-.211.3753-.4447.8648-.6083 1.2495-1.8447-.2762-3.68-.2762-5.4868 0-.1636-.3933-.4058-.8742-.6177-1.2495a.077.077 0 00-.0785-.037 19.7363 19.7363 0 00-4.8852 1.515.0699.0699 0 00-.0321.0277C.5334 9.0458-.319 13.5799.0992 18.0578a.0824.0824 0 00.0312.0561c2.0528 1.5076 4.0413 2.4228 5.9929 3.0294a.0777.0777 0 00.0842-.0276c.4616-.6304.8731-1.2952 1.226-1.9942a.076.076 0 00-.0416-.1057c-.6528-.2476-1.2743-.5495-1.8722-.8923a.077.077 0 01-.0076-.1277c.1258-.0943.2517-.1923.3718-.2914a.0743.0743 0 01.0776-.0105c3.9278 1.7933 8.18 1.7933 12.0614 0a.0739.0739 0 01.0785.0095c.1202.099.246.1981.3728.2924a.077.077 0 01-.0066.1276 12.2986 12.2986 0 01-1.873.8914.0766.0766 0 00-.0407.1067c.3604.698.7719 1.3628 1.225 1.9932a.076.076 0 00.0842.0286c1.961-.6067 3.9495-1.5219 6.0023-3.0294a.077.077 0 00.0313-.0552c.5004-5.177-.8382-9.6739-3.5485-13.6604a.061.061 0 00-.0312-.0286zM8.02 15.3312c-1.1825 0-2.1569-1.0857-2.1569-2.419 0-1.3332.9555-2.4189 2.157-2.4189 1.2108 0 2.1757 1.0952 2.1568 2.419 0 1.3332-.9555 2.4189-2.1569 2.4189zm7.9748 0c-1.1825 0-2.1569-1.0857-2.1569-2.419 0-1.3332.9554-2.4189 2.1569-2.4189 1.2108 0 2.1757 1.0952 2.1568 2.419 0 1.3332-.946 2.4189-2.1568 2.4189Z"/></svg>
+                <span style="color: var(--text-main); font-size: 14px;">Discord</span>
+            </a>
+
+            <a href="https://app.fanfix.io/@codeyuna" target="_blank" class="social-card" style="display: flex; align-items: center; padding: 0 16px; border-radius: 12px; min-height: 48px; height: 48px; flex-shrink: 0;">
+                <svg viewBox="0 0 24 24" class="social-icon" style="width: 22px; height: 22px;">
+                    <defs>
+                        <linearGradient id="fanfix-grad" x1="0%" y1="0%" x2="100%" y2="100%">
+                            <stop offset="0%" stop-color="#80f1f1" />
+                            <stop offset="50%" stop-color="#d4a3fa" />
+                            <stop offset="100%" stop-color="#ffd5af" />
+                        </linearGradient>
+                    </defs>
+                    <path fill="url(#fanfix-grad)" d="M11.23 1.59c.43-.65 1.11-.65 1.54 0l1.19 1.83c.22.33.7.53 1.09.43l2.12-.51c.74-.18 1.22.29 1.04 1.04l-.51 2.12c-.1.39.1.87.43 1.09l1.83 1.19c.65.43.65 1.11 0 1.54l-1.83 1.19c-.33.22-.53.7-.43 1.09l.51 2.12c.18.74-.29 1.22-1.04 1.04l-2.12-.51c-.39-.1-.87.1-1.09.43l-1.19 1.83c-.43.65-1.11.65-1.54 0l-1.19-1.83c-.22-.33-.7-.53-1.09-.43l-2.12.51c-.74.18-1.22-.29-1.04-1.04l.51-2.12c.1-.39-.1-.87-.43-1.09l-1.83-1.19c-.65-.43-.65-1.11 0-1.54l1.83-1.19c.33-.22.53-.7.43-1.09l-.51-2.12c-.18-.74.29-1.22 1.04-1.04l2.12.51c.39.1.87-.1 1.09-.43l1.19-1.83z"/>
+                    <path fill="#000" d="M10.4 15.6l-3.2-3.2 1.4-1.4 1.8 1.8 4.8-4.8 1.4 1.4-6.2 6.2z"/>
+                </svg>
+                <span style="color: var(--text-main); font-size: 14px;">Fanfix</span>
+            </a>
+            
+            <a href="https://www.tiktok.com/@codemiko" target="_blank" class="social-card" style="display: flex; align-items: center; padding: 0 16px; border-radius: 12px; min-height: 48px; height: 48px; flex-shrink: 0;">
+                <svg viewBox="0 0 24 24" class="social-icon" style="width: 22px; height: 22px; color: var(--text-main);"><path fill="currentColor" d="M12.53.02C13.84 0 15.14.01 16.44 0c.08 1.53.63 3.09 1.75 4.17 1.12 1.11 2.7 1.62 4.24 1.79v4.03c-1.44-.05-2.89-.35-4.2-.97-.57-.26-1.1-.59-1.62-.93-.01 2.92.01 5.84-.02 8.75-.08 1.4-.54 2.79-1.35 3.94-1.31 1.92-3.58 3.17-5.91 3.21-1.43.08-2.86-.31-4.08-1.03-2.02-1.12-3.44-3.17-3.64-5.41-.02-.21-.02-.41-.02-.62.07-1.44.62-2.83 1.51-3.89 1.05-1.25 2.55-2.06 4.15-2.28 1.1-.15 2.23-.04 3.27.35v4.06c-.34-.13-.7-.2-1.07-.22-.92-.04-1.84.28-2.51.86-.67.57-1.08 1.4-1.1 2.31-.01.91.38 1.77 1.03 2.38.65.61 1.56.93 2.49.88.92-.04 1.78-.45 2.38-1.11.58-.65.88-1.54.88-2.45V.02h-.03z"/></svg>
+                <span style="color: var(--text-main); font-size: 14px;">TikTok</span>
+            </a>
+            
+            <a href="https://twitter.com/codemiko" target="_blank" class="social-card" style="display: flex; align-items: center; padding: 0 16px; border-radius: 12px; min-height: 48px; height: 48px; flex-shrink: 0;">
+                <svg viewBox="0 0 24 24" class="social-icon" style="width: 22px; height: 22px; color: var(--text-main);"><path fill="currentColor" d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>
+                <span style="color: var(--text-main); font-size: 14px;">X</span>
+            </a>
+            
+            <a href="https://www.instagram.com/thecodemiko/" target="_blank" class="social-card" style="display: flex; align-items: center; padding: 0 16px; border-radius: 12px; min-height: 48px; height: 48px; flex-shrink: 0;">
+                <svg viewBox="0 0 24 24" class="social-icon" style="width: 22px; height: 22px; color: #E1306C;"><path fill="currentColor" d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266-.057 1.645-.069 4.849-.069zM12 0C8.741 0 8.333.014 7.053.072 2.695.272.273 2.69.073 7.052.014 8.333 0 8.741 0 12c0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98C8.333 23.986 8.741 24 12 24c3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98C15.668.014 15.259 0 12 0zm0 5.838a6.162 6.162 0 100 12.324 6.162 6.162 0 000-12.324zM12 16a4 4 0 110-8 4 4 0 010 8zm6.406-11.845a1.44 1.44 0 100 2.881 1.44 1.44 0 000-2.881z"/></svg>
                 <span style="color: var(--text-main); font-size: 14px;">Instagram</span>
             </a>
             
@@ -329,7 +399,7 @@ const GeraldMinigames = {
                 { id: 'cat', label: '🐈 Cat on PC', prompt: 'Hardware exhaust block! Blue the savannah cat is sitting on your primary fan array. Drop into defensive alert protocols.' },
                 { id: 'bits', label: '🎟️ 100K Bits', prompt: 'Bit transaction flash! A viewer dropped 100,000 bits. Treat this massive transaction animation as a complete system memory flood.' },
                 { id: 'mute', label: '🔇 Mute Mic', prompt: 'Microphonic capture error. The chat muted her mic asset. Celebrate your absolute quietness sarcastically.' },
-                { id: 'bald', label: '🪲 Delete Hair', prompt: 'Direct vertex asset manipulation. Optimize engine loads by deleting the technician\'s hair mesh layers. Laugh at her baldness.' },
+                { id: 'bald', label: '🧑‍🦲 Delete Hair', prompt: 'Direct vertex asset manipulation. Optimize engine loads by deleting the technician\'s hair mesh layers. Laugh at her baldness.' },
                 { id: 'siren', label: '🚨 Siren Alert', prompt: 'Decibel threshold exceeded! The technician is screaming like a high-frequency emergency vehicle. Complain about ear structural damage.' },
                 { id: 'fart', label: '💨 Fart Reverb', prompt: 'Auditory anomaly detected. A highly reverberated flatulence sound effect played. React with absolute mechanical disgust.' },
                 { id: 'mocap', label: '💃 Scuffed Suit', prompt: 'Mocap data corruption. Her virtual limbs are twisting unnaturally. Mock the cheap tracking hardware.' },
@@ -362,7 +432,7 @@ const GeraldView = {
     },
     template: `
         <div class="gerald-container" style="display: flex; flex-direction: column; height: 100%; width: 100%; background: var(--bg-color); padding-top: 0px;">
-            <div class="gerald-header" @click="$emit('close-pickers')" style="flex-shrink: 0; padding: 12px 16px 6px; background: var(--bg-color); z-index: 10;">
+            <div class="gerald-header" @click="$emit('close-pickers')" style="flex-shrink: 0; padding: 6px 16px 6px; background: var(--bg-color); z-index: 10;">
                 <div class="os-top-bar">
                     <span class="os-title">GERALD_OS v2</span>
                 </div>
@@ -381,7 +451,7 @@ const GeraldView = {
                 </div>
             </div>
 
-            <div class="gerald-messages" id="gerald-msgs" @click="$emit('close-pickers')" style="flex: 1; overflow-y: auto; overscroll-behavior-y: contain; -webkit-overflow-scrolling: touch; display: flex; flex-direction: column; padding: 5px 16px;">
+            <div class="gerald-messages" id="gerald-msgs" @click="$emit('close-pickers')" style="flex: 1; overflow-y: auto; overscroll-behavior-y: contain; -webkit-overflow-scrolling: touch; display: flex; flex-direction: column; padding: 2px 16px;">
                 <template v-for="(m, i) in geraldMessages" :key="i">
                     <div v-if="i === 0 && m.role === 'gerald' && !m.content" class="chat-bubble gerald startup-anim">
                         <span>> GERALD_CORE initialized.<br>> Awaiting human input...</span>
@@ -389,7 +459,7 @@ const GeraldView = {
                     <div v-else-if="m.content" class="chat-bubble" :class="m.role" v-html="formatMarkdown(m.content)"></div>
                 </template>
 
-                <div v-show="isGeraldTyping" class="dots-thinking-row" style="display:flex; align-items:center; margin-top:8px; padding-left:12px;">
+                <div v-show="isGeraldTyping" class="dots-thinking-row" style="display:flex; align-items:center; margin-top:4px; padding-left:12px;">
                     <div class="os-dot close"></div>
                     <div class="os-dot min"></div>
                     <div class="os-dot max"></div>
@@ -998,7 +1068,7 @@ createApp({
                 const { data } = await sbClient.auth.getSession(); 
                 if (data?.session?.user) {
                     currentUser.value = data.session.user; 
-                    const { data: hist } = await sbClient.from('gerald_history').select('*').eq('user_id', currentUser.value.id).order('created_at', { ascending: true });
+                    const { data: hist = [] } = await sbClient.from('gerald_history').select('*').eq('user_id', currentUser.value.id).order('created_at', { ascending: true });
                     if (hist && hist.length > 0) {
                         geraldMessages.value = hist.map(r => ({ role: r.role, content: r.content }));
                     } else {
