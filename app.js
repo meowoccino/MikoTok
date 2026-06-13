@@ -3,18 +3,16 @@ const parseMarkdownText = (text, emotesMap) => {
     let html = text.replace(/&/g, '&').replace(/</g, '<').replace(/>/g, '>');
     html = html.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>').replace(/\*(.*?)\*/g, '<em>$1</em>');
     
-    const words = html.split(' ');
-    const emoteKeys = Object.keys(emotesMap || {});
-    for (let i = 0; i < words.length; i++) {
-        const clean = words[i].replace(/^:|:$/g, ''); 
-        const actualKey = emoteKeys.find(k => k.toLowerCase() === clean.toLowerCase());
-        if (actualKey) {
-            const m = emotesMap[actualKey];
-            const imgSrc = m.url || 'https://cdn.discordapp.com/emojis/' + m.id + '.png';
-            words[i] = '<img src="' + imgSrc + '" style="height:1.65em; vertical-align:middle; display:inline-block; margin:0 2px;" title="' + actualKey + '">';
-        }
+    if (emotesMap) {
+        Object.keys(emotesMap).forEach(key => {
+            const url = emotesMap[key].url;
+            const colonRegex = new RegExp(`:${key}:`, 'gi');
+            html = html.replace(colonRegex, `<img src="${url}" class="chat-emote-img" title="${key}">`);
+            const wordRegex = new RegExp(`\\b${key}\\b`, 'g');
+            html = html.replace(wordRegex, `<img src="${url}" class="chat-emote-img" title="${key}">`);
+        });
     }
-    return words.join(' ');
+    return html;
 };
 
 const SplashScreen = {
@@ -276,12 +274,13 @@ const GeraldView = {
     props: ['currentTab', 'geraldMessages', 'isGeraldTyping', 'geraldInput', 'showEmotePicker', 'showMinigames', 'customEmotes', 'geminiStatus', 'sysStats'],
     methods: {
         getEmoteUrl(emote) { return emote.url || `https://cdn.discordapp.com/emojis/${emote.id}.${emote.animated ? 'gif' : 'png'}?size=44`; },
-        formatMarkdown(text) { return parseMarkdownText(text, this.customEmotes); }
+        formatMarkdown(text) { return parseMarkdownText(text, this.customEmotes); },
+        insertEmote(name) { this.$emit('insert-emote', name); }
     },
     template: `
         <div class="gerald-container" style="display: flex; flex-direction: column; height: 100%; width: 100%; background: var(--bg-color); padding-top: 0px;">
-            <div class="gerald-header" @click="$emit('close-pickers')" style="flex-shrink: 0; padding: 12px 16px 6px; background: var(--bg-color); z-index: 10;">
-                <div class="os-top-bar" style="margin-top: 10px;">
+            <div class="gerald-header" @click="$emit('close-pickers')" style="flex-shrink: 0; padding: 4px 16px 6px; background: var(--bg-color); z-index: 10;">
+                <div class="os-top-bar" style="margin-top: 0px;">
                     <span class="os-title">GERALD_OS v2</span>
                 </div>
                 
@@ -302,7 +301,7 @@ const GeraldView = {
             <div class="gerald-messages" id="gerald-msgs" @click="$emit('close-pickers')" style="flex: 1; overflow-y: auto; overscroll-behavior-y: contain; -webkit-overflow-scrolling: touch; display: flex; flex-direction: column; padding: 2px 16px;">
                 <template v-for="(m, i) in geraldMessages" :key="i">
                     <div v-if="i === 0 && m.role === 'gerald' && !m.content" class="chat-bubble gerald startup-anim">
-                        <span>> GERALD_CORE initialized.<br>> Awaiting human input...</span>
+                        <span>GERALD_CORE initialized.<br>Awaiting human input...</span>
                     </div>
                     <div v-else-if="m.content" class="chat-bubble" :class="m.role" v-html="formatMarkdown(m.content)"></div>
                 </template>
@@ -317,7 +316,7 @@ const GeraldView = {
             <div class="gerald-action-area">
                 <div class="chat-emote-tray" v-show="showEmotePicker" style="position: absolute; bottom: 100%; left: 0; right: 0; background: var(--card-bg); border-top: 1px solid var(--border-color); border-bottom: none; border-radius: 16px 16px 0 0; padding: 10px 12px; z-index: 200; max-height: 250px; display: flex; flex-direction: column; box-shadow: 0 -4px 20px rgba(0,0,0,0.1);">
                     <div class="emote-picker-grid" style="overscroll-behavior-y: contain; -webkit-overflow-scrolling: touch;">
-                        <img v-for="(emote, name) in customEmotes" :key="name" :src="getEmoteUrl(emote)" :title="name" class="emote-picker-img" @mousedown.prevent="$emit('insert-emote', name)">
+                        <img v-for="(emote, name) in customEmotes" :key="name" :src="getEmoteUrl(emote)" :title="name" class="emote-picker-img" @mousedown.prevent="insertEmote(name)">
                     </div>
                 </div>
 
@@ -342,8 +341,8 @@ const MoreView = {
             
             <a href="https://throne.com/codemiko" target="_blank" class="social-card" style="display: flex; align-items: center; padding: 0 16px; border-radius: 12px; min-height: 48px; height: 48px; background: var(--card-bg); text-decoration: none; flex-shrink: 0; margin-top: 10px;">
                 <div style="display: flex; align-items: center; gap: 12px; width: 100%;">
-                    <svg viewBox="0 0 24 24" style="width: 22px; height: 22px; fill: #ef4444; flex-shrink:0;">
-                        <path d="M20 6h-4.04c.03-.16.04-.33.04-.5 0-1.38-1.12-2.5-2.5-2.5-1.07 0-2.02.68-2.36 1.66A2.49 2.49 0 0 0 8.5 3C7.12 3 6 4.12 6 5.5c0 .17.01.34.04.5H2v3h20V6zm-6.5-1.5c.55 0 1 .45 1 1s-.45 1-1 1-1-.45-1-1 .45-1 1-1zM8.5 4.5c.55 0 1 .45 1 1s-.45 1-1 1-1-.45-1-1 .45-1 1-1zM4 11h7v10H4zm9 10V11h7v10h-7z"/>
+                    <svg viewBox="0 0 24 24" style="width: 24px; height: 24px; fill: #ef4444; flex-shrink:0;">
+                        <path d="M20 6h-2.18c.11-.31.18-.65.18-1 0-1.66-.84-3-2-3-1.22 0-2.42 1.55-3 2.52-.58-.97-1.78-2.52-3-2.52-1.16 0-2 1.34-2 3 0 .35.07.69.18 1H4c-1.11 0-1.99.89-1.99 2L2 19c0 1.11.89 2 2 2h16c1.11 0 2-.89 2-2V8c0-1.11-.89-2-2-2zm-5-3c.55 0 1 .45 1 1s-.45 1-1 1-1-.45-1-1 .45-1 1-1zm-6 0c.55 0 1 .45 1 1s-.45 1-1 1-1-.45-1-1 .45-1 1-1zm11 16H4V8h16v11z"/>
                     </svg>
                     <span style="color: var(--text-main); font-size: 14px; font-weight: 600;">Throne</span> 
                 </div>
@@ -405,6 +404,21 @@ const MoreView = {
             <a href="https://www.instagram.com/thecodemiko/" target="_blank" class="social-card" style="display: flex; align-items: center; padding: 0 16px; border-radius: 12px; min-height: 48px; height: 48px; flex-shrink: 0;">
                 <svg viewBox="0 0 24 24" class="social-icon" style="width: 22px; height: 22px; color: #E1306C;"><path fill="currentColor" d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zM12 0C8.741 0 8.333.014 7.053.072 2.695.272.273 2.69.073 7.052.014 8.333 0 8.741 0 12c0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98C8.333 23.986 8.741 24 12 24c3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98C15.668.014 15.259 0 12 0zm0 5.838a6.162 6.162 0 100 12.324 6.162 6.162 0 000-12.324zM12 16a4 4 0 110-8 4 4 0 010 8zm6.406-11.845a1.44 1.44 0 100 2.881 1.44 1.44 0 000-2.881z"/></svg>
                 <span style="color: var(--text-main); font-size: 14px;">Instagram</span>
+            </a>
+            
+            <a href="https://www.threads.net/@thecodemiko" target="_blank" class="social-card" style="display: flex; align-items: center; padding: 0 16px; border-radius: 12px; min-height: 48px; height: 48px; flex-shrink: 0;">
+                <svg viewBox="0 0 192 192" class="social-icon" style="width: 22px; height: 22px; color: var(--text-main);"><path fill="currentColor" d="M141.537 88.9883C140.71 88.5919 139.87 88.2104 139.019 87.8451C137.537 60.5382 122.616 44.905 97.5619 44.745C97.4484 44.7443 97.3355 44.7443 97.222 44.7443C82.2364 44.7443 69.7731 51.1409 62.102 62.7807L75.881 72.2328C81.6116 63.5383 90.6052 61.6848 97.2286 61.6848C97.3051 61.6848 97.3819 61.6848 97.4576 61.6855C105.707 61.7381 111.932 64.1366 115.961 68.814C118.893 72.2193 120.854 76.925 121.825 82.8638C114.511 81.6207 106.601 81.2385 98.145 81.7233C74.3247 83.0954 59.0111 96.9879 60.0396 116.292C60.5615 126.084 65.4397 134.508 73.775 140.011C80.8224 144.663 89.899 146.938 99.3323 146.423C111.79 145.74 121.563 140.987 128.381 132.296C133.559 125.696 136.834 117.143 138.28 106.366C144.217 109.949 148.617 114.664 151.047 120.332C155.179 129.967 155.42 145.8 142.501 158.708C131.182 170.016 117.576 174.908 97.0135 175.059C74.2042 174.89 56.9538 167.575 45.7381 153.317C35.2355 139.966 29.8077 120.682 29.6052 96C29.8077 71.3178 35.2355 52.0336 45.7381 38.6827C56.9538 24.4249 74.2039 17.11 97.0132 16.9405C119.988 17.1113 137.539 24.4614 148.82 38.8167C156.92 49.1302 161.965 62.4633 163.606 78.4714L179.626 76.5161C177.625 57.8427 171.603 42.4437 162.016 30.2526C148.337 12.8797 127.351 4.14819 97.0132 4C66.5826 4.15048 45.6416 12.9231 32.2274 30.0097C19.7891 45.8524 13.5676 68.1687 13.3333 96C13.5676 123.831 19.7891 146.148 32.2274 161.99C45.6416 179.077 66.5826 187.85 97.0135 188C120.89 187.828 137.234 181.71 151.782 167.175C168.181 150.793 167.149 127.877 155.839 116.666C153.491 114.339 150.569 112.502 147.289 111.164C145.452 110.387 143.541 109.664 141.537 88.9883ZM98.4405 129.507C88.0005 130.095 77.1544 125.409 76.6196 115.372C76.2232 107.93 81.9158 99.626 99.0812 98.0476C101.066 97.8658 103.146 97.7499 105.311 97.6976C105.328 103.626 104.996 109.431 103.743 114.862C102.593 119.851 100.865 124.316 98.4405 129.507Z"/></svg>
+                <span style="color: var(--text-main); font-size: 14px;">Threads</span>
+            </a>
+
+            <a href="https://www.snapchat.com/add/codemiko" target="_blank" class="social-card" style="display: flex; align-items: center; padding: 0 16px; border-radius: 12px; min-height: 48px; height: 48px; flex-shrink: 0;">
+                <svg viewBox="0 0 24 24" class="social-icon" style="width: 22px; height: 22px; color: #FFFC00;"><path fill="currentColor" d="M12.126 23.955c-1.472-.036-2.502-.455-3.633-.949-.556-.242-1.077-.384-1.657-.202-1.542.483-3.082 1.054-4.73 1.127-1.393.061-1.777-.52-1.205-1.651.488-.962 1.031-1.895 1.48-2.871.21-.453.208-.857-.042-1.272-1.071-1.782-1.637-3.708-1.764-5.748-.04-.633-.037-1.27-.037-1.936 0-3.923 2.115-6.843 5.437-8.318C8.384.975 10.94.39 13.626.54c4.12.232 7.152 2.647 8.527 6.643.518 1.503.655 3.066.621 4.646-.025 1.156-.168 2.298-.485 3.407-.346 1.208-.887 2.336-1.688 3.32-.429.529-.395.96.012 1.488.35.452.704.9 1.057 1.349.52.661.274 1.236-.532 1.274-1.506.072-2.923-.509-4.321-1.052-.777-.302-1.411-.122-2.072.164-1.045.451-2.146.862-3.32.969-.379.034-.764.03-1.299.207z"/></svg>
+                <span style="color: var(--text-main); font-size: 14px;">Snapchat</span>
+            </a>
+            
+            <a href="https://www.facebook.com/codemikoofficial" target="_blank" class="social-card" style="display: flex; align-items: center; padding: 0 16px; border-radius: 12px; min-height: 48px; height: 48px; flex-shrink: 0;">
+                <svg viewBox="0 0 24 24" class="social-icon" style="width: 22px; height: 22px; color: #1877F2;"><path fill="currentColor" d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/></svg>
+                <span style="color: var(--text-main); font-size: 14px;">Facebook</span>
             </a>
             
             <div style="height: 40px; flex-shrink: 0;"></div>
@@ -528,12 +542,8 @@ createApp({
         };
 
         let swipeStartX = 0;
-        const handleSwipeStart = (e) => { 
-            if (currentTab.value === 'more') return;
-            swipeStartX = e.touches[0].clientX; 
-        };
+        const handleSwipeStart = (e) => { swipeStartX = e.touches[0].clientX; };
         const handleSwipeEnd = (e) => {
-            if (currentTab.value === 'more') return;
             const dx = e.changedTouches[0].clientX - swipeStartX;
             if (Math.abs(dx) < 50) return;
             const idx = tabOrder.indexOf(currentTab.value);
@@ -583,11 +593,12 @@ createApp({
             document.body.className = 'theme-' + appTheme.value;
             document.documentElement.style.colorScheme = appTheme.value;
             const bgHex = appTheme.value === 'light' ? '#f8f9fa' : '#0d0d11';
+            const navHex = appTheme.value === 'light' ? '#ffffff' : '#16161c';
             const m = document.querySelector('meta[name="theme-color"]');
             if (m) m.setAttribute('content', bgHex);
             
-            document.body.style.backgroundColor = bgHex;
-            document.documentElement.style.backgroundColor = bgHex;
+            document.body.style.backgroundColor = navHex;
+            document.documentElement.style.backgroundColor = navHex;
             document.body.style.setProperty('--bg-color', bgHex);
             document.documentElement.style.setProperty('--bg-color', bgHex);
         };
@@ -656,39 +667,17 @@ createApp({
             chatMessages.value.push({ timestamp, username: user, html, color, badges });
             if (chatMessages.value.length > 200) chatMessages.value.shift();
             if (currentTab.value === 'chat') scrollChatToBottom();
-
-            sbClient.from('twitch_chat_logs').insert({
-                username: user,
-                message: text,
-                color: color,
-                badges: badges 
-            }).then();
         };
 
         const loadChatHistory = async () => {
             try {
-                const { data } = await sbClient
-                    .from('twitch_chat_logs')
-                    .select('*')
-                    .order('created_at', { ascending: false })
-                    .limit(50);
-                if (!data) return;
-                const dbHistory = data.reverse().map(row => {
-                    const ts = new Date(row.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-                    let badges = [];
-                    if (Array.isArray(row.badges)) {
-                        badges = row.badges.filter(b => b && b.img);
-                    }
-                    return {
-                        timestamp: ts,
-                        username: row.username || 'user',
-                        html: row.message.includes('<img') ? row.message : processEmotes(row.message),
-                        color: row.color || '#9146FF',
-                        badges
-                    };
-                });
-                chatMessages.value = dbHistory;
-                scrollChatToBottom();
+                const res = await fetch('https://recent-messages.robotty.de/api/v2/recent-messages/codemiko');
+                const data = await res.json();
+                if (data && data.messages) {
+                    const recent50 = data.messages.slice(-50);
+                    recent50.forEach(raw => parseIrcMessage(raw));
+                    setTimeout(scrollChatToBottom, 150);
+                }
             } catch(e) {}
         };
 
@@ -747,13 +736,6 @@ createApp({
                 isSelf: true
             });
             scrollChatToBottom();
-
-            sbClient.from('twitch_chat_logs').insert({
-                username: twitchUsername.value || 'You',
-                message: msg,
-                color: '#9146FF',
-                badges: myTwitchBadges.value 
-            }).then();
         };
 
         const disconnectTwitch = () => {
@@ -788,8 +770,8 @@ createApp({
                 ]);
                 if (gRes.status === 401 || cRes.status === 401) return false;
                 const gData = await gRes.json(), cData = await cRes.json();
-                if (gData?.data) gData.data.forEach(s => s.versions.forEach(v => { badgeAssets[` ${s.set_id}/${v.id}`] = v.image_url_1x; }));
-                if (cData?.data) cData.data.forEach(s => s.versions.forEach(v => { badgeAssets[` ${s.set_id}/${v.id}`] = v.image_url_1x; }));
+                if (gData?.data) gData.data.forEach(s => s.versions.forEach(v => { badgeAssets[`${s.set_id}/${v.id}`] = v.image_url_1x; }));
+                if (cData?.data) cData.data.forEach(s => s.versions.forEach(v => { badgeAssets[`${s.set_id}/${v.id}`] = v.image_url_1x; }));
                 return true;
             } catch { return false; }
         };
@@ -909,9 +891,9 @@ createApp({
         let lastScrollTop = 0;
         const handleScroll = (e) => {
             const st = e.target.scrollTop;
-            if (st > lastScrollTop && st > 60) {
+            if (st > lastScrollTop && st > 50) {
                 isHeaderVisible.value = false;
-            } else {
+            } else if (st < lastScrollTop) {
                 isHeaderVisible.value = true;
             }
             lastScrollTop = st <= 0 ? 0 : st;
