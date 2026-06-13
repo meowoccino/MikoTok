@@ -1,6 +1,6 @@
 const parseMarkdownText = (text, emotesMap) => {
     if (!text) return ''; 
-    let html = text.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+    let html = text.replace(/&/g, '&').replace(/</g, '<').replace(/>/g, '>');
     html = html.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>').replace(/\*(.*?)\*/g, '<em>$1</em>');
     
     const urlPattern = /(\b(https?|ftp|file):\/\/[-A-Z0-9+&@#\/%?=~_|!:,.;]*[-A-Z0-9+&@#\/%=~_|])/ig;
@@ -139,7 +139,7 @@ const ProfileModal = {
                     <div class="action-menu">
                         <button class="menu-btn sync-row" :style="syncState === 'SUCCESS' ? 'color: var(--success);' : ''" @click="$emit('sync')">
                             <div class="btn-content">
-                                <div class="icon-wrap"><span class="material-symbols-rounded" :class="{'spin-anim': syncState === 'SYNCING...'}" style="font-size: 18px;">{{ syncState === 'SUCCESS' ? 'check' : 'sync' }}</span></div>
+                                <div class="icon-wrap"><span class="material-symbols-rounded" :class="{'spin-anim': syncState === 'REFRESHING...'}" style="font-size: 18px;">{{ syncState === 'SUCCESS' ? 'check' : 'sync' }}</span></div>
                                 <span>{{ syncState }}</span>
                             </div>
                         </button>
@@ -183,7 +183,7 @@ const ClipModal = {
 };
 
 const ChatView = {
-    props: ['chatMessages', 'isLoggedIn', 'twitchAuthUrl', 'customEmotes', 'twitchUsername'],
+    props: ['chatMessages', 'isLoggedIn', 'twitchAuthUrl', 'customEmotes', 'twitchUsername', 'apiConfig'],
     data() { return { showPicker: false, pickerQuery: '', localInput: '' }; },
     computed: {
         filteredEmotes() {
@@ -244,8 +244,14 @@ const ChatView = {
                         <button @click="$root.showLoginPopup = false" style="position: absolute; top: 12px; right: 12px; background: transparent; border: none; color: var(--text-muted); font-size: 24px; line-height:1; cursor: pointer;">×</button>
                         <svg viewBox="0 0 24 24" class="chat-login-icon" style="width: 48px; height: 48px; margin: 0 auto 16px; color: #9146FF;"><path fill="currentColor" d="M11.571 4.714h1.715v5.143H11.57zm4.715 0H18v5.143h-1.714zM6 0L1.714 4.286v15.428h5.143V24l4.286-4.286h3.428L22.286 12V0zm14.571 11.143l-3.428 3.428h-3.429l-3 3v-3H6.857V1.714h13.714Z"/></svg>
                         <p class="chat-login-title" style="font-size: 20px; font-weight: bold; margin-bottom: 8px;">Join the chat</p>
-                        <p class="chat-login-sub" style="font-size: 14px; color: var(--text-muted); margin-bottom: 20px;">Connect your Twitch account to read and send messages live.</p>
-                        <a :href="twitchAuthUrl" class="twitch-login-btn" @click="$root.showLoginPopup = false" style="display: block; background: #9146FF; color: white; padding: 12px; border-radius: 8px; text-decoration: none; font-weight: bold;">Connect with Twitch</a>
+                        <p class="chat-login-sub" style="font-size: 14px; color: var(--text-muted); margin-bottom: 16px;">Connect your Twitch account to read and send messages live.</p>
+                        
+                        <div v-if="!apiConfig.localCid" style="background: rgba(239, 68, 68, 0.1); border: 1px solid rgba(239, 68, 68, 0.3); border-radius: 8px; padding: 10px; margin-bottom: 16px;">
+                            <span style="font-size: 11px; color: var(--danger); font-weight: bold;">⚠️ Missing Config</span>
+                            <p style="font-size: 10px; color: var(--text-main); margin: 4px 0 0;">You must add your own Twitch Client ID in the Profile Settings before logging in.</p>
+                        </div>
+
+                        <a :href="apiConfig.localCid ? twitchAuthUrl : '#'" :style="apiConfig.localCid ? '' : 'opacity: 0.5; cursor: not-allowed;'" @click="!apiConfig.localCid ? $event.preventDefault() : $root.showLoginPopup = false" style="display: block; background: #9146FF; color: white; padding: 12px; border-radius: 8px; text-decoration: none; font-weight: bold;">Connect with Twitch</a>
                     </div>
                 </div>
             </teleport>
@@ -426,11 +432,6 @@ const MoreView = {
                 <span style="color: var(--text-main); font-size: 14px;">Instagram</span>
             </a>
             
-            <a href="https://www.threads.net/@thecodemiko" target="_blank" class="social-card" style="display: flex; align-items: center; padding: 0 16px; border-radius: 12px; min-height: 48px; height: 48px; flex-shrink: 0;">
-                <svg viewBox="0 0 192 192" class="social-icon" style="width: 22px; height: 22px; color: var(--text-main);"><path fill="currentColor" d="M141.537 88.9883C140.71 88.5919 139.87 88.2104 139.019 87.8451C137.537 60.5382 122.616 44.905 97.5619 44.745C97.4484 44.7443 97.3355 44.7443 97.222 44.7443C82.2364 44.7443 69.7731 51.1409 62.102 62.7807L75.881 72.2328C81.6116 63.5383 90.6052 61.6848 97.2286 61.6848C97.3051 61.6848 97.3819 61.6848 97.4576 61.6855C105.707 61.7381 111.932 64.1366 115.961 68.814C118.893 72.2193 120.854 76.925 121.825 82.8638C114.511 81.6207 106.601 81.2385 98.145 81.7233C74.3247 83.0954 59.0111 96.9879 60.0396 116.292C60.5615 126.084 65.4397 134.508 73.775 140.011C80.8224 144.663 89.899 146.938 99.3323 146.423C111.79 145.74 121.563 140.987 128.381 132.296C133.559 125.696 136.834 117.143 138.28 106.366C144.217 109.949 148.617 114.664 151.047 120.332C155.179 129.967 155.42 145.8 142.501 158.708C131.182 170.016 117.576 174.908 97.0135 175.059C74.2042 174.89 56.9538 167.575 45.7381 153.317C35.2355 139.966 29.8077 120.682 29.6052 96C29.8077 71.3178 35.2355 52.0336 45.7381 38.6827C56.9538 24.4249 74.2039 17.11 97.0132 16.9405C119.988 17.1113 137.539 24.4614 148.82 38.8167C156.92 49.1302 161.965 62.4633 163.606 78.4714L179.626 76.5161C177.625 57.8427 171.603 42.4437 162.016 30.2526C148.337 12.8797 127.351 4.14819 97.0132 4C66.5826 4.15048 45.6416 12.9231 32.2274 30.0097C19.7891 45.8524 13.5676 68.1687 13.3333 96C13.5676 123.831 19.7891 146.148 32.2274 161.99C45.6416 179.077 66.5826 187.85 97.0135 188C120.89 187.828 137.234 181.71 151.782 167.175C168.181 150.793 167.149 127.877 155.839 116.666C153.491 114.339 150.569 112.502 147.289 111.164C145.452 110.387 143.541 109.664 141.537 88.9883ZM98.4405 129.507C88.0005 130.095 77.1544 125.409 76.6196 115.372C76.2232 107.93 81.9158 99.626 99.0812 98.0476C101.066 97.8658 103.146 97.7499 105.311 97.6976C105.328 103.626 104.996 109.431 103.743 114.862C102.593 119.851 100.865 124.316 98.4405 129.507Z"/></svg>
-                <span style="color: var(--text-main); font-size: 14px;">Threads</span>
-            </a>
-
             <a href="https://www.snapchat.com/add/codemiko" target="_blank" class="social-card" style="display: flex; align-items: center; padding: 0 16px; border-radius: 12px; min-height: 48px; height: 48px; flex-shrink: 0;">
                 <svg viewBox="0 0 24 24" class="social-icon" style="width: 22px; height: 22px; color: #FFFC00;"><path fill="currentColor" d="M12.126 23.955c-1.472-.036-2.502-.455-3.633-.949-.556-.242-1.077-.384-1.657-.202-1.542.483-3.082 1.054-4.73 1.127-1.393.061-1.777-.52-1.205-1.651.488-.962 1.031-1.895 1.48-2.871.21-.453.208-.857-.042-1.272-1.071-1.782-1.637-3.708-1.764-5.748-.04-.633-.037-1.27-.037-1.936 0-3.923 2.115-6.843 5.437-8.318C8.384.975 10.94.39 13.626.54c4.12.232 7.152 2.647 8.527 6.643.518 1.503.655 3.066.621 4.646-.025 1.156-.168 2.298-.485 3.407-.346 1.208-.887 2.336-1.688 3.32-.429.529-.395.96.012 1.488.35.452.704.9 1.057 1.349.52.661.274 1.236-.532 1.274-1.506.072-2.923-.509-4.321-1.052-.777-.302-1.411-.122-2.072.164-1.045.451-2.146.862-3.32.969-.379.034-.764.03-1.299.207z"/></svg>
                 <span style="color: var(--text-main); font-size: 14px;">Snapchat</span>
@@ -515,7 +516,7 @@ createApp({
         const showLoginPopup = ref(false);
 
         const hostname = window.location.hostname || 'meowoccino.github.io';
-        const syncState = ref('Force Data Sync');
+        const syncState = ref('Refresh Feed');
         const wipeState = ref('Wipe Gerald Memory');
         const logoutState = ref('Sign Out');
         const nukeState = ref('Nuke App Cache');
@@ -524,7 +525,6 @@ createApp({
         const isHeaderVisible = ref(true);
 
         const apiConfig = ref({ localCid: localStorage.getItem('miko_twitch_cid') || '', localTkn: localStorage.getItem('twitch_tkn') || '' });
-        const hiddenFallbackCid = 'i2fjxfk0oq6ybixle760zryrtvdqjg';
         const geminiStatus = ref('TESTING BRAIN...');
         const sysStats = ref({ cpu: 23, mem: 1.8, temp: 74 });
 
@@ -579,132 +579,15 @@ createApp({
             if (dy > 80) modals.value.profile = false;
         };
 
-        const runSync = async () => {
-            if (syncState.value === 'SYNCING...') return;
-            syncState.value = 'SYNCING...';
-            try {
-                const cid = apiConfig.value.localCid || hiddenFallbackCid;
-                const token = apiConfig.value.localTkn || twitchChatToken.value;
-                if (token) {
-                    const nowDate = new Date();
-                    const tomorrow = new Date(nowDate.getTime() + 24 * 60 * 60 * 1000);
-                    const oneYearAgo = new Date(nowDate.getTime() - 365 * 24 * 60 * 60 * 1000);
-                    
-                    const startedAt = oneYearAgo.toISOString();
-                    const endedAt = tomorrow.toISOString();
-                    
-                    let cursor = '';
-                    let hasMore = true;
-                    
-                    while (hasMore) {
-                        let url = `https://api.twitch.tv/helix/clips?broadcaster_id=500128827&first=100&started_at=${startedAt}&ended_at=${endedAt}`;
-                        if (cursor) url += `&after=${cursor}`;
-                        
-                        const res = await fetch(url, {
-                            headers: { 'Client-ID': cid, 'Authorization': `Bearer ${token}` }
-                        });
-                        const json = await res.json();
-                        
-                        if (json.data && json.data.length > 0) {
-                            const clipsBatch = json.data.map(c => ({
-                                id: c.id,
-                                title: c.title,
-                                view_count: c.view_count,
-                                created_at: c.created_at,
-                                thumbnail_url: c.thumbnail_url,
-                                url: c.url,
-                                embed_url: c.embed_url
-                            }));
-                            await sbClient.from('clips').upsert(clipsBatch);
-                            
-                            if (json.pagination && json.pagination.cursor) {
-                                cursor = json.pagination.cursor;
-                            } else {
-                                hasMore = false;
-                            }
-                        } else {
-                            hasMore = false;
-                        }
-                    }
-                }
+        const runSync = () => {
+            syncState.value = 'REFRESHING...';
+            allClipsLoaded.value = false;
+            allClips.value = [];
+            currentClipOffset.value = 0;
+            loadData(false).then(() => {
                 syncState.value = 'SUCCESS';
-            } catch(e) {
-                syncState.value = 'ERROR';
-            }
-            setTimeout(() => { 
-                syncState.value = 'Force Data Sync'; 
-                allClipsLoaded.value = false;
-                allClips.value = [];
-                currentClipOffset.value = 0;
-                loadData(false);
-            }, 2000);
-        };
-        
-        const runSilentAutoSync = async () => {
-            const lastSync = localStorage.getItem('miko_last_sync') || '0';
-            const now = Date.now();
-            
-            if (now - parseInt(lastSync) > 21600000) {
-                try {
-                    const cid = apiConfig.value.localCid || hiddenFallbackCid;
-                    const token = apiConfig.value.localTkn || twitchChatToken.value;
-                    if (token) {
-                        const nowDate = new Date();
-                        const tomorrow = new Date(nowDate.getTime() + 24 * 60 * 60 * 1000);
-                        const oneYearAgo = new Date(nowDate.getTime() - 365 * 24 * 60 * 60 * 1000);
-                        
-                        const startedAt = oneYearAgo.toISOString();
-                        const endedAt = tomorrow.toISOString();
-                        
-                        let cursor = '';
-                        let hasMore = true;
-                        let syncSuccess = false;
-                        
-                        while (hasMore) {
-                            let url = `https://api.twitch.tv/helix/clips?broadcaster_id=500128827&first=100&started_at=${startedAt}&ended_at=${endedAt}`;
-                            if (cursor) url += `&after=${cursor}`;
-                            
-                            const res = await fetch(url, {
-                                headers: { 'Client-ID': cid, 'Authorization': `Bearer ${token}` }
-                            });
-                            const json = await res.json();
-                            
-                            if (json.data && json.data.length > 0) {
-                                syncSuccess = true;
-                                const clipsBatch = json.data.map(c => ({
-                                    id: c.id,
-                                    title: c.title,
-                                    view_count: c.view_count,
-                                    created_at: c.created_at,
-                                    thumbnail_url: c.thumbnail_url,
-                                    url: c.url,
-                                    embed_url: c.embed_url
-                                }));
-                                await sbClient.from('clips').upsert(clipsBatch);
-                                
-                                if (json.pagination && json.pagination.cursor) {
-                                    cursor = json.pagination.cursor;
-                                } else {
-                                    hasMore = false;
-                                }
-                            } else {
-                                hasMore = false;
-                            }
-                        }
-                        
-                        if (syncSuccess) {
-                            localStorage.setItem('miko_last_sync', now.toString());
-                            if (currentTab.value === 'home') {
-                                allClipsLoaded.value = false;
-                                allClips.value = [];
-                                currentClipOffset.value = 0;
-                                loadData(false);
-                            }
-                        }
-                    }
-                } catch (e) {
-                }
-            }
+                setTimeout(() => { syncState.value = 'Refresh Feed'; }, 2000);
+            });
         };
 
         const nukeCache = () => {
@@ -874,9 +757,10 @@ createApp({
             localStorage.setItem('miko_twitch_cid', apiConfig.value.localCid);
             localStorage.setItem('twitch_tkn', apiConfig.value.localTkn);
             
-            const activeCid = apiConfig.value.localCid || hiddenFallbackCid;
-            const redirectUri = encodeURIComponent(window.location.origin + window.location.pathname);
-            twitchAuthUrl.value = `https://id.twitch.tv/oauth2/authorize?client_id=${activeCid}&redirect_uri=${redirectUri}&response_type=token&scope=chat:read+chat:edit&force_verify=true`;
+            if (apiConfig.value.localCid) {
+                const redirectUri = encodeURIComponent(window.location.origin + window.location.pathname);
+                twitchAuthUrl.value = `https://id.twitch.tv/oauth2/authorize?client_id=${apiConfig.value.localCid}&redirect_uri=${redirectUri}&response_type=token&scope=chat:read+chat:edit&force_verify=true`;
+            }
             
             setTimeout(() => {
                 saveState.value = 'SUCCESS';
@@ -884,8 +768,39 @@ createApp({
             }, 1000);
         };
 
+        const loadAllEmotes = async () => {
+            try {
+                // Load 7TV Emotes
+                const [g7, c7] = await Promise.all([
+                    fetch('https://7tv.io/v3/emote-sets/global').then(r=>r.json()).catch(()=>({})), 
+                    fetch('https://7tv.io/v3/users/twitch/500128827').then(r=>r.json()).catch(()=>({}))
+                ]);
+                if (g7.emotes) g7.emotes.forEach(e => { customEmotes.value[e.name] = { url: `https://cdn.7tv.app/emote/${e.data.id}/1x.webp` }; });
+                if (c7.emote_set?.emotes) c7.emote_set.emotes.forEach(e => { customEmotes.value[e.name] = { url: `https://cdn.7tv.app/emote/${e.data.id}/1x.webp` }; });
+
+                // Load BTTV Emotes
+                const [gBttv, cBttv] = await Promise.all([
+                    fetch('https://api.betterttv.net/3/cached/emotes/global').then(r=>r.json()).catch(()=>[]),
+                    fetch('https://api.betterttv.net/3/cached/users/twitch/500128827').then(r=>r.json()).catch(()=>({}))
+                ]);
+                if (Array.isArray(gBttv)) gBttv.forEach(e => { customEmotes.value[e.code] = { url: `https://cdn.betterttv.net/emote/${e.id}/1x` }; });
+                if (cBttv.channelEmotes) cBttv.channelEmotes.forEach(e => { customEmotes.value[e.code] = { url: `https://cdn.betterttv.net/emote/${e.id}/1x` }; });
+                if (cBttv.sharedEmotes) cBttv.sharedEmotes.forEach(e => { customEmotes.value[e.code] = { url: `https://cdn.betterttv.net/emote/${e.id}/1x` }; });
+
+                // Load FFZ Emotes
+                const fFz = await fetch('https://api.frankerfacez.com/v1/room/id/500128827').then(r=>r.json()).catch(()=>({}));
+                if (fFz.sets) {
+                    Object.values(fFz.sets).forEach(set => {
+                        if (set.emoticons) set.emoticons.forEach(e => {
+                            customEmotes.value[e.name] = { url: e.urls['1'] || e.urls['2'] || e.urls['4'] };
+                        });
+                    });
+                }
+            } catch {}
+        };
+
         const loadTwitchBadges = async () => {
-            const cid = apiConfig.value.localCid || hiddenFallbackCid;
+            const cid = apiConfig.value.localCid || 'kimne78kx3ncx6brgo4mv6wki5h1ko';
             const token = apiConfig.value.localTkn || twitchChatToken.value;
             if (!token) return false;
             try {
@@ -899,17 +814,6 @@ createApp({
                 if (cData?.data) cData.data.forEach(s => s.versions.forEach(v => { badgeAssets[`${s.set_id}/${v.id}`] = v.image_url_1x; }));
                 return true;
             } catch { return false; }
-        };
-
-        const load7TVEmotes = async () => {
-            try {
-                const [gRes, cRes] = await Promise.all([
-                    fetch('https://7tv.io/v3/emote-sets/global'), fetch('https://7tv.io/v3/users/twitch/500128827')
-                ]);
-                const gData = await gRes.json(), cData = await cRes.json();
-                if (gData.emotes) gData.emotes.forEach(e => { customEmotes.value[e.name] = { url: `https://cdn.7tv.app/emote/${e.data.id}/1x.webp` }; });
-                if (cData.emote_set?.emotes) cData.emote_set.emotes.forEach(e => { customEmotes.value[e.name] = { url: `https://cdn.7tv.app/emote/${e.data.id}/1x.webp` }; });
-            } catch {}
         };
 
         const testGeminiBrain = async () => {
@@ -1035,8 +939,6 @@ createApp({
             try {
                 if (!isLoadMore) {
                     currentClipOffset.value = 0; allClipsLoaded.value = false; allClips.value = [];
-                    const { data } = await sbClient.from('emotes').select('*');
-                    if (data) data.forEach(e => { customEmotes.value[e.name] = { id: e.id, animated: e.animated }; });
                 }
                 
                 let query = sbClient.from('clips').select('*');
@@ -1084,11 +986,12 @@ createApp({
                 if (params.get('access_token')) { twitchChatToken.value = params.get('access_token'); localStorage.setItem('tw_chat_token', twitchChatToken.value); window.location.hash = '#chat'; }
             }
 
-            const activeCid = apiConfig.value.localCid || hiddenFallbackCid;
-            const redirectUri = encodeURIComponent(window.location.origin + window.location.pathname);
-            twitchAuthUrl.value = `https://id.twitch.tv/oauth2/authorize?client_id=${activeCid}&redirect_uri=${redirectUri}&response_type=token&scope=chat:read+chat:edit&force_verify=true`;
+            if (apiConfig.value.localCid) {
+                const redirectUri = encodeURIComponent(window.location.origin + window.location.pathname);
+                twitchAuthUrl.value = `https://id.twitch.tv/oauth2/authorize?client_id=${apiConfig.value.localCid}&redirect_uri=${redirectUri}&response_type=token&scope=chat:read+chat:edit&force_verify=true`;
+            }
 
-            await load7TVEmotes();
+            await loadAllEmotes();
             await loadTwitchBadges();
             await loadChatHistory();
             
@@ -1110,7 +1013,7 @@ createApp({
                 }
             } catch {}
 
-            await loadData(false); await checkLive(); await testGeminiBrain(); runSilentAutoSync();
+            await loadData(false); await checkLive(); await testGeminiBrain();
 
             setInterval(() => {
                 sysStats.value.cpu = Math.floor(Math.random() * (48 - 14 + 1)) + 14;
