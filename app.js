@@ -1,4 +1,3 @@
-// Global Helper safely isolated from Vue setup scoping rules to prevent execution crashes
 const parseMarkdownText = (text, emotesMap) => {
     if (!text) return ''; 
     let html = text.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
@@ -184,13 +183,13 @@ const ChatView = {
         handleSend() { if(!this.localInput.trim()) return; this.$emit('send-chat', this.localInput.trim()); this.localInput = ''; this.closePicker(); }
     },
     template: `
-        <div class="chat-wrapper safe-top-padding" style="position: absolute; inset: 0; display: flex; flex-direction: column; height: calc(100% - max(env(safe-area-inset-top, 24px), 24px)); overflow: hidden;">
+        <div class="chat-wrapper" style="position: absolute; inset: 0; display: flex; flex-direction: column; height: 100%; overflow: hidden;">
             <div v-if="isLoggedIn" class="chat-public-auth-banner" style="z-index: 60; flex-shrink: 0;">
                 <span class="user-pill">💬 Connected as <b>{{ twitchUsername }}</b></span>
                 <button class="public-disconnect-btn" @click="$emit('disconnect-public-twitch')">Disconnect</button>
             </div>
 
-            <div class="twitch-chat-list" id="twitch-chat-list" @click="closePicker" style="position: absolute; top: 40px; left: 0; right: 0; bottom: calc(65px + 70px + env(safe-area-inset-bottom, 0px)); overflow-y: auto; overscroll-behavior-y: contain; -webkit-overflow-scrolling: touch; padding: 10px 12px; display: flex; flex-direction: column;">
+            <div class="twitch-chat-list" id="twitch-chat-list" @click="closePicker" style="position: absolute; top: 40px; left: 0; right: 0; bottom: calc(44px + 45px + env(safe-area-inset-bottom, 0px)); overflow-y: auto; overscroll-behavior-y: contain; -webkit-overflow-scrolling: touch; padding: 10px 12px; display: flex; flex-direction: column;">
                 <div style="flex: 1 1 auto; min-height: 0;"></div>
                 
                 <div v-if="chatMessages.length === 0" class="chat-empty-state">
@@ -198,7 +197,7 @@ const ChatView = {
                     <span style="font-size:13px; color:var(--text-muted); font-weight:600;">Loading channels…</span>
                 </div>
                 
-                <div v-for="(msg, i) in chatMessages" :key="i" class="twitch-msg-row" :style="i === 0 ? 'margin-top: auto;' : ''">
+                <div v-for="(msg, i) in chatMessages" :key="i" class="twitch-msg-row">
                     <span class="chat-timestamp">{{ msg.timestamp }}</span>
                     <span class="twitch-badges">
                         <img v-for="(badge, bi) in (msg.badges || [])" :key="bi" :src="badge.img" :title="badge.title" class="badge-img">
@@ -208,20 +207,20 @@ const ChatView = {
                 </div>
             </div>
 
-            <div class="chat-emote-tray" v-show="showPicker && isLoggedIn" @click.stop style="position: absolute; bottom: calc(65px + 65px + env(safe-area-inset-bottom, 0px)); z-index: 70; width: 100%;">
+            <div class="chat-emote-tray" v-show="showPicker && isLoggedIn" @click.stop style="position: absolute; bottom: calc(44px + 45px + env(safe-area-inset-bottom, 0px)); z-index: 70; width: 100%;">
                 <input v-model="pickerQuery" class="emote-search-input" placeholder="Search emotes…">
                 <div class="emote-picker-grid" style="overscroll-behavior-y: contain; -webkit-overflow-scrolling: touch;">
                     <img v-for="([name, emote]) in filteredEmotes" :key="name" :src="getEmoteUrl(emote)" :title="name" class="emote-picker-img" @mousedown.prevent="insertEmote(name)">
                 </div>
             </div>
 
-            <div class="custom-chat-input-area" style="position: absolute; bottom: calc(65px + env(safe-area-inset-bottom, 0px)); left:0; right:0; z-index: 100; padding-bottom: 5px; background: var(--bg-color);">
+            <div class="custom-chat-input-area" style="position: absolute; bottom: calc(45px + env(safe-area-inset-bottom, 0px)); left:0; right:0; z-index: 100; padding: 4px 12px; height: 44px; background: var(--bg-color);">
                 <button class="chat-icon-btn" :class="{ 'chat-icon-active': showPicker }" @click.stop="togglePicker"><span class="material-symbols-rounded" style="font-size:22px;">mood</span></button>
                 <input type="text" class="custom-chat-input" placeholder="Send a message…" v-model="localInput" @keydown.enter="handleSend" @focus="handleInteraction" :readonly="!isLoggedIn">
                 <button class="chat-send-btn" @click="handleSend" :disabled="!isLoggedIn || !localInput.trim()"><span class="material-symbols-rounded" style="font-size:20px;">send</span></button>
             </div>
 
-            <div class="chat-login-popup-overlay" :class="{ open: $root.showLoginPopup }" @click.self="$root.showLoginPopup = false" style="position: fixed; inset: 0; display: flex; align-items: center; justify-content: center; background: rgba(0,0,0,0.8); z-index: 99999;">
+            <div class="chat-login-popup-overlay" v-if="$root.showLoginPopup" @click.self="$root.showLoginPopup = false" style="position: fixed; inset: 0; display: flex; align-items: center; justify-content: center; background: rgba(0,0,0,0.8); z-index: 99999;">
                 <div class="chat-login-card" style="background: var(--card-bg); padding: 24px; border-radius: 16px; width: 85%; max-width: 340px; text-align: center; position: relative; box-shadow: 0 10px 30px rgba(0,0,0,0.3);">
                     <button @click="$root.showLoginPopup = false" style="position: absolute; top: 12px; right: 12px; background: transparent; border: none; color: var(--text-muted); font-size: 24px; line-height:1; cursor: pointer;">×</button>
                     <svg viewBox="0 0 24 24" class="chat-login-icon" style="width: 48px; height: 48px; margin: 0 auto 16px; color: #9146FF;"><path fill="currentColor" d="M11.571 4.714h1.715v5.143H11.57zm4.715 0H18v5.143h-1.714zM6 0L1.714 4.286v15.428h5.143V24l4.286-4.286h3.428L22.286 12V0zm14.571 11.143l-3.428 3.428h-3.429l-3 3v-3H6.857V1.714h13.714Z"/></svg>
@@ -282,7 +281,7 @@ const MoreView = {
             </a>
             
             <a href="https://www.tiktok.com/@codemiko" target="_blank" class="social-card" style="display: flex; align-items: center; padding: 0 16px; border-radius: 12px; min-height: 48px; height: 48px; flex-shrink: 0;">
-                <svg viewBox="0 0 24 24" class="social-icon" style="width: 22px; height: 22px; color: var(--text-main);"><path fill="currentColor" d="M12.53.02C13.84 0 15.14.01 16.44 0c.08 1.53.63 3.09 1.75 4.17 1.12 1.11 2.7 1.62 4.24 1.79v4.03c-1.44-.05-2.89-.35-4.2-.97-.57-.26-1.1-.59-1.62-.93-.01 2.92.01 5.84-.02 8.75-.08 1.4-.54 2.79-1.35 3.94-1.31 1.92-3.58 3.17-5.91 3.21-1.43.08-2.86-.31-4.08-1.03-2.02-1.12-3.44-3.17-3.64-5.41-.02-.21-.02-.41-.02-.62.07-1.44.62-2.83 1.51-3.89 1.05-1.25 2.55-2.06 4.15-2.28 1.1-.15 2.23-.04 3.27.35v4.06c-.34-.13-.7-.2-1.07-.22-.92-.04-1.84.28-2.51.86-.67.57-1.08 1.4-1.1 2.31-.01.91.38 1.77 1.03 2.38.65.61 1.56.93 2.49.88.92-.04 1.78-.45 2.38-1.11.58-.65.88-1.54.88-2.45V.02h-.03z"/></svg>
+                <svg viewBox="0 0 24 24" class="social-icon" style="width: 22px; height: 22px; color: var(--text-main);"><path fill="currentColor" d="M12.53.02C13.84 0 15.14.01 16.44 0c.08 1.53.63 3.09 1.75 4.17 1.12 1.11 2.7 1.62 4.24 1.79v4.03c-1.44-.05-2.89-.35-4.2-.97-.57-.26-1.1-.59-1.62-.93-.01 2.92.01 5.84-.02 8.75-.08 1.4-.54 2.79-1.35 3.94-1.31 1.92-3.58 3.17-5.91 3.21-1.43.08-2.86-.31-4.08-1.03-2.02-1.12-3.44-3.17-3.64-5.41-.02-.21-.02-.41-.02-.62.07-1.44.62-2.83 1.51-3.89 1.05-1.25 2.55-2.06 4.15-2.28 1.1-.15 2.23-.04 3.27.35v4.06c-.34-.13-.7-.2-1.07-.22-.92-.04-1.84.28-2.51.86-.67.57-1.08 1.4-1.1 2.31-.01.91.38 1.77 1.03 2.38.65.61 1.56.93( 2.49.88.92-.04 1.78-.45 2.38-1.11.58-.65.88-1.54.88-2.45V.02h-.03z"/></svg>
                 <span style="color: var(--text-main); font-size: 14px;">TikTok</span>
             </a>
             
@@ -360,7 +359,7 @@ const GeraldView = {
         formatMarkdown(text) { return parseMarkdownText(text, this.customEmotes); }
     },
     template: `
-        <div class="gerald-container safe-top-padding" style="position: absolute; inset: 0; display: flex; flex-direction: column; height: calc(100% - max(env(safe-area-inset-top, 24px), 24px)); overflow: hidden;">
+        <div class="gerald-container" style="position: absolute; inset: 0; display: flex; flex-direction: column; height: calc(100% - max(env(safe-area-inset-top, 24px), 24px)); overflow: hidden;">
             <div class="gerald-header" @click="$emit('close-pickers')" style="flex-shrink: 0; z-index: 50; border-bottom: none !important; box-shadow: none !important;">
                 <div class="os-top-bar">
                     <span class="os-title">GERALD_OS v2</span>
@@ -380,7 +379,7 @@ const GeraldView = {
                 </div>
             </div>
 
-            <div class="gerald-messages" id="gerald-msgs" @click="$emit('close-pickers')" style="position: absolute; top: 110px; left: 0; right: 0; bottom: calc(65px + 70px + env(safe-area-inset-bottom, 0px)); overflow-y: auto; overscroll-behavior-y: contain; -webkit-overflow-scrolling: touch; display: flex; flex-direction: column; padding: 10px 16px;">
+            <div class="gerald-messages" id="gerald-msgs" @click="$emit('close-pickers')" style="position: absolute; top: 110px; left: 0; right: 0; bottom: calc(44px + 45px + env(safe-area-inset-bottom, 0px)); overflow-y: auto; overscroll-behavior-y: contain; -webkit-overflow-scrolling: touch; display: flex; flex-direction: column; padding: 10px 16px;">
                 <template v-for="(m, i) in geraldMessages" :key="i">
                     <div v-if="i === 0 && m.role === 'gerald' && !m.content" class="chat-bubble gerald startup-anim">
                         <span>> GERALD_CORE initialized.<br>> Awaiting human input...</span>
@@ -395,7 +394,7 @@ const GeraldView = {
                 </div>
             </div>
             
-            <div class="gerald-action-area" style="position: absolute; bottom: calc(65px + env(safe-area-inset-bottom, 24px)); left:0; right:0; z-index: 100; padding-bottom: 5px; background: var(--bg-color);">
+            <div class="gerald-action-area" style="position: absolute; bottom: calc(45px + env(safe-area-inset-bottom, 0px)); left:0; right:0; z-index: 100; padding: 4px 12px; height: 44px; background: var(--bg-color);">
                 <div class="chat-emote-tray" v-show="showEmotePicker" style="position: absolute; bottom: 100%; border-bottom:none; border-radius:16px 16px 0 0;">
                     <div class="emote-picker-grid" style="overscroll-behavior-y: contain; -webkit-overflow-scrolling: touch;">
                         <img v-for="(emote, name) in customEmotes" :key="name" :src="getEmoteUrl(emote)" :title="name" class="emote-picker-img" @mousedown.prevent="$emit('insert-emote', name)">
@@ -404,13 +403,13 @@ const GeraldView = {
 
                 <gerald-minigames :show-minigames="showMinigames" @play-game="g => $emit('play-game', g)"></gerald-minigames>
 
-                <div class="gerald-input-area">
-                    <div class="gerald-input-wrapper">
-                        <button class="emote-toggle-btn" @click="$emit('toggle-emotes')"><span class="material-symbols-rounded" :style="{color: showEmotePicker ? 'var(--primary)' : 'inherit'}">mood</span></button>
-                        <button class="emote-toggle-btn" @click="$emit('toggle-minigames')"><span class="material-symbols-rounded" :style="{color: showMinigames ? 'var(--primary)' : 'inherit'}">sports_esports</span></button>
-                        <textarea class="gerald-input" rows="1" placeholder="Execute request..." :value="geraldInput" @input="$emit('update-input', $event.target.value)" @keydown="$emit('key-down', $event)" id="gerald-txt-input" @focus="$emit('close-pickers')"></textarea>
+                <div class="gerald-input-area" style="padding: 0; display: flex; width: 100%; align-items: center; gap: 8px;">
+                    <div class="gerald-input-wrapper" style="margin: 0; height: 36px; min-height: 36px;">
+                        <button class="emote-toggle-btn" style="height: 34px;" @click="$emit('toggle-emotes')"><span class="material-symbols-rounded" :style="{color: showEmotePicker ? 'var(--primary)' : 'inherit'}">mood</span></button>
+                        <button class="emote-toggle-btn" style="height: 34px;" @click="$emit('toggle-minigames')"><span class="material-symbols-rounded" :style="{color: showMinigames ? 'var(--primary)' : 'inherit'}">sports_esports</span></button>
+                        <textarea class="gerald-input" style="padding: 8px;" rows="1" placeholder="Execute request..." :value="geraldInput" @input="$emit('update-input', $event.target.value)" @keydown="$emit('key-down', $event)" id="gerald-txt-input" @focus="$emit('close-pickers')"></textarea>
                     </div>
-                    <button class="gerald-send" @click="$emit('send')"><span class="material-symbols-rounded">send</span></button>
+                    <button class="gerald-send" style="width: 36px; height: 36px;" @click="$emit('send')"><span class="material-symbols-rounded">send</span></button>
                 </div>
             </div>
         </div>
@@ -612,7 +611,7 @@ createApp({
                 tags['badges'].split(',').forEach(b => { const imgUrl = badgeAssets[b]; if (imgUrl) badges.push({ title: b.split('/')[0], img: imgUrl }); });
             }
 
-            let html = text.replace(/&/g, '&').replace(/</g, '<').replace(/>/g, '>');
+            let html = text.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
             if (tags['emotes']) {
                 const replacements = [];
                 tags['emotes'].split('/').forEach(e => {
@@ -925,24 +924,6 @@ createApp({
                 recentVods.value = edges.map(e => ({ id: e.node.id, date: new Date(e.node.createdAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric' }).toUpperCase() }));
                 if (currentVodIndex.value === 0 || currentVodIndex.value === -1) currentVodIndex.value = isLive.value ? -1 : 0;
             } catch {}
-        };
-
-        const runSync = async () => {
-            syncState.value = 'SYNCING...';
-            await load7TVEmotes();
-            const success = await loadTwitchBadges();
-            if (!success && apiConfig.value.localTkn) { syncState.value = 'ERROR'; setTimeout(() => { syncState.value = 'Force Data Sync'; }, 2500); return; }
-            await loadData(false); await checkLive(); await testGeminiBrain();
-            syncState.value = 'SUCCESS'; setTimeout(() => { syncState.value = 'Force Data Sync'; }, 2500);
-        };
-
-        const nukeCache = async () => {
-            if (nukeState.value !== 'Nuke App Cache') return; nukeState.value = 'NUKING...';
-            try {
-                if ('serviceWorker' in navigator) { const regs = await navigator.serviceWorker.getRegistrations(); for (let r of regs) await r.unregister(); }
-                if ('caches' in window) { const keys = await caches.keys(); for (let k of keys) await caches.delete(k); }
-                nukeState.value = 'SUCCESS'; setTimeout(() => { window.location.reload(); }, 1000);
-            } catch { nukeState.value = 'ERROR'; setTimeout(() => { nukeState.value = 'Nuke App Cache'; }, 2500); }
         };
 
         onMounted(async () => {
