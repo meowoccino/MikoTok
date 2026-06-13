@@ -190,7 +190,6 @@ const ChatView = {
                 <button class="public-disconnect-btn" @click="$emit('disconnect-public-twitch')">Disconnect</button>
             </div>
 
-            <!-- Absolute bounding parameters prevent the bottom bar from squishing messages underneath -->
             <div class="twitch-chat-list" id="twitch-chat-list" @click="closePicker" style="position: absolute; top: 40px; left: 0; right: 0; bottom: calc(65px + 70px + env(safe-area-inset-bottom, 0px)); overflow-y: auto; overscroll-behavior-y: contain; -webkit-overflow-scrolling: touch; padding: 10px 12px; display: flex; flex-direction: column;">
                 <div style="flex: 1 1 auto; min-height: 0;"></div>
                 
@@ -396,7 +395,7 @@ const GeraldView = {
                 </div>
             </div>
             
-            <div class="gerald-action-area" style="position: absolute; bottom: calc(65px + env(safe-area-inset-bottom, 0px)); left:0; right:0; z-index: 100; padding-bottom: 5px; background: var(--bg-color);">
+            <div class="gerald-action-area" style="position: absolute; bottom: calc(65px + env(safe-area-inset-bottom, 24px)); left:0; right:0; z-index: 100; padding-bottom: 5px; background: var(--bg-color);">
                 <div class="chat-emote-tray" v-show="showEmotePicker" style="position: absolute; bottom: 100%; border-bottom:none; border-radius:16px 16px 0 0;">
                     <div class="emote-picker-grid" style="overscroll-behavior-y: contain; -webkit-overflow-scrolling: touch;">
                         <img v-for="(emote, name) in customEmotes" :key="name" :src="getEmoteUrl(emote)" :title="name" class="emote-picker-img" @mousedown.prevent="$emit('insert-emote', name)">
@@ -613,7 +612,7 @@ createApp({
                 tags['badges'].split(',').forEach(b => { const imgUrl = badgeAssets[b]; if (imgUrl) badges.push({ title: b.split('/')[0], img: imgUrl }); });
             }
 
-            let html = text.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+            let html = text.replace(/&/g, '&').replace(/</g, '<').replace(/>/g, '>');
             if (tags['emotes']) {
                 const replacements = [];
                 tags['emotes'].split('/').forEach(e => {
@@ -791,6 +790,94 @@ createApp({
             } catch { geminiStatus.value = 'API_DISCONNECTED'; }
         };
 
+        const triggerAiMinigame = (gameObj) => {
+            geraldInput.value = "";
+            closePickers();
+            
+            const logMsg = `**[EVENT: ${gameObj.label} Protocol Activated]**`;
+            geraldMessages.value.push({ role: 'user', content: logMsg });
+            
+            if (currentUser.value) {
+                sbClient.from('gerald_history').insert({ user_id: currentUser.value.id, role: 'user', content: logMsg }).then();
+            }
+            
+            isGeraldTyping.value = true;
+            nextTick(scrollToBottom);
+
+            const contextHistory = geraldMessages.value.slice(-10).map(m => ({ role: m.role === 'gerald' ? 'model' : 'user', parts: [{ text: m.content }] }));
+
+            sbClient.functions.invoke('gerald-chat', { 
+                body: { history: contextHistory, system_directive: gameObj.prompt } 
+            }).then(({ data, error }) => {
+                if (!error && data?.reply) {
+                    geraldMessages.value.push({ role: 'gerald', content: data.reply.trim() });
+                    if (currentUser.value) {
+                        sbClient.from('gerald_history').insert({ user_id: currentUser.value.id, role: 'gerald', content: data.reply.trim() }).then();
+                    }
+                } else {
+                    geraldMessages.value.push({ role: 'gerald', content: '> MALFUNCTION: Internal hardware override processing failure.' });
+                }
+            }).catch(() => {
+                geraldMessages.value.push({ role: 'gerald', content: '> MALFUNCTION: Core logic offline.' });
+            }).finally(() => {
+                isGeraldTyping.value = false;
+                nextTick(scrollToBottom);
+            });
+        };
+
+        const talkToGerald = async () => {
+            const inputEl = document.getElementById('gerald-txt-input');
+            if (inputEl && inputEl.value !== geraldInput.value) { geraldInput.value = inputEl.value; }
+            if (!geraldInput.value.trim() || isGeraldTyping.value) return;
+
+            const userMsg = geraldInput.value;
+            geraldMessages.value.push({ role: 'user', content: userMsg });
+
+            if (currentUser.value) {
+                sbClient.from('gerald_history').insert({ user_id: currentUser.value.id, role: 'user', content: userMsg }).then();
+            }
+
+            geraldInput.value = '';
+            if (inputEl) { inputEl.value = ''; inputEl.style.height = 'auto'; }
+
+            isGeraldTyping.value = true; closePickers(); nextTick(scrollToBottom);
+            const geminiHistory = geraldMessages.value.slice(-12).map(m => ({ role: m.role === 'gerald' ? 'model' : 'user', parts: [{ text: m.content }] }));
+
+            try {
+                const { data, error } = await sbClient.functions.invoke('gerald-chat', { body: { history: geminiHistory } });
+                if (!error && data?.reply) {
+                    geraldMessages.value.push({ role: 'gerald', content: data.reply.trim() });
+                    if (currentUser.value) {
+                        sbClient.from('gerald_history').insert({ user_id: currentUser.value.id, role: 'gerald', content: data.reply.trim() }).then();
+                    }
+                } else throw error;
+            } catch { geraldMessages.value.push({ role: 'gerald', content: '> SYSTEM FAILURE: Core sync interrupted.' }); }
+            finally { isGeraldTyping.value = false; nextTick(scrollToBottom); }
+        };
+
+        const nextVod = () => { if (currentVodIndex.value < recentVods.value.length - 1) currentVodIndex.value++; };
+        const prevVod = () => { if (currentVodIndex.value > (isLive.value ? -1 : 0)) currentVodIndex.value--; };
+        const closeFilterMenu = () => { isFilterMenuOpen.value = false; };
+        const playClip = (clip) => { selectedClip.value = clip; };
+        const insertEmote = (name) => { if (currentTab.value === 'gerald') geraldInput.value += ` :${name}: `; };
+        const scrollToBottom = () => { const b = document.getElementById('gerald-msgs'); if (b) b.scrollTop = b.scrollHeight; };
+        const toggleEmotes = () => { showEmotePicker.value = !showEmotePicker.value; showMinigames.value = false; };
+        const toggleMinigames = () => { showMinigames.value = !showMinigames.value; showEmotePicker.value = false; };
+        const closePickers = () => { showEmotePicker.value = false; showMinigames.value = false; };
+
+        const applyFilter = (key, label) => {
+            currentFilter.value = key; activeFilterLabel.value = label; isFilterMenuOpen.value = false;
+            allClipsLoaded.value = false;
+            allClips.value = [];
+            currentClipOffset.value = 0;
+            const el = document.getElementById('home-scroll'); if (el) nextTick(() => el.scrollTop = 0);
+            loadData(false);
+        };
+
+        const handleScroll = (e) => {
+            if (e.target.scrollHeight - e.target.scrollTop - e.target.clientHeight < 200) { if (currentTab.value === 'home') loadData(true); }
+        };
+
         const loadData = async (isLoadMore = false) => {
             if (isLoadingMore.value || allClipsLoaded.value) return; isLoadingMore.value = true;
             try {
@@ -840,6 +927,24 @@ createApp({
             } catch {}
         };
 
+        const runSync = async () => {
+            syncState.value = 'SYNCING...';
+            await load7TVEmotes();
+            const success = await loadTwitchBadges();
+            if (!success && apiConfig.value.localTkn) { syncState.value = 'ERROR'; setTimeout(() => { syncState.value = 'Force Data Sync'; }, 2500); return; }
+            await loadData(false); await checkLive(); await testGeminiBrain();
+            syncState.value = 'SUCCESS'; setTimeout(() => { syncState.value = 'Force Data Sync'; }, 2500);
+        };
+
+        const nukeCache = async () => {
+            if (nukeState.value !== 'Nuke App Cache') return; nukeState.value = 'NUKING...';
+            try {
+                if ('serviceWorker' in navigator) { const regs = await navigator.serviceWorker.getRegistrations(); for (let r of regs) await r.unregister(); }
+                if ('caches' in window) { const keys = await caches.keys(); for (let k of keys) await caches.delete(k); }
+                nukeState.value = 'SUCCESS'; setTimeout(() => { window.location.reload(); }, 1000);
+            } catch { nukeState.value = 'ERROR'; setTimeout(() => { nukeState.value = 'Nuke App Cache'; }, 2500); }
+        };
+
         onMounted(async () => {
             document.body.style.overflow = 'hidden';
             document.body.style.height = '100vh';
@@ -887,7 +992,8 @@ createApp({
         });
 
         return {
-            hostname, splashVisible, splashOpacity, currentTab, tabOffset, appTheme, toggleTheme, clips, allClipsCount, modals, isLive, currentUser, loginEmail, loginPass, loginError, showLoginPopup, apiConfig, geraldInput, geraldMessages, isGeraldTyping, talkToGerald, syncState, wipeState, logoutState, nukeState, saveState, isHeaderVisible, handleScroll, currentFilter, activeFilterLabel, isFilterMenuOpen, closeFilterMenu, applyFilter, parseMarkdown, recentVods, currentVodIndex, nextVod, prevVod, customEmotes, showEmotePicker, insertEmote, handleGeraldEnter, toggleEmotes, toggleMinigames, closePickers, nukeCache, activeClipId, switchTab, playClip, selectedClip, showMinigames, runSync, disconnectTwitch, saveApiKeys, triggerAiMinigame, geminiStatus, sysStats, chatMessages, twitchChatToken, twitchAuthUrl, twitchUsername, sendTwitchChatMessage, handleSwipeStart, handleSwipeEnd, handleModalTouchStart, handleModalTouchMove, handleModalTouchEnd, clearGeraldHistory, logoSvg: (id) => `<svg viewBox="0 0 100 100"><defs><linearGradient id="grad-${id}" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stop-color="#9146FF"/><stop offset="100%" stop-color="#a970ff"/></linearGradient></defs><circle cx="50" cy="50" r="40" fill="url(#grad-${id})"/><path d="M 33 38 L 48 62 L 62 38 L 62 55 Q 62 65 69 64" fill="none" stroke="#ffffff" stroke-width="8" stroke-linecap="round" stroke-linejoin="round"/></svg>`,
+            hostname, splashVisible, splashOpacity, currentTab, tabOffset, appTheme, toggleTheme, clips, allClipsCount, modals, isLive, currentUser, loginEmail, loginPass, loginError, showLoginPopup, apiConfig, geraldInput, geraldMessages, isGeraldTyping, talkToGerald, syncState, wipeState, logoutState, nukeState, saveState, isHeaderVisible, handleScroll, currentFilter, activeFilterLabel, isFilterMenuOpen, closeFilterMenu, applyFilter, parseMarkdown: (text) => parseMarkdownText(text, customEmotes.value), recentVods, currentVodIndex, nextVod, prevVod, customEmotes, showEmotePicker, insertEmote, handleGeraldEnter, toggleEmotes, toggleMinigames, closePickers, nukeCache, activeClipId, switchTab, playClip, selectedClip, showMinigames, runSync, disconnectTwitch, saveApiKeys, triggerAiMinigame, geminiStatus, sysStats, chatMessages, twitchChatToken, twitchAuthUrl, twitchUsername, sendTwitchChatMessage, handleSwipeStart, handleSwipeEnd, handleModalTouchStart, handleModalTouchMove, handleModalTouchEnd, clearGeraldHistory,
+            logoSvg: (id) => `<svg viewBox="0 0 100 100"><defs><linearGradient id="grad-${id}" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stop-color="#9146FF"/><stop offset="100%" stop-color="#a970ff"/></linearGradient></defs><circle cx="50" cy="50" r="40" fill="url(#grad-${id})"/><path d="M 33 38 L 48 62 L 62 38 L 62 55 Q 62 65 69 64" fill="none" stroke="#ffffff" stroke-width="8" stroke-linecap="round" stroke-linejoin="round"/></svg>`,
             handleLogin: async () => { 
                 loginError.value = '';
                 try {
