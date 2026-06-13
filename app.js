@@ -706,18 +706,20 @@ createApp({
         };
 
         const loadChatHistory = async () => {
+            // Check if we have recent Supabase logs (from last 30 mins) — means user refreshed mid-session
             try {
-                // Try our own Supabase log first — survives page refreshes
+                const thirtyMinsAgo = new Date(Date.now() - 30 * 60 * 1000).toISOString();
                 const { data: logRows, error: logErr } = await sbClient
                     .from('twitch_chat_logs')
                     .select('username,message,color,badges,created_at')
+                    .gte('created_at', thirtyMinsAgo)
                     .order('created_at', { ascending: true })
                     .limit(100);
-                if (!logErr && logRows && logRows.length > 0) {
+                if (!logErr && logRows && logRows.length > 10) {
+                    // Recent session data exists — use it so messages survive refresh
                     logRows.forEach(row => {
                         const d = new Date(row.created_at);
                         const ts = d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-                        // badges stored as jsonb array in Supabase — already parsed
                         const badges = Array.isArray(row.badges) ? row.badges : [];
                         chatMessages.value.push({
                             timestamp: ts,
@@ -730,8 +732,8 @@ createApp({
                     setTimeout(scrollChatToBottom, 150);
                     return;
                 }
-            } catch(e) { console.warn('[MikoTok] loadChatHistory Supabase error:', e); }
-            // Fallback to robotty if Supabase log is empty (first ever load)
+            } catch(e) { console.warn('[MikoTok] Supabase history check failed:', e); }
+            // Default: load fresh from robotty (first load, or no recent data)
             try {
                 const res = await fetch('https://recent-messages.robotty.de/api/v2/recent-messages/codemiko');
                 const data = await res.json();
