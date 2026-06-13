@@ -272,7 +272,7 @@ const MoreView = {
             </a>
             
             <a href="https://www.instagram.com/thecodemiko/" target="_blank" class="social-card" style="display: flex; align-items: center; padding: 0 16px; border-radius: 12px; min-height: 48px; height: 48px; flex-shrink: 0;">
-                <svg viewBox="0 0 24 24" class="social-icon" style="width: 22px; height: 22px; color: #E1306C;"><path fill="currentColor" d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zM12 0C8.741 0 8.333.014 7.053.072 2.695.272.273 2.69.073 7.052.014 8.333 0 8.741 0 12c0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98C8.333 23.986 8.741 24 12 24c3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98C15.668.014 15.259 0 12 0zm0 5.838a6.162 6.162 0 100 12.324 6.162 6.162 0 000-12.324zM12 16a4 4 0 110-8 4 4 0 010 8zm6.406-11.845a1.44 1.44 0 100 2.881 1.44 1.44 0 000-2.881z"/></svg>
+                <svg viewBox="0 0 24 24" class="social-icon" style="width: 22px; height: 22px; color: #E1306C;"><path fill="currentColor" d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07; -4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zM12 0C8.741 0 8.333.014 7.053.072 2.695.272.273 2.69.073 7.052.014 8.333 0 8.741 0 12c0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98C8.333 23.986 8.741 24 12 24c3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98C15.668.014 15.259 0 12 0zm0 5.838a6.162 6.162 0 100 12.324 6.162 6.162 0 000-12.324zM12 16a4 4 0 110-8 4 4 0 010 8zm6.406-11.845a1.44 1.44 0 100 2.881 1.44 1.44 0 000-2.881z"/></svg>
                 <span style="color: var(--text-main); font-size: 14px;">Instagram</span>
             </a>
             
@@ -448,6 +448,26 @@ const sbClient = supabase.createClient('https://yhxcuayiwqpjvalyrcqv.supabase.co
 createApp({
     components: { SplashScreen, AppHeader, BottomNav, FilterMenu, ProfileModal, GeraldView, HomeView, ChatView, MoreView, ClipModal },
     setup() {
+        const customEmotes = ref({});
+        
+        // DECLARE INNER FUNCTION FIRST BEFORE LIFECYCLE CALLBACKS RUN
+        const parseMarkdown = (t) => {
+            if (!t) return ''; 
+            let html = t.replace(/&/g, '&').replace(/</g, '<').replace(/>/g, '>');
+            html = html.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>').replace(/\*(.*?)\*/g, '<em>$1</em>');
+            const words = html.split(' ');
+            const emoteKeys = Object.keys(customEmotes.value);
+            for (let i = 0; i < words.length; i++) {
+                const clean = words[i].replace(/^:|:$/g, ''); 
+                const actualKey = emoteKeys.find(k => k.toLowerCase() === clean.toLowerCase());
+                if (actualKey) {
+                    const m = customEmotes.value[actualKey];
+                    words[i] = '<img src="' + (m.url || 'https://cdn.discordapp.com/emojis/' + m.id + '.png') + '" style="height:1.65em; vertical-align:middle; display:inline-block; margin:0 2px;" title="' + actualKey + '">';
+                }
+            }
+            return words.join(' ');
+        };
+
         const tabs = ['home', 'chat', 'gerald', 'more'];
         const initialHash = window.location.hash.replace('#', '');
         const currentTab = ref(tabs.includes(initialHash) ? initialHash : 'home');
@@ -478,7 +498,6 @@ createApp({
         const geminiStatus = ref('TESTING BRAIN...');
         const sysStats = ref({ cpu: 23, mem: 1.8, temp: 74 });
 
-        const customEmotes = ref({});
         const myTwitchBadges = ref([]); 
         const activeClipId = ref(null);
         const currentClipOffset = ref(0);
@@ -501,24 +520,6 @@ createApp({
         const tabOrder = ['home', 'chat', 'gerald', 'more'];
         const initialTabIdx = tabOrder.indexOf(tabs.includes(window.location.hash.replace('#','')) ? window.location.hash.replace('#','') : 'home');
         const tabOffset = ref(initialTabIdx * -25);
-
-        // CLEAN SANITIZED STRING CONCATENATION REPLACES CLASHING BACKTICKS FOR PARSEMARKDOWN
-        const parseMarkdown = (t) => {
-            if (!t) return ''; 
-            let html = t.replace(/&/g, '&').replace(/</g, '<').replace(/>/g, '>');
-            html = html.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>').replace(/\*(.*?)\*/g, '<em>$1</em>');
-            const words = html.split(' ');
-            const emoteKeys = Object.keys(customEmotes.value);
-            for (let i = 0; i < words.length; i++) {
-                const clean = words[i].replace(/^:|:$/g, ''); 
-                const actualKey = emoteKeys.find(k => k.toLowerCase() === clean.toLowerCase());
-                if (actualKey) {
-                    const m = customEmotes.value[actualKey];
-                    words[i] = '<img src="' + (m.url || 'https://cdn.discordapp.com/emojis/' + m.id + '.png') + '" style="height:1.65em; vertical-align:middle; display:inline-block; margin:0 2px;" title="' + actualKey + '">';
-                }
-            }
-            return words.join(' ');
-        };
 
         const switchTab = (tab) => {
             currentTab.value = tab;
@@ -711,12 +712,6 @@ createApp({
             twitchWs.send(`PRIVMSG #codemiko :${msg}`);
             const ts = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
             
-            let myBadges = [];
-            try {
-                const storedBadges = localStorage.getItem('my_twitch_badges');
-                if (storedBadges) myBadges = JSON.parse(storedBadges);
-            } catch(e) {}
-
             const htmlMsg = processEmotes(msg);
 
             chatMessages.value.push({
@@ -792,8 +787,6 @@ createApp({
                 geminiStatus.value = (!error && data) ? 'API_CONNECTED' : 'API_DISCONNECTED';
             } catch { geminiStatus.value = 'API_DISCONNECTED'; }
         };
-
-        const handleSampleMessages = () => {};
 
         const triggerAiMinigame = (gameObj) => {
             geraldInput.value = "";
@@ -932,6 +925,24 @@ createApp({
             } catch {}
         };
 
+        const runSync = async () => {
+            syncState.value = 'SYNCING...';
+            await load7TVEmotes();
+            const success = await loadTwitchBadges();
+            if (!success && apiConfig.value.localTkn) { syncState.value = 'ERROR'; setTimeout(() => { syncState.value = 'Force Data Sync'; }, 2500); return; }
+            await loadData(false); await checkLive(); await testGeminiBrain();
+            syncState.value = 'SUCCESS'; setTimeout(() => { syncState.value = 'Force Data Sync'; }, 2500);
+        };
+
+        const nukeCache = async () => {
+            if (nukeState.value !== 'Nuke App Cache') return; nukeState.value = 'NUKING...';
+            try {
+                if ('serviceWorker' in navigator) { const regs = await navigator.serviceWorker.getRegistrations(); for (let r of regs) await r.unregister(); }
+                if ('caches' in window) { const keys = await caches.keys(); for (let k of keys) await caches.delete(k); }
+                nukeState.value = 'SUCCESS'; setTimeout(() => { window.location.reload(); }, 1000);
+            } catch { nukeState.value = 'ERROR'; setTimeout(() => { nukeState.value = 'Nuke App Cache'; }, 2500); }
+        };
+
         onMounted(async () => {
             document.body.style.overflow = 'hidden';
             document.body.style.height = '100vh';
@@ -979,7 +990,7 @@ createApp({
         });
 
         return {
-            hostname, splashVisible, splashOpacity, currentTab, tabOffset, appTheme, toggleTheme, clips, allClipsCount, modals, isLive, currentUser, loginEmail, loginPass, loginError, showLoginPopup, apiConfig, geraldInput, geraldMessages, isGeraldTyping, talkToGerald, syncState, wipeState, logoutState, nukeState, saveState, isHeaderVisible, handleScroll, currentFilter, activeFilterLabel, isFilterMenuOpen, closeFilterMenu, applyFilter, parseMarkdown, recentVods, currentVodIndex, nextVod, prevVod, customEmotes, showEmotePicker, insertEmote, handleGeraldEnter, toggleEmotes, toggleMinigames, closePickers, nukeCache, activeClipId, switchTab, playClip, selectedClip, showMinigames, runSync, disconnectTwitch, saveApiKeys, triggerAiMinigame, geminiStatus, sysStats, chatMessages, twitchChatToken, twitchAuthUrl, twitchUsername, sendTwitchChatMessage, handleSwipeStart, handleSwipeEnd, handleModalTouchStart, handleModalTouchMove, handleModalTouchEnd, clearGeraldHistory, handleSampleMessages, logoSvg: (id) => `<svg viewBox="0 0 100 100"><defs><linearGradient id="grad-${id}" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stop-color="#9146FF"/><stop offset="100%" stop-color="#a970ff"/></linearGradient></defs><circle cx="50" cy="50" r="40" fill="url(#grad-${id})"/><path d="M 33 38 L 48 62 L 62 38 L 62 55 Q 62 65 69 64" fill="none" stroke="#ffffff" stroke-width="8" stroke-linecap="round" stroke-linejoin="round"/></svg>`,
+            hostname, splashVisible, splashOpacity, currentTab, tabOffset, appTheme, toggleTheme, clips, allClipsCount, modals, isLive, currentUser, loginEmail, loginPass, loginError, showLoginPopup, apiConfig, geraldInput, geraldMessages, isGeraldTyping, talkToGerald, syncState, wipeState, logoutState, nukeState, saveState, isHeaderVisible, handleScroll, currentFilter, activeFilterLabel, isFilterMenuOpen, closeFilterMenu, applyFilter, parseMarkdown, recentVods, currentVodIndex, nextVod, prevVod, customEmotes, showEmotePicker, insertEmote, handleGeraldEnter, toggleEmotes, toggleMinigames, closePickers, nukeCache, activeClipId, switchTab, playClip, selectedClip, showMinigames, runSync, disconnectTwitch, saveApiKeys, triggerAiMinigame, geminiStatus, sysStats, chatMessages, twitchChatToken, twitchAuthUrl, twitchUsername, sendTwitchChatMessage, handleSwipeStart, handleSwipeEnd, handleModalTouchStart, handleModalTouchMove, handleModalTouchEnd, clearGeraldHistory, logoSvg: (id) => `<svg viewBox="0 0 100 100"><defs><linearGradient id="grad-${id}" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stop-color="#9146FF"/><stop offset="100%" stop-color="#a970ff"/></linearGradient></defs><circle cx="50" cy="50" r="40" fill="url(#grad-${id})"/><path d="M 33 38 L 48 62 L 62 38 L 62 55 Q 62 65 69 64" fill="none" stroke="#ffffff" stroke-width="8" stroke-linecap="round" stroke-linejoin="round"/></svg>`,
             handleLogin: async () => { 
                 loginError.value = '';
                 try {
