@@ -183,13 +183,13 @@ const ChatView = {
         handleSend() { if(!this.localInput.trim()) return; this.$emit('send-chat', this.localInput.trim()); this.localInput = ''; this.closePicker(); }
     },
     template: `
-        <div class="chat-wrapper safe-top-padding" style="position: absolute; inset: 0; display: flex; flex-direction: column; height: calc(100% - max(env(safe-area-inset-top, 24px), 24px)); overflow: hidden;">
+        <div class="chat-wrapper safe-top-padding" style="position: absolute; inset: 0; display: flex; flex-direction: column; overflow: hidden;">
             <div v-if="isLoggedIn" class="chat-public-auth-banner" style="z-index: 60; flex-shrink: 0;">
                 <span class="user-pill">💬 Connected as <b>{{ twitchUsername }}</b></span>
                 <button class="public-disconnect-btn" @click="$emit('disconnect-public-twitch')">Disconnect</button>
             </div>
 
-            <div class="twitch-chat-list" id="twitch-chat-list" @click="closePicker" style="position: absolute; top: 40px; left: 0; right: 0; bottom: calc(44px + 45px + env(safe-area-inset-bottom, 0px)); overflow-y: auto; overscroll-behavior-y: contain; -webkit-overflow-scrolling: touch; padding: 10px 12px; display: flex; flex-direction: column;">
+            <div class="twitch-chat-list" id="twitch-chat-list" @click="closePicker" style="position: absolute; top: 40px; left: 0; right: 0; bottom: calc(80px + 10px + env(safe-area-inset-bottom, 0px)); overflow-y: auto; overscroll-behavior-y: contain; -webkit-overflow-scrolling: touch; padding: 10px 12px; display: flex; flex-direction: column;">
                 <div style="flex: 1 1 auto; min-height: 0;"></div>
                 
                 <div v-if="chatMessages.length === 0" class="chat-empty-state">
@@ -207,7 +207,7 @@ const ChatView = {
                 </div>
             </div>
 
-            <div class="chat-emote-tray" v-show="showPicker && isLoggedIn" @click.stop style="position: absolute; bottom: calc(44px + 45px + env(safe-area-inset-bottom, 0px)); z-index: 70; width: 100%;">
+            <div class="chat-emote-tray" v-show="showPicker && isLoggedIn" @click.stop style="position: absolute; bottom: calc(80px + 10px + env(safe-area-inset-bottom, 0px)); z-index: 70; width: 100%;">
                 <input v-model="pickerQuery" class="emote-search-input" placeholder="Search emotes…">
                 <div class="emote-picker-grid" style="overscroll-behavior-y: contain; -webkit-overflow-scrolling: touch;">
                     <img v-for="([name, emote]) in filteredEmotes" :key="name" :src="getEmoteUrl(emote)" :title="name" class="emote-picker-img" @click="insertEmote(name)">
@@ -359,7 +359,7 @@ const GeraldView = {
         formatMarkdown(text) { return parseMarkdownText(text, this.customEmotes); }
     },
     template: \`
-        <div class="gerald-container" style="position: absolute; inset: 0; display: flex; flex-direction: column; height: calc(100% - max(env(safe-area-inset-top, 24px), 24px)); overflow: hidden;">
+        <div class="gerald-container" style="position: absolute; inset: 0; display: flex; flex-direction: column; overflow: hidden;">
             <div class="gerald-header" @click="$emit('close-pickers')" style="flex-shrink: 0; z-index: 50; border-bottom: none !important; box-shadow: none !important;">
                 <div class="os-top-bar">
                     <span class="os-title">GERALD_OS v2</span>
@@ -379,7 +379,7 @@ const GeraldView = {
                 </div>
             </div>
 
-            <div class="gerald-messages" id="gerald-msgs" @click="$emit('close-pickers')" style="position: absolute; top: 110px; left: 0; right: 0; bottom: calc(44px + 45px + env(safe-area-inset-bottom, 0px)); overflow-y: auto; overscroll-behavior-y: contain; -webkit-overflow-scrolling: touch; display: flex; flex-direction: column; padding: 10px 16px;">
+            <div class="gerald-messages" id="gerald-msgs" @click="$emit('close-pickers')" style="position: absolute; top: 110px; left: 0; right: 0; bottom: calc(80px + 44px + env(safe-area-inset-bottom, 0px)); overflow-y: auto; overscroll-behavior-y: contain; -webkit-overflow-scrolling: touch; display: flex; flex-direction: column; padding: 10px 16px;">
                 <template v-for="(m, i) in geraldMessages" :key="i">
                     <div v-if="i === 0 && m.role === 'gerald' && !m.content" class="chat-bubble gerald startup-anim">
                         <span>> GERALD_CORE initialized.<br>> Awaiting human input...</span>
@@ -394,14 +394,14 @@ const GeraldView = {
                 </div>
             </div>
             
-            <div class="gerald-action-area" style="position: absolute; bottom: calc(45px + env(safe-area-inset-bottom, 0px)); left:0; right:0; z-index: 100; padding: 4px 12px; height: 44px; background: var(--bg-color);">
+            <div class="gerald-action-area" style="position: absolute; bottom: calc(80px + env(safe-area-inset-bottom, 0px)); left:0; right:0; z-index: 100; padding: 4px 12px; height: 44px; background: var(--bg-color);">
                 <div class="chat-emote-tray" v-show="showEmotePicker" style="position: absolute; bottom: 100%; border-bottom:none; border-radius:16px 16px 0 0;">
                     <div class="emote-picker-grid" style="overscroll-behavior-y: contain; -webkit-overflow-scrolling: touch;">
                         <img v-for="(emote, name) in customEmotes" :key="name" :src="getEmoteUrl(emote)" :title="name" class="emote-picker-img" @mousedown.prevent="$emit('insert-emote', name)">
                     </div>
                 </div>
 
-                <gerald-minigames :show-minigames="showMinigames" @play-game="g => $emit('play-game', g')"></gerald-minigames>
+                <gerald-minigames :show-minigames="showMinigames" @play-game="g => $emit('play-game', g)"></gerald-minigames>
 
                 <div class="gerald-input-area" style="padding: 0; display: flex; width: 100%; align-items: center; gap: 8px;">
                     <div class="gerald-input-wrapper" style="margin: 0; height: 36px; min-height: 36px;">
@@ -419,7 +419,7 @@ const GeraldView = {
 const HomeView = {
     props: ['currentTab', 'currentVodIndex', 'recentVods', 'isLive', 'hostname', 'clips', 'activeFilterLabel', 'optimizeTwitchImg', 'formatViews', 'formatDate', 'activeClipId'],
     template: \`
-        <div style="flex: 1; overflow-y: auto; overscroll-behavior-y: contain; -webkit-overflow-scrolling: touch; padding-bottom: calc(85px + env(safe-area-inset-bottom, 0px));">
+        <div style="flex: 1; overflow-y: auto; overscroll-behavior-y: contain; -webkit-overflow-scrolling: touch; padding-bottom: calc(80px + 20px + env(safe-area-inset-bottom, 0px));">
             <div class="hero-section">
                 <div class="header-controls" style="margin-bottom:12px; display:flex;">
                     <div :class="['premium-badge', isLive ? 'live-badge' : 'vod']">
