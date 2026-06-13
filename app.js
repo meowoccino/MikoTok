@@ -531,7 +531,6 @@ createApp({
         const twitchChatToken = ref(localStorage.getItem('tw_chat_token') || null);
         const twitchUsername = ref(localStorage.getItem('tw_username') || null);
         
-        // Fixed: Reverted back to the original universal client ID for general user logins
         const twitchAuthUrl = ref('');
         
         let twitchWs = null;
@@ -681,7 +680,6 @@ createApp({
             } catch(e) {}
         };
 
-        // Fixed: Standardized Twitch WebSocket login to resolve missing chat flows
         const connectTwitchChat = () => {
             if (twitchWs) { try { twitchWs.close(); } catch(e) {} }
             wsAuthenticated = false;
@@ -724,6 +722,13 @@ createApp({
                         parseIrcMessage(raw); 
                     } 
                 }); 
+            };
+
+            twitchWs.onclose = () => {
+                wsAuthenticated = false;
+                setTimeout(() => {
+                    if (!wsAuthenticated) connectTwitchChat();
+                }, 3000);
             };
         };
 
@@ -964,14 +969,13 @@ createApp({
             } catch {}
         };
 
-        onMounted(async () => {
+        onMounted(() => {
             document.body.style.overflow = 'hidden';
             document.body.style.height = '100vh';
             document.documentElement.style.overflow = 'hidden';
 
             updateThemeClass();
             
-            // Fixed: Reverted Twitch login to standard public client handler URI to route back to web app correctly
             const redirectUri = encodeURIComponent(window.location.origin + window.location.pathname);
             twitchAuthUrl.value = `https://id.twitch.tv/oauth2/authorize?client_id=kimne78kx3ncx6brgo4mv6wki5h1ko&redirect_uri=${redirectUri}&response_type=token&scope=chat:read+chat:edit&force_verify=true`;
 
@@ -984,35 +988,45 @@ createApp({
                 }
             }
 
-            // Fixed: Added tracking listener to force user session validation before processing Vue layout mounts
-            const { data: sessionData } = await sbClient.auth.getSession();
-            if (sessionData?.session?.user) {
-                currentUser.value = sessionData.session.user;
-            }
-            
-            sbClient.auth.onAuthStateChange((event, session) => {
-                currentUser.value = session?.user || null;
+            // Ensures chat wakes back up if frozen by browser sleeping
+            document.addEventListener('visibilitychange', () => {
+                if (document.visibilityState === 'visible' && (!twitchWs || twitchWs.readyState === WebSocket.CLOSED)) {
+                    loadChatHistory().then(() => connectTwitchChat());
+                }
             });
 
-            await loadAllEmotes();
-            await loadTwitchBadges();
-            await loadChatHistory();
-            
-            if (twitchChatToken.value) {
-                fetch('https://id.twitch.tv/oauth2/validate', { headers: { 'Authorization': 'OAuth ' + twitchChatToken.value } }).then(r => r.json()).then(d => { if (d.login) { twitchUsername.value = d.login; localStorage.setItem('tw_username', d.login); connectTwitchChat(); } else disconnectTwitch(); }).catch(() => connectTwitchChat());
-            } else connectTwitchChat();
+            sbClient.auth.getSession().then(({ data: sessionData }) => {
+                if (sessionData?.session?.user) currentUser.value = sessionData.session.user;
+                
+                sbClient.auth.onAuthStateChange((event, session) => {
+                    currentUser.value = session?.user || null;
+                });
 
-            if (currentUser.value) {
-                const { data: hist = [] } = await sbClient.from('gerald_history').select('*').eq('user_id', currentUser.value.id).order('created_at', { ascending: true });
-                if (hist && hist.length > 0) {
-                    geraldMessages.value = hist.map(r => ({ role: r.role, content: r.content }));
-                    setTimeout(scrollToBottom, 300);
-                } else {
-                    geraldMessages.value = [{ role: 'gerald', content: '' }];
+                if (currentUser.value) {
+                    sbClient.from('gerald_history').select('*').eq('user_id', currentUser.value.id).order('created_at', { ascending: true }).then(({ data: hist }) => {
+                        if (hist && hist.length > 0) {
+                            geraldMessages.value = hist.map(r => ({ role: r.role, content: r.content }));
+                            setTimeout(scrollToBottom, 300);
+                        } else {
+                            geraldMessages.value = [{ role: 'gerald', content: '' }];
+                        }
+                    });
                 }
-            }
+            });
 
-            await loadData(false); await checkLive(); await testGeminiBrain();
+            loadAllEmotes().then();
+            loadTwitchBadges().then();
+            
+            loadChatHistory().then(() => {
+                if (twitchChatToken.value) {
+                    fetch('https://id.twitch.tv/oauth2/validate', { headers: { 'Authorization': 'OAuth ' + twitchChatToken.value } })
+                        .then(r => r.json())
+                        .then(d => { if (d.login) { twitchUsername.value = d.login; localStorage.setItem('tw_username', d.login); connectTwitchChat(); } else disconnectTwitch(); })
+                        .catch(() => connectTwitchChat());
+                } else connectTwitchChat();
+            });
+
+            loadData(false).then(); checkLive().then(); testGeminiBrain().then();
 
             setInterval(() => {
                 sysStats.value.cpu = Math.floor(Math.random() * (48 - 14 + 1)) + 14;
