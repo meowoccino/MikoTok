@@ -670,21 +670,70 @@ createApp({
                     // Replace the optimistic echo with the confirmed message (has correct badges from IRC)
                     chatMessages.value.splice(echoIdx, 1, { timestamp, username: user, html, color, badges });
                     if (currentTab.value === 'chat') scrollChatToBottom();
+                    persistChatMessage({ username: user, color, html, badges, timestamp, tmi_sent_ts: tags['tmi-sent-ts'] || null });
                     return;
                 }
             }
             chatMessages.value.push({ timestamp, username: user, html, color, badges });
             if (chatMessages.value.length > 200) chatMessages.value.shift();
             if (currentTab.value === 'chat') scrollChatToBottom();
+            persistChatMessage({ username: user, color, html, badges, timestamp, tmi_sent_ts: tags['tmi-sent-ts'] || null });
+        };
+
+        // Rolling insert into twitch_chat_logs — keeps last 200 rows, fires and forgets
+        let _persistQueue = Promise.resolve();
+        const persistChatMessage = (msg) => {
+            _persistQueue = _persistQueue.then(async () => {
+                try {
+                    await sbClient.from('twitch_chat_logs').insert({
+                        username: msg.username,
+                        color: msg.color,
+                        html: msg.html,
+                        badges: JSON.stringify(msg.badges || []),
+                        timestamp: msg.timestamp,
+                        tmi_sent_ts: msg.tmi_sent_ts
+                    });
+                    // Prune: keep only latest 200 rows
+                    const { data: oldest } = await sbClient
+                        .from('twitch_chat_logs')
+                        .select('id')
+                        .order('created_at', { ascending: false })
+                        .range(200, 200);
+                    if (oldest && oldest.length > 0) {
+                        await sbClient.from('twitch_chat_logs').delete().lte('id', oldest[0].id);
+                    }
+                } catch(e) { /* non-critical, silently ignore */ }
+            });
         };
 
         const loadChatHistory = async () => {
             try {
+                // Try our own Supabase log first — survives page refreshes
+                const { data: logRows, error: logErr } = await sbClient
+                    .from('twitch_chat_logs')
+                    .select('*')
+                    .order('created_at', { ascending: true })
+                    .limit(100);
+                if (!logErr && logRows && logRows.length > 0) {
+                    logRows.forEach(row => {
+                        chatMessages.value.push({
+                            timestamp: row.timestamp || '',
+                            username: row.username,
+                            html: row.html,
+                            color: row.color || '#9146FF',
+                            badges: (() => { try { return JSON.parse(row.badges || '[]'); } catch { return []; } })()
+                        });
+                    });
+                    setTimeout(scrollChatToBottom, 150);
+                    return;
+                }
+            } catch(e) {}
+            // Fallback to robotty if Supabase log is empty (first ever load)
+            try {
                 const res = await fetch('https://recent-messages.robotty.de/api/v2/recent-messages/codemiko');
                 const data = await res.json();
                 if (data && data.messages) {
-                    const recent50 = data.messages.slice(-50);
-                    recent50.forEach(raw => parseIrcMessage(raw));
+                    data.messages.slice(-50).forEach(raw => parseIrcMessage(raw));
                     setTimeout(scrollChatToBottom, 150);
                 }
             } catch(e) {}
@@ -772,13 +821,24 @@ createApp({
             try {
                 const { data, error } = await sbClient.from('emotes').select('*').limit(3000);
                 if (!error && data) {
+                    let badgeCount = 0;
                     data.forEach(item => {
                         if (item.provider === 'twitch_badge') {
-                            badgeAssets[item.id] = item.url;
+                            // Support both 'url' and 'image_url' column names
+                            const imgUrl = item.url || item.image_url || item.img_url || item.image;
+                            if (imgUrl) {
+                                badgeAssets[item.id] = imgUrl;
+                                badgeCount++;
+                            }
                         } else {
-                            customEmotes.value[item.name] = { url: item.url };
+                            const imgUrl = item.url || item.image_url || item.img_url || item.image;
+                            if (imgUrl) customEmotes.value[item.name] = { url: imgUrl };
                         }
                     });
+                    console.log(`[MikoTok] Loaded ${badgeCount} badges. Keys:`, Object.keys(badgeAssets));
+                    if (badgeCount === 0 && data.some(i => i.provider === 'twitch_badge')) {
+                        console.warn('[MikoTok] Badge rows found but no URL column matched. Sample row:', data.find(i => i.provider === 'twitch_badge'));
+                    }
                 }
             } catch (e) { console.error("Database cache pipeline failed.", e); }
         };
