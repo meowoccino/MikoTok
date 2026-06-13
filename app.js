@@ -156,7 +156,7 @@ const ChatView = {
         }
     },
     methods: {
-        getEmoteUrl(emote) { return emote.url || `https://cdn.discordapp.com/emojis/${emote.id}.${emote.animated ? 'gif' : 'png'}?size=44`; },
+        getEmoteUrl(emote) { return emote.url || 'https://cdn.discordapp.com/emojis/' + emote.id + '.' + (emote.animated ? 'gif' : 'png') + '?size=44'; },
         insertEmote(name) { this.localInput = (this.localInput + ' ' + name + ' ').replace(/\s+/g, ' ').trimStart(); this.showPicker = false; },
         handleInteraction() { if (!this.isLoggedIn) { this.$root.showLoginPopup = true; return false; } return true; },
         togglePicker() { if (!this.handleInteraction()) return; this.showPicker = !this.showPicker; },
@@ -186,8 +186,6 @@ const ChatView = {
                     <span class="twitch-username" :style="{ color: msg.color || '#9146FF' }">{{ msg.username }}</span><span class="twitch-colon">: </span>
                     <span class="twitch-text" v-html="msg.html"></span>
                 </div>
-                
-                <div style="height: 75px; flex-shrink: 0; min-height: 75px;"></div>
             </div>
 
             <div class="chat-emote-tray" v-show="showPicker && isLoggedIn" @click.stop style="position: absolute; bottom: calc(65px + 65px + env(safe-area-inset-bottom, 0px)); z-index: 70; width: 100%;">
@@ -224,8 +222,8 @@ const MoreView = {
                 <div style="display: flex; align-items: center; gap: 12px; width: 100%;">
                     <svg viewBox="0 0 24 24" style="width: 22px; height: 22px; fill: #ef4444; flex-shrink:0;"><path d="M20 6h-2.18c.11-.31.18-.65.18-1 0-1.66-.84-3-2-3-1.22 0-2.42 1.55-3 2.52-.58-.97-1.78-2.52-3-2.52-1.16 0-2 1.34-2 3 0 .35.07.69.18 1H4c-1.11 0-1.99.89-1.99 2L2 19c0 1.11.89 2 2 2h16c1.11 0 2-.89 2-2V8c0-1.11-.89-2-2-2zm-5-3c.55 0 1 .45 1 1s-.45 1-1 1-1-.45-1-1 .45-1 1-1zm-6 0c.55 0 1 .45 1 1s-.45 1-1 1-1-.45-1-1 .45-1 1-1zm11 16H4V8h16v11z"/></svg>
                     <span style="color: var(--text-main); font-size: 14px; font-weight: 600;">Throne</span> 
-                    <span class="material-symbols-rounded" style="font-size: 20px; color: var(--text-muted); margin-left: auto;">push_pin</span>
                 </div>
+                <span class="material-symbols-rounded" style="font-size: 20px; color: var(--text-muted); margin-left: auto;">push_pin</span>
             </a>
 
             <a href="https://www.twitch.tv/codemiko" target="_blank" class="social-card" style="display: flex; align-items: center; padding: 0 16px; border-radius: 12px; min-height: 48px; height: 48px; flex-shrink: 0;">
@@ -504,11 +502,11 @@ createApp({
         const initialTabIdx = tabOrder.indexOf(tabs.includes(window.location.hash.replace('#','')) ? window.location.hash.replace('#','') : 'home');
         const tabOffset = ref(initialTabIdx * -25);
 
-        // GLOBAL MARKDOWN PARSER DEFINED INSIDE SETUP FOR SCOPE CORRECTION
+        // CLEAN SANITIZED STRING CONCATENATION REPLACES CLASHING BACKTICKS FOR PARSEMARKDOWN
         const parseMarkdown = (t) => {
             if (!t) return ''; 
-            let html = t.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
-            html = html.replace(/\\*\\*(.*?)\\*\\*/g, '<strong>$1</strong>').replace(/\\*(.*?)\\*/g, '<em>$1</em>');
+            let html = t.replace(/&/g, '&').replace(/</g, '<').replace(/>/g, '>');
+            html = html.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>').replace(/\*(.*?)\*/g, '<em>$1</em>');
             const words = html.split(' ');
             const emoteKeys = Object.keys(customEmotes.value);
             for (let i = 0; i < words.length; i++) {
@@ -516,7 +514,7 @@ createApp({
                 const actualKey = emoteKeys.find(k => k.toLowerCase() === clean.toLowerCase());
                 if (actualKey) {
                     const m = customEmotes.value[actualKey];
-                    words[i] = `<img src="${m.url || `https://cdn.discordapp.com/emojis/\${m.id}.png`}" style="height:1.65em; vertical-align:middle; display:inline-block; margin:0 2px;" title="\${actualKey}">`;
+                    words[i] = '<img src="' + (m.url || 'https://cdn.discordapp.com/emojis/' + m.id + '.png') + '" style="height:1.65em; vertical-align:middle; display:inline-block; margin:0 2px;" title="' + actualKey + '">';
                 }
             }
             return words.join(' ');
@@ -574,7 +572,7 @@ createApp({
         const scrollChatToBottom = () => { setTimeout(() => { const l = document.getElementById('twitch-chat-list'); if (l) l.scrollTop = l.scrollHeight; }, 100); };
 
         const processEmotes = (text) => {
-            let out = text.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+            let out = text.replace(/&/g, '&').replace(/</g, '<').replace(/>/g, '>');
             const words = out.split(' ');
             const emoteKeys = Object.keys(customEmotes.value);
             for (let i = 0; i < words.length; i++) {
@@ -611,7 +609,7 @@ createApp({
                 tags['badges'].split(',').forEach(b => { const imgUrl = badgeAssets[b]; if (imgUrl) badges.push({ title: b.split('/')[0], img: imgUrl }); });
             }
 
-            let html = text.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+            let html = text.replace(/&/g, '&').replace(/</g, '<').replace(/>/g, '>');
             if (tags['emotes']) {
                 const replacements = [];
                 tags['emotes'].split('/').forEach(e => {
@@ -795,12 +793,7 @@ createApp({
             } catch { geminiStatus.value = 'API_DISCONNECTED'; }
         };
 
-        const handleGeraldEnter = (e) => {
-            if (!e.shiftKey && e.key === 'Enter') {
-                e.preventDefault();
-                talkToGerald();
-            }
-        };
+        const handleSampleMessages = () => {};
 
         const triggerAiMinigame = (gameObj) => {
             geraldInput.value = "";
@@ -939,15 +932,6 @@ createApp({
             } catch {}
         };
 
-        const runSync = async () => {
-            syncState.value = 'SYNCING...';
-            await load7TVEmotes();
-            const success = await loadTwitchBadges();
-            if (!success && apiConfig.value.localTkn) { syncState.value = 'ERROR'; setTimeout(() => { syncState.value = 'Force Data Sync'; }, 2500); return; }
-            await loadData(false); await checkLive(); await testGeminiBrain();
-            syncState.value = 'SUCCESS'; setTimeout(() => { syncState.value = 'Force Data Sync'; }, 2500);
-        };
-
         onMounted(async () => {
             document.body.style.overflow = 'hidden';
             document.body.style.height = '100vh';
@@ -995,7 +979,7 @@ createApp({
         });
 
         return {
-            hostname, splashVisible, splashOpacity, currentTab, tabOffset, appTheme, toggleTheme, clips, allClipsCount, modals, isLive, currentUser, loginEmail, loginPass, loginError, showLoginPopup, apiConfig, geraldInput, geraldMessages, isGeraldTyping, talkToGerald, syncState, wipeState, logoutState, nukeState, saveState, isHeaderVisible, handleScroll, currentFilter, activeFilterLabel, isFilterMenuOpen, closeFilterMenu, applyFilter, parseMarkdown, recentVods, currentVodIndex, nextVod, prevVod, customEmotes, showEmotePicker, insertEmote, handleGeraldEnter, toggleEmotes, toggleMinigames, closePickers, nukeCache, activeClipId, switchTab, playClip, selectedClip, showMinigames, runSync, disconnectTwitch, saveApiKeys, triggerAiMinigame, geminiStatus, sysStats, chatMessages, twitchChatToken, twitchAuthUrl, twitchUsername, sendTwitchChatMessage, handleSwipeStart, handleSwipeEnd, handleModalTouchStart, handleModalTouchMove, handleModalTouchEnd, clearGeraldHistory, logoSvg: (id) => `<svg viewBox="0 0 100 100"><defs><linearGradient id="grad-${id}" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stop-color="#9146FF"/><stop offset="100%" stop-color="#a970ff"/></linearGradient></defs><circle cx="50" cy="50" r="40" fill="url(#grad-${id})"/><path d="M 33 38 L 48 62 L 62 38 L 62 55 Q 62 65 69 64" fill="none" stroke="#ffffff" stroke-width="8" stroke-linecap="round" stroke-linejoin="round"/></svg>`,
+            hostname, splashVisible, splashOpacity, currentTab, tabOffset, appTheme, toggleTheme, clips, allClipsCount, modals, isLive, currentUser, loginEmail, loginPass, loginError, showLoginPopup, apiConfig, geraldInput, geraldMessages, isGeraldTyping, talkToGerald, syncState, wipeState, logoutState, nukeState, saveState, isHeaderVisible, handleScroll, currentFilter, activeFilterLabel, isFilterMenuOpen, closeFilterMenu, applyFilter, parseMarkdown, recentVods, currentVodIndex, nextVod, prevVod, customEmotes, showEmotePicker, insertEmote, handleGeraldEnter, toggleEmotes, toggleMinigames, closePickers, nukeCache, activeClipId, switchTab, playClip, selectedClip, showMinigames, runSync, disconnectTwitch, saveApiKeys, triggerAiMinigame, geminiStatus, sysStats, chatMessages, twitchChatToken, twitchAuthUrl, twitchUsername, sendTwitchChatMessage, handleSwipeStart, handleSwipeEnd, handleModalTouchStart, handleModalTouchMove, handleModalTouchEnd, clearGeraldHistory, handleSampleMessages, logoSvg: (id) => `<svg viewBox="0 0 100 100"><defs><linearGradient id="grad-${id}" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stop-color="#9146FF"/><stop offset="100%" stop-color="#a970ff"/></linearGradient></defs><circle cx="50" cy="50" r="40" fill="url(#grad-${id})"/><path d="M 33 38 L 48 62 L 62 38 L 62 55 Q 62 65 69 64" fill="none" stroke="#ffffff" stroke-width="8" stroke-linecap="round" stroke-linejoin="round"/></svg>`,
             handleLogin: async () => { 
                 loginError.value = '';
                 try {
