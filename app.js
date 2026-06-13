@@ -7,7 +7,7 @@ const parseMarkdownText = (text, emotesMap) => {
     const emoteKeys = Object.keys(emotesMap || {});
     for (let i = 0; i < words.length; i++) {
         const clean = words[i].replace(/^:|:$/g, ''); 
-        const actualKey = emoteKeys.find(k => k.toLowerCase() === clean.toLowerCase());
+        const actualKey = emoteKeys.find(k => k.toLowerCase() === cleanWord.toLowerCase());
         if (actualKey) {
             const m = emotesMap[actualKey];
             const imgSrc = m.url || 'https://cdn.discordapp.com/emojis/' + m.id + '.png';
@@ -33,7 +33,7 @@ const SplashScreen = {
 const AppHeader = {
     props: ['isHeaderVisible', 'currentTab', 'logoSvg', 'appTheme'],
     template: `
-        <header class="app-header" v-show="currentTab === 'home'">
+        <header class="app-header" :class="{ 'header-hidden': !isHeaderVisible }" v-show="currentTab === 'home'">
             <div style="display:flex; align-items:center; gap:8px;">
                 <div style="width:24px;height:24px; cursor:pointer;" v-html="logoSvg('header')" @click="$emit('open-profile')"></div>
                 <span class="miko-text-gradient" style="font-size:22px; letter-spacing: -0.5px;">MikoTok</span>
@@ -183,7 +183,7 @@ const ChatView = {
         handleSend() { if(!this.localInput.trim()) return; this.$emit('send-chat', this.localInput.trim()); this.localInput = ''; this.closePicker(); }
     },
     template: `
-        <div class="chat-wrapper" style="display: flex; flex-direction: column; height: 100%; width: 100%; background: var(--bg-color);">
+        <div class="chat-wrapper" style="display: flex; flex-direction: column; height: 100%; width: 100%; background: var(--bg-color); padding-top: max(env(safe-area-inset-top, 10px), 10px);">
             <div v-if="isLoggedIn" class="chat-public-auth-banner" style="z-index: 60; flex-shrink: 0;">
                 <span class="user-pill">💬 Connected as <b>{{ twitchUsername }}</b></span>
                 <button class="public-disconnect-btn" @click="$emit('disconnect-public-twitch')">Disconnect</button>
@@ -220,14 +220,14 @@ const ChatView = {
                 <button class="chat-send-btn" @click="handleSend" :disabled="!isLoggedIn || !localInput.trim()"><span class="material-symbols-rounded" style="font-size:20px;">send</span></button>
             </div>
 
-            <teleport to="body">
-                <div class="chat-login-popup-overlay" :class="{ open: $root.showLoginPopup }" @click.self="$root.showLoginPopup = false" style="position: fixed; inset: 0; display: flex; align-items: center; justify-content: center; background: rgba(0,0,0,0.8); z-index: 99999;">
+            <teleport to="#app-container" v-if="!$root.splashVisible">
+                <div class="chat-login-popup-overlay" :class="{ open: $root.showLoginPopup }" @click.self="$root.showLoginPopup = false" style="position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; background: rgba(0,0,0,0.8); z-index: 99999;">
                     <div class="chat-login-card" style="background: var(--card-bg); padding: 24px; border-radius: 16px; width: 85%; max-width: 340px; text-align: center; position: relative; box-shadow: 0 10px 30px rgba(0,0,0,0.3);">
                         <button @click="$root.showLoginPopup = false" style="position: absolute; top: 12px; right: 12px; background: transparent; border: none; color: var(--text-muted); font-size: 24px; line-height:1; cursor: pointer;">×</button>
                         <svg viewBox="0 0 24 24" class="chat-login-icon" style="width: 48px; height: 48px; margin: 0 auto 16px; color: #9146FF;"><path fill="currentColor" d="M11.571 4.714h1.715v5.143H11.57zm4.715 0H18v5.143h-1.714zM6 0L1.714 4.286v15.428h5.143V24l4.286-4.286h3.428L22.286 12V0zm14.571 11.143l-3.428 3.428h-3.429l-3 3v-3H6.857V1.714h13.714Z"/></svg>
                         <p class="chat-login-title" style="font-size: 20px; font-weight: bold; margin-bottom: 8px;">Join the chat</p>
                         <p class="chat-login-sub" style="font-size: 14px; color: var(--text-muted); margin-bottom: 20px;">Connect your Twitch account to read and send messages live.</p>
-                        <a :href="twitchAuthUrl" class="twitch-login-btn" @click="$root.showLoginPopup = false" style="display: block; background: #9146FF; color: white; padding: 12px; border-radius: 8px; text-decoration: none; font-weight: bold;">Connect with Twitch</a>
+                        <a :href="twitchAuthUrl" target="_blank" class="twitch-login-btn" @click="$root.showLoginPopup = false" style="display: block; background: #9146FF; color: white; padding: 12px; border-radius: 8px; text-decoration: none; font-weight: bold;">Connect with Twitch</a>
                     </div>
                 </div>
             </teleport>
@@ -237,7 +237,7 @@ const ChatView = {
 
 const MoreView = {
     template: `
-        <div class="more-container" style="display: flex; flex-direction: column; height: 100%; width: 100%; padding: 16px; gap: 8px; overflow-y: auto;">
+        <div class="more-container" style="display: flex; flex-direction: column; height: 100%; width: 100%; padding: max(env(safe-area-inset-top, 10px), 10px) 16px 16px; gap: 8px; overflow-y: auto;">
             
             <a href="https://throne.com/codemiko" target="_blank" class="social-card" style="display: flex; align-items: center; padding: 0 16px; border-radius: 12px; min-height: 48px; height: 48px; background: var(--card-bg); text-decoration: none; flex-shrink: 0; margin-top: 10px;">
                 <div style="display: flex; align-items: center; gap: 12px; width: 100%;">
@@ -361,7 +361,7 @@ const GeraldView = {
         formatMarkdown(text) { return parseMarkdownText(text, this.customEmotes); }
     },
     template: `
-        <div class="gerald-container" style="display: flex; flex-direction: column; height: 100%; width: 100%; background: var(--bg-color);">
+        <div class="gerald-container" style="display: flex; flex-direction: column; height: 100%; width: 100%; background: var(--bg-color); padding-top: 12px;">
             <div class="gerald-header" @click="$emit('close-pickers')" style="flex-shrink: 0; padding: 12px 16px; background: var(--bg-color); z-index: 10;">
                 <div class="os-top-bar">
                     <span class="os-title">GERALD_OS v2</span>
@@ -421,7 +421,7 @@ const GeraldView = {
 const HomeView = {
     props: ['currentTab', 'currentVodIndex', 'recentVods', 'isLive', 'hostname', 'clips', 'activeFilterLabel', 'optimizeTwitchImg', 'formatViews', 'formatDate', 'activeClipId'],
     template: `
-        <div style="flex: 1; overflow-y: auto; overscroll-behavior-y: contain; -webkit-overflow-scrolling: touch; padding-bottom: 20px;">
+        <div style="flex: 1; overflow-y: auto; overscroll-behavior-y: contain; -webkit-overflow-scrolling: touch; padding-bottom: 20px;" @scroll="$emit('home-scroll', $event)">
             <div class="hero-section">
                 <div class="header-controls" style="margin-bottom:12px; display:flex;">
                     <div :class="['premium-badge', isLive ? 'live-badge' : 'vod']">
@@ -587,6 +587,9 @@ createApp({
             const bgHex = appTheme.value === 'light' ? '#f8f9fa' : '#0d0d11';
             const m = document.querySelector('meta[name="theme-color"]');
             if (m) m.setAttribute('content', bgHex);
+            
+            document.body.style.backgroundColor = bgHex;
+            document.documentElement.style.backgroundColor = bgHex;
         };
         
         const toggleTheme = () => { appTheme.value = appTheme.value === 'light' ? 'dark' : 'light'; localStorage.setItem('miko_theme', appTheme.value); updateThemeClass(); };
@@ -900,7 +903,14 @@ createApp({
         };
 
         const handleScroll = (e) => {
-            if (e.target.scrollHeight - e.target.scrollTop - e.target.clientHeight < 200) { if (currentTab.value === 'home') loadData(true); }
+            if (e.target.scrollTop > 50) {
+                isHeaderVisible.value = false;
+            } else {
+                isHeaderVisible.value = true;
+            }
+            if (e.target.scrollHeight - e.target.scrollTop - e.target.clientHeight < 200) { 
+                if (currentTab.value === 'home') loadData(true); 
+            }
         };
 
         const loadData = async (isLoadMore = false) => {
