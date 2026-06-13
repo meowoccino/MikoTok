@@ -385,7 +385,7 @@ const MoreView = {
             </a>
 
             <a href="https://www.reddit.com/r/CodeMiko/" target="_blank" class="social-card" style="display: flex; align-items: center; padding: 0 16px; border-radius: 12px; min-height: 48px; height: 48px; flex-shrink: 0;">
-                <svg viewBox="0 0 24 24" class="social-icon" style="width: 22px; height: 22px; color: #FF4500;"><path fill="currentColor" d="M12 0A12 12 0 0 0 0 12a12 12 0 0 0 12 12 12 12 0 0 0 12-12A12 12 0 0 0 12 0zm5.01 4.744c.688 0 1.25.561 1.25 1.249a1.25 1.25 0 0 1-2.498.056l-2.597-.547-.8 3.747c1.824.07 3.48.632 4.674 1.488.308-.309.73-.491 1.207-.491.968 0 1.754.786 1.754 1.754 0 .716-.435 1.333-1.01 1.614a3.111 3.111 0 0 1 .042.52c0 2.694-3.13 4.87-7.004 4.87-3.874 0-7.004-2.176-7.004-4.87 0-.183.015-.366.043-.534A1.748 1.748 0 0 1 4.028 12c0-.968.786-1.754 1.754-1.754.463 0 .883.175 1.188.467 1.226-.883 2.936-1.465 4.814-1.527l.881-4.122c.045-.205.244-.343.454-.301l2.97.625a1.26 1.26 0 0 1 1.171-.644zm-9.046 5.86c-.732 0-1.325.592-1.325 1.324s.593 1.325 1.325 1.325 1.325-.593 1.325-1.325-.593-1.324-1.325-1.324zm6.062 0c-.732 0-1.325.592-1.325 1.324s.593 1.325 1.325 1.325 1.325-.593 1.325-1.325-.593-1.324-1.325-1.324zm-3.031 4.846c-1.334 0-2.584-.339-3.356-.918a.382.382 0 0 0-.533.053.38.38 0 0 0 .052.533c.96.711 2.385 1.096 3.837 1.096 1.45 0 2.875-.385 3.836-1.096a.38.38 0 0 0 .053-.533.382.382 0 0 0-.534-.053c-.771.579-2.02.918-3.355.918z"/></svg>
+                <svg viewBox="0 0 24 24" class="social-icon" style="width: 22px; height: 22px; color: #FF4500;"><path fill="currentColor" d="M12 0A12 12 0 0 0 0 12a12 12 0 0 0 12 12 12 12 0 0 0 12-12A12 12 0 0 0 12 0zm5.01 4.744c.688 0 1.25.561 1.25 1.249a1.25 1.25 0 0 1-2.498.056l-2.597-.547-.8 3.747c1.824.07 3.48.632 4.674 1.488.308-.309.73-.491 1.207-.491.968 0 1.754.786 1.754 1.754 0 .716-.435 1.333-1.01 1.614a3.111 3.111 0 0 1 .042.52c0 2.694-3.13 4.87-7.004 4.87-3.874 0-7.004-2.176-7.004-4.87 0-.183.015-.366.043-.534A1.748 1.748 0 0 1 4.028 12c0-.968.786-1.754 1.754-1.754.463 0 .883.175 1.188.467 1.226-.883 2.936-1.465 4.814-1.527l.881-4.122c.045-.205.244-.343.454-.301l2.97 6.225a1.26 1.26 0 0 1 1.171-.644zm-9.046 5.86c-.732 0-1.325.592-1.325 1.324s.593 1.325 1.325 1.325 1.325-.593 1.325-1.325-.593-1.324-1.325-1.324zm6.062 0c-.732 0-1.325.592-1.325 1.324s.593 1.325 1.325 1.325 1.325-.593 1.325-1.325-.593-1.324-1.325-1.324zm-3.031 4.846c-1.334 0-2.584-.339-3.356-.918a.382.382 0 0 0-.533.053.38.38 0 0 0 .052.533c.96.711 2.385 1.096 3.837 1.096 1.45 0 2.875-.385 3.836-1.096a.38.38 0 0 0 .053-.533.382.382 0 0 0-.534-.053c-.771.579-2.02.918-3.355.918z"/></svg>
                 <span style="color: var(--text-main); font-size: 14px;">Reddit</span>
             </a>
 
@@ -487,6 +487,7 @@ createApp({
         const appTheme = ref(localStorage.getItem('miko_theme') || 'light');
         const splashVisible = ref(true), splashOpacity = ref(1);
         const clips = ref([]), allClips = ref([]);
+        const allClipsCount = computed(() => allClips.value.length);
         const modals = ref({ profile: false });
         const isLive = ref(false);
         const currentUser = ref(null);
@@ -743,7 +744,6 @@ createApp({
 
         const loadEmotesFromSupabase = async () => {
             try {
-                // Raised limit to 3000 to fully digest emotes and the newly injected badge rows!
                 const { data, error } = await sbClient.from('emotes').select('*').limit(3000);
                 if (!error && data) {
                     data.forEach(item => {
@@ -844,7 +844,7 @@ createApp({
 
         const nextVod = () => { if (currentVodIndex.value < recentVods.value.length - 1) currentVodIndex.value++; };
         const prevVod = () => { if (currentVodIndex.value > (isLive.value ? -1 : 0)) currentVodIndex.value--; };
-        const closeFilterMenu = () => { isFilterMenuOpen.value = false; };
+        const closeFilterMenu = () => { isFilterMenuOpen = false; };
         const playClip = (clip) => { selectedClip.value = clip; };
         const insertEmote = (name) => { if (currentTab.value === 'gerald') geraldInput.value += ' ' + name + ' '; };
         const toggleEmotes = () => { showEmotePicker.value = !showEmotePicker.value; showMinigames.value = false; };
@@ -965,7 +965,6 @@ createApp({
                 }
             });
 
-            // ⚡ Sequential execution: Wait for database assets to complete BEFORE building chat history blocks!
             loadEmotesFromSupabase().then(() => {
                 Promise.all([
                     loadChatHistory(),
@@ -973,7 +972,7 @@ createApp({
                     checkLive(),
                     testGeminiBrain()
                 ]).then(() => {
-                    splashOpacity.value = 0;
+                    splashOpacity.value = 0; 
                     setTimeout(() => { splashVisible.value = false; }, 300);
                 });
             });
@@ -983,15 +982,12 @@ createApp({
                     .then(r => r.json())
                     .then(d => { 
                         if (d.login) { 
-                            twitchUsername.value = d.login;
-                            localStorage.setItem('tw_username', d.login);
-                            
-                            // 🚀 INSTANT connection: No external API hurdles. Direct fire!
-                            connectTwitchChat();
-                            
-                        } else disconnectTwitch();
+                            twitchUsername.value = d.login; 
+                            localStorage.setItem('tw_username', d.login); 
+                            connectTwitchChat(); 
+                        } else disconnectTwitch(); 
                     })
-                    .catch(() => connectTwitchChat());
+                    .catch(() => connectTwitchChat()); 
             } else connectTwitchChat();
 
             setInterval(() => {
