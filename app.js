@@ -487,7 +487,6 @@ createApp({
         const appTheme = ref(localStorage.getItem('miko_theme') || 'light');
         const splashVisible = ref(true), splashOpacity = ref(1);
         const clips = ref([]), allClips = ref([]);
-        const allClipsCount = computed(() => allClips.value.length);
         const modals = ref({ profile: false });
         const isLive = ref(false);
         const currentUser = ref(null);
@@ -732,8 +731,6 @@ createApp({
 
         const sendTwitchChatMessage = (msg) => {
             if (!msg || !twitchWs || !wsAuthenticated) return;
-            // The Optimistic local echo has been completely removed to prevent color ghosting. 
-            // The server will echo your true message back instantly via WebSocket!
             twitchWs.send(`PRIVMSG #codemiko :${msg}`);
         };
 
@@ -746,6 +743,7 @@ createApp({
 
         const loadEmotesFromSupabase = async () => {
             try {
+                // Raised limit to 3000 to fully digest emotes and the newly injected badge rows!
                 const { data, error } = await sbClient.from('emotes').select('*').limit(3000);
                 if (!error && data) {
                     data.forEach(item => {
@@ -757,34 +755,6 @@ createApp({
                     });
                 }
             } catch (e) { console.error("Database cache pipeline failed.", e); }
-        };
-
-        const loadTwitchBadges = async (token) => {
-            if (!token) return;
-            try {
-                const headers = { 
-                    'Authorization': `Bearer ${token}`, 
-                    'Client-Id': TWITCH_PUBLIC_CLIENT_ID 
-                };
-                
-                // Fetch Global Badges (Mods, VIP, Turbo)
-                const globalRes = await fetch('https://api.twitch.tv/helix/chat/badges/global', { headers });
-                const globalData = await globalRes.json();
-                if (globalData.data) {
-                    globalData.data.forEach(set => {
-                        set.versions.forEach(v => { badgeAssets[`${set.set_id}/${v.id}`] = v.image_url_1x; });
-                    });
-                }
-                
-                // Fetch CodeMiko Specific Badges (Subs, Bits) directly from Twitch
-                const channelRes = await fetch('https://api.twitch.tv/helix/chat/badges?broadcaster_id=500128827', { headers });
-                const channelData = await channelRes.json();
-                if (channelData.data) {
-                    channelData.data.forEach(set => {
-                        set.versions.forEach(v => { badgeAssets[`${set.set_id}/${v.id}`] = v.image_url_1x; });
-                    });
-                }
-            } catch (e) { console.error('Dynamic Twitch badge fetch failed:', e); }
         };
 
         const testGeminiBrain = async () => {
@@ -995,6 +965,7 @@ createApp({
                 }
             });
 
+            // ⚡ Sequential execution: Wait for database assets to complete BEFORE building chat history blocks!
             loadEmotesFromSupabase().then(() => {
                 Promise.all([
                     loadChatHistory(),
@@ -1002,7 +973,7 @@ createApp({
                     checkLive(),
                     testGeminiBrain()
                 ]).then(() => {
-                    splashOpacity.value = 0; 
+                    splashOpacity.value = 0;
                     setTimeout(() => { splashVisible.value = false; }, 300);
                 });
             });
@@ -1012,14 +983,13 @@ createApp({
                     .then(r => r.json())
                     .then(d => { 
                         if (d.login) { 
-                            twitchUsername.value = d.login; 
-                            localStorage.setItem('tw_username', d.login); 
+                            twitchUsername.value = d.login;
+                            localStorage.setItem('tw_username', d.login);
                             
-                            // 🚀 ASYNCHRONOUS BACKGROUND LOADING (FIXED SPEED DELAY):
-                            connectTwitchChat(); 
-                            loadTwitchBadges(twitchChatToken.value); 
+                            // 🚀 INSTANT connection: No external API hurdles. Direct fire!
+                            connectTwitchChat();
                             
-                        } else disconnectTwitch(); 
+                        } else disconnectTwitch();
                     })
                     .catch(() => connectTwitchChat());
             } else connectTwitchChat();
