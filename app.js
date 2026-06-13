@@ -504,7 +504,6 @@ createApp({
         const isLoadingMore = ref(false);
         const allClipsLoaded = ref(false);
         
-        // DECLARATION BUG FIXED HERE
         const customEmotes = ref({});
 
         const geraldInput = ref(''), geraldMessages = ref([{ role: 'gerald', content: '' }]);
@@ -550,7 +549,6 @@ createApp({
             if (dy > 80) modals.value.profile = false;
         };
 
-        // MISSING FUNCTIONS BUILT OUT HERE
         const runSync = () => {
             syncState.value = 'SYNCING...';
             setTimeout(() => { 
@@ -946,7 +944,7 @@ createApp({
             try {
                 const res = await fetch('https://decapi.me/twitch/uptime/codemiko');
                 isLive.value = !(await res.text()).includes('offline');
-                const gql = await fetch('https://gql.twitch.tv/gql', { method: 'POST', headers: { 'Client-ID': 'kimne78kx3ncx6brgo4mv6wki5h1ko' }, body: JSON.stringify({ query: `query{user(login:"codemiko"){videos(first:10){edges{node{id createdAt}}\}\}\}}\` }) });
+                const gql = await fetch('https://gql.twitch.tv/gql', { method: 'POST', headers: { 'Client-ID': 'kimne78kx3ncx6brgo4mv6wki5h1ko' }, body: JSON.stringify({ query: `query{user(login:"codemiko"){videos(first:10){edges{node{id createdAt}}}}}` }) });
                 const edges = (await gql.json()).data.user.videos.edges;
                 recentVods.value = edges.map(e => ({ id: e.node.id, date: new Date(e.node.createdAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric' }).toUpperCase() }));
                 if (currentVodIndex.value === 0 || currentVodIndex.value === -1) currentVodIndex.value = isLive.value ? -1 : 0;
