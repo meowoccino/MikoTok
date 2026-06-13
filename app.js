@@ -33,7 +33,7 @@ const SplashScreen = {
 const AppHeader = {
     props: ['isHeaderVisible', 'currentTab', 'logoSvg', 'appTheme'],
     template: `
-        <header class="app-header safe-top-padding" v-show="currentTab === 'home'">
+        <header class="app-header" v-show="currentTab === 'home'">
             <div style="display:flex; align-items:center; gap:8px;">
                 <div style="width:24px;height:24px; cursor:pointer;" v-html="logoSvg('header')" @click="$emit('open-profile')"></div>
                 <span class="miko-text-gradient" style="font-size:22px; letter-spacing: -0.5px;">MikoTok</span>
@@ -183,13 +183,13 @@ const ChatView = {
         handleSend() { if(!this.localInput.trim()) return; this.$emit('send-chat', this.localInput.trim()); this.localInput = ''; this.closePicker(); }
     },
     template: `
-        <div class="chat-wrapper safe-top-padding" style="position: absolute; inset: 0; display: flex; flex-direction: column; height: calc(100% - max(env(safe-area-inset-top, 24px), 24px)); overflow: hidden; padding-top: calc(10px + env(safe-area-inset-top, 24px));">
+        <div class="chat-wrapper" :style="{ 'padding-top': 'max(env(safe-area-inset-top, 24px), 24px)' }" style="display: flex; flex-direction: column; height: 100%; width: 100%; background: var(--bg-color);">
             <div v-if="isLoggedIn" class="chat-public-auth-banner" style="z-index: 60; flex-shrink: 0;">
                 <span class="user-pill">💬 Connected as <b>{{ twitchUsername }}</b></span>
                 <button class="public-disconnect-btn" @click="$emit('disconnect-public-twitch')">Disconnect</button>
             </div>
 
-            <div class="twitch-chat-list" id="twitch-chat-list" @click="closePicker" style="position: absolute; top: 50px; left: 0; right: 0; bottom: calc(80px + 44px); overflow-y: auto; overscroll-behavior-y: contain; -webkit-overflow-scrolling: touch; padding: 10px 12px; display: flex; flex-direction: column;">
+            <div class="twitch-chat-list" id="twitch-chat-list" @click="closePicker" style="flex: 1; overflow-y: auto; overscroll-behavior-y: contain; -webkit-overflow-scrolling: touch; padding: 10px 12px; display: flex; flex-direction: column;">
                 <div style="flex: 1 1 auto; min-height: 0;"></div>
                 
                 <div v-if="chatMessages.length === 0" class="chat-empty-state">
@@ -207,17 +207,27 @@ const ChatView = {
                 </div>
             </div>
 
-            <div class="chat-emote-tray" v-show="showPicker && isLoggedIn" @click.stop style="position: absolute; bottom: calc(80px + 44px); z-index: 70; width: 100%;">
-                <input v-model="pickerQuery" class="emote-search-input" placeholder="Search emotes…">
-                <div class="emote-picker-grid" style="overscroll-behavior-y: contain; -webkit-overflow-scrolling: touch;">
-                    <img v-for="([name, emote]) in filteredEmotes" :key="name" :src="getEmoteUrl(emote)" :title="name" class="emote-picker-img" @click="insertEmote(name)">
+            <div class="custom-chat-input-area" style="position: relative; flex-shrink: 0; display: flex; gap: 8px; align-items: center; padding: 10px 12px; background: var(--bg-color); border-top: 1px solid var(--border-color); z-index: 100;">
+                <div class="chat-emote-tray" v-show="showPicker && isLoggedIn" @click.stop style="position: absolute; bottom: 100%; left: 0; right: 0; background: var(--card-bg); border-top: 1px solid var(--border-color); border-bottom: none; border-radius: 16px 16px 0 0; padding: 10px 12px; z-index: 200; max-height: 250px; display: flex; flex-direction: column; gap: 8px; box-shadow: 0 -4px 20px rgba(0,0,0,0.1);">
+                    <input v-model="pickerQuery" class="emote-search-input" placeholder="Search emotes…">
+                    <div class="emote-picker-grid" style="overscroll-behavior-y: contain; -webkit-overflow-scrolling: touch;">
+                        <img v-for="([name, emote]) in filteredEmotes" :key="name" :src="getEmoteUrl(emote)" :title="name" class="emote-picker-img" @click="insertEmote(name)">
+                    </div>
                 </div>
-            </div>
 
-            <div class="custom-chat-input-area" style="position: absolute; bottom: calc(65px + env(safe-area-inset-bottom, 0px)); left:0; right:0; z-index: 100; padding: 4px 12px; height: 44px; background: var(--bg-color);">
                 <button class="chat-icon-btn" :class="{ 'chat-icon-active': showPicker }" @click.stop="togglePicker"><span class="material-symbols-rounded" style="font-size:22px;">mood</span></button>
                 <input type="text" class="custom-chat-input" placeholder="Send a message…" v-model="localInput" @keydown.enter="handleSend" @focus="handleInteraction" :readonly="!isLoggedIn">
                 <button class="chat-send-btn" @click="handleSend" :disabled="!isLoggedIn || !localInput.trim()"><span class="material-symbols-rounded" style="font-size:20px;">send</span></button>
+            </div>
+
+            <div class="chat-login-popup-overlay" :class="{ open: $root.showLoginPopup }" @click.self="$root.showLoginPopup = false" style="position: fixed; inset: 0; display: flex; align-items: center; justify-content: center; background: rgba(0,0,0,0.8); z-index: 99999;">
+                <div class="chat-login-card" style="background: var(--card-bg); padding: 24px; border-radius: 16px; width: 85%; max-width: 340px; text-align: center; position: relative; box-shadow: 0 10px 30px rgba(0,0,0,0.3);">
+                    <button @click="$root.showLoginPopup = false" style="position: absolute; top: 12px; right: 12px; background: transparent; border: none; color: var(--text-muted); font-size: 24px; line-height:1; cursor: pointer;">×</button>
+                    <svg viewBox="0 0 24 24" class="chat-login-icon" style="width: 48px; height: 48px; margin: 0 auto 16px; color: #9146FF;"><path fill="currentColor" d="M11.571 4.714h1.715v5.143H11.57zm4.715 0H18v5.143h-1.714zM6 0L1.714 4.286v15.428h5.143V24l4.286-4.286h3.428L22.286 12V0zm14.571 11.143l-3.428 3.428h-3.429l-3 3v-3H6.857V1.714h13.714Z"/></svg>
+                    <p class="chat-login-title" style="font-size: 20px; font-weight: bold; margin-bottom: 8px;">Join the chat</p>
+                    <p class="chat-login-sub" style="font-size: 14px; color: var(--text-muted); margin-bottom: 20px;">Connect your Twitch account to read and send messages live.</p>
+                    <a :href="twitchAuthUrl" class="twitch-login-btn" @click="$root.showLoginPopup = false" style="display: block; background: #9146FF; color: white; padding: 12px; border-radius: 8px; text-decoration: none; font-weight: bold;">Connect with Twitch</a>
+                </div>
             </div>
         </div>
     `
@@ -225,7 +235,7 @@ const ChatView = {
 
 const MoreView = {
     template: `
-        <div class="more-container safe-top-padding" style="position: absolute; inset: 0; display: flex; flex-direction: column; height: 100%; padding-left: 16px; padding-right: 16px; gap: 8px; overflow-y: auto;">
+        <div class="more-container safe-top-padding" style="display: flex; flex-direction: column; height: 100%; width: 100%; padding: calc(16px + env(safe-area-inset-top, 0px)) 16px 16px; gap: 8px; overflow-y: auto;">
             
             <a href="https://throne.com/codemiko" target="_blank" class="social-card" style="display: flex; align-items: center; padding: 0 16px; border-radius: 12px; min-height: 48px; height: 48px; background: var(--card-bg); text-decoration: none; flex-shrink: 0; margin-top: 10px;">
                 <div style="display: flex; align-items: center; gap: 12px; width: 100%;">
@@ -300,7 +310,7 @@ const MoreView = {
                 <span style="color: var(--text-main); font-size: 14px;">Facebook</span>
             </a>
             
-            <div style="height: 140px; flex-shrink: 0; min-height: 140px;"></div>
+            <div style="height: 40px; flex-shrink: 0;"></div>
         </div>
     `
 };
@@ -330,9 +340,9 @@ const GeraldMinigames = {
         };
     },
     template: `
-        <div class="chat-emote-tray" v-show="showMinigames" style="position: absolute; bottom: calc(80px + 44px); border-bottom:none; border-radius:16px 16px 0 0; background: var(--bg-color); width: 100%; z-index: 200;">
-            <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 4px; padding: 8px; width: 100%;">
-                <button v-for="g in gameDeck" :key="g.id" class="bribe-btn" style="padding: 4px 2px; border-radius: 8px; background: var(--card-bg); border: 1px solid var(--border-color); color: var(--text-main); font-weight: bold; text-align: center; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px;" @click.stop="$emit('play-game', g)">
+        <div class="chat-emote-tray" v-show="showMinigames" style="position: absolute; bottom: 100%; left: 0; right: 0; background: var(--card-bg); border-top: 1px solid var(--border-color); border-bottom: none; border-radius: 16px 16px 0 0; z-index: 200; max-height: 250px; display: flex; flex-direction: column; box-shadow: 0 -4px 20px rgba(0,0,0,0.1);">
+            <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(75px, 1fr)); gap: 6px; padding: 12px; overflow-y: auto;">
+                <button v-for="g in gameDeck" :key="g.id" class="bribe-btn" style="padding: 8px 4px; border-radius: 10px; background: var(--bg-color); border: 1px solid var(--border-color); color: var(--text-main); font-weight: bold; text-align: center; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px;" @click.stop="$emit('play-game', g)">
                     <span style="font-size: 14px;">{{ g.label.split(' ')[0] }}</span>
                     <span style="font-size: 9px; line-height: 1; white-space: pre-wrap; padding: 0 2px;">{{ g.label.substring(g.label.indexOf(' ') + 1) }}</span>
                 </button>
@@ -349,8 +359,8 @@ const GeraldView = {
         formatMarkdown(text) { return parseMarkdownText(text, this.customEmotes); }
     },
     template: `
-        <div class="gerald-container safe-top-padding" style="position: absolute; inset: 0; display: flex; flex-direction: column; height: calc(100% - max(env(safe-area-inset-top, 24px), 24px)); overflow: hidden; padding-top: calc(10px + env(safe-area-inset-top, 24px));">
-            <div class="gerald-header" @click="$emit('close-pickers')" style="flex-shrink: 0; z-index: 50; border-bottom: none !important; box-shadow: none !important;">
+        <div class="gerald-container safe-top-padding" style="display: flex; flex-direction: column; height: 100%; width: 100%; background: var(--bg-color);">
+            <div class="gerald-header" @click="$emit('close-pickers')" style="flex-shrink: 0; padding: 12px 16px; background: var(--bg-color); z-index: 10;">
                 <div class="os-top-bar">
                     <span class="os-title">GERALD_OS v2</span>
                 </div>
@@ -369,7 +379,7 @@ const GeraldView = {
                 </div>
             </div>
 
-            <div class="gerald-messages" id="gerald-msgs" @click="$emit('close-pickers')" style="position: absolute; top: 110px; left: 0; right: 0; bottom: calc(80px + 44px); overflow-y: auto; overscroll-behavior-y: contain; -webkit-overflow-scrolling: touch; display: flex; flex-direction: column; padding: 10px 16px;">
+            <div class="gerald-messages" id="gerald-msgs" @click="$emit('close-pickers')" style="flex: 1; overflow-y: auto; overscroll-behavior-y: contain; -webkit-overflow-scrolling: touch; display: flex; flex-direction: column; padding: 10px 16px;">
                 <template v-for="(m, i) in geraldMessages" :key="i">
                     <div v-if="i === 0 && m.role === 'gerald' && !m.content" class="chat-bubble gerald startup-anim">
                         <span>> GERALD_CORE initialized.<br>> Awaiting human input...</span>
@@ -384,8 +394,8 @@ const GeraldView = {
                 </div>
             </div>
             
-            <div class="gerald-action-area" style="position: absolute; bottom: calc(65px + env(safe-area-inset-bottom, 0px)); left:0; right:0; z-index: 100; padding: 4px 12px; height: 44px; background: var(--bg-color);">
-                <div class="chat-emote-tray" v-show="showEmotePicker" style="position: absolute; bottom: calc(80px + 44px); border-bottom:none; border-radius:16px 16px 0 0; z-index: 200;">
+            <div class="gerald-action-area" style="position: relative; flex-shrink: 0; padding: 10px 12px; background: var(--bg-color); border-top: 1px solid var(--border-color); z-index: 100;">
+                <div class="chat-emote-tray" v-show="showEmotePicker" style="position: absolute; bottom: 100%; left: 0; right: 0; background: var(--card-bg); border-top: 1px solid var(--border-color); border-bottom: none; border-radius: 16px 16px 0 0; padding: 10px 12px; z-index: 200; max-height: 250px; display: flex; flex-direction: column; box-shadow: 0 -4px 20px rgba(0,0,0,0.1);">
                     <div class="emote-picker-grid" style="overscroll-behavior-y: contain; -webkit-overflow-scrolling: touch;">
                         <img v-for="(emote, name) in customEmotes" :key="name" :src="getEmoteUrl(emote)" :title="name" class="emote-picker-img" @mousedown.prevent="$emit('insert-emote', name)">
                     </div>
@@ -393,13 +403,13 @@ const GeraldView = {
 
                 <gerald-minigames :show-minigames="showMinigames" @play-game="g => $emit('play-game', g)"></gerald-minigames>
 
-                <div class="gerald-input-area" style="padding: 0; display: flex; width: 100%; align-items: center; gap: 8px;">
-                    <div class="gerald-input-wrapper" style="margin: 0; height: 36px; min-height: 36px;">
-                        <button class="emote-toggle-btn" style="height: 34px;" @click="$emit('toggle-emotes')"><span class="material-symbols-rounded" :style="{color: showEmotePicker ? 'var(--primary)' : 'inherit'}">mood</span></button>
-                        <button class="emote-toggle-btn" style="height: 34px;" @click="$emit('toggle-minigames')"><span class="material-symbols-rounded" :style="{color: showMinigames ? 'var(--primary)' : 'inherit'}">sports_esports</span></button>
-                        <textarea class="gerald-input" style="padding: 8px;" rows="1" placeholder="Execute request..." :value="geraldInput" @input="$emit('update-input', $event.target.value)" @keydown="$emit('key-down', $event)" id="gerald-txt-input" @focus="$emit('close-pickers')"></textarea>
+                <div class="gerald-input-area" style="padding: 0; display: flex; width: 100%; align-items: flex-end; gap: 8px;">
+                    <div class="gerald-input-wrapper">
+                        <button class="emote-toggle-btn" @click="$emit('toggle-emotes')"><span class="material-symbols-rounded" :style="{color: showEmotePicker ? 'var(--primary)' : 'inherit'}">mood</span></button>
+                        <button class="emote-toggle-btn" @click="$emit('toggle-minigames')"><span class="material-symbols-rounded" :style="{color: showMinigames ? 'var(--primary)' : 'inherit'}">sports_esports</span></button>
+                        <textarea class="gerald-input" rows="1" placeholder="Execute request..." :value="geraldInput" @input="$emit('update-input', $event.target.value)" @keydown="$emit('key-down', $event)" id="gerald-txt-input" @focus="$emit('close-pickers')"></textarea>
                     </div>
-                    <button class="gerald-send" style="width: 36px; height: 36px;" @click="$emit('send')"><span class="material-symbols-rounded">send</span></button>
+                    <button class="gerald-send" @click="$emit('send')"><span class="material-symbols-rounded">send</span></button>
                 </div>
             </div>
         </div>
@@ -409,7 +419,7 @@ const GeraldView = {
 const HomeView = {
     props: ['currentTab', 'currentVodIndex', 'recentVods', 'isLive', 'hostname', 'clips', 'activeFilterLabel', 'optimizeTwitchImg', 'formatViews', 'formatDate', 'activeClipId'],
     template: `
-        <div style="flex: 1; overflow-y: auto; overscroll-behavior-y: contain; -webkit-overflow-scrolling: touch; padding-bottom: calc(85px + env(safe-area-inset-bottom, 0px));">
+        <div style="flex: 1; overflow-y: auto; overscroll-behavior-y: contain; -webkit-overflow-scrolling: touch; padding-bottom: 20px;">
             <div class="hero-section">
                 <div class="header-controls" style="margin-bottom:12px; display:flex;">
                     <div :class="['premium-badge', isLive ? 'live-badge' : 'vod']">
