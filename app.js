@@ -1,6 +1,6 @@
 const parseMarkdownText = (text, emotesMap) => {
     if (!text) return ''; 
-    let html = text.replace(/&/g, '&').replace(/</g, '<').replace(/>/g, '>');
+    let html = text.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
     html = html.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>').replace(/\*(.*?)\*/g, '<em>$1</em>');
     
     const urlPattern = /(\b(https?|ftp|file):\/\/[-A-Z0-9+&@#\/%?=~_|!:,.;]*[-A-Z0-9+&@#\/%=~_|])/ig;
@@ -21,7 +21,8 @@ const parseMarkdownText = (text, emotesMap) => {
             if (lowerMap[cleanToken]) {
                 const actualKey = lowerMap[cleanToken];
                 const url = emotesMap[actualKey].url;
-                tokens[i] = token.replace(new RegExp(`:?${cleanToken}:?`, 'i'), `<img src="${url}" class="chat-emote-img" title="${actualKey}">`);
+                const escapedClean = cleanToken.replace(/[-\/\\^$*+?.()|[\]{}]/g, '\\$&');
+                tokens[i] = token.replace(new RegExp(`:?${escapedClean}:?`, 'i'), `<img src="${url}" class="chat-emote-img" title="${actualKey}">`);
             }
         }
         html = tokens.join('');
@@ -293,7 +294,7 @@ const GeraldView = {
     props: ['currentTab', 'geraldMessages', 'isGeraldTyping', 'geraldInput', 'showEmotePicker', 'showMinigames', 'customEmotes', 'geminiStatus', 'sysStats'],
     methods: {
         getEmoteUrl(emote) { return emote.url || `https://cdn.discordapp.com/emojis/${emote.id}.${emote.animated ? 'gif' : 'png'}?size=44`; },
-        formatMarkdown(text) { return processEmotes(text, this.customEmotes); },
+        formatMarkdown(text) { return parseMarkdownText(text, this.customEmotes); },
         insertEmote(name) { this.$emit('insert-emote', name); }
     },
     template: `
@@ -605,17 +606,16 @@ createApp({
                         const json = await res.json();
                         
                         if (json.data && json.data.length > 0) {
-                            for (const c of json.data) {
-                                await sbClient.from('clips').upsert({
-                                    id: c.id,
-                                    title: c.title,
-                                    view_count: c.view_count,
-                                    created_at: c.created_at,
-                                    thumbnail_url: c.thumbnail_url,
-                                    url: c.url,
-                                    embed_url: c.embed_url
-                                });
-                            }
+                            const clipsBatch = json.data.map(c => ({
+                                id: c.id,
+                                title: c.title,
+                                view_count: c.view_count,
+                                created_at: c.created_at,
+                                thumbnail_url: c.thumbnail_url,
+                                url: c.url,
+                                embed_url: c.embed_url
+                            }));
+                            await sbClient.from('clips').upsert(clipsBatch);
                             
                             if (json.pagination && json.pagination.cursor) {
                                 cursor = json.pagination.cursor;
@@ -671,17 +671,17 @@ createApp({
                             
                             if (json.data && json.data.length > 0) {
                                 syncSuccess = true;
-                                for (const c of json.data) {
-                                    await sbClient.from('clips').upsert({
-                                        id: c.id,
-                                        title: c.title,
-                                        view_count: c.view_count,
-                                        created_at: c.created_at,
-                                        thumbnail_url: c.thumbnail_url,
-                                        url: c.url,
-                                        embed_url: c.embed_url
-                                    });
-                                }
+                                const clipsBatch = json.data.map(c => ({
+                                    id: c.id,
+                                    title: c.title,
+                                    view_count: c.view_count,
+                                    created_at: c.created_at,
+                                    thumbnail_url: c.thumbnail_url,
+                                    url: c.url,
+                                    embed_url: c.embed_url
+                                }));
+                                await sbClient.from('clips').upsert(clipsBatch);
+                                
                                 if (json.pagination && json.pagination.cursor) {
                                     cursor = json.pagination.cursor;
                                 } else {
@@ -875,8 +875,8 @@ createApp({
             localStorage.setItem('twitch_tkn', apiConfig.value.localTkn);
             
             const activeCid = apiConfig.value.localCid || hiddenFallbackCid;
-            const redirectUri = encodeURIComponent('https://meowoccino.github.io/MikoTok/');
-            twitchAuthUrl.value = `https://id.twitch.tv/oauth2/authorize?client_id=${activeCid}&redirect_uri=${redirectUri}&response_type=token&scope=chat:read+chat:edit`;
+            const redirectUri = encodeURIComponent(window.location.origin + window.location.pathname);
+            twitchAuthUrl.value = `https://id.twitch.tv/oauth2/authorize?client_id=${activeCid}&redirect_uri=${redirectUri}&response_type=token&scope=chat:read+chat:edit&force_verify=true`;
             
             setTimeout(() => {
                 saveState.value = 'SUCCESS';
@@ -1085,8 +1085,8 @@ createApp({
             }
 
             const activeCid = apiConfig.value.localCid || hiddenFallbackCid;
-            const redirectUri = encodeURIComponent('https://meowoccino.github.io/MikoTok/');
-            twitchAuthUrl.value = `https://id.twitch.tv/oauth2/authorize?client_id=${activeCid}&redirect_uri=${redirectUri}&response_type=token&scope=chat:read+chat:edit`;
+            const redirectUri = encodeURIComponent(window.location.origin + window.location.pathname);
+            twitchAuthUrl.value = `https://id.twitch.tv/oauth2/authorize?client_id=${activeCid}&redirect_uri=${redirectUri}&response_type=token&scope=chat:read+chat:edit&force_verify=true`;
 
             await load7TVEmotes();
             await loadTwitchBadges();
@@ -1099,7 +1099,7 @@ createApp({
             try { 
                 const { data } = await sbClient.auth.getSession(); 
                 if (data?.session?.user) {
-                    currentUser.value = data.session.user; 
+                    currentUser.value = data.user; 
                     const { data: hist = [] } = await sbClient.from('gerald_history').select('*').eq('user_id', currentUser.value.id).order('created_at', { ascending: true });
                     if (hist && hist.length > 0) {
                         geraldMessages.value = hist.map(r => ({ role: r.role, content: r.content }));
@@ -1124,7 +1124,7 @@ createApp({
         });
 
         return {
-            hostname, splashVisible, splashOpacity, currentTab, tabOffset, appTheme, toggleTheme, clips, allClipsCount, modals, isLive, currentUser, loginEmail, loginPass, loginError, showLoginPopup, apiConfig, geraldInput, geraldMessages, isGeraldTyping, talkToGerald, handleGeraldEnter, syncState, wipeState, logoutState, nukeState, saveState, isHeaderVisible, handleScroll, currentFilter, activeFilterLabel, isFilterMenuOpen, closeFilterMenu, applyFilter, parseMarkdown: (text) => processEmotes(text, customEmotes.value), recentVods, currentVodIndex, nextVod, prevVod, customEmotes, showEmotePicker, insertEmote, toggleEmotes, toggleMinigames, closePickers, nukeCache, activeClipId, switchTab, playClip, selectedClip, showMinigames, runSync, disconnectTwitch, saveApiKeys, triggerAiMinigame, geminiStatus, sysStats, chatMessages, twitchChatToken, twitchAuthUrl, twitchUsername, sendTwitchChatMessage, handleSwipeStart, handleSwipeEnd, handleModalTouchStart, handleModalTouchMove, handleModalTouchEnd, clearGeraldHistory,
+            hostname, splashVisible, splashOpacity, currentTab, tabOffset, appTheme, toggleTheme, clips, allClipsCount, modals, isLive, currentUser, loginEmail, loginPass, loginError, showLoginPopup, apiConfig, geraldInput, geraldMessages, isGeraldTyping, talkToGerald, handleGeraldEnter, syncState, wipeState, logoutState, nukeState, saveState, isHeaderVisible, handleScroll, currentFilter, activeFilterLabel, isFilterMenuOpen, closeFilterMenu, applyFilter, parseMarkdown: (text) => parseMarkdownText(text, customEmotes.value), recentVods, currentVodIndex, nextVod, prevVod, customEmotes, showEmotePicker, insertEmote, toggleEmotes, toggleMinigames, closePickers, nukeCache, activeClipId, switchTab, playClip, selectedClip, showMinigames, runSync, disconnectTwitch, saveApiKeys, triggerAiMinigame, geminiStatus, sysStats, chatMessages, twitchChatToken, twitchAuthUrl, twitchUsername, sendTwitchChatMessage, handleSwipeStart, handleSwipeEnd, handleModalTouchStart, handleModalTouchMove, handleModalTouchEnd, clearGeraldHistory,
             logoSvg: (id) => `<svg viewBox="0 0 100 100"><defs><linearGradient id="grad-${id}" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stop-color="#9146FF"/><stop offset="100%" stop-color="#a970ff"/></linearGradient></defs><circle cx="50" cy="50" r="40" fill="url(#grad-${id})"/><path d="M 33 38 L 48 62 L 62 38 L 62 55 Q 62 65 69 64" fill="none" stroke="#ffffff" stroke-width="8" stroke-linecap="round" stroke-linejoin="round"/></svg>`,
             handleLogin: async () => { 
                 loginError.value = '';
