@@ -180,8 +180,10 @@ body, html {
 .pulse-red { background: var(--danger); animation: pulse-red-glow 2.5s infinite; }
 .pulse-lbl { font-size: 9px; font-family: monospace; font-weight: 700; }
 
+.gerald-messages { flex: 1; overflow-y: auto; padding: 0 16px; display: flex; flex-direction: column; gap: 12px; }
+
 .chat-bubble { max-width: 85%; padding: 10px 16px; font-size: 13.5px; line-height: 1.45; background: var(--card-bg); border: 1px solid var(--border-color); border-radius: 18px; color: var(--text-main); word-wrap: break-word; margin-bottom: 12px; }
-.chat-bubble.gerald { border-color: var(--primary); align-self: flex-start; }
+.chat-bubble.gerald { background: rgba(145, 70, 255, 0.12); border-color: rgba(145, 70, 255, 0.3); align-self: flex-start; }
 .chat-bubble.user { align-self: flex-end; background: var(--border-color); border-color: transparent; }
 
 .dots-thinking-row { display: flex; gap: 6px; padding: 8px 16px 0; justify-content: flex-start; }
@@ -192,19 +194,17 @@ body, html {
 
 @keyframes blink-dot { 0%, 100% { opacity: 0.2; transform: scale(0.8); } 50% { opacity: 1; transform: scale(1); } }
 
+/* REMOVED TOP BORDERS FOR THE FLAT LOOK */
+.gerald-action-area { position: relative; flex-shrink: 0; padding: 10px 12px; background: var(--bg-color); z-index: 100; }
+.custom-chat-input-area { position: relative; flex-shrink: 0; display: flex; gap: 8px; align-items: center; padding: 10px 12px; background: var(--bg-color); z-index: 100; }
+.bottom-nav { width: 100%; background: var(--nav-bg); display: flex; justify-content: space-around; padding: 10px 15px max(env(safe-area-inset-bottom, 15px), 15px); z-index: 5000; flex-shrink: 0; }
+
 .gerald-input-wrapper { display: flex; align-items: flex-end; background: var(--card-bg); border: 1px solid var(--border-color); border-radius: 20px; flex: 1; padding-left: 5px; min-height: 44px; }
 .emote-toggle-btn { background: transparent; border: none; color: var(--text-muted); padding: 10px 6px; height: 44px; display: flex; flex-shrink: 0; }
 .gerald-input { flex: 1; background: transparent; border: none; padding: 12px 8px; color: var(--text-main); outline: none; font-size: 14px; resize: none; max-height: 120px; }
 .gerald-send { background: var(--primary); border: none; width: 44px; height: 44px; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: #ffffff; flex-shrink: 0; }
 .bribe-btn { flex: 1 1 calc(33.33% - 10px); background: var(--card-bg); border: 1px solid var(--border-color); color: var(--text-main); font-size: 9px; font-weight: 800; padding: 8px; border-radius: 10px; outline: none; }
 
-.bottom-nav {
-    width: 100%; background: var(--nav-bg); 
-    border-top: 1px solid var(--border-color); 
-    display: flex; justify-content: space-around;
-    padding: 10px 15px max(env(safe-area-inset-bottom, 15px), 15px); 
-    z-index: 5000; flex-shrink: 0;
-}
 .nav-item { display: flex; flex-direction: column; align-items: center; flex: 1; color: var(--text-muted); font-size: 10px; gap: 4px; cursor: pointer; -webkit-tap-highlight-color: transparent; user-select: none; touch-action: manipulation; padding: 4px 0; }
 .nav-item.active, .nav-item.active-gerald { color: var(--primary) !important; }
 .nav-item.active .material-symbols-rounded, .nav-item.active-gerald .material-symbols-rounded { font-variation-settings: 'FILL' 1; }
