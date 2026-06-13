@@ -82,7 +82,15 @@ body, html {
     width: 100%; padding: 12px 16px; display: flex; align-items: center; justify-content: space-between;
     z-index: 200; flex-shrink: 0; background: var(--bg-color); transition: all 0.3s ease; height: 56px; overflow: hidden;
 }
-.app-header.header-hidden { height: 0px !important; padding-top: 0px !important; padding-bottom: 0px !important; opacity: 0 !important; pointer-events: none; }
+.app-header.header-hidden { 
+    height: 0px !important; 
+    padding-top: 0px !important; 
+    padding-bottom: 0px !important; 
+    margin: 0 !important;
+    border: none !important;
+    opacity: 0 !important; 
+    pointer-events: none; 
+}
 .theme-toggle-btn { background: transparent; border: none; color: var(--text-main); padding: 4px; display: flex; }
 
 .view-port { flex: 1; width: 100%; height: 100%; overflow: hidden; position: relative; display: flex; flex-direction: column; }
@@ -130,11 +138,6 @@ body, html {
 
 .chat-public-auth-banner { display: flex; justify-content: space-between; align-items: center; background: var(--card-bg); border-bottom: 1px solid var(--border-color); padding: 10px 16px; font-size: 12px; z-index: 10; }
 .public-disconnect-btn { background: rgba(239,68,68,0.1); border: 1px solid rgba(239,68,68,0.2); color: var(--danger); padding: 5px 12px; border-radius: 12px; font-weight: 700; }
-
-.chat-login-icon { width: 48px; height: 48px; fill: #9146FF; margin-bottom: 16px; }
-.chat-login-title { font-family: 'Outfit', sans-serif; font-size: 22px; font-weight: 900; margin: 0 0 8px; }
-.chat-login-sub { font-size: 13px; color: var(--text-muted); margin: 0 0 24px; line-height: 1.5; }
-.twitch-login-btn { background: #9146FF; color: #fff; padding: 13px 28px; border-radius: 20px; font-weight: 800; text-decoration: none; width: 100%; }
 
 .twitch-msg-row { font-size: 13.5px; line-height: 1.5; word-break: break-word; padding: 4px 8px; border-radius: 6px; }
 .chat-timestamp { font-size: 11px; color: var(--text-muted); margin-right: 6px; }
