@@ -757,7 +757,7 @@ createApp({
 
         const loadEmotesFromSupabase = async () => {
             try {
-                const { data, error } = await sbClient.from('emotes').select('*');
+                const { data, error } = await sbClient.from('emotes').select('*').limit(3000);
                 if (!error && data) {
                     data.forEach(item => {
                         if (item.provider === 'twitch_badge') {
@@ -925,7 +925,7 @@ createApp({
                 isLive.value = !(await res.text()).includes('offline');
                 const gql = await fetch('https://gql.twitch.tv/gql', { 
                     method: 'POST', 
-                    headers: { 'Client-ID': TWITCH_PUBLIC_CLIENT_ID }, 
+                    headers: { 'Client-ID': 'kimne78kx3ncx6brgo4mv6wki5h1ko' }, 
                     body: JSON.stringify({ query: `query{user(login:"codemiko"){videos(first:10){edges{node{id createdAt}}}}}` }) 
                 });
                 const edges = (await gql.json()).data.user.videos.edges;
@@ -978,15 +978,16 @@ createApp({
                 }
             });
 
-            Promise.all([
-                loadEmotesFromSupabase(),
-                loadChatHistory(),
-                loadData(false),
-                checkLive(),
-                testGeminiBrain()
-            ]).then(() => {
-                splashOpacity.value = 0; 
-                setTimeout(() => { splashVisible.value = false; }, 300);
+            loadEmotesFromSupabase().then(() => {
+                Promise.all([
+                    loadChatHistory(),
+                    loadData(false),
+                    checkLive(),
+                    testGeminiBrain()
+                ]).then(() => {
+                    splashOpacity.value = 0; 
+                    setTimeout(() => { splashVisible.value = false; }, 300);
+                });
             });
 
             if (twitchChatToken.value) {
