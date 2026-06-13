@@ -1,11 +1,11 @@
-m:root {
+:root {
     --primary: #9146FF;
     --primary-light: #a970ff;
     --danger: #ef4444;
     --offline-gray: #9ca3af;
     --success: #10b981;
     --gerald: #9146FF;
-    --nav-height: 80px; /* bottom nav pill height + its 15px bottom offset */
+    --nav-height: 80px;
 }
 
 .theme-light {
@@ -44,8 +44,7 @@ body, html {
     flex-direction: column; transition: background-color 0.2s;
 }
 
-/* [v-cloak] handled inline in index.html — do NOT add a blanket display:none here
-   or the entire app-container will be invisible while Vue initializes */
+/* [v-cloak] handled inline in index.html — do NOT add display:none here */
 
 .miko-text-gradient {
     background: linear-gradient(135deg, var(--primary) 0%, #000000 100%);
