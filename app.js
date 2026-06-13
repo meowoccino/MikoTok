@@ -170,9 +170,8 @@ const ChatView = {
                 <button class="public-disconnect-btn" @click="$emit('disconnect-public-twitch')">Disconnect</button>
             </div>
 
-            <!-- Absolute Window bounding constraints force messages to stay perfectly configured -->
             <div class="twitch-chat-list" id="twitch-chat-list" @click="closePicker" style="position: absolute; top: 40px; left: 0; right: 0; bottom: calc(65px + 70px + env(safe-area-inset-bottom, 0px)); overflow-y: auto; overscroll-behavior-y: contain; -webkit-overflow-scrolling: touch; padding: 10px 12px; display: flex; flex-direction: column;">
-                <div style="flex: 1 1 auto; min-height: 0;"></div> 
+                <div style="flex: 1 1 auto; min-height: 0;"></div>
                 
                 <div v-if="chatMessages.length === 0" class="chat-empty-state">
                     <span class="material-symbols-rounded" style="font-size:32px; color:var(--text-muted); margin-bottom:8px;">chat_bubble_outline</span>
@@ -187,6 +186,8 @@ const ChatView = {
                     <span class="twitch-username" :style="{ color: msg.color || '#9146FF' }">{{ msg.username }}</span><span class="twitch-colon">: </span>
                     <span class="twitch-text" v-html="msg.html"></span>
                 </div>
+                
+                <div style="height: 75px; flex-shrink: 0; min-height: 75px;"></div>
             </div>
 
             <div class="chat-emote-tray" v-show="showPicker && isLoggedIn" @click.stop style="position: absolute; bottom: calc(65px + 65px + env(safe-area-inset-bottom, 0px)); z-index: 70; width: 100%;">
@@ -196,14 +197,12 @@ const ChatView = {
                 </div>
             </div>
 
-            <!-- Absolute Lift: Permanently configured above navbar boundaries -->
             <div class="custom-chat-input-area" style="position: absolute; bottom: calc(65px + env(safe-area-inset-bottom, 0px)); left:0; right:0; z-index: 100; padding-bottom: 5px; background: var(--bg-color);">
                 <button class="chat-icon-btn" :class="{ 'chat-icon-active': showPicker }" @click.stop="togglePicker"><span class="material-symbols-rounded" style="font-size:22px;">mood</span></button>
                 <input type="text" class="custom-chat-input" placeholder="Send a message…" v-model="localInput" @keydown.enter="handleSend" @focus="handleInteraction" :readonly="!isLoggedIn">
                 <button class="chat-send-btn" @click="handleSend" :disabled="!isLoggedIn || !localInput.trim()"><span class="material-symbols-rounded" style="font-size:20px;">send</span></button>
             </div>
 
-            <!-- Centered Popup Layout Fix -->
             <div class="chat-login-popup-overlay" v-if="$root.showLoginPopup" @click.self="$root.showLoginPopup = false" style="position: fixed; inset: 0; display: flex; align-items: center; justify-content: center; background: rgba(0,0,0,0.8); z-index: 99999;">
                 <div class="chat-login-card" style="background: var(--card-bg); padding: 24px; border-radius: 16px; width: 85%; max-width: 340px; text-align: center; position: relative; box-shadow: 0 10px 30px rgba(0,0,0,0.3);">
                     <button @click="$root.showLoginPopup = false" style="position: absolute; top: 12px; right: 12px; background: transparent; border: none; color: var(--text-muted); font-size: 24px; line-height:1; cursor: pointer;">×</button>
@@ -221,7 +220,6 @@ const MoreView = {
     template: `
         <div class="more-container safe-top-padding" style="position: absolute; inset: 0; display: flex; flex-direction: column; height: calc(100% - max(env(safe-area-inset-top, 24px), 24px)); padding-left: 16px; padding-right: 16px; gap: 8px; overflow-y: auto;">
             
-            <!-- Throne button converted to identical social link card row formatting sitting perfectly below safe padding -->
             <a href="https://throne.com/codemiko" target="_blank" class="social-card" style="display: flex; align-items: center; padding: 0 16px; border-radius: 12px; min-height: 48px; height: 48px; background: var(--card-bg); text-decoration: none; flex-shrink: 0; margin-top: 10px;">
                 <div style="display: flex; align-items: center; gap: 12px; width: 100%;">
                     <svg viewBox="0 0 24 24" style="width: 22px; height: 22px; fill: #ef4444; flex-shrink:0;"><path d="M20 6h-2.18c.11-.31.18-.65.18-1 0-1.66-.84-3-2-3-1.22 0-2.42 1.55-3 2.52-.58-.97-1.78-2.52-3-2.52-1.16 0-2 1.34-2 3 0 .35.07.69.18 1H4c-1.11 0-1.99.89-1.99 2L2 19c0 1.11.89 2 2 2h16c1.11 0 2-.89 2-2V8c0-1.11-.89-2-2-2zm-5-3c.55 0 1 .45 1 1s-.45 1-1 1-1-.45-1-1 .45-1 1-1zm-6 0c.55 0 1 .45 1 1s-.45 1-1 1-1-.45-1-1 .45-1 1-1zm11 16H4V8h16v11z"/></svg>
@@ -259,7 +257,7 @@ const MoreView = {
                             <stop offset="100%" stop-color="#ffd5af" />
                         </linearGradient>
                     </defs>
-                    <path fill="url(#fanfix-grad)" d="M11.23 1.59c.43-.65 1.11-.65 1.54 0l1.19 1.83c.22.33.7.53 1.09.43l2.12-.51c.74-.18 1.22.29 1.04 1.04l-.51 2.12c-.1.39.1.87.43 1.09l1.83 1.19c.65.43.65 1.11 0 1.54l-1.83 1.19c-.33.22-.53.7-.43 1.09l.51 2.12c.18.74-.29 1.22-1.04 1.04l-2.12-.51c-.39-.1-.87.1-1.09.43l-1.19 1.83c-.43.65-1.11.65-1.54 0l-1.19-1.83c-.22-.33-.7+.53-1.09-.43l-2.12.51c-.74.18-1.22-.29-1.04-1.04l.51-2.12c.1-.39-.1-.87-.43-1.09l-1.83-1.19c-.65-.43-.65-1.11 0-1.54l1.83-1.19c.33-.22.53-.7.43-1.09l-.51-2.12c-.18-.74.29-1.22 1.04-1.04l2.12.51c.39.1.87-.1 1.09-.43l1.19-1.83z"/>
+                    <path fill="url(#fanfix-grad)" d="M11.23 1.59c.43-.65 1.11-.65 1.54 0l1.19 1.83c.22.33.7.53 1.09.43l2.12-.51c.74-.18 1.22.29 1.04 1.04l-.51 2.12c-.1.39.1.87.43 1.09l1.83 1.19c.65.43.65 1.11 0 1.54l-1.83 1.19c-.33.22-.53.7-.43 1.09l.51 2.12c.18.74-.29 1.22-1.04 1.04l-2.12-.51c-.39-.1-.87.1-1.09.43l-1.19 1.83c-.43.65-1.11.65-1.54 0l-1.19-1.83c-.22-.33-.7-.53-1.09-.43l-2.12.51c-.74.18-1.22-.29-1.04-1.04l.51-2.12c.1-.39-.1-.87-.43-1.09l-1.83-1.19c-.65-.43-.65-1.11 0-1.54l1.83-1.19c.33-.22.53-.7.43-1.09l-.51-2.12c-.18-.74.29-1.22 1.04-1.04l2.12.51c.39.1.87-.1 1.09-.43l1.19-1.83z"/>
                     <path fill="#000" d="M10.4 15.6l-3.2-3.2 1.4-1.4 1.8 1.8 4.8-4.8 1.4 1.4-6.2 6.2z"/>
                 </svg>
                 <span style="color: var(--text-main); font-size: 14px;">Fanfix</span>
@@ -363,8 +361,7 @@ const GeraldView = {
                 </div>
             </div>
 
-            <!-- Absolute bounding fixed configuration wipes the top-down scrolling limits -->
-            <div class="gerald-messages" id="gerald-msgs" @click="$emit('close-pickers')" style="position: absolute; top: 110px; left: 0; right: 0; bottom: calc(65px + 70px + env(safe-area-inset-bottom, 0px)); overflow-y: auto; overscroll-behavior-y: contain; -webkit-overflow-scrolling: touch; padding: 10px 16px;">
+            <div class="gerald-messages" id="gerald-msgs" @click="$emit('close-pickers')" style="position: absolute; top: 110px; left: 0; right: 0; bottom: calc(65px + 70px + env(safe-area-inset-bottom, 0px)); overflow-y: auto; overscroll-behavior-y: contain; -webkit-overflow-scrolling: touch; display: flex; flex-direction: column; padding: 10px 16px;">
                 <template v-for="(m, i) in geraldMessages" :key="i">
                     <div v-if="i === 0 && m.role === 'gerald' && !m.content" class="chat-bubble gerald startup-anim">
                         <span>> GERALD_CORE initialized.<br>> Awaiting human input...</span>
@@ -404,7 +401,7 @@ const GeraldView = {
 const HomeView = {
     props: ['currentTab', 'currentVodIndex', 'recentVods', 'isLive', 'hostname', 'clips', 'activeFilterLabel', 'optimizeTwitchImg', 'formatViews', 'formatDate', 'activeClipId'],
     template: `
-        <div style="flex: 1; overflow-y: auto; overscroll-behavior-y: contain; -webkit-overflow-scrolling: touch; padding-bottom: calc(95px + env(safe-area-inset-bottom, 0px)); padding-top: 15px;">
+        <div style="flex: 1; overflow-y: auto; overscroll-behavior-y: contain; -webkit-overflow-scrolling: touch; padding-bottom: calc(85px + env(safe-area-inset-bottom, 0px));">
             <div class="hero-section">
                 <div class="header-controls" style="margin-bottom:12px; display:flex;">
                     <div :class="['premium-badge', isLive ? 'live-badge' : 'vod']">
@@ -506,6 +503,24 @@ createApp({
         const tabOrder = ['home', 'chat', 'gerald', 'more'];
         const initialTabIdx = tabOrder.indexOf(tabs.includes(window.location.hash.replace('#','')) ? window.location.hash.replace('#','') : 'home');
         const tabOffset = ref(initialTabIdx * -25);
+
+        // GLOBAL MARKDOWN PARSER DEFINED INSIDE SETUP FOR SCOPE CORRECTION
+        const parseMarkdown = (t) => {
+            if (!t) return ''; 
+            let html = t.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+            html = html.replace(/\\*\\*(.*?)\\*\\*/g, '<strong>$1</strong>').replace(/\\*(.*?)\\*/g, '<em>$1</em>');
+            const words = html.split(' ');
+            const emoteKeys = Object.keys(customEmotes.value);
+            for (let i = 0; i < words.length; i++) {
+                const clean = words[i].replace(/^:|:$/g, ''); 
+                const actualKey = emoteKeys.find(k => k.toLowerCase() === clean.toLowerCase());
+                if (actualKey) {
+                    const m = customEmotes.value[actualKey];
+                    words[i] = `<img src="${m.url || `https://cdn.discordapp.com/emojis/\${m.id}.png`}" style="height:1.65em; vertical-align:middle; display:inline-block; margin:0 2px;" title="\${actualKey}">`;
+                }
+            }
+            return words.join(' ');
+        };
 
         const switchTab = (tab) => {
             currentTab.value = tab;
@@ -698,6 +713,12 @@ createApp({
             twitchWs.send(`PRIVMSG #codemiko :${msg}`);
             const ts = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
             
+            let myBadges = [];
+            try {
+                const storedBadges = localStorage.getItem('my_twitch_badges');
+                if (storedBadges) myBadges = JSON.parse(storedBadges);
+            } catch(e) {}
+
             const htmlMsg = processEmotes(msg);
 
             chatMessages.value.push({
@@ -918,13 +939,13 @@ createApp({
             } catch {}
         };
 
-        const nukeCache = async () => {
-            if (nukeState.value !== 'Nuke App Cache') return; nukeState.value = 'NUKING...';
-            try {
-                if ('serviceWorker' in navigator) { const regs = await navigator.serviceWorker.getRegistrations(); for (let r of regs) await r.unregister(); }
-                if ('caches' in window) { const keys = await caches.keys(); for (let k of keys) await caches.delete(k); }
-                nukeState.value = 'SUCCESS'; setTimeout(() => { window.location.reload(); }, 1000);
-            } catch { nukeState.value = 'ERROR'; setTimeout(() => { nukeState.value = 'Nuke App Cache'; }, 2500); }
+        const runSync = async () => {
+            syncState.value = 'SYNCING...';
+            await load7TVEmotes();
+            const success = await loadTwitchBadges();
+            if (!success && apiConfig.value.localTkn) { syncState.value = 'ERROR'; setTimeout(() => { syncState.value = 'Force Data Sync'; }, 2500); return; }
+            await loadData(false); await checkLive(); await testGeminiBrain();
+            syncState.value = 'SUCCESS'; setTimeout(() => { syncState.value = 'Force Data Sync'; }, 2500);
         };
 
         onMounted(async () => {
