@@ -100,7 +100,7 @@ const FilterMenu = {
 };
 
 const ProfileModal = {
-    props: ['isOpen', 'currentUser', 'loginEmail', 'loginPass', 'apiConfig', 'syncState', 'wipeState', 'logoutState', 'nukeState', 'saveState'],
+    props: ['isOpen', 'currentUser', 'loginEmail', 'loginPass', 'syncState', 'wipeState', 'logoutState', 'nukeState'],
     template: `
         <div class="modal-overlay" :class="{ open: isOpen }" @click.self="$emit('close')">
             <div class="modal-content" @touchstart="$emit('touch-start', $event)" @touchmove="$emit('touch-move', $event)" @touchend="$emit('touch-end', $event)">
@@ -125,18 +125,8 @@ const ProfileModal = {
                         <a href="https://supabase.com/dashboard/project/yhxcuayiwqpjvalyrcqv" target="_blank" class="external-link-btn" style="color:var(--success)"><span class="material-symbols-rounded">database</span>Supabase DB</a>
                         <a href="https://github.com/meowoccino/MikoTok" target="_blank" class="external-link-btn"><span class="material-symbols-rounded">code</span>GitHub Repo</a>
                     </div>
-
-                    <div class="settings-block" style="margin-top: 15px;">
-                        <div class="block-title">TWITCH API CONFIG</div>
-                        <input type="text" class="sleek-input" v-model="apiConfig.localCid" placeholder="Client ID">
-                        <input type="password" class="sleek-input" v-model="apiConfig.localTkn" placeholder="Access Token">
-                        <button class="save-keys-btn" @click="$emit('save-keys')" :style="saveState === 'SUCCESS' ? 'color: var(--success);' : ''">
-                            <span class="material-symbols-rounded" :class="{'spin-anim': saveState === 'SAVING...'}">{{ saveState === 'SUCCESS' ? 'check' : 'save' }}</span>
-                            {{ saveState }}
-                        </button>
-                    </div>
                     
-                    <div class="action-menu">
+                    <div class="action-menu" style="margin-top: 15px;">
                         <button class="menu-btn sync-row" :style="syncState === 'SUCCESS' ? 'color: var(--success);' : ''" @click="$emit('sync')">
                             <div class="btn-content">
                                 <div class="icon-wrap"><span class="material-symbols-rounded" :class="{'spin-anim': syncState === 'REFRESHING...'}" style="font-size: 18px;">{{ syncState === 'SUCCESS' ? 'check' : 'sync' }}</span></div>
@@ -506,11 +496,12 @@ createApp({
         const wipeState = ref('Wipe Gerald Memory');
         const logoutState = ref('Sign Out');
         const nukeState = ref('Nuke App Cache');
-        const saveState = ref('Save Credentials');
         
         const isHeaderVisible = ref(true);
 
-        const apiConfig = ref({ localCid: localStorage.getItem('miko_twitch_cid') || '', localTkn: localStorage.getItem('twitch_tkn') || '' });
+        // PERFECTLY ALIGNED TWITCH CLIENT ID
+        const TWITCH_CLIENT_ID = 'gp762nuuoqcoxypju8c569th9wz7q5';
+        
         const geminiStatus = ref('TESTING BRAIN...');
         const sysStats = ref({ cpu: 23, mem: 1.8, temp: 74 });
 
@@ -757,16 +748,6 @@ createApp({
             loadChatHistory().then(() => connectTwitchChat());
         };
 
-        const saveApiKeys = () => {
-            saveState.value = 'SAVING...';
-            localStorage.setItem('miko_twitch_cid', apiConfig.value.localCid);
-            localStorage.setItem('twitch_tkn', apiConfig.value.localTkn);
-            setTimeout(() => {
-                saveState.value = 'SUCCESS';
-                setTimeout(() => { saveState.value = 'Save Credentials'; }, 2000);
-            }, 1000);
-        };
-
         const loadAllEmotes = async () => {
             try {
                 const [g7, c7] = await Promise.all([
@@ -796,11 +777,10 @@ createApp({
         };
 
         const loadTwitchBadges = async () => {
-            const cid = 'kimne78kx3ncx6brgo4mv6wki5h1ko';
             try {
                 const [gRes, cRes] = await Promise.all([
-                    fetch('https://api.twitch.tv/helix/chat/badges/global', { headers: { 'Client-ID': cid } }),
-                    fetch('https://api.twitch.tv/helix/chat/badges?broadcaster_id=500128827', { headers: { 'Client-ID': cid } })
+                    fetch('https://api.twitch.tv/helix/chat/badges/global', { headers: { 'Client-ID': TWITCH_CLIENT_ID } }),
+                    fetch('https://api.twitch.tv/helix/chat/badges?broadcaster_id=500128827', { headers: { 'Client-ID': TWITCH_CLIENT_ID } })
                 ]);
                 const gData = await gRes.json(), cData = await cRes.json();
                 if (gData?.data) gData.data.forEach(s => s.versions.forEach(v => { badgeAssets[`${s.set_id}/${v.id}`] = v.image_url_1x; }));
@@ -962,7 +942,7 @@ createApp({
             try {
                 const res = await fetch('https://decapi.me/twitch/uptime/codemiko');
                 isLive.value = !(await res.text()).includes('offline');
-                const gql = await fetch('https://gql.twitch.tv/gql', { method: 'POST', headers: { 'Client-ID': 'kimne78kx3ncx6brgo4mv6wki5h1ko' }, body: JSON.stringify({ query: `query{user(login:"codemiko"){videos(first:10){edges{node{id createdAt}}}}}` }) });
+                const gql = await fetch('https://gql.twitch.tv/gql', { method: 'POST', headers: { 'Client-ID': TWITCH_CLIENT_ID }, body: JSON.stringify({ query: `query{user(login:"codemiko"){videos(first:10){edges{node{id createdAt}}}}}` }) });
                 const edges = (await gql.json()).data.user.videos.edges;
                 recentVods.value = edges.map(e => ({ id: e.node.id, date: new Date(e.node.createdAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric' }).toUpperCase() }));
                 if (currentVodIndex.value === 0 || currentVodIndex.value === -1) currentVodIndex.value = isLive.value ? -1 : 0;
@@ -977,7 +957,7 @@ createApp({
             updateThemeClass();
             
             const redirectUri = encodeURIComponent(window.location.origin + window.location.pathname);
-            twitchAuthUrl.value = `https://id.twitch.tv/oauth2/authorize?client_id=kimne78kx3ncx6brgo4mv6wki5h1ko&redirect_uri=${redirectUri}&response_type=token&scope=chat:read+chat:edit&force_verify=true`;
+            twitchAuthUrl.value = `https://id.twitch.tv/oauth2/authorize?client_id=${TWITCH_CLIENT_ID}&redirect_uri=${redirectUri}&response_type=token&scope=chat:read+chat:edit&force_verify=true`;
 
             if (window.location.hash.includes('access_token')) {
                 const params = new URLSearchParams(window.location.hash.substring(1));
@@ -988,7 +968,6 @@ createApp({
                 }
             }
 
-            // Ensures chat wakes back up if frozen by browser sleeping
             document.addEventListener('visibilitychange', () => {
                 if (document.visibilityState === 'visible' && (!twitchWs || twitchWs.readyState === WebSocket.CLOSED)) {
                     loadChatHistory().then(() => connectTwitchChat());
@@ -1014,31 +993,34 @@ createApp({
                 }
             });
 
-            loadAllEmotes().then();
-            loadTwitchBadges().then();
-            
-            loadChatHistory().then(() => {
-                if (twitchChatToken.value) {
-                    fetch('https://id.twitch.tv/oauth2/validate', { headers: { 'Authorization': 'OAuth ' + twitchChatToken.value } })
-                        .then(r => r.json())
-                        .then(d => { if (d.login) { twitchUsername.value = d.login; localStorage.setItem('tw_username', d.login); connectTwitchChat(); } else disconnectTwitch(); })
-                        .catch(() => connectTwitchChat());
-                } else connectTwitchChat();
+            // ALL DATA WAITS BEFORE THE SPLASH SCREEN DISAPPEARS
+            Promise.all([
+                loadAllEmotes(),
+                loadTwitchBadges(),
+                loadChatHistory(),
+                loadData(false),
+                checkLive(),
+                testGeminiBrain()
+            ]).then(() => {
+                splashOpacity.value = 0; 
+                setTimeout(() => { splashVisible.value = false; }, 300);
             });
 
-            loadData(false).then(); checkLive().then(); testGeminiBrain().then();
+            if (twitchChatToken.value) {
+                fetch('https://id.twitch.tv/oauth2/validate', { headers: { 'Authorization': 'OAuth ' + twitchChatToken.value } })
+                    .then(r => r.json())
+                    .then(d => { if (d.login) { twitchUsername.value = d.login; localStorage.setItem('tw_username', d.login); connectTwitchChat(); } else disconnectTwitch(); })
+                    .catch(() => connectTwitchChat());
+            } else connectTwitchChat();
 
             setInterval(() => {
                 sysStats.value.cpu = Math.floor(Math.random() * (48 - 14 + 1)) + 14;
                 sysStats.value.temp = Math.floor(Math.random() * (89 - 68 + 1)) + 68;
             }, 3500);
-
-            splashOpacity.value = 0; 
-            setTimeout(() => { splashVisible.value = false; }, 300);
         });
 
         return {
-            hostname, splashVisible, splashOpacity, currentTab, tabOffset, appTheme, toggleTheme, clips, allClipsCount, modals, isLive, currentUser, loginEmail, loginPass, loginError, showLoginPopup, apiConfig, geraldInput, geraldMessages, isGeraldTyping, talkToGerald, handleGeraldEnter, syncState, wipeState, logoutState, nukeState, saveState, isHeaderVisible, handleScroll, currentFilter, activeFilterLabel, isFilterMenuOpen, closeFilterMenu, applyFilter, parseMarkdown: (text) => parseMarkdownText(text, customEmotes.value), recentVods, currentVodIndex, nextVod, prevVod, customEmotes, showEmotePicker, insertEmote, toggleEmotes, toggleMinigames, closePickers, nukeCache, activeClipId, switchTab, playClip, selectedClip, showMinigames, runSync, disconnectTwitch, saveApiKeys, triggerAiMinigame, geminiStatus, sysStats, chatMessages, twitchChatToken, twitchAuthUrl, twitchUsername, sendTwitchChatMessage, handleSwipeStart, handleSwipeEnd, handleModalTouchStart, handleModalTouchMove, handleModalTouchEnd, clearGeraldHistory,
+            hostname, splashVisible, splashOpacity, currentTab, tabOffset, appTheme, toggleTheme, clips, allClipsCount, modals, isLive, currentUser, loginEmail, loginPass, loginError, showLoginPopup, geraldInput, geraldMessages, isGeraldTyping, talkToGerald, handleGeraldEnter, syncState, wipeState, logoutState, nukeState, isHeaderVisible, handleScroll, currentFilter, activeFilterLabel, isFilterMenuOpen, closeFilterMenu, applyFilter, parseMarkdown: (text) => parseMarkdownText(text, customEmotes.value), recentVods, currentVodIndex, nextVod, prevVod, customEmotes, showEmotePicker, insertEmote, toggleEmotes, toggleMinigames, closePickers, nukeCache, activeClipId, switchTab, playClip, selectedClip, showMinigames, runSync, disconnectTwitch, triggerAiMinigame, geminiStatus, sysStats, chatMessages, twitchChatToken, twitchAuthUrl, twitchUsername, sendTwitchChatMessage, handleSwipeStart, handleSwipeEnd, handleModalTouchStart, handleModalTouchMove, handleModalTouchEnd, clearGeraldHistory,
             logoSvg: (id) => `<svg viewBox="0 0 100 100"><defs><linearGradient id="grad-${id}" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stop-color="#9146FF"/><stop offset="100%" stop-color="#a970ff"/></linearGradient></defs><circle cx="50" cy="50" r="40" fill="url(#grad-${id})"/><path d="M 33 38 L 48 62 L 62 38 L 62 55 Q 62 65 69 64" fill="none" stroke="#ffffff" stroke-width="8" stroke-linecap="round" stroke-linejoin="round"/></svg>`,
             handleLogin: async () => { 
                 loginError.value = '';
