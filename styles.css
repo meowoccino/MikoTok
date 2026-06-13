@@ -60,14 +60,14 @@ body, html {
     position: fixed; top: 20px; left: 50%; transform: translateX(-50%) translateY(-150%);
     background: var(--card-bg); border: 1px solid var(--border-color); color: var(--text-main);
     font-weight: 500; font-size: 14px; padding: 18px 24px; border-radius: 20px;
-    z-index: 10000; transition: 0.4s; opacity: 0; box-shadow: 0 10px 40px rgba(0,0,0,0.1); width: 90%;
+    z-index: 10000; transition: transform 0.4s cubic-bezier(0.25, 1, 0.5, 1), opacity 0.4s; opacity: 0; box-shadow: 0 10px 40px rgba(0,0,0,0.1); width: 90%;
 }
 .toast-popup.show { transform: translateX(-50%) translateY(0); opacity: 1; }
 
 #splash-screen {
     position: fixed; inset: 0; background: var(--bg-color);
     display: flex; flex-direction: column; align-items: center; justify-content: center;
-    z-index: 99999; transition: opacity 0.3s ease-out; pointer-events: none;
+    z-index: 99999; transition: opacity 0.3s ease-out; pointer-events: none; will-change: opacity;
 }
 .splash-logo-container { position: relative; width: 120px; height: 120px; margin-bottom: 20px; display: flex; align-items: center; justify-content: center; }
 .splash-svg-wrapper { position: relative; z-index: 2; width: 80px; height: 80px; }
@@ -94,7 +94,12 @@ body, html {
 .theme-toggle-btn { background: transparent; border: none; color: var(--text-main); padding: 4px; display: flex; }
 
 .view-port { flex: 1; width: 100%; height: 100%; overflow: hidden; position: relative; display: flex; flex-direction: column; }
-.tab-slider { display: flex; width: 400%; height: 100%; transition: transform 0.25s cubic-bezier(0.25,1,0.5,1); will-change: transform; }
+.tab-slider { 
+    display: flex; width: 400%; height: 100%; 
+    transition: transform 0.25s cubic-bezier(0.25,1,0.5,1); 
+    will-change: transform; 
+    transform: translate3d(0,0,0); /* Hardware acceleration */
+}
 .tab-view { flex: 0 0 25%; width: 25%; height: 100%; position: relative; display: flex; flex-direction: column; overflow: hidden; }
 
 .scroll-area { flex: 1; width: 100%; overflow-y: auto; padding: 15px 20px 20px; }
@@ -129,7 +134,7 @@ body, html {
 .author-name { font-weight: 700; font-size: 14px; line-height: 1.3; margin-bottom: 4px; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
 .clip-stats { font-size: 11px; color: var(--text-muted); display: flex; justify-content: space-between; }
 
-.clip-modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.7); backdrop-filter: blur(10px); z-index: 3000; display: flex; justify-content: center; align-items: center; opacity: 0; pointer-events: none; transition: 0.3s; }
+.clip-modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.7); backdrop-filter: blur(10px); z-index: 3000; display: flex; justify-content: center; align-items: center; opacity: 0; pointer-events: none; transition: opacity 0.3s; will-change: opacity; }
 .clip-modal-overlay.open { opacity: 1; pointer-events: auto; }
 .clip-modal-content { position: relative; width: 100%; max-width: 460px; background: #000; border-radius: 16px; overflow: hidden; }
 .clip-frame-container { position: relative; width: 100%; padding-bottom: 56.25%; }
@@ -211,17 +216,17 @@ body, html {
 .nav-item.active, .nav-item.active-gerald { color: var(--primary) !important; }
 .nav-item.active .material-symbols-rounded, .nav-item.active-gerald .material-symbols-rounded { font-variation-settings: 'FILL' 1; }
 
-.sheet-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 6000; opacity: 0; pointer-events: none; transition: 0.3s; }
+.sheet-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 6000; opacity: 0; pointer-events: none; transition: opacity 0.3s; will-change: opacity; }
 .sheet-overlay.open { opacity: 1; pointer-events: auto; }
-.bottom-sheet { position: absolute; bottom: 0; width: 100%; max-width: 540px; background: var(--card-bg); border-radius: 24px 24px 0 0; padding: 20px 20px calc(20px + env(safe-area-inset-bottom, 0px)); transform: translateY(100%); transition: transform 0.3s; }
-.sheet-overlay.open .bottom-sheet { transform: translateY(0); }
+.bottom-sheet { position: absolute; bottom: 0; width: 100%; max-width: 540px; background: var(--card-bg); border-radius: 24px 24px 0 0; padding: 20px 20px calc(20px + env(safe-area-inset-bottom, 0px)); transform: translate3d(0, 100%, 0); transition: transform 0.3s cubic-bezier(0.25, 1, 0.5, 1); will-change: transform; }
+.sheet-overlay.open .bottom-sheet { transform: translate3d(0, 0, 0); }
 .sheet-option { width: 100%; background: transparent; border: none; color: var(--text-muted); padding: 14px; font-size: 13px; font-weight: 800; text-transform: uppercase; }
 .sheet-option.active { background: rgba(145,70,255,0.1); color: var(--primary); border: 1px solid rgba(145,70,255,0.2); border-radius: 12px; }
 
-.modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 6000; display: flex; justify-content: center; align-items: flex-end; opacity: 0; pointer-events: none; transition: 0.3s; }
+.modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 6000; display: flex; justify-content: center; align-items: flex-end; opacity: 0; pointer-events: none; transition: opacity 0.3s; will-change: opacity; }
 .modal-overlay.open { opacity: 1; pointer-events: auto; }
-.modal-content { background: var(--modal-bg); border-radius: 30px 30px 0 0; padding: 25px; border-top: 1px solid var(--border-color); width: 100%; max-width: 540px; transform: translateY(100%); transition: transform 0.3s; max-height: 90vh; overflow-y: auto; }
-.modal-overlay.open .modal-content { transform: translateY(0); }
+.modal-content { background: var(--modal-bg); border-radius: 30px 30px 0 0; padding: 25px; border-top: 1px solid var(--border-color); width: 100%; max-width: 540px; transform: translate3d(0, 100%, 0); transition: transform 0.3s cubic-bezier(0.25, 1, 0.5, 1); max-height: 90vh; overflow-y: auto; will-change: transform; }
+.modal-overlay.open .modal-content { transform: translate3d(0, 0, 0); }
 .drag-handle { width: 40px; height: 5px; background: var(--border-color); border-radius: 10px; margin: 0 auto 15px; }
 
 .input-box { width: 100%; background: var(--bg-color); border: 1px solid var(--border-color); border-radius: 12px; padding: 15px; color: var(--text-main); margin-bottom: 15px; outline: none; }
