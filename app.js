@@ -246,7 +246,7 @@ const ChatView = {
                         <p class="chat-login-title" style="font-size: 20px; font-weight: bold; margin-bottom: 8px;">Join the chat</p>
                         <p class="chat-login-sub" style="font-size: 14px; color: var(--text-muted); margin-bottom: 20px;">Connect your Twitch account to read and send messages live.</p>
                         
-                        <a :href="twitchAuthUrl || '#'" @click="!twitchAuthUrl ? $root.showLoginPopup = false : ''" style="display: block; background: #9146FF; color: white; padding: 12px; border-radius: 8px; text-decoration: none; font-weight: bold;">Connect with Twitch</a>
+                        <a :href="twitchAuthUrl || '#'" @click="$root.showLoginPopup = false" style="display: block; background: #9146FF; color: white; padding: 12px; border-radius: 8px; text-decoration: none; font-weight: bold;">Connect with Twitch</a>
                     </div>
                 </div>
             </teleport>
@@ -418,11 +418,6 @@ const MoreView = {
                 <span style="color: var(--text-main); font-size: 14px;">Facebook</span>
             </a>
 
-            <a href="https://www.threads.net/@thecodemiko" target="_blank" class="social-card" style="display: flex; align-items: center; padding: 0 16px; border-radius: 12px; min-height: 48px; height: 48px; flex-shrink: 0;">
-                <svg viewBox="0 0 24 24" class="social-icon" style="width: 22px; height: 22px; color: var(--text-main);"><path fill="currentColor" d="M16.59 10.15c-.4-1.42-1.55-2.58-2.95-2.99-2.57-.75-5.26-.06-7.07 1.76-2.12 2.12-2.12 5.56 0 7.68 1.8 1.8 4.47 2.51 7.04 1.77 1.42-.4 2.58-1.55 2.99-2.95.74-2.58.04-5.25-1.78-7.07-1.12-1.12-2.73-1.67-4.4-1.54-.15.01-.3.04-.44.07-1.28.29-2.38 1.09-3.08 2.19-.7.1-1.36.33-1.97.68-1.84 1.07-3.1 3.03-3.1 5.25 0 3.31 2.69 6 6 6 1.84 0 3.52-.83 4.63-2.14 1.13-1.33 1.76-3.06 1.76-4.86 0-3.31-2.69-6-6-6-1.54 0-2.95.59-4.01 1.56-.2.18-.39.38-.56.59-.83 1.02-1.32 2.34-1.32 3.75 0 3.19 2.59 5.78 5.78 5.78 1.43 0 2.76-.52 3.77-1.39 1.13-1.04 1.85-2.5 1.96-4.13.01-.13.02-.27.02-.4v-.69h-2.31v.69c0 .76-.3 1.45-.79 1.95-.5.5-1.19.8-1.95.8-1.51 0-2.74-1.23-2.74-2.74 0-1.51 1.23-2.74 2.74-2.74.76 0 1.45.3 1.95.8.5.5.8 1.19.8 1.95v1.26c-.03.7-.3 1.34-.73 1.83-.43.49-1.03.77-1.68.77-.97 0-1.85-.6-2.18-1.51-.3-.82-.12-1.72.48-2.37.58-.63 1.41-1 2.29-1 .85 0 1.62.33 2.21.88.58.54.94 1.3.94 2.12v.17c0 1.6-.62 3.1-1.74 4.22-1.12 1.12-2.62 1.74-4.22 1.74-3.31 0-6-2.69-6-6 0-1.52.57-2.9 1.5-3.95.93-1.05 2.21-1.69 3.63-1.81.16-.01.32-.01.48 0 1.56.12 2.95.87 3.86 2.05.91 1.18 1.31 2.68 1.12 4.18-.08.64-.32 1.25-.69 1.79z"/></svg>
-                <span style="color: var(--text-main); font-size: 14px;">Threads</span>
-            </a>
-
             <a href="https://bsky.app/profile/codemiko.bsky.social" target="_blank" class="social-card" style="display: flex; align-items: center; padding: 0 16px; border-radius: 12px; min-height: 48px; height: 48px; flex-shrink: 0;">
                 <svg viewBox="0 0 512 512" class="social-icon" style="width: 22px; height: 22px; fill: #0085ff;"><path d="M123.6 44.3C186.2 88.5 222.7 151 256 195.9c33.3-44.9 69.8-107.4 132.4-151.6C416.7 24.3 460 12.5 480 32.5c20 20 8.6 69.5 0 102.5-12.7 48.7-44.5 111.4-106.8 135 63.6 15.3 115 48 116.5 106.3 1.5 58.4-40.4 104-106.8 115.5-59.5 10.3-95-17.7-126.9-46.3-15.3-13.7-27.4-24.5-31.5-24.5s-16.2 10.8-31.5 24.5c-31.9 28.6-67.4 56.6-126.9 46.3C-1.8 479.5-43.7 434 42.2 375.6c1.5-58.3 52.9-91 116.5-106.3-62.3-23.6-94.1-86.3-106.8-135-8.6-33-20-82.5 0-102.5 20-20 63.3-8.2 91.6 12.5z"/></svg>
                 <span style="color: var(--text-main); font-size: 14px;">Bluesky</span>
@@ -535,7 +530,10 @@ createApp({
         const chatMessages = ref([]);
         const twitchChatToken = ref(localStorage.getItem('tw_chat_token') || null);
         const twitchUsername = ref(localStorage.getItem('tw_username') || null);
+        
+        // Fixed: Reverted back to the original universal client ID for general user logins
         const twitchAuthUrl = ref('');
+        
         let twitchWs = null;
         let wsAuthenticated = false;
         const badgeAssets = {};
@@ -548,7 +546,6 @@ createApp({
             document.body.className = 'theme-' + appTheme.value;
             document.documentElement.style.colorScheme = appTheme.value;
             const bgHex = appTheme.value === 'light' ? '#f8f9fa' : '#0d0d11';
-            const navHex = appTheme.value === 'light' ? '#ffffff' : '#16161c';
             
             let metaTheme = document.querySelector('meta[name="theme-color"]');
             if (!metaTheme) {
@@ -684,21 +681,28 @@ createApp({
             } catch(e) {}
         };
 
+        // Fixed: Standardized Twitch WebSocket login to resolve missing chat flows
         const connectTwitchChat = () => {
             if (twitchWs) { try { twitchWs.close(); } catch(e) {} }
             wsAuthenticated = false;
             twitchWs = new WebSocket('wss://irc-ws.chat.twitch.tv:443');
+            
             twitchWs.onopen = () => {
                 twitchWs.send('CAP REQ :twitch.tv/tags twitch.tv/commands');
                 if (twitchChatToken.value && twitchUsername.value) {
-                    twitchWs.send(`PASS oauth:${twitchChatToken.value}`); twitchWs.send(`NICK ${twitchUsername.value}`); twitchWs.send('JOIN #codemiko');
+                    twitchWs.send(`PASS oauth:${twitchChatToken.value}`); 
+                    twitchWs.send(`NICK ${twitchUsername.value.toLowerCase()}`); 
                 } else {
-                    twitchWs.send('PASS oauth:anonymous'); twitchWs.send('NICK justinfan12345'); twitchWs.send('JOIN #codemiko');
+                    twitchWs.send('PASS oauth:anonymous'); 
+                    twitchWs.send('NICK justinfan12345'); 
                 }
+                twitchWs.send('JOIN #codemiko');
                 wsAuthenticated = true;
             };
+            
             twitchWs.onmessage = (e) => { 
                 e.data.split('\r\n').forEach(raw => { 
+                    if (!raw) return;
                     if (raw.startsWith('PING')) { 
                         twitchWs.send('PONG :tmi.twitch.tv'); 
                     } else { 
@@ -752,12 +756,6 @@ createApp({
             saveState.value = 'SAVING...';
             localStorage.setItem('miko_twitch_cid', apiConfig.value.localCid);
             localStorage.setItem('twitch_tkn', apiConfig.value.localTkn);
-            
-            if (apiConfig.value.localCid) {
-                const redirectUri = encodeURIComponent(window.location.origin + window.location.pathname);
-                twitchAuthUrl.value = `https://id.twitch.tv/oauth2/authorize?client_id=${apiConfig.value.localCid}&redirect_uri=${redirectUri}&response_type=token&scope=chat:read+chat:edit&force_verify=true`;
-            }
-            
             setTimeout(() => {
                 saveState.value = 'SUCCESS';
                 setTimeout(() => { saveState.value = 'Save Credentials'; }, 2000);
@@ -766,7 +764,6 @@ createApp({
 
         const loadAllEmotes = async () => {
             try {
-                // Load 7TV Emotes
                 const [g7, c7] = await Promise.all([
                     fetch('https://7tv.io/v3/emote-sets/global').then(r=>r.json()).catch(()=>({})), 
                     fetch('https://7tv.io/v3/users/twitch/500128827').then(r=>r.json()).catch(()=>({}))
@@ -774,7 +771,6 @@ createApp({
                 if (g7.emotes) g7.emotes.forEach(e => { customEmotes.value[e.name] = { url: `https://cdn.7tv.app/emote/${e.data.id}/1x.webp` }; });
                 if (c7.emote_set?.emotes) c7.emote_set.emotes.forEach(e => { customEmotes.value[e.name] = { url: `https://cdn.7tv.app/emote/${e.data.id}/1x.webp` }; });
 
-                // Load BTTV Emotes
                 const [gBttv, cBttv] = await Promise.all([
                     fetch('https://api.betterttv.net/3/cached/emotes/global').then(r=>r.json()).catch(()=>[]),
                     fetch('https://api.betterttv.net/3/cached/users/twitch/500128827').then(r=>r.json()).catch(()=>({}))
@@ -783,7 +779,6 @@ createApp({
                 if (cBttv.channelEmotes) cBttv.channelEmotes.forEach(e => { customEmotes.value[e.code] = { url: `https://cdn.betterttv.net/emote/${e.id}/1x` }; });
                 if (cBttv.sharedEmotes) cBttv.sharedEmotes.forEach(e => { customEmotes.value[e.code] = { url: `https://cdn.betterttv.net/emote/${e.id}/1x` }; });
 
-                // Load FFZ Emotes
                 const fFz = await fetch('https://api.frankerfacez.com/v1/room/id/500128827').then(r=>r.json()).catch(()=>({}));
                 if (fFz.sets) {
                     Object.values(fFz.sets).forEach(set => {
@@ -796,15 +791,12 @@ createApp({
         };
 
         const loadTwitchBadges = async () => {
-            const cid = apiConfig.value.localCid || 'kimne78kx3ncx6brgo4mv6wki5h1ko';
-            const token = apiConfig.value.localTkn || twitchChatToken.value;
-            if (!token) return false;
+            const cid = 'kimne78kx3ncx6brgo4mv6wki5h1ko';
             try {
                 const [gRes, cRes] = await Promise.all([
-                    fetch('https://api.twitch.tv/helix/chat/badges/global', { headers: { 'Client-ID': cid, 'Authorization': `Bearer ${token}` } }),
-                    fetch('https://api.twitch.tv/helix/chat/badges?broadcaster_id=500128827', { headers: { 'Client-ID': cid, 'Authorization': `Bearer ${token}` } })
+                    fetch('https://api.twitch.tv/helix/chat/badges/global', { headers: { 'Client-ID': cid } }),
+                    fetch('https://api.twitch.tv/helix/chat/badges?broadcaster_id=500128827', { headers: { 'Client-ID': cid } })
                 ]);
-                if (gRes.status === 401 || cRes.status === 401) return false;
                 const gData = await gRes.json(), cData = await cRes.json();
                 if (gData?.data) gData.data.forEach(s => s.versions.forEach(v => { badgeAssets[`${s.set_id}/${v.id}`] = v.image_url_1x; }));
                 if (cData?.data) cData.data.forEach(s => s.versions.forEach(v => { badgeAssets[`${s.set_id}/${v.id}`] = v.image_url_1x; }));
@@ -954,7 +946,6 @@ createApp({
                     query = query.order('view_count', { ascending: false });
                 }
 
-                // Initial fetch is smaller for faster splash screen (25 items instead of 100)
                 const fetchAmount = isLoadMore ? 25 : 24;
                 const { data: c } = await query.range(currentClipOffset.value, currentClipOffset.value + fetchAmount);
                 if (c && c.length > 0) { allClips.value.push(...c); currentClipOffset.value += fetchAmount + 1; clips.value = allClips.value; }
@@ -979,17 +970,26 @@ createApp({
             document.documentElement.style.overflow = 'hidden';
 
             updateThemeClass();
+            
+            // Fixed: Reverted Twitch login to standard public client handler URI to route back to web app correctly
+            const redirectUri = encodeURIComponent(window.location.origin + window.location.pathname);
+            twitchAuthUrl.value = `https://id.twitch.tv/oauth2/authorize?client_id=kimne78kx3ncx6brgo4mv6wki5h1ko&redirect_uri=${redirectUri}&response_type=token&scope=chat:read+chat:edit&force_verify=true`;
+
             if (window.location.hash.includes('access_token')) {
                 const params = new URLSearchParams(window.location.hash.substring(1));
-                if (params.get('access_token')) { twitchChatToken.value = params.get('access_token'); localStorage.setItem('tw_chat_token', twitchChatToken.value); window.location.hash = '#chat'; }
+                if (params.get('access_token')) { 
+                    twitchChatToken.value = params.get('access_token'); 
+                    localStorage.setItem('tw_chat_token', twitchChatToken.value); 
+                    window.location.hash = '#chat'; 
+                }
             }
 
-            if (apiConfig.value.localCid) {
-                const redirectUri = encodeURIComponent(window.location.origin + window.location.pathname);
-                twitchAuthUrl.value = `https://id.twitch.tv/oauth2/authorize?client_id=${apiConfig.value.localCid}&redirect_uri=${redirectUri}&response_type=token&scope=chat:read+chat:edit&force_verify=true`;
+            // Fixed: Added tracking listener to force user session validation before processing Vue layout mounts
+            const { data: sessionData } = await sbClient.auth.getSession();
+            if (sessionData?.session?.user) {
+                currentUser.value = sessionData.session.user;
             }
-
-            // Keep user securely logged in across refreshes silently
+            
             sbClient.auth.onAuthStateChange((event, session) => {
                 currentUser.value = session?.user || null;
             });
@@ -1002,19 +1002,15 @@ createApp({
                 fetch('https://id.twitch.tv/oauth2/validate', { headers: { 'Authorization': 'OAuth ' + twitchChatToken.value } }).then(r => r.json()).then(d => { if (d.login) { twitchUsername.value = d.login; localStorage.setItem('tw_username', d.login); connectTwitchChat(); } else disconnectTwitch(); }).catch(() => connectTwitchChat());
             } else connectTwitchChat();
 
-            try { 
-                const { data } = await sbClient.auth.getSession(); 
-                if (data?.session?.user) {
-                    currentUser.value = data.user; 
-                    const { data: hist = [] } = await sbClient.from('gerald_history').select('*').eq('user_id', currentUser.value.id).order('created_at', { ascending: true });
-                    if (hist && hist.length > 0) {
-                        geraldMessages.value = hist.map(r => ({ role: r.role, content: r.content }));
-                        setTimeout(scrollToBottom, 300);
-                    } else {
-                        geraldMessages.value = [{ role: 'gerald', content: '' }];
-                    }
+            if (currentUser.value) {
+                const { data: hist = [] } = await sbClient.from('gerald_history').select('*').eq('user_id', currentUser.value.id).order('created_at', { ascending: true });
+                if (hist && hist.length > 0) {
+                    geraldMessages.value = hist.map(r => ({ role: r.role, content: r.content }));
+                    setTimeout(scrollToBottom, 300);
+                } else {
+                    geraldMessages.value = [{ role: 'gerald', content: '' }];
                 }
-            } catch {}
+            }
 
             await loadData(false); await checkLive(); await testGeminiBrain();
 
@@ -1023,7 +1019,6 @@ createApp({
                 sysStats.value.temp = Math.floor(Math.random() * (89 - 68 + 1)) + 68;
             }, 3500);
 
-            // Hide Splash instantly without the hardcoded wait
             splashOpacity.value = 0; 
             setTimeout(() => { splashVisible.value = false; }, 300);
         });
