@@ -189,7 +189,7 @@ const ChatView = {
                 <button class="public-disconnect-btn" @click="$emit('disconnect-public-twitch')">Disconnect</button>
             </div>
 
-            <div class="twitch-chat-list" id="twitch-chat-list" @click="closePicker" style="position: absolute; top: 40px; left: 0; right: 0; bottom: calc(80px + 10px + env(safe-area-inset-bottom, 0px)); overflow-y: auto; overscroll-behavior-y: contain; -webkit-overflow-scrolling: touch; padding: 10px 12px; display: flex; flex-direction: column;">
+            <div class="twitch-chat-list" id="twitch-chat-list" @click="closePicker" style="position: absolute; top: 40px; left: 0; right: 0; bottom: calc(80px + 10px + env(safe-area-inset-bottom, 0px)); overflow-y: auto; overscroll-behavior-y: contain; -webkit-overflow-scrolling: touch; padding: 10px 12px; display: flex; flex-direction: column;>
                 <div style="flex: 1 1 auto; min-height: 0;"></div>
                 
                 <div v-if="chatMessages.length === 0" class="chat-empty-state">
@@ -214,7 +214,7 @@ const ChatView = {
                 </div>
             </div>
 
-            <div class="custom-chat-input-area" style="position: absolute; bottom: calc(45px + env(safe-area-inset-bottom, 0px)); left:0; right:0; z-index: 100; padding: 4px 12px; height: 44px; background: var(--bg-color);">
+            <div class="custom-chat-input-area" style="position: absolute; bottom: calc(80px + env(safe-area-inset-bottom, 0px)); left:0; right:0; z-index: 100; padding: 4px 12px; height: 44px; background: var(--bg-color);">
                 <button class="chat-icon-btn" :class="{ 'chat-icon-active': showPicker }" @click.stop="togglePicker"><span class="material-symbols-rounded" style="font-size:22px;">mood</span></button>
                 <input type="text" class="custom-chat-input" placeholder="Send a message…" v-model="localInput" @keydown.enter="handleSend" @focus="handleInteraction" :readonly="!isLoggedIn">
                 <button class="chat-send-btn" @click="handleSend" :disabled="!isLoggedIn || !localInput.trim()"><span class="material-symbols-rounded" style="font-size:20px;">send</span></button>
@@ -235,7 +235,7 @@ const ChatView = {
 
 const MoreView = {
     template: `
-        <div class="more-container safe-top-padding" style="position: absolute; inset: 0; display: flex; flex-direction: column; height: calc(100% - max(env(safe-area-inset-top, 24px), 24px)); padding-left: 16px; padding-right: 16px; gap: 8px; overflow-y: auto;">
+        <div class="more-container safe-top-padding" style="position: absolute; inset: 0; display: flex; flex-direction: column; padding-left: 16px; padding-right: 16px; gap: 8px; overflow-y: auto;">
             
             <a href="https://throne.com/codemiko" target="_blank" class="social-card" style="display: flex; align-items: center; padding: 0 16px; border-radius: 12px; min-height: 48px; height: 48px; background: var(--card-bg); text-decoration: none; flex-shrink: 0; margin-top: 10px;">
                 <div style="display: flex; align-items: center; gap: 12px; width: 100%;">
@@ -355,10 +355,10 @@ const GeraldView = {
     components: { GeraldMinigames },
     props: ['currentTab', 'geraldMessages', 'isGeraldTyping', 'geraldInput', 'showEmotePicker', 'showMinigames', 'customEmotes', 'geminiStatus', 'sysStats'],
     methods: {
-        getEmoteUrl(emote) { return emote.url || \`https://cdn.discordapp.com/emojis/\${emote.id}.\${emote.animated ? 'gif' : 'png'}?size=44\`; },
+        getEmoteUrl(emote) { return emote.url || `https://cdn.discordapp.com/emojis/${emote.id}.${emote.animated ? 'gif' : 'png'}?size=44`; },
         formatMarkdown(text) { return parseMarkdownText(text, this.customEmotes); }
     },
-    template: \`
+    template: `
         <div class="gerald-container" style="position: absolute; inset: 0; display: flex; flex-direction: column; overflow: hidden;">
             <div class="gerald-header" @click="$emit('close-pickers')" style="flex-shrink: 0; z-index: 50; border-bottom: none !important; box-shadow: none !important;">
                 <div class="os-top-bar">
@@ -413,12 +413,12 @@ const GeraldView = {
                 </div>
             </div>
         </div>
-    \`
+    `
 };
 
 const HomeView = {
     props: ['currentTab', 'currentVodIndex', 'recentVods', 'isLive', 'hostname', 'clips', 'activeFilterLabel', 'optimizeTwitchImg', 'formatViews', 'formatDate', 'activeClipId'],
-    template: \`
+    template: `
         <div style="flex: 1; overflow-y: auto; overscroll-behavior-y: contain; -webkit-overflow-scrolling: touch; padding-bottom: calc(80px + 20px + env(safe-area-inset-bottom, 0px));">
             <div class="hero-section">
                 <div class="header-controls" style="margin-bottom:12px; display:flex;">
@@ -459,7 +459,7 @@ const HomeView = {
                 </div>
             </div>
         </div>
-    \`
+    `
 };
 
 const { createApp, ref, onMounted, nextTick, computed } = Vue;
@@ -524,7 +524,7 @@ createApp({
         const switchTab = (tab) => {
             currentTab.value = tab;
             tabOffset.value = tabOrder.indexOf(tab) * -25;
-            window.history.pushState(null, '', \`#\${tab}\`);
+            window.history.pushState(null, '', `#${tab}`);
             if (tab === 'chat') setTimeout(() => { const l = document.getElementById('twitch-chat-list'); if (l) l.scrollTop = l.scrollHeight; }, 150);
             if (tab === 'gerald') setTimeout(scrollToBottom, 150);
         };
@@ -581,7 +581,7 @@ createApp({
                 const actualKey = emoteKeys.find(k => k.toLowerCase() === cleanWord.toLowerCase());
                 if (actualKey) { 
                     const match = customEmotes.value[actualKey];
-                    if (match && match.url) words[i] = \`<img src="\${match.url}" class="chat-emote-img" title="\${actualKey}">\`; 
+                    if (match && match.url) words[i] = `<img src="${match.url}" class="chat-emote-img" title="${actualKey}">`; 
                 }
             }
             return words.join(' ');
@@ -622,7 +622,7 @@ createApp({
                 const chars = [...text];
                 replacements.forEach(({ s, en, id }) => {
                     const emoteName = chars.slice(s, en + 1).join('');
-                    chars.splice(s, en - s + 1, \`<img src="https://static-cdn.jtvnw.net/emoticons/v2/\${id}/default/dark/1.0" class="chat-emote-img" title="\${emoteName}">\`);
+                    chars.splice(s, en - s + 1, `<img src="https://static-cdn.jtvnw.net/emoticons/v2/${id}/default/dark/1.0" class="chat-emote-img" title="${emoteName}">`);
                 });
                 html = chars.join('');
             } else {
@@ -675,7 +675,7 @@ createApp({
             twitchWs.onopen = () => {
                 twitchWs.send('CAP REQ :twitch.tv/tags twitch.tv/commands');
                 if (twitchChatToken.value && twitchUsername.value) {
-                    twitchWs.send(\`PASS oauth:\${twitchChatToken.value}\`); twitchWs.send(\`NICK \${twitchUsername.value}\`); twitchWs.send('JOIN #codemiko');
+                    twitchWs.send(`PASS oauth:${twitchChatToken.value}`); twitchWs.send(`NICK ${twitchUsername.value}`); twitchWs.send('JOIN #codemiko');
                 } else {
                     twitchWs.send('PASS oauth:anonymous'); twitchWs.send('NICK justinfan12345'); twitchWs.send('JOIN #codemiko');
                 }
@@ -709,7 +709,7 @@ createApp({
 
         const sendTwitchChatMessage = (msg) => {
             if (!msg || !twitchWs || !wsAuthenticated) return;
-            twitchWs.send(\`PRIVMSG #codemiko :\${msg}\`);
+            twitchWs.send(`PRIVMSG #codemiko :${msg}`);
             const ts = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
             
             const htmlMsg = processEmotes(msg);
@@ -759,13 +759,13 @@ createApp({
             if (!token) return false;
             try {
                 const [gRes, cRes] = await Promise.all([
-                    fetch('https://api.twitch.tv/helix/chat/badges/global', { headers: { 'Client-ID': cid, 'Authorization': \`Bearer \${token}\` } }),
-                    fetch('https://api.twitch.tv/helix/chat/badges?broadcaster_id=500128827', { headers: { 'Client-ID': cid, 'Authorization': \`Bearer \${token}\` } })
+                    fetch('https://api.twitch.tv/helix/chat/badges/global', { headers: { 'Client-ID': cid, 'Authorization': `Bearer ${token}` } }),
+                    fetch('https://api.twitch.tv/helix/chat/badges?broadcaster_id=500128827', { headers: { 'Client-ID': cid, 'Authorization': `Bearer ${token}` } })
                 ]);
                 if (gRes.status === 401 || cRes.status === 401) return false;
                 const gData = await gRes.json(), cData = await cRes.json();
-                if (gData?.data) gData.data.forEach(s => s.versions.forEach(v => { badgeAssets[\` \${s.set_id}/\${v.id}\`] = v.image_url_1x; }));
-                if (cData?.data) cData.data.forEach(s => s.versions.forEach(v => { badgeAssets[\` \${s.set_id}/\${v.id}\`] = v.image_url_1x; }));
+                if (gData?.data) gData.data.forEach(s => s.versions.forEach(v => { badgeAssets[` ${s.set_id}/${v.id}`] = v.image_url_1x; }));
+                if (cData?.data) cData.data.forEach(s => s.versions.forEach(v => { badgeAssets[` ${s.set_id}/${v.id}`] = v.image_url_1x; }));
                 return true;
             } catch { return false; }
         };
@@ -776,8 +776,8 @@ createApp({
                     fetch('https://7tv.io/v3/emote-sets/global'), fetch('https://7tv.io/v3/users/twitch/500128827')
                 ]);
                 const gData = await gRes.json(), cData = await cRes.json();
-                if (gData.emotes) gData.emotes.forEach(e => { customEmotes.value[e.name] = { url: \`https://cdn.7tv.app/emote/\${e.data.id}/1x.webp\` }; });
-                if (cData.emote_set?.emotes) cData.emote_set.emotes.forEach(e => { customEmotes.value[e.name] = { url: \`https://cdn.7tv.app/emote/\${e.data.id}/1x.webp\` }; });
+                if (gData.emotes) gData.emotes.forEach(e => { customEmotes.value[e.name] = { url: `https://cdn.7tv.app/emote/${e.data.id}/1x.webp` }; });
+                if (cData.emote_set?.emotes) cData.emote_set.emotes.forEach(e => { customEmotes.value[e.name] = { url: `https://cdn.7tv.app/emote/${e.data.id}/1x.webp` }; });
             } catch {}
         };
 
@@ -792,7 +792,7 @@ createApp({
             geraldInput.value = "";
             closePickers();
             
-            const logMsg = \`**[EVENT: \${gameObj.label} Protocol Activated]**\`;
+            const logMsg = `**[EVENT: ${gameObj.label} Protocol Activated]**`;
             geraldMessages.value.push({ role: 'user', content: logMsg });
             
             if (currentUser.value) {
@@ -926,7 +926,7 @@ createApp({
             try {
                 const res = await fetch('https://decapi.me/twitch/uptime/codemiko');
                 isLive.value = !(await res.text()).includes('offline');
-                const gql = await fetch('https://gql.twitch.tv/gql', { method: 'POST', headers: { 'Client-ID': 'kimne78kx3ncx6brgo4mv6wki5h1ko' }, body: JSON.stringify({ query: \`query{user(login:"codemiko"){videos(first:10){edges{node{id createdAt}}\}\}\}}\` }) });
+                const gql = await fetch('https://gql.twitch.tv/gql', { method: 'POST', headers: { 'Client-ID': 'kimne78kx3ncx6brgo4mv6wki5h1ko' }, body: JSON.stringify({ query: `query{user(login:"codemiko"){videos(first:10){edges{node{id createdAt}}\}\}\}}` }) });
                 const edges = (await gql.json()).data.user.videos.edges;
                 recentVods.value = edges.map(e => ({ id: e.node.id, date: new Date(e.node.createdAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric' }).toUpperCase() }));
                 if (currentVodIndex.value === 0 || currentVodIndex.value === -1) currentVodIndex.value = isLive.value ? -1 : 0;
