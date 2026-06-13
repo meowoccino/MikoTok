@@ -732,20 +732,9 @@ createApp({
 
         const sendTwitchChatMessage = (msg) => {
             if (!msg || !twitchWs || !wsAuthenticated) return;
+            // The Optimistic local echo has been completely removed to prevent color ghosting. 
+            // The server will echo your true message back instantly via WebSocket!
             twitchWs.send(`PRIVMSG #codemiko :${msg}`);
-            const ts = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-            
-            const htmlMsg = parseMarkdownText(msg, customEmotes.value);
-
-            chatMessages.value.push({
-                timestamp: ts,
-                username: twitchUsername.value || 'You',
-                html: htmlMsg,
-                color: '#9146FF',
-                badges: myTwitchBadges.value,
-                isSelf: true
-            });
-            scrollChatToBottom();
         };
 
         const disconnectTwitch = () => {
@@ -768,6 +757,34 @@ createApp({
                     });
                 }
             } catch (e) { console.error("Database cache pipeline failed.", e); }
+        };
+
+        const loadTwitchBadges = async (token) => {
+            if (!token) return;
+            try {
+                const headers = { 
+                    'Authorization': `Bearer ${token}`, 
+                    'Client-Id': TWITCH_PUBLIC_CLIENT_ID 
+                };
+                
+                // Fetch Global Badges (Mods, VIP, Turbo)
+                const globalRes = await fetch('https://api.twitch.tv/helix/chat/badges/global', { headers });
+                const globalData = await globalRes.json();
+                if (globalData.data) {
+                    globalData.data.forEach(set => {
+                        set.versions.forEach(v => { badgeAssets[`${set.set_id}/${v.id}`] = v.image_url_1x; });
+                    });
+                }
+                
+                // Fetch CodeMiko Specific Badges (Subs, Bits) directly from Twitch
+                const channelRes = await fetch('https://api.twitch.tv/helix/chat/badges?broadcaster_id=500128827', { headers });
+                const channelData = await channelRes.json();
+                if (channelData.data) {
+                    channelData.data.forEach(set => {
+                        set.versions.forEach(v => { badgeAssets[`${set.set_id}/${v.id}`] = v.image_url_1x; });
+                    });
+                }
+            } catch (e) { console.error('Dynamic Twitch badge fetch failed:', e); }
         };
 
         const testGeminiBrain = async () => {
@@ -993,7 +1010,16 @@ createApp({
             if (twitchChatToken.value) {
                 fetch('https://id.twitch.tv/oauth2/validate', { headers: { 'Authorization': 'OAuth ' + twitchChatToken.value } })
                     .then(r => r.json())
-                    .then(d => { if (d.login) { twitchUsername.value = d.login; localStorage.setItem('tw_username', d.login); connectTwitchChat(); } else disconnectTwitch(); })
+                    .then(d => { 
+                        if (d.login) { 
+                            twitchUsername.value = d.login; 
+                            localStorage.setItem('tw_username', d.login); 
+                            
+                            // Let's grab every single badge straight from Twitch!
+                            loadTwitchBadges(twitchChatToken.value).then(() => connectTwitchChat()); 
+                            
+                        } else disconnectTwitch(); 
+                    })
                     .catch(() => connectTwitchChat());
             } else connectTwitchChat();
 
