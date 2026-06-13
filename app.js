@@ -7,7 +7,7 @@ const parseMarkdownText = (text, emotesMap) => {
     const emoteKeys = Object.keys(emotesMap || {});
     for (let i = 0; i < words.length; i++) {
         const clean = words[i].replace(/^:|:$/g, ''); 
-        const actualKey = emoteKeys.find(k => k.toLowerCase() === cleanWord.toLowerCase());
+        const actualKey = emoteKeys.find(k => k.toLowerCase() === clean.toLowerCase());
         if (actualKey) {
             const m = emotesMap[actualKey];
             const imgSrc = m.url || 'https://cdn.discordapp.com/emojis/' + m.id + '.png';
@@ -220,8 +220,8 @@ const ChatView = {
                 <button class="chat-send-btn" @click="handleSend" :disabled="!isLoggedIn || !localInput.trim()"><span class="material-symbols-rounded" style="font-size:20px;">send</span></button>
             </div>
 
-            <teleport to="#app-container" v-if="!$root.splashVisible">
-                <div class="chat-login-popup-overlay" :class="{ open: $root.showLoginPopup }" @click.self="$root.showLoginPopup = false" style="position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; background: rgba(0,0,0,0.8); z-index: 99999;">
+            <teleport to="#app-container">
+                <div v-if="$root.showLoginPopup" class="chat-login-popup-overlay" @click.self="$root.showLoginPopup = false" style="position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; background: rgba(0,0,0,0.8); z-index: 99999; backdrop-filter: blur(5px);">
                     <div class="chat-login-card" style="background: var(--card-bg); padding: 24px; border-radius: 16px; width: 85%; max-width: 340px; text-align: center; position: relative; box-shadow: 0 10px 30px rgba(0,0,0,0.3);">
                         <button @click="$root.showLoginPopup = false" style="position: absolute; top: 12px; right: 12px; background: transparent; border: none; color: var(--text-muted); font-size: 24px; line-height:1; cursor: pointer;">×</button>
                         <svg viewBox="0 0 24 24" class="chat-login-icon" style="width: 48px; height: 48px; margin: 0 auto 16px; color: #9146FF;"><path fill="currentColor" d="M11.571 4.714h1.715v5.143H11.57zm4.715 0H18v5.143h-1.714zM6 0L1.714 4.286v15.428h5.143V24l4.286-4.286h3.428L22.286 12V0zm14.571 11.143l-3.428 3.428h-3.429l-3 3v-3H6.857V1.714h13.714Z"/></svg>
@@ -361,7 +361,7 @@ const GeraldView = {
         formatMarkdown(text) { return parseMarkdownText(text, this.customEmotes); }
     },
     template: `
-        <div class="gerald-container" style="display: flex; flex-direction: column; height: 100%; width: 100%; background: var(--bg-color); padding-top: 12px;">
+        <div class="gerald-container" style="display: flex; flex-direction: column; height: 100%; width: 100%; background: var(--bg-color); padding-top: max(env(safe-area-inset-top, 12px), 12px);">
             <div class="gerald-header" @click="$emit('close-pickers')" style="flex-shrink: 0; padding: 12px 16px; background: var(--bg-color); z-index: 10;">
                 <div class="os-top-bar">
                     <span class="os-title">GERALD_OS v2</span>
