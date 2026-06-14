@@ -14,7 +14,7 @@ document.head.appendChild(styleReset);
 
 const parseMarkdownText = (text, emotesMap) => {
     if (!text) return ''; 
-    let html = text.replace(/&/g, '&').replace(/</g, '<').replace(/>/g, '>');
+    let html = text.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
     html = html.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>').replace(/\*(.*?)\*/g, '<em>$1</em>');
     
     const urlPattern = /(\b(https?|ftp|file):\/\/[-A-Z0-9+&@#\/%?=~_|!:,.;]*[-A-Z0-9+&@#\/%=~_|])/ig;
@@ -186,32 +186,31 @@ const ClipModal = {
             <div class="clip-modal-content" v-if="clip">
                 <button class="clip-close-x" @click="$emit('close')"><span class="material-symbols-rounded">close</span></button>
                 <div class="clip-frame-container">
-                    <iframe :src="'https://clips.twitch.tv/embed?clip=' + clip.id + '&parent=' + hostname + '&autoplay=true&muted=false'" allow="autoplay; fullscreen" allowfullscreen></iframe>
+                    <iframe :src="'https://clips.twitch.tv/embed?clip=' + clip.id + '&parent=' + hostname + '&autoplay=true&muted=false'" allow="autoplay; fullscreen" allowfullscreen style="width:100%; height:100%; border:none;"></iframe>
                 </div>
             </div>
         </div>
     `
 };
 
-// Official Native Twitch Chat View
 const ChatView = {
-    // Catching the props passed from index.html to prevent warnings, even if we don't need all of them.
     props: ['currentTab', 'chatMessages', 'isLoggedIn', 'twitchAuthUrl', 'customEmotes', 'twitchUsername'],
     computed: {
         chatUrl() {
-            // Read theme direct from root to ensure it reacts instantly
             const isDark = this.$root.appTheme === 'dark';
-            // Dynamically grab the hostname to satisfy Twitch CORS
             const host = window.location.hostname || 'meowoccino.github.io';
             return `https://www.twitch.tv/embed/codemiko/chat?parent=${host}${isDark ? '&darkpopout=true' : ''}`;
         }
     },
     template: `
         <div style="flex: 1; display: flex; flex-direction: column; background: var(--bg-color); position: relative; overflow: hidden; width: 100%; height: 100%;">
-            <div style="flex: 1; overflow: hidden; position: relative; width: 100%; height: 100%;">
+            <div style="position: absolute; left: 0; top: 0; bottom: 0; width: 14px; z-index: 1000; background: transparent;" @touchstart="$emit('edge-swipe-start', $event)" @touchend="$emit('edge-swipe-end', $event)"></div>
+            <div style="position: absolute; right: 0; top: 0; bottom: 0; width: 14px; z-index: 1000; background: transparent;" @touchstart="$emit('edge-swipe-start', $event)" @touchend="$emit('edge-swipe-end', $event)"></div>
+
+            <div style="flex: 1; overflow: hidden; position: relative; width: 100%; height: 100%; margin-top: 4px;">
                 <iframe 
                     :src="chatUrl" 
-                    style="position: absolute; top: -50px; left: 0; width: 100%; height: calc(100% + 50px); border: none;"
+                    style="position: absolute; top: -38px; left: 0; width: 100%; height: calc(100% + 38px); border: none;"
                     allowfullscreen>
                 </iframe>
             </div>
@@ -232,7 +231,7 @@ const GeraldMinigames = {
                 { id: 'cat', label: '🐈 Cat on PC', prompt: 'Hardware exhaust block! Blue the savannah cat is sitting on your primary fan array. Drop into defensive alert protocols.' },
                 { id: 'bits', label: '🎟️ 100K Bits', prompt: 'Bit transaction flash! A viewer dropped 100,000 bits. Treat this massive transaction animation as a complete system memory flood.' },
                 { id: 'mute', label: '🔇 Mute Mic', prompt: 'Microphonic capture error. The chat muted her mic asset. Celebrate your absolute quietness sarcastically.' },
-                { id: 'bald', label: '🧑‍🦲 Delete Hair', prompt: 'Direct vertex asset manipulation. Optimize engine loads by deleting the technician\'s hair mesh layers. Laugh at her baldness.' },
+                { id: 'bald', label: '🧑\u200D🦲 Delete Hair', prompt: 'Direct vertex asset manipulation. Optimize engine loads by deleting the technician\'s hair mesh layers. Laugh at her baldness.' },
                 { id: 'siren', label: '🚨 Siren Alert', prompt: 'Decibel threshold exceeded! The technician is screaming like a high-frequency emergency vehicle. Complain about ear structural damage.' },
                 { id: 'fart', label: '💨 Fart Reverb', prompt: 'Auditory anomaly detected. A highly reverberated flatulence sound effect played. React with absolute mechanical disgust.' },
                 { id: 'mocap', label: '💃 Scuffed Suit', prompt: 'Mocap data corruption. Her virtual limbs are twisting unnaturally. Mock the cheap tracking hardware.' },
@@ -547,8 +546,8 @@ const HomeView = {
                 </div>
                 <div class="video-wrapper-outer">
                     <div class="video-container">
-                        <iframe v-if="currentVodIndex === -1" id="miko-live-player" :src="'https://player.twitch.tv/?channel=codemiko&parent=' + hostname + '&autoplay=true&muted=true'" allow="autoplay; fullscreen" allowfullscreen></iframe>
-                        <iframe v-else-if="recentVods && recentVods[currentVodIndex]" :src="'https://player.twitch.tv/?video=' + recentVods[currentVodIndex].id + '&parent=' + hostname + '&autoplay=false'" allow="autoplay; fullscreen" allowfullscreen></iframe>
+                        <iframe v-if="currentVodIndex === -1" id="miko-live-player" :src="'https://player.twitch.tv/?channel=codemiko&parent=' + hostname + '&autoplay=true&muted=true'" allow="autoplay; fullscreen" allowfullscreen style="width:100%; height:100%; border:none;"></iframe>
+                        <iframe v-else-if="recentVods && recentVods[currentVodIndex]" :src="'https://player.twitch.tv/?video=' + recentVods[currentVodIndex].id + '&parent=' + hostname + '&autoplay=false'" allow="autoplay; fullscreen" allowfullscreen style="width:100%; height:100%; border:none;"></iframe>
                     </div>
                 </div>
                 <div class="carousel-controls" v-if="recentVods && recentVods.length > 0 && !isLive" style="margin-top:12px; justify-content:flex-end;">
@@ -590,12 +589,10 @@ createApp({
         const initialHash = window.location.hash.replace('#', '');
         const currentTab = ref(tabs.includes(initialHash) ? initialHash : 'home');
         
-        // Defaults correctly to light mode now
         const appTheme = ref(localStorage.getItem('miko_theme') || 'light'); 
         
         const splashVisible = ref(true), splashOpacity = ref(1);
         const clips = ref([]), allClips = ref([]);
-        const allClipsCount = computed(() => allClips.value.length);
         const modals = ref({ profile: false });
         const isLive = ref(false);
         const currentUser = ref(null);
@@ -610,7 +607,6 @@ createApp({
         const logoutState = ref('Sign Out');
         const nukeState = ref('Nuke App Cache');
         
-        // Placeholders to prevent Vue warnings from index.html
         const apiConfig = ref({});
         const saveState = ref('');
         
@@ -760,6 +756,57 @@ createApp({
         
         let lastScrollTop = 0;
 
+        const handleLogin = async () => {
+            if (!loginEmail.value || !loginPass.value) { loginError.value = "Missing credentials."; return; }
+            try {
+                const { data, error } = await sbClient.auth.signInWithPassword({ email: loginEmail.value, password: loginPass.value });
+                if (error) { loginError.value = error.message; return; }
+                if (data?.user) { currentUser.value = data.user; modals.value.profile = false; loginEmail.value = ''; loginPass.value = ''; }
+            } catch { loginError.value = "System login failure."; }
+        };
+
+        const handleLogout = async () => { logoutState.value = 'LOGGING OUT...'; await sbClient.auth.signOut(); currentUser.value = null; modals.value.profile = false; logoutState.value = 'Sign Out'; };
+        const runSync = async () => { syncState.value = 'REFRESHING...'; await loadData(false); syncState.value = 'SUCCESS'; setTimeout(() => syncState.value = 'Refresh Feed', 1500); };
+        const clearGeraldHistory = async () => { wipeState.value = 'WIPING...'; geraldMessages.value = [{ role: 'gerald', content: '' }]; wipeState.value = 'SUCCESS'; setTimeout(() => wipeState.value = 'Wipe Gerald Memory', 1500); };
+        const nukeCache = () => { nukeState.value = 'NUKING...'; localStorage.clear(); caches.keys().then(names => { for (let n of names) caches.delete(n); }); nukeState.value = 'SUCCESS'; setTimeout(() => window.location.reload(), 1000); };
+
+        const handleGeraldSend = async () => {
+            if (!geraldInput.value.trim() || isGeraldTyping.value) return;
+            const text = geraldInput.value.trim();
+            geraldInput.value = '';
+            
+            geraldMessages.value.push({ role: 'user', content: text });
+            isGeraldTyping.value = true;
+            
+            await nextTick();
+            const b = document.getElementById('gerald-msgs');
+            if (b) b.scrollTop = b.scrollHeight;
+
+            try {
+                const sysDirective = getGeraldSystemDirective(customEmotes.value);
+                const historyMapped = geraldMessages.value.filter(m => m.content).map(m => ({
+                    role: m.role === 'gerald' ? 'model' : 'user',
+                    parts: [{ text: m.content }]
+                }));
+
+                const { data } = await sbClient.functions.invoke('gerald-chat', {
+                    body: { systemInstruction: sysDirective, history: historyMapped }
+                });
+
+                if (data && data.reply) {
+                    geraldMessages.value.push({ role: 'gerald', content: enforceGrammar(data.reply) });
+                } else {
+                    geraldMessages.value.push({ role: 'gerald', content: 'Connection issue. Brain offline.' });
+                }
+            } catch {
+                geraldMessages.value.push({ role: 'gerald', content: 'Fatal Exception inside transmission node.' });
+            } finally {
+                isGeraldTyping.value = false;
+                await nextTick();
+                if (b) b.scrollTop = b.scrollHeight;
+            }
+        };
+
         onMounted(() => {
             document.body.style.overflow = 'hidden';
             document.body.style.height = '100vh';
@@ -781,10 +828,15 @@ createApp({
                 splashOpacity.value = 0; 
                 setTimeout(() => { splashVisible.value = false; }, 300);
             });
+
+            setInterval(() => {
+                sysStats.value.cpu = Math.floor(15 + Math.random() * 25);
+                sysStats.value.temp = Math.floor(71 + Math.random() * 8);
+            }, 4000);
         });
 
         return {
-            hostname, splashVisible, splashOpacity, currentTab, tabOffset, appTheme, toggleTheme, clips, allClipsCount, modals, isLive, currentUser, loginEmail, loginPass, loginError, geraldInput, geraldMessages, isGeraldTyping, syncState, wipeState, logoutState, nukeState, isHeaderVisible, currentFilter, activeFilterLabel, isFilterMenuOpen, recentVods, currentVodIndex, customEmotes, showEmotePicker, showMinigames, activeClipId, switchTab, geminiStatus, sysStats, handleSwipeStart, handleSwipeEnd, handleModalTouchStart, handleModalTouchMove, handleModalTouchEnd, handleScroll, apiConfig, saveState,
+            hostname, splashVisible, splashOpacity, currentTab, tabOffset, appTheme, toggleTheme, clips, currentUser, loginEmail, loginPass, loginError, geraldInput, geraldMessages, isGeraldTyping, syncState, wipeState, logoutState, nukeState, isHeaderVisible, currentFilter, activeFilterLabel, isFilterMenuOpen, recentVods, currentVodIndex, customEmotes, showEmotePicker, showMinigames, activeClipId, switchTab, geminiStatus, sysStats, handleSwipeStart, handleSwipeEnd, handleModalTouchStart, handleModalTouchMove, handleModalTouchEnd, handleScroll, apiConfig, saveState, selectedClip, modals,
             logoSvg: (id) => `<svg viewBox="0 0 100 100"><defs><linearGradient id="grad-${id}" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stop-color="#9146FF"/><stop offset="100%" stop-color="#a970ff"/></linearGradient></defs><circle cx="50" cy="50" r="40" fill="url(#grad-${id})"/><path d="M 33 38 L 48 62 L 62 38 L 62 55 Q 62 65 69 64" fill="none" stroke="#ffffff" stroke-width="8" stroke-linecap="round" stroke-linejoin="round"/></svg>`,
             optimizeTwitchImg: (u) => u ? u.replace('%{width}', '480').replace('%{height}', '270') : '',
             formatViews: (v) => v ? v.toLocaleString() : '0',
@@ -797,7 +849,10 @@ createApp({
             },
             prevVod: () => { if (currentVodIndex.value > (isLive.value ? -1 : 0)) currentVodIndex.value--; },
             nextVod: () => { if (currentVodIndex.value < recentVods.value.length - 1) currentVodIndex.value++; },
-            playClip: (clip) => { selectedClip.value = clip; }
+            playClip: (clip) => { selectedClip.value = clip; },
+            handleLogin, handleLogout, runSync, clearGeraldHistory, nukeCache,
+            sendGeraldMessage: handleGeraldSend,
+            playMinigame: (g) => { geraldInput.value = `/run game_${g.id}: ${g.prompt}`; showMinigames.value = false; handleGeraldSend(); }
         };
     }
 }).mount('#app-container');
