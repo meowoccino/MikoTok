@@ -69,9 +69,6 @@ const AppHeader = {
                 <div style="width:24px;height:24px; cursor:pointer;" v-html="logoSvg('header')" @click="$emit('open-profile')"></div>
                 <span class="miko-text-gradient" style="font-size:22px; letter-spacing: -0.5px;">MikoTok</span>
             </div>
-            <button class="theme-toggle-btn" @click="$emit('toggle-theme')">
-                <span class="material-symbols-rounded" style="font-size: 24px;">{{ appTheme === 'light' ? 'dark_mode' : 'light_mode' }}</span>
-            </button>
         </header>
     `
 };
@@ -360,80 +357,267 @@ const GeraldView = {
 };
 
 const MoreView = {
+    props: ['isLive'],
+    setup(props) {
+        const { ref, onMounted, onUnmounted, watch } = Vue;
+        
+        const activeSubView = ref('main');
+        const statTimeframe = ref('month');
+        const streamState = ref('future'); // future, late, live, offline
+        const countdownText = ref('00:00:00');
+        
+        // Random Text States
+        const randFuture = ref('');
+        const randLate = ref('');
+        const randLive = ref('');
+        const randOffline = ref('');
+
+        const LBL_FUTURE = ["NEXT STREAM IN", "SCUFF ARRIVES IN", "CHAOS BEGINS IN", "TECHNICIAN SPAWNS", "MOCAP BOOTING IN"];
+        const LBL_LATE = ["PREPARING SCUFF...", "CALIBRATING SUIT...", "TECHNICIAN IS LATE", "BOOTING UNREAL...", "FINDING MUTE BUTTON..."];
+        const LBL_LIVE = ["PREPARE YOUR EARS", "SCUFF IS LIVE", "EMBRACE THE CHAOS", "TECHNICIAN UNLEASHED", "RIP HEADPHONE USERS"];
+        const LBL_OFFLINE = ["AWAITING SCHEDULE", "RECHARGING SUIT", "MOCAP OFFLINE", "SLEEPING IN VR", "TOUCHING GRASS"];
+
+        const randomizeTexts = () => {
+            randFuture.value = LBL_FUTURE[Math.floor(Math.random() * LBL_FUTURE.length)];
+            randLate.value = LBL_LATE[Math.floor(Math.random() * LBL_LATE.length)];
+            randLive.value = LBL_LIVE[Math.floor(Math.random() * LBL_LIVE.length)];
+            randOffline.value = LBL_OFFLINE[Math.floor(Math.random() * LBL_OFFLINE.length)];
+        };
+
+        let timerInterval;
+        // Mocking a scheduled time 4 hours from now for testing until we build the Supabase Backend
+        let targetTime = new Date().getTime() + (4 * 60 * 60 * 1000 + 12 * 60 * 1000 + 45 * 1000);
+
+        const updateClock = () => {
+            if (props.isLive) {
+                streamState.value = 'live';
+                return;
+            }
+            let d = targetTime - new Date().getTime();
+            if (d < 0) {
+                streamState.value = 'late';
+            } else {
+                streamState.value = 'future';
+                let h = String(Math.floor((d % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60))).padStart(2, '0');
+                let m = String(Math.floor((d % (1000 * 60 * 60)) / (1000 * 60))).padStart(2, '0');
+                let s = String(Math.floor((d % (1000 * 60)) / 1000)).padStart(2, '0');
+                countdownText.value = h + ":" + m + ":" + s;
+            }
+        };
+
+        onMounted(() => {
+            randomizeTexts();
+            updateClock();
+            timerInterval = setInterval(updateClock, 1000);
+        });
+
+        onUnmounted(() => { clearInterval(timerInterval); });
+        
+        watch(() => props.isLive, updateClock);
+
+        return { activeSubView, statTimeframe, streamState, countdownText, randFuture, randLate, randLive, randOffline, randomizeTexts };
+    },
     template: `
-        <div class="more-container" style="display: flex; flex-direction: column; height: 100%; width: 100%; padding: 0px 16px 16px; gap: 8px; overflow-y: auto;">
+        <div class="more-container" style="display: flex; flex-direction: column; height: 100%; width: 100%; padding: 0px; background: var(--bg-color); overflow-x: hidden; position: relative;">
             
-            <a href="https://throne.com/codemiko" target="_blank" class="social-card" style="display: flex; align-items: center; padding: 0 16px; border-radius: 12px; min-height: 48px; height: 48px; background: var(--card-bg); text-decoration: none; flex-shrink: 0; margin-top: 10px;">
-                <div style="display: flex; align-items: center; gap: 12px; width: 100%;">
-                    <svg viewBox="0 0 24 24" style="width: 24px; height: 24px; fill: #ef4444; flex-shrink:0;"><path d="M20 6h-2.18c.11-.31.18-.65.18-1 0-1.66-.84-3-2-3-1.22 0-2.42 1.55-3 2.52-.58-.97-1.78-2.52-3-2.52-1.16 0-2 1.34-2 3 0 .35.07.69.18 1H4c-1.11 0-1.99.89-1.99 2L2 19c0 1.11.89 2 2 2h16c1.11 0 2-.89 2-2V8c0-1.11-.89-2-2-2zm-5-3c.55 0 1 .45 1 1s-.45 1-1 1-1-.45-1-1 .45-1 1-1zm-6 0c.55 0 1 .45 1 1s-.45 1-1 1-1-.45-1-1 .45-1 1-1zm11 16H4V8h16v11z"/></svg>
-                    <span style="color: var(--text-main); font-size: 14px; font-weight: 600;">Throne</span> 
+            <transition name="fade" mode="out-in">
+                <div v-if="activeSubView === 'about'" key="about" style="padding: 20px 16px; animation: fadeIn 0.2s ease-out;">
+                    <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 24px; font-size: 18px; font-weight: bold; color: var(--text-main);">
+                        <button @click="activeSubView = 'main'" style="background: var(--card-bg); border: 1px solid var(--border-color); color: var(--text-main); width: 36px; height: 36px; border-radius: 50%; display: flex; align-items: center; justify-content: center; cursor: pointer; box-shadow: 0 2px 8px rgba(0,0,0,0.05);">
+                            <span class="material-symbols-rounded">arrow_back</span>
+                        </button>
+                        About CodeMiko
+                    </div>
+                    <div style="text-align: center; margin-bottom: 24px;">
+                        <img src="https://static-cdn.jtvnw.net/jtv_user_pictures/21fe1fcf-a9be-4131-bb96-512c01824bb8-profile_image-300x300.png" style="width: 110px; height: 110px; border-radius: 50%; border: 3px solid var(--primary); margin-bottom: 12px; background: #222;" alt="Avatar">
+                        <h2 style="margin:0; color: var(--text-main);">CodeMiko</h2>
+                        <div style="color:var(--text-muted); font-size:14px; margin-top:4px;">Youna Kang • VTuber & Dev</div>
+                    </div>
+                    <div style="color: var(--text-main); font-size: 14px; line-height: 1.6; background: var(--card-bg); padding: 16px; border-radius: 12px; margin-bottom: 16px; border: 1px solid var(--border-color);">
+                        <div style="text-align: center; margin-bottom: 12px;"><strong style="color:var(--text-main);">The Glitch in the System</strong></div>
+                        CodeMiko is a groundbreaking interactive VTuber project created and operated by "The Technician" (Youna Kang). Using a state-of-the-art Xsens full-body motion capture suit and Unreal Engine 5, Miko pushes the absolute boundaries of digital broadcasting.<br><br>
+                        What makes the stream unique is its interactivity. Chatters can use Bits and channel points to directly trigger interactions, minigames, and catastrophic visual glitches on Miko's avatar in real-time.<br><br>
+                        According to her lore, Miko is an aspiring video game NPC without a game, attempting to find her place in the digital world after being rejected by major AAA titles.
+                    </div>
                 </div>
-                <span class="material-symbols-rounded" style="font-size: 20px; color: var(--text-muted); margin-left: auto;">push_pin</span>
-            </a>
 
-            <a href="https://www.twitch.tv/codemiko" target="_blank" class="social-card" style="display: flex; align-items: center; padding: 0 16px; border-radius: 12px; min-height: 48px; height: 48px; flex-shrink: 0;">
-                <svg viewBox="0 0 24 24" class="social-icon" style="width: 22px; height: 22px; color: #9146FF;"><path fill="currentColor" d="M11.571 4.714h1.715v5.143H11.57zm4.715 0H18v5.143h-1.714zM6 0L1.714 4.286v15.428h5.143V24l4.286-4.286h3.428L22.286 12V0zm14.571 11.143l-3.428 3.428h-3.429l-3 3v-3H6.857V1.714h13.714Z"/></svg>
-                <span style="color: var(--text-main); font-size: 14px;">Twitch</span>
-            </a>
-            
-            <a href="https://www.youtube.com/@CodeMiko" target="_blank" class="social-card" style="display: flex; align-items: center; padding: 0 16px; border-radius: 12px; min-height: 48px; height: 48px; flex-shrink: 0;">
-                <svg viewBox="0 0 24 24" class="social-icon" style="width: 22px; height: 22px; color: #FF0000;">
-                    <path fill="currentColor" d="M21.582 6.186a2.6 2.6 0 0 0-1.838-1.85C18.125 3.9 12 3.9 12 3.9s-6.125 0-7.744.436a2.6 2.6 0 0 0-1.838 1.85C2 7.82 2 12 2 12s0 4.18.418 5.814a2.6 2.6 0 0 0 1.838 1.85C5.875 20.1 12 20.1 12 20.1s6.125 0 7.744-.436a2.6 2.6 0 0 0 1.838-1.85C22 16.18 22 12 22 12s0-4.18-.418-5.814zM9.9 15.54V8.46L16.2 12z"/>
-                </svg>
-                <span style="color: var(--text-main); font-size: 14px;">YouTube</span>
-            </a>
-            
-            <a href="https://kick.com/codemiko" target="_blank" class="social-card" style="display: flex; align-items: center; padding: 0 16px; border-radius: 12px; min-height: 48px; height: 48px; flex-shrink: 0;">
-                <svg viewBox="0 0 24 24" class="social-icon" style="width: 22px; height: 22px; color: #53FC18;"><path fill="currentColor" d="M19 2H5a3 3 0 0 0-3 3v14a3 3 0 0 0 3 3h14a3 3 0 0 0 3-3V5a3 3 0 0 0-3-3zM10.1 14.5v3.3H7.4V6.2h2.7v4.6l3.3-4.6h3.4l-3.9 5.1 4.2 6.5h-3.5z"/></svg>
-                <span style="color: var(--text-main); font-size: 14px;">Kick</span>
-            </a>
-            
-            <a href="https://discord.com/invite/codemiko" target="_blank" class="social-card" style="display: flex; align-items: center; padding: 0 16px; border-radius: 12px; min-height: 48px; height: 48px; flex-shrink: 0;">
-                <svg viewBox="0 0 24 24" class="social-icon" style="width: 22px; height: 22px; color: #5865F2;"><path fill="currentColor" d="M20.317 4.3698a19.7913 19.7913 0 00-4.8851-1.5152.0741.0741 0 00-.0785.0371c-.211.3753-.4447.8648-.6083 1.2495-1.8447-.2762-3.68-.2762-5.4868 0-.1636-.3933-.4058-.8742-.6177-1.2495a.077.077 0 00-.0785-.037 19.7363 19.7363 0 00-4.8852 1.515.0699.0699 0 00-.0321.0277C.5334 9.0458-.319 13.5799.0992 18.0578a.0824.0824 0 00.0312.0561c2.0528 1.5076 4.0413 2.4228 5.9929 3.0294a.0777.0777 0 00.0842-.0276c.4616-.6304.8731-1.2952 1.226-1.9942a.076.076 0 00-.0416-.1057c-.6528-.2476-1.2743-.5495-1.8722-.8923a.077.077 0 01-.0076-.1277c.1258-.0943.2517-.1923.3718-.2914a.0743.0743 0 01.0776-.0105c3.9278 1.7933 8.18 1.7933 12.0614 0a.0739.0739 0 01.0785.0095c.1202.099.246.1981.3728.2924a.077.077 0 01-.0066.1276 12.2986 12.2986 0 01-1.873.8914.0766.0766 0 00-.0407.1067c.3604.698.7719 1.3628 1.225 1.9932a.076.076 0 00.0842.0286c1.961-.6067 3.9495-1.5219 6.0023-3.0294a.077.077 0 00.0313-.0552c.5004-5.177-.8382-9.6739-3.5485-13.6604a.061.061 0 00-.0312-.0286zM8.02 15.3312c-1.1825 0-2.1569-1.0857-2.1569-2.419 0-1.3332.9555-2.4189 2.157-2.4189 1.2108 0 2.1757 1.0952 2.1568 2.419 0 1.3332-.9555 2.4189-2.1569 2.4189zm7.9748 0c-1.1825 0-2.1569-1.0857-2.1569-2.419 0-1.3332.9554-2.4189 2.1569-2.4189 1.2108 0 2.1757 1.0952 2.1568 2.419 0 1.3332-.946 2.4189-2.1568 2.4189Z"/></svg>
-                <span style="color: var(--text-main); font-size: 14px;">Discord</span>
-            </a>
+                <div v-else-if="activeSubView === 'stats'" key="stats" style="padding: 20px 16px; animation: fadeIn 0.2s ease-out;">
+                    <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 24px; font-size: 18px; font-weight: bold; color: var(--text-main);">
+                        <button @click="activeSubView = 'main'" style="background: var(--card-bg); border: 1px solid var(--border-color); color: var(--text-main); width: 36px; height: 36px; border-radius: 50%; display: flex; align-items: center; justify-content: center; cursor: pointer;">
+                            <span class="material-symbols-rounded">arrow_back</span>
+                        </button>
+                        Channel Statistics
+                    </div>
 
-            <a href="https://www.reddit.com/r/CodeMiko/" target="_blank" class="social-card" style="display: flex; align-items: center; padding: 0 16px; border-radius: 12px; min-height: 48px; height: 48px; flex-shrink: 0;">
-                <svg viewBox="0 0 24 24" class="social-icon" style="width: 22px; height: 22px; color: #FF4500;"><path fill="currentColor" d="M12 0A12 12 0 0 0 0 12a12 12 0 0 0 12 12 12 12 0 0 0 12-12A12 12 0 0 0 12 0zm5.01 4.744c.688 0 1.25.561 1.25 1.249a1.25 1.25 0 0 1-2.498.056l-2.597-.547-.8 3.747c1.824.07 3.48.632 4.674 1.488.308-.309.73-.491 1.207-.491.968 0 1.754.786 1.754 1.754 0 .716-.435 1.333-1.01 1.614a3.111 3.111 0 0 1 .042.52c0 2.694-3.13 4.87-7.004 4.87-3.874 0-7.004-2.176-7.004-4.87 0-.183.015-.366.043-.534A1.748 1.748 0 0 1 4.028 12c0-.968.786-1.754 1.754-1.754.463 0 .883.175 1.188.467 1.226-.883 2.936-1.465 4.814-1.527l.881-4.122c.045-.205.244-.343.454-.301l2.97 6.225a1.26 1.26 0 0 1 1.171-.644zm-9.046 5.86c-.732 0-1.325.592-1.325 1.324s.593 1.325 1.325 1.325 1.325-.593 1.325-1.325-.593-1.324-1.325-1.324zm6.062 0c-.732 0-1.325.592-1.325 1.324s.593 1.325 1.325 1.325 1.325-.593 1.325-1.325-.593-1.324-1.325-1.324zm-3.031 4.846c-1.334 0-2.584-.339-3.356-.918a.382.382 0 0 0-.533.053.38.38 0 0 0 .052.533c.96.711 2.385 1.096 3.837 1.096 1.45 0 2.875-.385 3.836-1.096a.38.38 0 0 0 .053-.533.382.382 0 0 0-.534-.053c-.771.579-2.02.918-3.355.918z"/></svg>
-                <span style="color: var(--text-main); font-size: 14px;">Reddit</span>
-            </a>
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 24px;">
+                        <div style="background: var(--card-bg); padding: 16px; border-radius: 12px; display: flex; flex-direction: column; align-items: center; text-align: center; border: 1px solid var(--border-color);">
+                            <div style="font-size: 20px; font-weight: bold; color: var(--primary); margin-bottom: 4px;">915K</div>
+                            <div style="font-size: 11px; color: var(--text-muted); text-transform: uppercase; font-weight: 700; letter-spacing: 0.5px;">Followers</div>
+                        </div>
+                        <div style="background: var(--card-bg); padding: 16px; border-radius: 12px; display: flex; flex-direction: column; align-items: center; text-align: center; border: 1px solid var(--border-color);">
+                            <div style="font-size: 20px; font-weight: bold; color: var(--primary); margin-bottom: 4px;">215M</div>
+                            <div style="font-size: 11px; color: var(--text-muted); text-transform: uppercase; font-weight: 700; letter-spacing: 0.5px;">Total Views</div>
+                        </div>
+                        <div style="background: var(--card-bg); padding: 16px; border-radius: 12px; display: flex; flex-direction: column; align-items: center; text-align: center; border: 1px solid var(--border-color);">
+                            <div style="font-size: 20px; font-weight: bold; color: var(--primary); margin-bottom: 4px;">1,604</div>
+                            <div style="font-size: 11px; color: var(--text-muted); text-transform: uppercase; font-weight: 700; letter-spacing: 0.5px;">Avg Viewers</div>
+                        </div>
+                        <div style="background: var(--card-bg); padding: 16px; border-radius: 12px; display: flex; flex-direction: column; align-items: center; text-align: center; border: 1px solid var(--border-color);">
+                            <div style="font-size: 20px; font-weight: bold; color: var(--primary); margin-bottom: 4px;">25K</div>
+                            <div style="font-size: 11px; color: var(--text-muted); text-transform: uppercase; font-weight: 700; letter-spacing: 0.5px;">All-Time Peak</div>
+                        </div>
+                        <div style="background: var(--card-bg); padding: 16px; border-radius: 12px; display: flex; flex-direction: column; align-items: center; text-align: center; border: 1px solid var(--border-color);">
+                            <div style="font-size: 20px; font-weight: bold; color: var(--primary); margin-bottom: 4px;">2,104</div>
+                            <div style="font-size: 11px; color: var(--text-muted); text-transform: uppercase; font-weight: 700; letter-spacing: 0.5px;">Active Subs</div>
+                        </div>
+                        <div style="background: var(--card-bg); padding: 16px; border-radius: 12px; display: flex; flex-direction: column; align-items: center; text-align: center; border: 1px solid var(--border-color);">
+                            <div style="font-size: 16px; font-weight: bold; color: var(--primary); margin-top: 4px; margin-bottom: 4px;">Apr 2020</div>
+                            <div style="font-size: 11px; color: var(--text-muted); text-transform: uppercase; font-weight: 700; letter-spacing: 0.5px;">Account Created</div>
+                        </div>
+                    </div>
 
-            <a href="https://x.com/codemiko" target="_blank" class="social-card" style="display: flex; align-items: center; padding: 0 16px; border-radius: 12px; min-height: 48px; height: 48px; flex-shrink: 0;">
-                <svg viewBox="0 0 24 24" class="social-icon" style="width: 22px; height: 22px; color: var(--text-main);"><path fill="currentColor" d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>
-                <span style="color: var(--text-main); font-size: 14px;">X</span>
-            </a>
-            
-            <a href="https://www.instagram.com/thecodemiko/" target="_blank" class="social-card" style="display: flex; align-items: center; padding: 0 16px; border-radius: 12px; min-height: 48px; height: 48px; flex-shrink: 0;">
-                <svg viewBox="0 0 24 24" class="social-icon" style="width: 22px; height: 22px; color: #E1306C;"><path fill="currentColor" d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zM12 0C8.741 0 8.333.014 7.053.072 2.695.272.273 2.69.073 7.052.014 8.333 0 8.741 0 12c0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98C8.333 23.986 8.741 24 12 24c3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98C15.668.014 15.259 0 12 0zm0 5.838a6.162 6.162 0 100 12.324 6.162 6.162 0 000-12.324zM12 16a4 4 0 110-8 4 4 0 010 8zm6.406-11.845a1.44 1.44 0 100 2.881 1.44 1.44 0 000-2.881z"/></svg>
-                <span style="color: var(--text-main); font-size: 14px;">Instagram</span>
-            </a>
+                    <div style="font-size:12px; font-weight:bold; color:var(--primary); margin: 24px 0 12px 8px; text-transform:uppercase;">Recent Broadcasting</div>
+                    
+                    <div style="display: flex; gap: 8px; margin-bottom: 12px; background: rgba(145, 70, 255, 0.1); padding: 4px; border-radius: 8px;">
+                        <button @click="statTimeframe = 'week'" :style="statTimeframe === 'week' ? 'background: var(--card-bg); color: var(--text-main); box-shadow: 0 2px 5px rgba(0,0,0,0.1);' : 'background: transparent; color: var(--text-muted);'" style="flex: 1; padding: 8px 0; text-align: center; border-radius: 6px; font-size: 13px; font-weight: 600; cursor: pointer; border:none;">Week</button>
+                        <button @click="statTimeframe = 'month'" :style="statTimeframe === 'month' ? 'background: var(--card-bg); color: var(--text-main); box-shadow: 0 2px 5px rgba(0,0,0,0.1);' : 'background: transparent; color: var(--text-muted);'" style="flex: 1; padding: 8px 0; text-align: center; border-radius: 6px; font-size: 13px; font-weight: 600; cursor: pointer; border:none;">Month</button>
+                        <button @click="statTimeframe = 'year'" :style="statTimeframe === 'year' ? 'background: var(--card-bg); color: var(--text-main); box-shadow: 0 2px 5px rgba(0,0,0,0.1);' : 'background: transparent; color: var(--text-muted);'" style="flex: 1; padding: 8px 0; text-align: center; border-radius: 6px; font-size: 13px; font-weight: 600; cursor: pointer; border:none;">Year</button>
+                    </div>
 
-            <a href="https://www.tiktok.com/@codemiko" target="_blank" class="social-card" style="display: flex; align-items: center; padding: 0 16px; border-radius: 12px; min-height: 48px; height: 48px; flex-shrink: 0;">
-                <svg viewBox="0 0 24 24" class="social-icon" style="width: 22px; height: 22px; color: var(--text-main);"><path fill="currentColor" d="M12.53.02C13.84 0 15.14.01 16.44 0c.08 1.53.63 3.09 1.75 4.17 1.12 1.11 2.7 1.62 4.24 1.79v4.03c-1.44-.05-2.89-.35-4.2-.97-.57-.26-1.1-.59-1.62-.93-.01 2.92.01 5.84-.02 8.75-.08 1.4-.54 2.79-1.35 3.94-1.31 1.92-3.58 3.17-5.91 3.21-1.43.08-2.86-.31-4.08-1.03-2.02-1.12-3.44-3.17-3.64-5.41-.02-.21-.02-.41-.02-.62.07-1.44.62-2.83 1.51-3.89 1.05-1.25 2.55-2.06 4.15-2.28 1.1-.15 2.23-.04 3.27.35v4.06c-.34-.13-.7-.2-1.07-.22-.92-.04-1.84.28-2.51.86-.67.57-1.08 1.4-1.1 2.31-.01.91.38 1.77 1.03 2.38.65.61 1.56.93 2.49.88.92-.04 1.78-.45 2.38-1.11.58-.65.88-1.54.88-2.45V.02h-.03z"/></svg>
-                <span style="color: var(--text-main); font-size: 14px;">TikTok</span>
-            </a>
+                    <div v-if="statTimeframe === 'week'" style="display: flex; flex-direction: column; gap: 8px;">
+                        <div style="background: var(--card-bg); padding: 12px 16px; border-radius: 10px; display: flex; justify-content: space-between; font-size: 14px; color: var(--text-muted); border: 1px solid var(--border-color);"><span>Hours Streamed</span><strong style="color: var(--text-main);">18 Hours</strong></div>
+                        <div style="background: var(--card-bg); padding: 12px 16px; border-radius: 10px; display: flex; justify-content: space-between; font-size: 14px; color: var(--text-muted); border: 1px solid var(--border-color);"><span>Top Category</span><strong style="color: var(--text-main);">Elden Ring</strong></div>
+                        <div style="background: var(--card-bg); padding: 12px 16px; border-radius: 10px; display: flex; justify-content: space-between; font-size: 14px; color: var(--text-muted); border: 1px solid var(--border-color);"><span>Active Days</span><strong style="color: var(--text-main);">3 days / week</strong></div>
+                    </div>
+                    <div v-if="statTimeframe === 'month'" style="display: flex; flex-direction: column; gap: 8px;">
+                        <div style="background: var(--card-bg); padding: 12px 16px; border-radius: 10px; display: flex; justify-content: space-between; font-size: 14px; color: var(--text-muted); border: 1px solid var(--border-color);"><span>Hours Streamed</span><strong style="color: var(--text-main);">77 Hours</strong></div>
+                        <div style="background: var(--card-bg); padding: 12px 16px; border-radius: 10px; display: flex; justify-content: space-between; font-size: 14px; color: var(--text-muted); border: 1px solid var(--border-color);"><span>Top Category</span><strong style="color: var(--text-main);">Just Chatting</strong></div>
+                        <div style="background: var(--card-bg); padding: 12px 16px; border-radius: 10px; display: flex; justify-content: space-between; font-size: 14px; color: var(--text-muted); border: 1px solid var(--border-color);"><span>Active Days</span><strong style="color: var(--text-main);">4.6 days / week</strong></div>
+                    </div>
+                    <div v-if="statTimeframe === 'year'" style="display: flex; flex-direction: column; gap: 8px;">
+                        <div style="background: var(--card-bg); padding: 12px 16px; border-radius: 10px; display: flex; justify-content: space-between; font-size: 14px; color: var(--text-muted); border: 1px solid var(--border-color);"><span>Hours Streamed</span><strong style="color: var(--text-main);">840 Hours</strong></div>
+                        <div style="background: var(--card-bg); padding: 12px 16px; border-radius: 10px; display: flex; justify-content: space-between; font-size: 14px; color: var(--text-muted); border: 1px solid var(--border-color);"><span>Top Category</span><strong style="color: var(--text-main);">Just Chatting</strong></div>
+                        <div style="background: var(--card-bg); padding: 12px 16px; border-radius: 10px; display: flex; justify-content: space-between; font-size: 14px; color: var(--text-muted); border: 1px solid var(--border-color);"><span>Active Days</span><strong style="color: var(--text-main);">4.1 days / week</strong></div>
+                    </div>
+                </div>
 
-            <a href="https://www.snapchat.com/add/codemiko" target="_blank" class="social-card" style="display: flex; align-items: center; padding: 0 16px; border-radius: 12px; min-height: 48px; height: 48px; flex-shrink: 0;">
-                <svg viewBox="0 0 24 24" class="social-icon" style="width: 22px; height: 22px; color: #FFFC00;"><path fill="currentColor" d="M12.126 23.955c-1.472-.036-2.502-.455-3.633-.949-.556-.242-1.077-.384-1.657-.202-1.542.483-3.082 1.054-4.73 1.127-1.393.061-1.777-.52-1.205-1.651.488-.962 1.031-1.895 1.48-2.871.21-.453.208-.857-.042-1.272-1.071-1.782-1.637-3.708-1.764-5.748-.04-.633-.037-1.27-.037-1.936 0-3.923 2.115-6.843 5.437-8.318C8.384.975 10.94.39 13.626.54c4.12.232 7.152 2.647 8.527 6.643.518 1.503.655 3.066.621 4.646-.025 1.156-.168 2.298-.485 3.407-.346 1.208-.887 2.336-1.688 3.32-.429.529-.395.96.012 1.488.35.452.704.9 1.057 1.349.52.661.274 1.236-.532 1.274-1.506.072-2.923-.509-4.321-1.052-.777-.302-1.411-.122-2.072.164-1.045.451-2.146.862-3.32.969-.379.034-.764.03-1.299.207z"/></svg>
-                <span style="color: var(--text-main); font-size: 14px;">Snapchat</span>
-            </a>
-            
-            <a href="https://www.facebook.com/codemikoofficial" target="_blank" class="social-card" style="display: flex; align-items: center; padding: 0 16px; border-radius: 12px; min-height: 48px; height: 48px; flex-shrink: 0;">
-                <svg viewBox="0 0 24 24" class="social-icon" style="width: 22px; height: 22px; color: #1877F2;"><path fill="currentColor" d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/></svg>
-                <span style="color: var(--text-main); font-size: 14px;">Facebook</span>
-            </a>
+                <div v-else key="main" style="padding: 0px 16px 20px; animation: fadeIn 0.2s ease-out; overflow-y: auto;">
+                    
+                    <div v-if="streamState === 'future'" style="background: linear-gradient(135deg, rgba(145, 70, 255, 0.15), rgba(145, 70, 255, 0.05)); border: 1px solid rgba(145, 70, 255, 0.3); border-radius: 16px; padding: 20px; margin-bottom: 24px; text-align: center; display: flex; flex-direction: column; align-items: center; justify-content: center;">
+                        <div style="color: var(--primary); font-size: 12px; font-weight: 800; letter-spacing: 1.5px; text-transform: uppercase; margin-bottom: 8px; display: flex; align-items: center; gap: 6px;">
+                            <span class="material-symbols-rounded" style="font-size: 18px; animation: tickTock 2s infinite ease-in-out;">calendar_month</span> {{ randFuture }}
+                        </div>
+                        <div style="font-size: 32px; font-weight: 900; font-variant-numeric: tabular-nums; letter-spacing: 2px; text-shadow: 0 0 10px rgba(145, 70, 255, 0.3); color: var(--text-main);">{{ countdownText }}</div>
+                    </div>
 
-            <a href="https://bsky.app/profile/codemiko.bsky.social" target="_blank" class="social-card" style="display: flex; align-items: center; padding: 0 16px; border-radius: 12px; min-height: 48px; height: 48px; flex-shrink: 0;">
-                <svg viewBox="0 0 512 512" class="social-icon" style="width: 22px; height: 22px; fill: #0085ff;"><path d="M123.6 44.3C186.2 88.5 222.7 151 256 195.9c33.3-44.9 69.8-107.4 132.4-151.6C416.7 24.3 460 12.5 480 32.5c20 20 8.6 69.5 0 102.5-12.7 48.7-44.5 111.4-106.8 135 63.6 15.3 115 48 116.5 106.3 1.5 58.4-40.4 104-106.8 115.5-59.5 10.3-95-17.7-126.9-46.3-15.3-13.7-27.4-24.5-31.5-24.5s-16.2 10.8-31.5 24.5c-31.9 28.6-67.4 56.6-126.9 46.3C-1.8 479.5-43.7 434 42.2 375.6c1.5-58.3 52.9-91 116.5-106.3-62.3-23.6-94.1-86.3-106.8-135-8.6-33-20-82.5 0-102.5 20-20 63.3-8.2 91.6 12.5z"/></svg>
-                <span style="color: var(--text-main); font-size: 14px;">Bluesky</span>
-            </a>
+                    <div v-else-if="streamState === 'late'" style="background: linear-gradient(135deg, rgba(255, 152, 0, 0.15), rgba(255, 152, 0, 0.05)); border: 1px solid rgba(255, 152, 0, 0.3); border-radius: 16px; padding: 20px; margin-bottom: 24px; text-align: center; display: flex; flex-direction: column; align-items: center; justify-content: center;">
+                        <div style="color: var(--warning); font-size: 12px; font-weight: 800; letter-spacing: 1.5px; text-transform: uppercase; margin-bottom: 8px; display: flex; align-items: center; gap: 6px;">
+                            <span class="material-symbols-rounded" style="font-size: 18px; animation: scuffShake 0.4s infinite;">warning</span> Waiting for Broadcast
+                        </div>
+                        <div style="font-size: 22px; font-weight: 900; letter-spacing: 1px; color: var(--warning); text-shadow: 0 0 15px rgba(255, 152, 0, 0.4);">{{ randLate }}</div>
+                    </div>
 
-            <a href="https://app.fanfix.io/@codeyuna" target="_blank" class="social-card" style="display: flex; align-items: center; padding: 0 16px; border-radius: 12px; min-height: 48px; height: 48px; flex-shrink: 0;">
-                <svg viewBox="0 0 24 24" class="social-icon" style="width: 22px; height: 22px; color: #ef4444;"><path fill="currentColor" d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/></svg>
-                <span style="color: var(--text-main); font-size: 14px;">Fanfix</span>
-            </a>
-            
-            <div style="height: 40px; flex-shrink: 0;"></div>
+                    <a v-else-if="streamState === 'live'" href="https://www.twitch.tv/codemiko" target="_blank" style="background: linear-gradient(135deg, rgba(239, 68, 68, 0.15), rgba(145, 70, 255, 0.05)); border: 1px solid rgba(239, 68, 68, 0.4); border-radius: 16px; padding: 20px; margin-bottom: 24px; text-align: center; display: flex; flex-direction: column; align-items: center; justify-content: center; text-decoration: none;">
+                        <div style="color: var(--danger); font-size: 12px; font-weight: 800; letter-spacing: 1.5px; text-transform: uppercase; margin-bottom: 8px; display: flex; align-items: center; gap: 6px;">
+                            <span class="material-symbols-rounded" style="font-size: 18px; animation: broadcastPulse 2s infinite ease-in-out;">podcasts</span> {{ randLive }}
+                        </div>
+                        <div style="font-size: 24px; font-weight: 900; letter-spacing: 1px; color: var(--danger); text-shadow: 0 0 15px rgba(239, 68, 68, 0.6);">TAP TO WATCH</div>
+                    </a>
+
+                    <div v-else-if="streamState === 'offline'" style="background: var(--card-bg); border: 1px solid var(--border-color); border-radius: 16px; padding: 20px; margin-bottom: 24px; text-align: center; display: flex; flex-direction: column; align-items: center; justify-content: center;">
+                        <div style="color: var(--text-muted); font-size: 12px; font-weight: 800; letter-spacing: 1.5px; text-transform: uppercase; margin-bottom: 8px; display: flex; align-items: center; gap: 6px;">
+                            <span class="material-symbols-rounded" style="font-size: 18px; animation: floatSleep 3s infinite ease-in-out;">bedtime</span> Stream Offline
+                        </div>
+                        <div style="font-size: 20px; font-weight: 900; letter-spacing: 1px; color: var(--text-muted);">{{ randOffline }}</div>
+                    </div>
+
+                    <div style="font-size: 12px; font-weight: 800; letter-spacing: 1.2px; text-transform: uppercase; color: var(--text-muted); margin: 28px 0 10px 8px;">Explore</div>
+                    <button @click="activeSubView = 'about'" style="display: flex; align-items: center; width: 100%; padding: 0 16px; border-radius: 12px; min-height: 48px; background: var(--card-bg); border: 1px solid transparent; cursor: pointer; margin-bottom: 8px;">
+                        <span class="material-symbols-rounded" style="color: #0085ff; width:24px; display:flex; justify-content:center;">info</span>
+                        <span style="color: var(--text-main); font-size: 14px; font-weight: 600; margin-left: 12px;">About CodeMiko</span>
+                        <span class="material-symbols-rounded" style="color: var(--text-muted); margin-left: auto; font-size: 20px;">chevron_right</span>
+                    </button>
+                    <button @click="activeSubView = 'stats'" style="display: flex; align-items: center; width: 100%; padding: 0 16px; border-radius: 12px; min-height: 48px; background: var(--card-bg); border: 1px solid transparent; cursor: pointer; margin-bottom: 8px;">
+                        <span class="material-symbols-rounded" style="color: #ff9800; width:24px; display:flex; justify-content:center;">query_stats</span>
+                        <span style="color: var(--text-main); font-size: 14px; font-weight: 600; margin-left: 12px;">Channel Statistics</span>
+                        <span class="material-symbols-rounded" style="color: var(--text-muted); margin-left: auto; font-size: 20px;">chevron_right</span>
+                    </button>
+
+                    <div style="font-size: 12px; font-weight: 800; letter-spacing: 1.2px; text-transform: uppercase; color: var(--text-muted); margin: 28px 0 10px 8px;">Support</div>
+                    <a href="https://throne.com/codemiko" target="_blank" style="display: flex; align-items: center; width: 100%; box-sizing: border-box; padding: 0 16px; border-radius: 12px; min-height: 48px; background: var(--card-bg); text-decoration: none; margin-bottom: 8px;">
+                        <svg viewBox="0 0 24 24" style="width: 22px; height: 22px; fill: #ef4444;"><path d="M20 6h-2.18c.11-.31.18-.65.18-1 0-1.66-.84-3-2-3-1.22 0-2.42 1.55-3 2.52-.58-.97-1.78-2.52-3-2.52-1.16 0-2 1.34-2 3 0 .35.07.69.18 1H4c-1.11 0-1.99.89-1.99 2L2 19c0 1.11.89 2 2 2h16c1.11 0 2-.89 2-2V8c0-1.11-.89-2-2-2zm-5-3c.55 0 1 .45 1 1s-.45 1-1 1-1-.45-1-1 .45-1 1-1zm-6 0c.55 0 1 .45 1 1s-.45 1-1 1-1-.45-1-1 .45-1 1-1zm11 16H4V8h16v11z"/></svg>
+                        <span style="color: var(--text-main); font-size: 14px; font-weight: 600; margin-left: 12px;">Throne</span>
+                        <span class="material-symbols-rounded" style="color: var(--text-muted); margin-left: auto; font-size: 16px;">open_in_new</span>
+                    </a>
+                    <a href="https://streamelements.com/codemiko/tip" target="_blank" style="display: flex; align-items: center; width: 100%; box-sizing: border-box; padding: 0 16px; border-radius: 12px; min-height: 48px; background: var(--card-bg); text-decoration: none; margin-bottom: 8px;">
+                        <span class="material-symbols-rounded" style="color: #10B981; width:22px; text-align:center;">payments</span>
+                        <span style="color: var(--text-main); font-size: 14px; font-weight: 600; margin-left: 12px;">Tip Jar</span>
+                        <span class="material-symbols-rounded" style="color: var(--text-muted); margin-left: auto; font-size: 16px;">open_in_new</span>
+                    </a>
+
+                    <div style="font-size: 12px; font-weight: 800; letter-spacing: 1.2px; text-transform: uppercase; color: var(--text-muted); margin: 28px 0 10px 8px;">Social Links</div>
+                    <a href="https://www.twitch.tv/codemiko" target="_blank" style="display: flex; align-items: center; width: 100%; box-sizing: border-box; padding: 0 16px; border-radius: 12px; min-height: 48px; background: var(--card-bg); text-decoration: none; margin-bottom: 8px;">
+                        <svg viewBox="0 0 24 24" style="width: 22px; height: 22px; color: #9146FF;"><path fill="currentColor" d="M11.571 4.714h1.715v5.143H11.57zm4.715 0H18v5.143h-1.714zM6 0L1.714 4.286v15.428h5.143V24l4.286-4.286h3.428L22.286 12V0zm14.571 11.143l-3.428 3.428h-3.429l-3 3v-3H6.857V1.714h13.714Z"/></svg>
+                        <span style="color: var(--text-main); font-size: 14px; font-weight: 600; margin-left: 12px;">Twitch</span>
+                        <span class="material-symbols-rounded" style="color: var(--text-muted); margin-left: auto; font-size: 16px;">open_in_new</span>
+                    </a>
+                    <a href="https://www.youtube.com/@CodeMiko" target="_blank" style="display: flex; align-items: center; width: 100%; box-sizing: border-box; padding: 0 16px; border-radius: 12px; min-height: 48px; background: var(--card-bg); text-decoration: none; margin-bottom: 8px;">
+                        <svg viewBox="0 0 24 24" style="width: 22px; height: 22px; color: #FF0000;"><path fill="currentColor" d="M21.582 6.186a2.6 2.6 0 0 0-1.838-1.85C18.125 3.9 12 3.9 12 3.9s-6.125 0-7.744.436a2.6 2.6 0 0 0-1.838 1.85C2 7.82 2 12 2 12s0 4.18.418 5.814a2.6 2.6 0 0 0 1.838 1.85C5.875 20.1 12 20.1 12 20.1s6.125 0 7.744-.436a2.6 2.6 0 0 0 1.838-1.85C22 16.18 22 12 22 12s0-4.18-.418-5.814zM9.9 15.54V8.46L16.2 12z"/></svg>
+                        <span style="color: var(--text-main); font-size: 14px; font-weight: 600; margin-left: 12px;">YouTube</span>
+                        <span class="material-symbols-rounded" style="color: var(--text-muted); margin-left: auto; font-size: 16px;">open_in_new</span>
+                    </a>
+                    <a href="https://kick.com/codemiko" target="_blank" style="display: flex; align-items: center; width: 100%; box-sizing: border-box; padding: 0 16px; border-radius: 12px; min-height: 48px; background: var(--card-bg); text-decoration: none; margin-bottom: 8px;">
+                        <svg viewBox="0 0 24 24" style="width: 22px; height: 22px; color: #53FC18;"><path fill="currentColor" d="M19 2H5a3 3 0 0 0-3 3v14a3 3 0 0 0 3 3h14a3 3 0 0 0 3-3V5a3 3 0 0 0-3-3zM10.1 14.5v3.3H7.4V6.2h2.7v4.6l3.3-4.6h3.4l-3.9 5.1 4.2 6.5h-3.5z"/></svg>
+                        <span style="color: var(--text-main); font-size: 14px; font-weight: 600; margin-left: 12px;">Kick</span>
+                        <span class="material-symbols-rounded" style="color: var(--text-muted); margin-left: auto; font-size: 16px;">open_in_new</span>
+                    </a>
+                    <a href="https://x.com/codemiko" target="_blank" style="display: flex; align-items: center; width: 100%; box-sizing: border-box; padding: 0 16px; border-radius: 12px; min-height: 48px; background: var(--card-bg); text-decoration: none; margin-bottom: 8px;">
+                        <svg viewBox="0 0 24 24" style="width: 22px; height: 22px; color: var(--text-main);"><path fill="currentColor" d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>
+                        <span style="color: var(--text-main); font-size: 14px; font-weight: 600; margin-left: 12px;">X (Twitter)</span>
+                        <span class="material-symbols-rounded" style="color: var(--text-muted); margin-left: auto; font-size: 16px;">open_in_new</span>
+                    </a>
+                    <a href="https://www.instagram.com/thecodemiko/" target="_blank" style="display: flex; align-items: center; width: 100%; box-sizing: border-box; padding: 0 16px; border-radius: 12px; min-height: 48px; background: var(--card-bg); text-decoration: none; margin-bottom: 8px;">
+                        <svg viewBox="0 0 24 24" style="width: 22px; height: 22px; color: #E1306C;"><path fill="currentColor" d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zM12 0C8.741 0 8.333.014 7.053.072 2.695.272.273 2.69.073 7.052.014 8.333 0 8.741 0 12c0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98C8.333 23.986 8.741 24 12 24c3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98C15.668.014 15.259 0 12 0zm0 5.838a6.162 6.162 0 100 12.324 6.162 6.162 0 000-12.324zM12 16a4 4 0 110-8 4 4 0 010 8zm6.406-11.845a1.44 1.44 0 100 2.881 1.44 1.44 0 000-2.881z"/></svg>
+                        <span style="color: var(--text-main); font-size: 14px; font-weight: 600; margin-left: 12px;">Instagram</span>
+                        <span class="material-symbols-rounded" style="color: var(--text-muted); margin-left: auto; font-size: 16px;">open_in_new</span>
+                    </a>
+                    <a href="https://www.tiktok.com/@codemiko" target="_blank" style="display: flex; align-items: center; width: 100%; box-sizing: border-box; padding: 0 16px; border-radius: 12px; min-height: 48px; background: var(--card-bg); text-decoration: none; margin-bottom: 8px;">
+                        <svg viewBox="0 0 24 24" style="width: 22px; height: 22px; color: var(--text-main);"><path fill="currentColor" d="M12.53.02C13.84 0 15.14.01 16.44 0c.08 1.53.63 3.09 1.75 4.17 1.12 1.11 2.7 1.62 4.24 1.79v4.03c-1.44-.05-2.89-.35-4.2-.97-.57-.26-1.1-.59-1.62-.93-.01 2.92.01 5.84-.02 8.75-.08 1.4-.54 2.79-1.35 3.94-1.31 1.92-3.58 3.17-5.91 3.21-1.43.08-2.86-.31-4.08-1.03-2.02-1.12-3.44-3.17-3.64-5.41-.02-.21-.02-.41-.02-.62.07-1.44.62-2.83 1.51-3.89 1.05-1.25 2.55-2.06 4.15-2.28 1.1-.15 2.23-.04 3.27.35v4.06c-.34-.13-.7-.2-1.07-.22-.92-.04-1.84.28-2.51.86-.67.57-1.08 1.4-1.1 2.31-.01.91.38 1.77 1.03 2.38.65.61 1.56.93 2.49.88.92-.04 1.78-.45 2.38-1.11.58-.65.88-1.54.88-2.45V.02h-.03z"/></svg>
+                        <span style="color: var(--text-main); font-size: 14px; font-weight: 600; margin-left: 12px;">TikTok</span>
+                        <span class="material-symbols-rounded" style="color: var(--text-muted); margin-left: auto; font-size: 16px;">open_in_new</span>
+                    </a>
+                    <a href="https://www.snapchat.com/add/codemiko" target="_blank" style="display: flex; align-items: center; width: 100%; box-sizing: border-box; padding: 0 16px; border-radius: 12px; min-height: 48px; background: var(--card-bg); text-decoration: none; margin-bottom: 8px;">
+                        <svg viewBox="0 0 24 24" style="width: 22px; height: 22px; color: #FFFC00;"><path fill="currentColor" d="M12.126 23.955c-1.472-.036-2.502-.455-3.633-.949-.556-.242-1.077-.384-1.657-.202-1.542.483-3.082 1.054-4.73 1.127-1.393.061-1.777-.52-1.205-1.651.488-.962 1.031-1.895 1.48-2.871.21-.453.208-.857-.042-1.272-1.071-1.782-1.637-3.708-1.764-5.748-.04-.633-.037-1.27-.037-1.936 0-3.923 2.115-6.843 5.437-8.318C8.384.975 10.94.39 13.626.54c4.12.232 7.152 2.647 8.527 6.643.518 1.503.655 3.066.621 4.646-.025 1.156-.168 2.298-.485 3.407-.346 1.208-.887 2.336-1.688 3.32-.429.529-.395.96.012 1.488.35.452.704.9 1.057 1.349.52.661.274 1.236-.532 1.274-1.506.072-2.923-.509-4.321-1.052-.777-.302-1.411-.122-2.072.164-1.045.451-2.146.862-3.32.969-.379.034-.764.03-1.299.207z"/></svg>
+                        <span style="color: var(--text-main); font-size: 14px; font-weight: 600; margin-left: 12px;">Snapchat</span>
+                        <span class="material-symbols-rounded" style="color: var(--text-muted); margin-left: auto; font-size: 16px;">open_in_new</span>
+                    </a>
+                    <a href="https://www.facebook.com/codemikoofficial" target="_blank" style="display: flex; align-items: center; width: 100%; box-sizing: border-box; padding: 0 16px; border-radius: 12px; min-height: 48px; background: var(--card-bg); text-decoration: none; margin-bottom: 8px;">
+                        <svg viewBox="0 0 24 24" style="width: 22px; height: 22px; color: #1877F2;"><path fill="currentColor" d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/></svg>
+                        <span style="color: var(--text-main); font-size: 14px; font-weight: 600; margin-left: 12px;">Facebook</span>
+                        <span class="material-symbols-rounded" style="color: var(--text-muted); margin-left: auto; font-size: 16px;">open_in_new</span>
+                    </a>
+                    <a href="https://bsky.app/profile/codemiko.bsky.social" target="_blank" style="display: flex; align-items: center; width: 100%; box-sizing: border-box; padding: 0 16px; border-radius: 12px; min-height: 48px; background: var(--card-bg); text-decoration: none; margin-bottom: 8px;">
+                        <svg viewBox="0 0 512 512" style="width: 22px; height: 22px; fill: #0085ff;"><path d="M123.6 44.3C186.2 88.5 222.7 151 256 195.9c33.3-44.9 69.8-107.4 132.4-151.6C416.7 24.3 460 12.5 480 32.5c20 20 8.6 69.5 0 102.5-12.7 48.7-44.5 111.4-106.8 135 63.6 15.3 115 48 116.5 106.3 1.5 58.4-40.4 104-106.8 115.5-59.5 10.3-95-17.7-126.9-46.3-15.3-13.7-27.4-24.5-31.5-24.5s-16.2 10.8-31.5 24.5c-31.9 28.6-67.4 56.6-126.9 46.3C-1.8 479.5-43.7 434 42.2 375.6c1.5-58.3 52.9-91 116.5-106.3-62.3-23.6-94.1-86.3-106.8-135-8.6-33-20-82.5 0-102.5 20-20 63.3-8.2 91.6 12.5z"/></svg>
+                        <span style="color: var(--text-main); font-size: 14px; font-weight: 600; margin-left: 12px;">Bluesky</span>
+                        <span class="material-symbols-rounded" style="color: var(--text-muted); margin-left: auto; font-size: 16px;">open_in_new</span>
+                    </a>
+                    <a href="https://app.fanfix.io/@codeyuna" target="_blank" style="display: flex; align-items: center; width: 100%; box-sizing: border-box; padding: 0 16px; border-radius: 12px; min-height: 48px; background: var(--card-bg); text-decoration: none; margin-bottom: 8px;">
+                        <svg viewBox="0 0 24 24" style="width: 22px; height: 22px; color: #ef4444;"><path fill="currentColor" d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/></svg>
+                        <span style="color: var(--text-main); font-size: 14px; font-weight: 600; margin-left: 12px;">Fanfix</span>
+                        <span class="material-symbols-rounded" style="color: var(--text-muted); margin-left: auto; font-size: 16px;">open_in_new</span>
+                    </a>
+                    <a href="https://discord.com/invite/codemiko" target="_blank" style="display: flex; align-items: center; width: 100%; box-sizing: border-box; padding: 0 16px; border-radius: 12px; min-height: 48px; background: var(--card-bg); text-decoration: none; margin-bottom: 8px;">
+                        <svg viewBox="0 0 24 24" style="width: 22px; height: 22px; color: #5865F2;"><path fill="currentColor" d="M20.317 4.3698a19.7913 19.7913 0 00-4.8851-1.5152.0741.0741 0 00-.0785.0371c-.211.3753-.4447.8648-.6083 1.2495-1.8447-.2762-3.68-.2762-5.4868 0-.1636-.3933-.4058-.8742-.6177-1.2495a.077.077 0 00-.0785-.037 19.7363 19.7363 0 00-4.8852 1.515.0699.0699 0 00-.0321.0277C.5334 9.0458-.319 13.5799.0992 18.0578a.0824.0824 0 00.0312.0561c2.0528 1.5076 4.0413 2.4228 5.9929 3.0294a.0777.0777 0 00.0842-.0276c.4616-.6304.8731-1.2952 1.226-1.9942a.076.076 0 00-.0416-.1057c-.6528-.2476-1.2743-.5495-1.8722-.8923a.077.077 0 01-.0076-.1277c.1258-.0943.2517-.1923.3718-.2914a.0743.0743 0 01.0776-.0105c3.9278 1.7933 8.18 1.7933 12.0614 0a.0739.0739 0 01.0785.0095c.1202.099.246.1981.3728.2924a.077.077 0 01-.0066.1276 12.2986 12.2986 0 01-1.873.8914.0766.0766 0 00-.0407.1067c.3604.698.7719 1.3628 1.225 1.9932a.076.076 0 00.0842.0286c1.961-.6067 3.9495-1.5219 6.0023-3.0294a.077.077 0 00.0313-.0552c.5004-5.177-.8382-9.6739-3.5485-13.6604a.061.061 0 00-.0312-.0286zM8.02 15.3312c-1.1825 0-2.1569-1.0857-2.1569-2.419 0-1.3332.9555-2.4189 2.157-2.4189 1.2108 0 2.1757 1.0952 2.1568 2.419 0 1.3332-.9555 2.4189-2.1569 2.4189zm7.9748 0c-1.1825 0-2.1569-1.0857-2.1569-2.419 0-1.3332.9554-2.4189 2.1569-2.4189 1.2108 0 2.1757 1.0952 2.1568 2.419 0 1.3332-.946 2.4189-2.1568 2.4189Z"/></svg>
+                        <span style="color: var(--text-main); font-size: 14px; font-weight: 600; margin-left: 12px;">Discord</span>
+                        <span class="material-symbols-rounded" style="color: var(--text-muted); margin-left: auto; font-size: 16px;">open_in_new</span>
+                    </a>
+                    <a href="https://www.reddit.com/r/CodeMiko/" target="_blank" style="display: flex; align-items: center; width: 100%; box-sizing: border-box; padding: 0 16px; border-radius: 12px; min-height: 48px; background: var(--card-bg); text-decoration: none; margin-bottom: 24px;">
+                        <svg viewBox="0 0 24 24" style="width: 22px; height: 22px; fill: #FF4500;"><path d="M24 11.779c0-1.459-1.192-2.645-2.657-2.645-.715 0-1.363.275-1.84.731-1.81-1.191-4.259-1.949-6.971-2.046l1.483-4.669 4.016.941-.006.058c0 1.193.975 2.163 2.174 2.163 1.198 0 2.172-.97 2.172-2.163s-.975-2.164-2.172-2.164c-.92 0-1.704.574-2.021 1.379l-4.329-1.015c-.189-.046-.381.063-.44.249l-1.654 5.207c-2.838.034-5.409.798-7.3 2.025-.474-.438-1.106-.712-1.796-.712-1.465 0-2.656 1.187-2.656 2.646 0 .97.533 1.811 1.317 2.271-.052.282-.086.567-.086.857 0 3.911 4.808 7.093 10.719 7.093s10.72-3.182 10.72-7.093c0-.274-.029-.544-.075-.81.832-.447 1.405-1.312 1.405-2.318zm-17.224 1.816c0-.868.71-1.575 1.582-1.575.872 0 1.581.707 1.581 1.575s-.709 1.574-1.581 1.574-1.582-.706-1.582-1.574zm9.061 4.669c-1.207 1.214-3.581 1.303-3.69 1.303-.105 0-2.474-.085-3.697-1.303-.146-.145-.145-.382.001-.527.145-.145.381-.144.526.002.825.833 2.378 1.054 3.161 1.054.78 0 2.327-.215 3.153-1.05.145-.147.382-.148.529-.002.146.146.147.383.017.523zm.18-2.925c-.872 0-1.581-.706-1.581-1.574 0-.868.709-1.575 1.581-1.575s1.581.707 1.581 1.575c0 .868-.709 1.574-1.581 1.574z"/></svg>
+                        <span style="color: var(--text-main); font-size: 14px; font-weight: 600; margin-left: 12px;">Reddit</span>
+                        <span class="material-symbols-rounded" style="color: var(--text-muted); margin-left: auto; font-size: 16px;">open_in_new</span>
+                    </a>
+                </div>
+            </transition>
         </div>
     `
 };
@@ -625,7 +809,6 @@ createApp({
         const scrollChatToBottom = () => { setTimeout(() => { const l = document.getElementById('twitch-chat-list'); if (l) l.scrollTop = l.scrollHeight; }, 100); };
         const scrollToBottom = () => { const b = document.getElementById('gerald-msgs'); if (b) b.scrollTop = b.scrollHeight; };
 
-        // Session start persisted in sessionStorage — survives refresh but resets when tab closes
         const _chatSessionStart = (() => {
             let t = sessionStorage.getItem('miko_session_start');
             if (!t) { t = new Date().toISOString(); sessionStorage.setItem('miko_session_start', t); }
@@ -634,7 +817,7 @@ createApp({
         let _persistEnabled = false; 
 
         const buildHtml = (text, tagsEmotes) => {
-            let html = text.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+            let html = text.replace(/&/g, '&').replace(/</g, '<').replace(/>/g, '>');
             if (tagsEmotes) {
                 const replacements = [];
                 tagsEmotes.split('/').forEach(e => {
@@ -689,7 +872,6 @@ createApp({
 
             const html = buildHtml(text, tags['emotes']);
             
-            // Check if the incoming message mentions your username
             const myName = (twitchUsername.value || '').toLowerCase();
             const isMention = myName && text.toLowerCase().includes(`@${myName}`);
 
@@ -819,8 +1001,23 @@ createApp({
 
         const sendTwitchChatMessage = (msg) => {
             if (!msg || !twitchWs || !wsAuthenticated) return;
-            // Send the raw text to Twitch, and let the server echo it back instantly!
             twitchWs.send(`PRIVMSG #codemiko :${msg}`);
+            
+            // Draw it instantly in clean green color
+            const now = new Date();
+            const timestamp = now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+            const safeHtml = msg.replace(/&/g, '&').replace(/</g, '<').replace(/>/g, '>');
+            
+            chatMessages.value.push({
+                timestamp,
+                username: twitchUsername.value,
+                html: parseMarkdownText(safeHtml, customEmotes.value),
+                color: '#53FC18',
+                badges: myTwitchBadges.value || []
+            });
+            
+            if (chatMessages.value.length > 200) chatMessages.value.shift();
+            scrollChatToBottom();
         };
 
         const disconnectTwitch = () => {
