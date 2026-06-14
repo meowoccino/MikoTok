@@ -527,6 +527,16 @@ const MoreView = {
                         <div style="background: var(--card-bg); padding: 12px 16px; border-radius: 10px; display: flex; justify-content: space-between; font-size: 14px; color: var(--text-muted); border: 1px solid var(--border-color);"><span>Top Category</span><strong style="color: var(--text-main);">{{ channelStats.week_category }}</strong></div>
                         <div style="background: var(--card-bg); padding: 12px 16px; border-radius: 10px; display: flex; justify-content: space-between; font-size: 14px; color: var(--text-muted); border: 1px solid var(--border-color);"><span>Active Days</span><strong style="color: var(--text-main);">{{ channelStats.week_days }} days / week</strong></div>
                     </div>
+                    <div v-if="statTimeframe === 'month'" style="display: flex; flex-direction: column; gap: 8px;">
+                        <div style="background: var(--card-bg); padding: 12px 16px; border-radius: 10px; display: flex; justify-content: space-between; font-size: 14px; color: var(--text-muted); border: 1px solid var(--border-color);"><span>Hours Streamed</span><strong style="color: var(--text-main);">{{ channelStats.month_hours }} Hours</strong></div>
+                        <div style="background: var(--card-bg); padding: 12px 16px; border-radius: 10px; display: flex; justify-content: space-between; font-size: 14px; color: var(--text-muted); border: 1px solid var(--border-color);"><span>Top Category</span><strong style="color: var(--text-main);">{{ channelStats.month_category }}</strong></div>
+                        <div style="background: var(--card-bg); padding: 12px 16px; border-radius: 10px; display: flex; justify-content: space-between; font-size: 14px; color: var(--text-muted); border: 1px solid var(--border-color);"><span>Active Days</span><strong style="color: var(--text-main);">{{ channelStats.month_days }} days / week</strong></div>
+                    </div>
+                    <div v-if="statTimeframe === 'year'" style="display: flex; flex-direction: column; gap: 8px;">
+                        <div style="background: var(--card-bg); padding: 12px 16px; border-radius: 10px; display: flex; justify-content: space-between; font-size: 14px; color: var(--text-muted); border: 1px solid var(--border-color);"><span>Hours Streamed</span><strong style="color: var(--text-main);">{{ channelStats.year_hours }} Hours</strong></div>
+                        <div style="background: var(--card-bg); padding: 12px 16px; border-radius: 10px; display: flex; justify-content: space-between; font-size: 14px; color: var(--text-muted); border: 1px solid var(--border-color);"><span>Top Category</span><strong style="color: var(--text-main);">{{ channelStats.year_category }}</strong></div>
+                        <div style="background: var(--card-bg); padding: 12px 16px; border-radius: 10px; display: flex; justify-content: space-between; font-size: 14px; color: var(--text-muted); border: 1px solid var(--border-color);"><span>Active Days</span><strong style="color: var(--text-main);">{{ channelStats.year_days }} days / week</strong></div>
+                    </div>
                 </div>
             </transition>
         </div>
@@ -770,41 +780,81 @@ createApp({
         const clearGeraldHistory = async () => { wipeState.value = 'WIPING...'; geraldMessages.value = [{ role: 'gerald', content: '' }]; wipeState.value = 'SUCCESS'; setTimeout(() => wipeState.value = 'Wipe Gerald Memory', 1500); };
         const nukeCache = () => { nukeState.value = 'NUKING...'; localStorage.clear(); caches.keys().then(names => { for (let n of names) caches.delete(n); }); nukeState.value = 'SUCCESS'; setTimeout(() => window.location.reload(), 1000); };
 
-        const handleGeraldSend = async () => {
+        const talkToGerald = async () => {
+            const inputEl = document.getElementById('gerald-txt-input');
+            if (inputEl && inputEl.value !== geraldInput.value) { geraldInput.value = inputEl.value; }
             if (!geraldInput.value.trim() || isGeraldTyping.value) return;
-            const text = geraldInput.value.trim();
+
+            const userMsg = geraldInput.value;
+            geraldMessages.value.push({ role: 'user', content: userMsg });
+
+            if (currentUser.value) {
+                sbClient.from('gerald_history').insert({ user_id: currentUser.value.id, role: 'user', content: userMsg }).then();
+            }
+
             geraldInput.value = '';
-            
-            geraldMessages.value.push({ role: 'user', content: text });
-            isGeraldTyping.value = true;
+            if (inputEl) { inputEl.value = ''; inputEl.style.height = 'auto'; }
+
+            isGeraldTyping.value = true; 
+            showEmotePicker.value = false;
+            showMinigames.value = false;
             
             await nextTick();
             const b = document.getElementById('gerald-msgs');
             if (b) b.scrollTop = b.scrollHeight;
 
+            const geminiHistory = geraldMessages.value.slice(-12).map(m => ({ role: m.role === 'gerald' ? 'model' : 'user', parts: [{ text: m.content }] }));
+
             try {
-                const sysDirective = getGeraldSystemDirective(customEmotes.value);
-                const historyMapped = geraldMessages.value.filter(m => m.content).map(m => ({
-                    role: m.role === 'gerald' ? 'model' : 'user',
-                    parts: [{ text: m.content }]
-                }));
-
-                const { data } = await sbClient.functions.invoke('gerald-chat', {
-                    body: { systemInstruction: sysDirective, history: historyMapped }
+                const { data, error } = await sbClient.functions.invoke('gerald-chat', { 
+                    body: { history: geminiHistory, system_directive: getGeraldSystemDirective(customEmotes.value) } 
                 });
+                if (!error && data?.reply) {
+                    let formattedReply = enforceGrammar(data.reply.trim());
+                    geraldMessages.value.push({ role: 'gerald', content: formattedReply });
+                    if (currentUser.value) {
+                        sbClient.from('gerald_history').insert({ user_id: currentUser.value.id, role: 'gerald', content: formattedReply }).then();
+                    }
+                } else throw error;
+            } catch { geraldMessages.value.push({ role: 'gerald', content: 'SYSTEM FAILURE: Core sync interrupted.' }); }
+            finally { isGeraldTyping.value = false; nextTick(() => { if(b) b.scrollTop = b.scrollHeight; }); }
+        };
 
-                if (data && data.reply) {
-                    geraldMessages.value.push({ role: 'gerald', content: enforceGrammar(data.reply) });
-                } else {
-                    geraldMessages.value.push({ role: 'gerald', content: 'Connection issue. Brain offline.' });
-                }
-            } catch {
-                geraldMessages.value.push({ role: 'gerald', content: 'Fatal Exception inside transmission node.' });
-            } finally {
-                isGeraldTyping.value = false;
-                await nextTick();
-                if (b) b.scrollTop = b.scrollHeight;
+        const triggerAiMinigame = (gameObj) => {
+            geraldInput.value = "";
+            showEmotePicker.value = false;
+            showMinigames.value = false;
+            
+            const logMsg = `**[EVENT: ${gameObj.label} Protocol Activated]**`;
+            geraldMessages.value.push({ role: 'user', content: logMsg });
+            
+            if (currentUser.value) {
+                sbClient.from('gerald_history').insert({ user_id: currentUser.value.id, role: 'user', content: logMsg }).then();
             }
+            
+            isGeraldTyping.value = true;
+            nextTick(() => { const b = document.getElementById('gerald-msgs'); if(b) b.scrollTop = b.scrollHeight; });
+
+            const contextHistory = geraldMessages.value.slice(-10).map(m => ({ role: m.role === 'gerald' ? 'model' : 'user', parts: [{ text: m.content }] }));
+
+            sbClient.functions.invoke('gerald-chat', { 
+                body: { history: contextHistory, system_directive: getGeraldSystemDirective(customEmotes.value, gameObj.prompt) } 
+            }).then(({ data, error }) => {
+                if (!error && data?.reply) {
+                    let formattedReply = enforceGrammar(data.reply.trim());
+                    geraldMessages.value.push({ role: 'gerald', content: formattedReply });
+                    if (currentUser.value) {
+                        sbClient.from('gerald_history').insert({ user_id: currentUser.value.id, role: 'gerald', content: formattedReply }).then();
+                    }
+                } else {
+                    geraldMessages.value.push({ role: 'gerald', content: 'MALFUNCTION: Internal hardware override processing failure.' });
+                }
+            }).catch(() => {
+                geraldMessages.value.push({ role: 'gerald', content: 'MALFUNCTION: Core logic offline.' });
+            }).finally(() => {
+                isGeraldTyping.value = false;
+                nextTick(() => { const b = document.getElementById('gerald-msgs'); if(b) b.scrollTop = b.scrollHeight; });
+            });
         };
 
         onMounted(() => {
@@ -850,9 +900,12 @@ createApp({
             prevVod: () => { if (currentVodIndex.value > (isLive.value ? -1 : 0)) currentVodIndex.value--; },
             nextVod: () => { if (currentVodIndex.value < recentVods.value.length - 1) currentVodIndex.value++; },
             playClip: (clip) => { selectedClip.value = clip; },
-            handleLogin, handleLogout, runSync, clearGeraldHistory, nukeCache,
-            sendGeraldMessage: handleGeraldSend,
-            playMinigame: (g) => { geraldInput.value = `/run game_${g.id}: ${g.prompt}`; showMinigames.value = false; handleGeraldSend(); }
+            handleLogin, handleLogout, runSync, clearGeraldHistory, nukeCache, talkToGerald, triggerAiMinigame,
+            closePickers: () => { showEmotePicker.value = false; showMinigames.value = false; },
+            insertEmote: (name) => { geraldInput.value += ' ' + name + ' '; showEmotePicker.value = false; },
+            toggleEmotes: () => { showEmotePicker.value = !showEmotePicker.value; showMinigames.value = false; },
+            toggleMinigames: () => { showMinigames.value = !showMinigames.value; showEmotePicker.value = false; },
+            handleGeraldEnter: (e) => { if (!e.shiftKey && e.key === 'Enter') { e.preventDefault(); talkToGerald(); } }
         };
     }
 }).mount('#app-container');
