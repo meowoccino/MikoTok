@@ -5,41 +5,9 @@ const badgeAssets = {};
 const styleReset = document.createElement('style');
 styleReset.innerHTML = `
     .app-wrapper { border-left: none !important; border-right: none !important; max-width: 100% !important; }
-    html, body { overscroll-behavior-y: none; }
+    html, body { overscroll-behavior-y: none; background-color: var(--bg-color) !important; }
 `;
 document.head.appendChild(styleReset);
-
-const parseMarkdownText = (text, emotesMap) => {
-    if (!text) return ''; 
-    let html = text.replace(/&/g, '&').replace(/</g, '<').replace(/>/g, '>');
-    html = html.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>').replace(/\*(.*?)\*/g, '<em>$1</em>');
-    
-    const urlPattern = /(\b(https?|ftp|file):\/\/[-A-Z0-9+&@#\/%?=~_|!:,.;]*[-A-Z0-9+&@#\/%=~_|])/ig;
-    html = html.replace(urlPattern, "<a href='$1' target='_blank'>$1</a>");
-    
-    if (emotesMap) {
-        const tokens = html.split(/(<[^>]+>|[\s]+)/); 
-        const emoteKeys = Object.keys(emotesMap);
-        
-        const lowerMap = {};
-        emoteKeys.forEach(k => lowerMap[k.toLowerCase()] = k);
-
-        for (let i = 0; i < tokens.length; i++) {
-            const token = tokens[i];
-            if (!token || token.startsWith('<') || token.trim() === '') continue;
-            
-            const cleanToken = token.replace(/^:|:$/g, '').replace(/[.,!?"'()[\]{}]/g, '').trim().toLowerCase();
-            if (lowerMap[cleanToken]) {
-                const actualKey = lowerMap[cleanToken];
-                const url = emotesMap[actualKey].url;
-                const escapedClean = cleanToken.replace(/[-\/\\^$*+?.()|[\]{}]/g, '\\$&');
-                tokens[i] = token.replace(new RegExp(`:?${escapedClean}:?`, 'i'), `<img src="${url}" class="chat-emote-img" title="${actualKey}">`);
-            }
-        }
-        html = tokens.join('');
-    }
-    return html;
-};
 
 const enforceGrammar = (text) => {
     if (!text) return '';
@@ -303,7 +271,30 @@ const GeraldView = {
     props: ['currentTab', 'geraldMessages', 'isGeraldTyping', 'geraldInput', 'showEmotePicker', 'showMinigames', 'customEmotes', 'geminiStatus', 'sysStats'],
     methods: {
         getEmoteUrl(emote) { return emote.url; },
-        formatMarkdown(text) { return parseMarkdownText(text, this.customEmotes); },
+        formatMarkdown(text) { 
+            let html = text.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+            if (this.customEmotes) {
+                const tokens = html.split(/(<[^>]+>|[\s]+)/); 
+                const emoteKeys = Object.keys(this.customEmotes);
+                const lowerMap = {};
+                emoteKeys.forEach(k => lowerMap[k.toLowerCase()] = k);
+
+                for (let i = 0; i < tokens.length; i++) {
+                    const token = tokens[i];
+                    if (!token || token.startsWith('<') || token.trim() === '') continue;
+                    
+                    const cleanToken = token.replace(/^:|:$/g, '').replace(/[.,!?"'()[\]{}]/g, '').trim().toLowerCase();
+                    if (lowerMap[cleanToken]) {
+                        const actualKey = lowerMap[cleanToken];
+                        const url = this.customEmotes[actualKey].url;
+                        const escapedClean = cleanToken.replace(/[-\/\\^$*+?.()|[\]{}]/g, '\\$&');
+                        tokens[i] = token.replace(new RegExp(`:?${escapedClean}:?`, 'i'), `<img src="${url}" class="chat-emote-img" title="${actualKey}">`);
+                    }
+                }
+                html = tokens.join('');
+            }
+            return html;
+        },
         insertEmote(name) { this.$emit('insert-emote', name); }
     },
     template: `
@@ -443,13 +434,17 @@ const MoreView = {
                 const gql = await fetch('https://gql.twitch.tv/gql', { 
                     method: 'POST', 
                     headers: { 'Client-ID': 'kimne78kx3ncx6brgo4mv6wki5h1ko' }, 
-                    body: JSON.stringify({ query: `query{user(login:"codemiko"){channel{schedule{segments(first:5){edges{node{startAt}}}}}}}` }) 
+                    body: JSON.stringify({ query: `query{user(login:"codemiko"){channel{schedule{segments(first:20){edges{node{startAt}}}}}}}` }) 
                 });
                 const d = await gql.json();
                 const schedEdges = d.data?.user?.channel?.schedule?.segments?.edges;
                 if (schedEdges && schedEdges.length > 0) {
                     const now = Date.now();
-                    const upcoming = schedEdges.find(e => new Date(e.node.startAt).getTime() > now);
+                    const upcoming = schedEdges.find(e => {
+                        if (!e.node.startAt) return false;
+                        const estimatedEndTime = new Date(e.node.startAt).getTime() + (4 * 60 * 60 * 1000); 
+                        return estimatedEndTime > now;
+                    });
                     if (upcoming) {
                         nextStreamTime.value = new Date(upcoming.node.startAt).getTime();
                     }
@@ -468,7 +463,7 @@ const MoreView = {
     template: `
         <div class="more-container" style="position: relative; height: 100%; width: 100%; background: var(--bg-color); overflow: hidden;">
             
-            <div style="height: 100%; overflow-y: auto; padding: 0 16px 20px;">
+            <div style="height: 100%; overflow-y: auto; padding: 0 16px 20px;" v-show="activeSubView === 'main'">
                 
                 <div v-if="streamState === 'future'" style="background: linear-gradient(135deg, rgba(145, 70, 255, 0.15), rgba(145, 70, 255, 0.05)); border: 1px solid rgba(145, 70, 255, 0.3); border-radius: 16px; padding: 20px; margin-bottom: 24px; margin-top: 8px; text-align: center; display: flex; flex-direction: column; align-items: center; justify-content: center;">
                     <div style="color: var(--primary); font-size: 12px; font-weight: 800; letter-spacing: 1.5px; text-transform: uppercase; margin-bottom: 8px; display: flex; align-items: center; gap: 6px;">
@@ -580,9 +575,92 @@ const MoreView = {
                 </a>
                 <a href="https://www.reddit.com/r/CodeMiko/" target="_blank" style="display: flex; align-items: center; width: 100%; box-sizing: border-box; padding: 0 16px; border-radius: 12px; min-height: 48px; background: var(--card-bg); text-decoration: none; margin-bottom: 24px;">
                     <svg viewBox="0 0 24 24" style="width: 22px; height: 22px; fill: #FF4500;"><path d="M24 11.779c0-1.459-1.192-2.645-2.657-2.645-.715 0-1.363.275-1.84.731-1.81-1.191-4.259-1.949-6.971-2.046l1.483-4.669 4.016.941-.006.058c0 1.193.975 2.163 2.174 2.163 1.198 0 2.172-.97 2.172-2.163s-.975-2.164-2.172-2.164c-.92 0-1.704.574-2.021 1.379l-4.329-1.015c-.189-.046-.381.063-.44.249l-1.654 5.207c-2.838.034-5.409.798-7.3 2.025-.474-.438-1.106-.712-1.796-.712-1.465 0-2.656 1.187-2.656 2.646 0 .97.533 1.811 1.317 2.271-.052.282-.086.567-.086.857 0 3.911 4.808 7.093 10.719 7.093s10.72-3.182 10.72-7.093c0-.274-.029-.544-.075-.81.832-.447 1.405-1.312 1.405-2.318zm-17.224 1.816c0-.868.71-1.575 1.582-1.575.872 0 1.581.707 1.581 1.575s-.709 1.574-1.581 1.574-1.582-.706-1.582-1.574zm9.061 4.669c-1.207 1.214-3.581 1.303-3.69 1.303-.105 0-2.474-.085-3.697-1.303-.146-.145-.145-.382.001-.527.145-.145.381-.144.526.002.825.833 2.378 1.054 3.161 1.054.78 0 2.327-.215 3.153-1.05.145-.147.382-.148.529-.002.146.146.147.383.017.523zm.18-2.925c-.872 0-1.581-.706-1.581-1.574 0-.868.709-1.575 1.581-1.575s1.581.707 1.581 1.575c0 .868-.709 1.574-1.581 1.574z"/></svg>
-                        <span style="color: var(--text-main); font-size: 14px; font-weight: 600; margin-left: 12px;">Reddit</span>
-                        <span class="material-symbols-rounded" style="color: var(--text-muted); margin-left: auto; font-size: 16px;">open_in_new</span>
-                    </a>
+                    <span style="color: var(--text-main); font-size: 14px; font-weight: 600; margin-left: 12px;">Reddit</span>
+                    <span class="material-symbols-rounded" style="color: var(--text-muted); margin-left: auto; font-size: 16px;">open_in_new</span>
+                </a>
+            </div>
+
+            <transition name="nav-slide">
+                <div v-if="activeSubView === 'about'" style="position: absolute; inset: 0; background: var(--bg-color); z-index: 50; overflow-y: auto; padding: 20px 16px; box-sizing: border-box;">
+                    <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 24px; font-size: 18px; font-weight: bold; color: var(--text-main);">
+                        <button @click="activeSubView = 'main'" style="background: var(--card-bg); border: 1px solid var(--border-color); color: var(--text-main); width: 36px; height: 36px; border-radius: 50%; display: flex; align-items: center; justify-content: center; cursor: pointer; box-shadow: 0 2px 8px rgba(0,0,0,0.05);">
+                            <span class="material-symbols-rounded">arrow_back</span>
+                        </button>
+                        About CodeMiko
+                    </div>
+                    <div style="text-align: center; margin-bottom: 24px;">
+                        <img src="https://raw.githubusercontent.com/meowoccino/MikoTok/main/1000018850.png" style="width: 110px; height: 110px; border-radius: 50%; margin-bottom: 12px;" alt="Avatar">
+                        <h2 style="margin:0; color: var(--text-main);">CodeMiko</h2>
+                        <div style="color:var(--text-muted); font-size:14px; margin-top:4px;">Youna Kang • VTuber & Dev</div>
+                    </div>
+                    <div style="color: var(--text-main); font-size: 14px; line-height: 1.6; background: var(--card-bg); padding: 16px; border-radius: 12px; margin-bottom: 16px; border: 1px solid var(--border-color);">
+                        <div style="text-align: center; margin-bottom: 12px;"><strong style="color:var(--text-main);">The Glitch in the System</strong></div>
+                        CodeMiko is a groundbreaking interactive VTuber project created and operated by "The Technician" (Youna Kang). Using a state-of-the-art Xsens full-body motion capture suit and Unreal Engine 5, Miko pushes the absolute boundaries of digital broadcasting.<br><br>
+                        What makes the stream unique is its interactivity. Chatters can use Bits and channel points to directly trigger interactions, minigames, and catastrophic visual glitches on Miko's avatar in real-time.<br><br>
+                        According to her lore, Miko is an aspiring video game NPC without a game, attempting to find her place in the digital world after being rejected by major AAA titles.
+                    </div>
+                </div>
+            </transition>
+
+            <transition name="nav-slide">
+                <div v-if="activeSubView === 'stats'" style="position: absolute; inset: 0; background: var(--bg-color); z-index: 50; overflow-y: auto; padding: 20px 16px; box-sizing: border-box;">
+                    <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 24px; font-size: 18px; font-weight: bold; color: var(--text-main);">
+                        <button @click="activeSubView = 'main'" style="background: var(--card-bg); border: 1px solid var(--border-color); color: var(--text-main); width: 36px; height: 36px; border-radius: 50%; display: flex; align-items: center; justify-content: center; cursor: pointer;">
+                            <span class="material-symbols-rounded">arrow_back</span>
+                        </button>
+                        Channel Statistics
+                    </div>
+
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 24px;">
+                        <div style="background: var(--card-bg); padding: 16px; border-radius: 12px; display: flex; flex-direction: column; align-items: center; text-align: center; border: 1px solid var(--border-color);">
+                            <div style="font-size: 20px; font-weight: bold; color: var(--primary); margin-bottom: 4px;">{{ channelStats.followers }}</div>
+                            <div style="font-size: 11px; color: var(--text-muted); text-transform: uppercase; font-weight: 700; letter-spacing: 0.5px;">Followers</div>
+                        </div>
+                        <div style="background: var(--card-bg); padding: 16px; border-radius: 12px; display: flex; flex-direction: column; align-items: center; text-align: center; border: 1px solid var(--border-color);">
+                            <div style="font-size: 20px; font-weight: bold; color: var(--primary); margin-bottom: 4px;">{{ channelStats.total_views }}</div>
+                            <div style="font-size: 11px; color: var(--text-muted); text-transform: uppercase; font-weight: 700; letter-spacing: 0.5px;">Total Views</div>
+                        </div>
+                        <div style="background: var(--card-bg); padding: 16px; border-radius: 12px; display: flex; flex-direction: column; align-items: center; text-align: center; border: 1px solid var(--border-color);">
+                            <div style="font-size: 20px; font-weight: bold; color: var(--primary); margin-bottom: 4px;">{{ channelStats.avg_viewers }}</div>
+                            <div style="font-size: 11px; color: var(--text-muted); text-transform: uppercase; font-weight: 700; letter-spacing: 0.5px;">Avg Viewers</div>
+                        </div>
+                        <div style="background: var(--card-bg); padding: 16px; border-radius: 12px; display: flex; flex-direction: column; align-items: center; text-align: center; border: 1px solid var(--border-color);">
+                            <div style="font-size: 20px; font-weight: bold; color: var(--primary); margin-bottom: 4px;">{{ channelStats.peak_viewers }}</div>
+                            <div style="font-size: 11px; color: var(--text-muted); text-transform: uppercase; font-weight: 700; letter-spacing: 0.5px;">All-Time Peak</div>
+                        </div>
+                        <div style="background: var(--card-bg); padding: 16px; border-radius: 12px; display: flex; flex-direction: column; align-items: center; text-align: center; border: 1px solid var(--border-color);">
+                            <div style="font-size: 20px; font-weight: bold; color: var(--primary); margin-bottom: 4px;">{{ channelStats.active_subs }}</div>
+                            <div style="font-size: 11px; color: var(--text-muted); text-transform: uppercase; font-weight: 700; letter-spacing: 0.5px;">Active Subs</div>
+                        </div>
+                        <div style="background: var(--card-bg); padding: 16px; border-radius: 12px; display: flex; flex-direction: column; align-items: center; text-align: center; border: 1px solid var(--border-color);">
+                            <div style="font-size: 16px; font-weight: bold; color: var(--primary); margin-top: 4px; margin-bottom: 4px;">{{ channelStats.account_created }}</div>
+                            <div style="font-size: 11px; color: var(--text-muted); text-transform: uppercase; font-weight: 700; letter-spacing: 0.5px;">Account Created</div>
+                        </div>
+                    </div>
+
+                    <div style="font-size:12px; font-weight:bold; color:var(--primary); margin: 24px 0 12px 8px; text-transform:uppercase;">Recent Broadcasting</div>
+                    
+                    <div style="display: flex; gap: 8px; margin-bottom: 12px; background: rgba(145, 70, 255, 0.1); padding: 4px; border-radius: 8px;">
+                        <button @click="statTimeframe = 'week'" :style="statTimeframe === 'week' ? 'background: var(--card-bg); color: var(--text-main); box-shadow: 0 2px 5px rgba(0,0,0,0.1);' : 'background: transparent; color: var(--text-muted);'" style="flex: 1; padding: 8px 0; text-align: center; border-radius: 6px; font-size: 13px; font-weight: 600; cursor: pointer; border:none;">Week</button>
+                        <button @click="statTimeframe = 'month'" :style="statTimeframe === 'month' ? 'background: var(--card-bg); color: var(--text-main); box-shadow: 0 2px 5px rgba(0,0,0,0.1);' : 'background: transparent; color: var(--text-muted);'" style="flex: 1; padding: 8px 0; text-align: center; border-radius: 6px; font-size: 13px; font-weight: 600; cursor: pointer; border:none;">Month</button>
+                        <button @click="statTimeframe = 'year'" :style="statTimeframe === 'year' ? 'background: var(--card-bg); color: var(--text-main); box-shadow: 0 2px 5px rgba(0,0,0,0.1);' : 'background: transparent; color: var(--text-muted);'" style="flex: 1; padding: 8px 0; text-align: center; border-radius: 6px; font-size: 13px; font-weight: 600; cursor: pointer; border:none;">Year</button>
+                    </div>
+
+                    <div v-if="statTimeframe === 'week'" style="display: flex; flex-direction: column; gap: 8px;">
+                        <div style="background: var(--card-bg); padding: 12px 16px; border-radius: 10px; display: flex; justify-content: space-between; font-size: 14px; color: var(--text-muted); border: 1px solid var(--border-color);"><span>Hours Streamed</span><strong style="color: var(--text-main);">{{ channelStats.week_hours }} Hours</strong></div>
+                        <div style="background: var(--card-bg); padding: 12px 16px; border-radius: 10px; display: flex; justify-content: space-between; font-size: 14px; color: var(--text-muted); border: 1px solid var(--border-color);"><span>Top Category</span><strong style="color: var(--text-main);">{{ channelStats.week_category }}</strong></div>
+                        <div style="background: var(--card-bg); padding: 12px 16px; border-radius: 10px; display: flex; justify-content: space-between; font-size: 14px; color: var(--text-muted); border: 1px solid var(--border-color);"><span>Active Days</span><strong style="color: var(--text-main);">{{ channelStats.week_days }} days / week</strong></div>
+                    </div>
+                    <div v-if="statTimeframe === 'month'" style="display: flex; flex-direction: column; gap: 8px;">
+                        <div style="background: var(--card-bg); padding: 12px 16px; border-radius: 10px; display: flex; justify-content: space-between; font-size: 14px; color: var(--text-muted); border: 1px solid var(--border-color);"><span>Hours Streamed</span><strong style="color: var(--text-main);">{{ channelStats.month_hours }} Hours</strong></div>
+                        <div style="background: var(--card-bg); padding: 12px 16px; border-radius: 10px; display: flex; justify-content: space-between; font-size: 14px; color: var(--text-muted); border: 1px solid var(--border-color);"><span>Top Category</span><strong style="color: var(--text-main);">{{ channelStats.month_category }}</strong></div>
+                        <div style="background: var(--card-bg); padding: 12px 16px; border-radius: 10px; display: flex; justify-content: space-between; font-size: 14px; color: var(--text-muted); border: 1px solid var(--border-color);"><span>Active Days</span><strong style="color: var(--text-main);">{{ channelStats.month_days }} days / week</strong></div>
+                    </div>
+                    <div v-if="statTimeframe === 'year'" style="display: flex; flex-direction: column; gap: 8px;">
+                        <div style="background: var(--card-bg); padding: 12px 16px; border-radius: 10px; display: flex; justify-content: space-between; font-size: 14px; color: var(--text-muted); border: 1px solid var(--border-color);"><span>Hours Streamed</span><strong style="color: var(--text-main);">{{ channelStats.year_hours }} Hours</strong></div>
+                        <div style="background: var(--card-bg); padding: 12px 16px; border-radius: 10px; display: flex; justify-content: space-between; font-size: 14px; color: var(--text-muted); border: 1px solid var(--border-color);"><span>Top Category</span><strong style="color: var(--text-main);">{{ channelStats.year_category }}</strong></div>
+                        <div style="background: var(--card-bg); padding: 12px 16px; border-radius: 10px; display: flex; justify-content: space-between; font-size: 14px; color: var(--text-muted); border: 1px solid var(--border-color);"><span>Active Days</span><strong style="color: var(--text-main);">{{ channelStats.year_days }} days / week</strong></div>
+                    </div>
                 </div>
             </transition>
         </div>
@@ -791,25 +869,65 @@ createApp({
         })();
         let _persistEnabled = false; 
 
+        // Fix: Properly split and merge Twitch Emotes and 7TV Custom Emotes in one exact pass
         const buildHtml = (text, tagsEmotes) => {
-            let html = text.replace(/&/g, '&').replace(/</g, '<').replace(/>/g, '>');
+            let rawText = text;
+            
+            // 1. Process explicit Twitch emote tags securely before escaping HTML
             if (tagsEmotes) {
                 const replacements = [];
                 tagsEmotes.split('/').forEach(e => {
                     const [id, positions] = e.split(':');
                     if (!positions) return;
-                    positions.split(',').forEach(pos => { const [s, en] = pos.split('-').map(Number); replacements.push({ s, en, id }); });
+                    positions.split(',').forEach(pos => { 
+                        const [s, en] = pos.split('-').map(Number); 
+                        replacements.push({ s, en, id }); 
+                    });
                 });
                 replacements.sort((a, b) => b.s - a.s);
-                const chars = [...text];
+                const rawChars = [...text];
+                
                 replacements.forEach(({ s, en, id }) => {
-                    const emoteName = chars.slice(s, en + 1).join('');
-                    chars.splice(s, en - s + 1, `<img src="https://static-cdn.jtvnw.net/emoticons/v2/${id}/default/dark/1.0" class="chat-emote-img" title="${emoteName}">`);
+                    const emoteName = rawChars.slice(s, en + 1).join('');
+                    rawChars.splice(s, en - s + 1, `_TWITCH_EMOTE_${id}_${emoteName}_`);
                 });
-                html = chars.join('');
-            } else {
-                html = parseMarkdownText(text, customEmotes.value);
+                rawText = rawChars.join('');
             }
+            
+            // 2. Escape standard HTML to prevent injection
+            let html = rawText.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+            
+            // 3. Inject the actual Twitch image tags back into the escaped string
+            html = html.replace(/_TWITCH_EMOTE_([^_]+)_([^_]+)_/g, '<img src="https://static-cdn.jtvnw.net/emoticons/v2/$1/default/dark/1.0" class="chat-emote-img" title="$2">');
+
+            // 4. Linkify standard URLs
+            const urlPattern = /(\b(https?|ftp|file):\/\/[-A-Z0-9+&@#\/%?=~_|!:,.;]*[-A-Z0-9+&@#\/%=~_|])/ig;
+            html = html.replace(urlPattern, "<a href='$1' target='_blank'>$1</a>");
+            
+            // 5. Scan the rest of the text strictly for your 7TV Custom Emotes
+            if (customEmotes.value) {
+                const tokens = html.split(/(<[^>]+>|[\s]+)/); 
+                const emoteKeys = Object.keys(customEmotes.value);
+                const lowerMap = {};
+                emoteKeys.forEach(k => lowerMap[k.toLowerCase()] = k);
+
+                for (let i = 0; i < tokens.length; i++) {
+                    const token = tokens[i];
+                    if (!token || token.startsWith('<') || token.trim() === '') continue;
+                    
+                    const cleanToken = token.replace(/^:|:$/g, '').replace(/[.,!?"'()[\]{}]/g, '').trim().toLowerCase();
+                    if (lowerMap[cleanToken]) {
+                        const actualKey = lowerMap[cleanToken];
+                        const url = customEmotes.value[actualKey].url;
+                        const escapedClean = cleanToken.replace(/[-\/\\^$*+?.()|[\]{}]/g, '\\$&');
+                        tokens[i] = token.replace(new RegExp(`:?${escapedClean}:?`, 'i'), `<img src="${url}" class="chat-emote-img" title="${actualKey}">`);
+                    }
+                }
+                html = tokens.join('');
+            }
+
+            // 6. Markdown format final string
+            html = html.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>').replace(/\*(.*?)\*/g, '<em>$1</em>');
             return html;
         };
 
@@ -893,7 +1011,7 @@ createApp({
                         const d = new Date(row.created_at);
                         const ts = d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
                         const badges = Array.isArray(row.badges) ? row.badges : [];
-                        const html = parseMarkdownText(row.message || '', customEmotes.value);
+                        const html = buildHtml(row.message || '', null);
                         
                         const isMention = myName && row.message && row.message.toLowerCase().includes(`@${myName}`);
                         
@@ -980,12 +1098,11 @@ createApp({
             
             const now = new Date();
             const timestamp = now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-            const safeHtml = msg.replace(/&/g, '&').replace(/</g, '<').replace(/>/g, '>');
             
             chatMessages.value.push({
                 timestamp,
                 username: twitchUsername.value,
-                html: parseMarkdownText(safeHtml, customEmotes.value),
+                html: buildHtml(msg, null),
                 color: localStorage.getItem('tw_user_color') || '#9146FF', 
                 badges: myTwitchBadges.value || []
             });
@@ -1273,7 +1390,7 @@ createApp({
         });
 
         return {
-            hostname, splashVisible, splashOpacity, currentTab, tabOffset, appTheme, toggleTheme, clips, allClipsCount, modals, isLive, currentUser, loginEmail, loginPass, loginError, showLoginPopup, geraldInput, geraldMessages, isGeraldTyping, talkToGerald, handleGeraldEnter, syncState, wipeState, logoutState, nukeState, isHeaderVisible, handleScroll, currentFilter, activeFilterLabel, isFilterMenuOpen, closeFilterMenu, applyFilter, parseMarkdown: (text) => parseMarkdownText(text, customEmotes.value), recentVods, currentVodIndex, nextVod, prevVod, customEmotes, showEmotePicker, insertEmote, toggleEmotes, toggleMinigames, closePickers, nukeCache, activeClipId, switchTab, playClip, selectedClip, showMinigames, runSync, disconnectTwitch, triggerAiMinigame, geminiStatus, sysStats, chatMessages, twitchChatToken, twitchAuthUrl, twitchUsername, sendTwitchChatMessage, handleSwipeStart, handleSwipeEnd, handleModalTouchStart, handleModalTouchMove, handleModalTouchEnd, clearGeraldHistory,
+            hostname, splashVisible, splashOpacity, currentTab, tabOffset, appTheme, toggleTheme, clips, allClipsCount, modals, isLive, currentUser, loginEmail, loginPass, loginError, showLoginPopup, geraldInput, geraldMessages, isGeraldTyping, talkToGerald, handleGeraldEnter, syncState, wipeState, logoutState, nukeState, isHeaderVisible, handleScroll, currentFilter, activeFilterLabel, isFilterMenuOpen, closeFilterMenu, applyFilter, parseMarkdown: (text) => buildHtml(text, null), recentVods, currentVodIndex, nextVod, prevVod, customEmotes, showEmotePicker, insertEmote, toggleEmotes, toggleMinigames, closePickers, nukeCache, activeClipId, switchTab, playClip, selectedClip, showMinigames, runSync, disconnectTwitch, triggerAiMinigame, geminiStatus, sysStats, chatMessages, twitchChatToken, twitchAuthUrl, twitchUsername, sendTwitchChatMessage, handleSwipeStart, handleSwipeEnd, handleModalTouchStart, handleModalTouchMove, handleModalTouchEnd, clearGeraldHistory,
             logoSvg: (id) => `<svg viewBox="0 0 100 100"><defs><linearGradient id="grad-${id}" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stop-color="#9146FF"/><stop offset="100%" stop-color="#a970ff"/></linearGradient></defs><circle cx="50" cy="50" r="40" fill="url(#grad-${id})"/><path d="M 33 38 L 48 62 L 62 38 L 62 55 Q 62 65 69 64" fill="none" stroke="#ffffff" stroke-width="8" stroke-linecap="round" stroke-linejoin="round"/></svg>`,
             handleLogin: async () => { 
                 loginError.value = '';
