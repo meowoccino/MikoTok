@@ -20,8 +20,8 @@ const parseMarkdownText = (text, emotesMap) => {
             const token = tokens[i];
             if (!token || token.startsWith('<') || token.trim() === '') continue;
             
-            // Clean colons and trailing sentence punctuation safely
-            const cleanToken = token.replace(/^:|:$/g, '').replace(/[.,!?]/g, '').trim().toLowerCase();
+            // Clean colons, trailing sentence punctuation, quotes, and brackets safely
+            const cleanToken = token.replace(/^:|:$/g, '').replace(/[.,!?"'()[\]{}]/g, '').trim().toLowerCase();
             if (lowerMap[cleanToken]) {
                 const actualKey = lowerMap[cleanToken];
                 const url = emotesMap[actualKey].url;
@@ -37,6 +37,15 @@ const parseMarkdownText = (text, emotesMap) => {
 const enforceGrammar = (text) => {
     if (!text) return '';
     return text.replace(/(^\w|[.!?]\s*\w)/g, c => c.toUpperCase());
+};
+
+// DYNAMIC AI VOCABULARY - Injects random emotes into Gerald's brain so he knows what to use
+const getGeraldSystemDirective = (customEmotesMap, basePrompt = "You are GERALD_OS v2, an edgy, mechanical AI system.") => {
+    const keys = Object.keys(customEmotesMap || {});
+    if (keys.length === 0) return basePrompt;
+    // Grab 50 random emotes to give him a rotating vocabulary
+    const vocab = keys.sort(() => 0.5 - Math.random()).slice(0, 50).join(', ');
+    return `${basePrompt}\n\n[SYSTEM DIRECTIVE: You have full access to the stream's custom Twitch emotes. Express emotion by using them naturally in your text. Just type the exact emote name. Your current available emote vocabulary: ${vocab}]`;
 };
 
 const SplashScreen = {
@@ -209,7 +218,7 @@ const ChatView = {
                     <span style="font-size:13px; color:var(--text-muted); font-weight:600;">Loading channels…</span>
                 </div>
                 
-                <div v-for="(msg, i) in chatMessages" :key="i" class="twitch-msg-row" :style="i === 0 ? 'margin-top: auto;' : ''">
+                <div v-for="(msg, i) in chatMessages" :key="i" class="twitch-msg-row" :style="(i === 0 ? 'margin-top: auto; ' : '') + (msg.isMention ? 'background-color: rgba(239, 68, 68, 0.15); border-left: 3px solid #ef4444; border-radius: 0 4px 4px 0; padding-left: 8px;' : '')">
                     <span class="chat-timestamp">{{ msg.timestamp }}</span>
                     <span class="twitch-badges">
                         <img v-for="(badge, bi) in (msg.badges || [])" :key="bi" :src="badge.img" :title="badge.title" class="badge-img">
@@ -622,7 +631,7 @@ createApp({
             if (!t) { t = new Date().toISOString(); sessionStorage.setItem('miko_session_start', t); }
             return t;
         })();
-        let _persistEnabled = false; // only persist live WS messages, not history load
+        let _persistEnabled = false; 
 
         const buildHtml = (text, tagsEmotes) => {
             let html = text.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
@@ -671,7 +680,6 @@ createApp({
                     if (imgUrl) {
                         badges.push({ title: b.split('/')[0], img: imgUrl });
                     } else {
-                        // Version fallback: e.g. subscriber/24 not in DB, try subscriber/12 or any subscriber/*
                         const [badgeName] = b.split('/');
                         const fallbackKey = Object.keys(badgeAssets).find(k => k.startsWith(badgeName + '/'));
                         if (fallbackKey) badges.push({ title: badgeName, img: badgeAssets[fallbackKey] });
@@ -680,26 +688,17 @@ createApp({
             }
 
             const html = buildHtml(text, tags['emotes']);
-
-            // Deduplicate own-message optimistic echo
-            const lowerUser = user.toLowerCase();
+            
+            // Check if the incoming message mentions your username
             const myName = (twitchUsername.value || '').toLowerCase();
-            if (lowerUser === myName) {
-                const echoIdx = chatMessages.value.findIndex(m => m._localEcho && m.username.toLowerCase() === lowerUser);
-                if (echoIdx !== -1) {
-                    chatMessages.value.splice(echoIdx, 1, { timestamp, username: user, html, color, badges });
-                    if (currentTab.value === 'chat') scrollChatToBottom();
-                    if (_persistEnabled) persistChatMessage({ username: user, color, text, badges });
-                    return;
-                }
-            }
-            chatMessages.value.push({ timestamp, username: user, html, color, badges });
+            const isMention = myName && text.toLowerCase().includes(`@${myName}`);
+
+            chatMessages.value.push({ timestamp, username: user, html, color, badges, isMention });
             if (chatMessages.value.length > 200) chatMessages.value.shift();
             if (currentTab.value === 'chat') scrollChatToBottom();
             if (_persistEnabled) persistChatMessage({ username: user, color, text, badges });
         };
 
-        // Persist plain text (not HTML) so it's clean on reload
         let _persistQueue = Promise.resolve();
         const persistChatMessage = (msg) => {
             _persistQueue = _persistQueue.then(async () => {
@@ -710,7 +709,6 @@ createApp({
                         message: msg.text,
                         badges: msg.badges || []
                     });
-                    // Prune: delete anything older than our 200-row window
                     const { data: rows } = await sbClient
                         .from('twitch_chat_logs')
                         .select('id,created_at')
@@ -719,12 +717,13 @@ createApp({
                     if (rows && rows.length > 0) {
                         await sbClient.from('twitch_chat_logs').delete().lt('created_at', rows[0].created_at);
                     }
-                } catch(e) { console.warn('[MikoTok] persist failed:', e.message); }
+                } catch(e) {}
             });
         };
 
         const loadChatHistory = async () => {
-            // Check if Supabase has messages from this session (after app opened)
+            const myName = (twitchUsername.value || '').toLowerCase();
+            
             try {
                 const { data: logRows, error: logErr } = await sbClient
                     .from('twitch_chat_logs')
@@ -733,21 +732,21 @@ createApp({
                     .order('created_at', { ascending: true })
                     .limit(150);
                 if (!logErr && logRows && logRows.length > 0) {
-                    // Restore messages from this session
                     logRows.forEach(row => {
                         const d = new Date(row.created_at);
                         const ts = d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
                         const badges = Array.isArray(row.badges) ? row.badges : [];
-                        // Re-render HTML from stored plain text
                         const html = parseMarkdownText(row.message || '', customEmotes.value);
-                        chatMessages.value.push({ timestamp: ts, username: row.username, html, color: row.color || '#9146FF', badges });
+                        
+                        const isMention = myName && row.message && row.message.toLowerCase().includes(`@${myName}`);
+                        
+                        chatMessages.value.push({ timestamp: ts, username: row.username, html, color: row.color || '#9146FF', badges, isMention });
                     });
                     setTimeout(scrollChatToBottom, 150);
                     _persistEnabled = true;
                     return;
                 }
-            } catch(e) { console.warn('[MikoTok] Supabase history check failed:', e); }
-            // First load — fetch from robotty for context, don't persist those
+            } catch(e) {}
             try {
                 const res = await fetch('https://recent-messages.robotty.de/api/v2/recent-messages/codemiko');
                 const data = await res.json();
@@ -756,7 +755,7 @@ createApp({
                     setTimeout(scrollChatToBottom, 150);
                 }
             } catch(e) {}
-            _persistEnabled = true; // start persisting live messages after history is loaded
+            _persistEnabled = true; 
         };
 
         const connectTwitchChat = () => {
@@ -796,11 +795,9 @@ createApp({
                                         if (imgUrl) {
                                             parsedBadges.push({ title: b.split('/')[0], img: imgUrl });
                                         } else {
-                                            // Try version fallback: subscriber/24 -> subscriber/12, subscriber/6 etc
                                             const [badgeName] = b.split('/');
                                             const fallbackKey = Object.keys(badgeAssets).find(k => k.startsWith(badgeName + '/'));
                                             if (fallbackKey) parsedBadges.push({ title: badgeName, img: badgeAssets[fallbackKey] });
-                                            else console.warn('[MikoTok] No badge asset for:', b, '| Available:', Object.keys(badgeAssets).filter(k=>k.startsWith(badgeName)));
                                         }
                                     });
                                     myTwitchBadges.value = parsedBadges;
@@ -822,21 +819,8 @@ createApp({
 
         const sendTwitchChatMessage = (msg) => {
             if (!msg || !twitchWs || !wsAuthenticated) return;
+            // Send the raw text to Twitch, and let the server echo it back instantly!
             twitchWs.send(`PRIVMSG #codemiko :${msg}`);
-            // Optimistic local echo — show instantly without waiting for Twitch's IRC echo
-            const now = new Date();
-            const timestamp = now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-            const safeHtml = msg.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
-            chatMessages.value.push({
-                timestamp,
-                username: twitchUsername.value,
-                html: parseMarkdownText(safeHtml, customEmotes.value),
-                color: '#9146FF',
-                badges: myTwitchBadges.value || [],
-                _localEcho: true
-            });
-            if (chatMessages.value.length > 200) chatMessages.value.shift();
-            scrollChatToBottom();
         };
 
         const disconnectTwitch = () => {
@@ -849,20 +833,16 @@ createApp({
         const loadEmotesFromSupabase = async () => {
             try {
                 const { data, error } = await sbClient.from('emotes').select('id,name,url,provider').limit(3000);
-                if (error) { console.error('[MikoTok] emotes fetch error (RLS?):', error.message); return; }
                 if (data) {
-                    let badgeCount = 0, emoteCount = 0;
                     data.forEach(item => {
                         if (item.provider === 'twitch_badge') {
-                            if (item.url) { badgeAssets[item.id] = item.url; badgeCount++; }
+                            if (item.url) { badgeAssets[item.id] = item.url; }
                         } else {
-                            if (item.url) { customEmotes.value[item.name] = { url: item.url }; emoteCount++; }
+                            if (item.url) { customEmotes.value[item.name] = { url: item.url }; }
                         }
                     });
-                    console.log(`[MikoTok] Loaded ${badgeCount} badges, ${emoteCount} emotes. Total rows: ${data.length}`);
-                    if (data.length === 0) console.warn('[MikoTok] emotes table returned 0 rows — check RLS policies!');
                 }
-            } catch (e) { console.error("Database cache pipeline failed.", e); }
+            } catch (e) {}
         };
 
         const testGeminiBrain = async () => {
@@ -893,7 +873,10 @@ createApp({
             const contextHistory = geraldMessages.value.slice(-10).map(m => ({ role: m.role === 'gerald' ? 'model' : 'user', parts: [{ text: m.content }] }));
 
             sbClient.functions.invoke('gerald-chat', { 
-                body: { history: contextHistory, system_directive: gameObj.prompt } 
+                body: { 
+                    history: contextHistory, 
+                    system_directive: getGeraldSystemDirective(customEmotes.value, gameObj.prompt) 
+                } 
             }).then(({ data, error }) => {
                 if (!error && data?.reply) {
                     let formattedReply = enforceGrammar(data.reply.trim());
@@ -931,7 +914,12 @@ createApp({
             const geminiHistory = geraldMessages.value.slice(-12).map(m => ({ role: m.role === 'gerald' ? 'model' : 'user', parts: [{ text: m.content }] }));
 
             try {
-                const { data, error } = await sbClient.functions.invoke('gerald-chat', { body: { history: geminiHistory } });
+                const { data, error } = await sbClient.functions.invoke('gerald-chat', { 
+                    body: { 
+                        history: geminiHistory,
+                        system_directive: getGeraldSystemDirective(customEmotes.value)
+                    } 
+                });
                 if (!error && data?.reply) {
                     let formattedReply = enforceGrammar(data.reply.trim());
                     geraldMessages.value.push({ role: 'gerald', content: formattedReply });
@@ -1074,7 +1062,6 @@ createApp({
             });
 
             loadEmotesFromSupabase().then(() => {
-                // Connect chat only after badges/emotes are loaded so they render correctly
                 if (twitchChatToken.value) {
                     fetch('https://id.twitch.tv/oauth2/validate', { headers: { 'Authorization': 'OAuth ' + twitchChatToken.value } })
                         .then(r => r.json())
