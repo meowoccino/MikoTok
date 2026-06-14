@@ -1,6 +1,14 @@
 // GLOBAL ASSET STORAGE - Accessible by all background processors and UI components
 const badgeAssets = {};
 
+// Injects global CSS to fix the HTML wrapper borders without needing to edit the HTML file
+const styleReset = document.createElement('style');
+styleReset.innerHTML = `
+    .app-wrapper { border-left: none !important; border-right: none !important; max-width: 100% !important; }
+    html, body { overscroll-behavior-y: none; }
+`;
+document.head.appendChild(styleReset);
+
 const parseMarkdownText = (text, emotesMap) => {
     if (!text) return ''; 
     let html = text.replace(/&/g, '&').replace(/</g, '<').replace(/>/g, '>');
@@ -20,7 +28,6 @@ const parseMarkdownText = (text, emotesMap) => {
             const token = tokens[i];
             if (!token || token.startsWith('<') || token.trim() === '') continue;
             
-            // Clean colons, trailing sentence punctuation, quotes, and brackets safely
             const cleanToken = token.replace(/^:|:$/g, '').replace(/[.,!?"'()[\]{}]/g, '').trim().toLowerCase();
             if (lowerMap[cleanToken]) {
                 const actualKey = lowerMap[cleanToken];
@@ -39,11 +46,9 @@ const enforceGrammar = (text) => {
     return text.replace(/(^\w|[.!?]\s*\w)/g, c => c.toUpperCase());
 };
 
-// DYNAMIC AI VOCABULARY - Injects random emotes into Gerald's brain so he knows what to use
 const getGeraldSystemDirective = (customEmotesMap, basePrompt = "You are GERALD_OS v2, an edgy, mechanical AI system.") => {
     const keys = Object.keys(customEmotesMap || {});
     if (keys.length === 0) return basePrompt;
-    // Grab 50 random emotes to give him a rotating vocabulary
     const vocab = keys.sort(() => 0.5 - Math.random()).slice(0, 50).join(', ');
     return `${basePrompt}\n\n[SYSTEM DIRECTIVE: You have full access to the stream's custom Twitch emotes. Express emotion by using them naturally in your text. Just type the exact emote name. Your current available emote vocabulary: ${vocab}]`;
 };
@@ -422,34 +427,32 @@ const MoreView = {
                 const style = document.createElement('style');
                 style.id = 'native-slide-css';
                 style.innerHTML = `
-                    .nav-slide-enter-active, .nav-slide-leave-active { transition: transform 0.25s cubic-bezier(0.25, 0.8, 0.25, 1); }
-                    .nav-slide-enter-from, .nav-slide-leave-to { transform: translateX(100%); }
-                    @keyframes tickTock { 0%, 100% { transform: rotate(0deg); } 25% { transform: rotate(-10deg); } 75% { transform: rotate(10deg); } }
-                    @keyframes scuffShake { 0%, 100% { transform: translate(0, 0) rotate(0deg); } 25% { transform: translate(-2px, 1px) rotate(-2deg); } 75% { transform: translate(2px, -1px) rotate(2deg); } }
-                    @keyframes broadcastPulse { 0%, 100% { opacity: 1; transform: scale(1); } 50% { opacity: 0.4; transform: scale(1.15); } }
-                    @keyframes floatSleep { 0%, 100% { transform: translateY(0); opacity: 0.7; } 50% { transform: translateY(-4px); opacity: 1; } }
+                    .nav-slide-enter-active, .nav-slide-leave-active { transition: transform 0.3s cubic-bezier(0.25, 0.8, 0.25, 1); will-change: transform; }
+                    .nav-slide-enter-from, .nav-slide-leave-to { transform: translate3d(100%, 0, 0); }
                 `;
                 document.head.appendChild(style);
             }
 
             randomizeTexts();
 
-            // Fetch Real Stats from Supabase
             sbClient.from('channel_stats').select('*').eq('id', 1).single().then(({data}) => {
                 if (data) channelStats.value = data;
             });
 
-            // Fetch Real Schedule from Twitch GQL
             try {
                 const gql = await fetch('https://gql.twitch.tv/gql', { 
                     method: 'POST', 
                     headers: { 'Client-ID': 'kimne78kx3ncx6brgo4mv6wki5h1ko' }, 
-                    body: JSON.stringify({ query: `query{user(login:"codemiko"){channel{schedule{segments(first:1){edges{node{startAt}}}}}}}` }) 
+                    body: JSON.stringify({ query: `query{user(login:"codemiko"){channel{schedule{segments(first:5){edges{node{startAt}}}}}}}` }) 
                 });
                 const d = await gql.json();
                 const schedEdges = d.data?.user?.channel?.schedule?.segments?.edges;
                 if (schedEdges && schedEdges.length > 0) {
-                    nextStreamTime.value = new Date(schedEdges[0].node.startAt).getTime();
+                    const now = Date.now();
+                    const upcoming = schedEdges.find(e => new Date(e.node.startAt).getTime() > now);
+                    if (upcoming) {
+                        nextStreamTime.value = new Date(upcoming.node.startAt).getTime();
+                    }
                 }
             } catch {}
 
@@ -469,28 +472,28 @@ const MoreView = {
                 
                 <div v-if="streamState === 'future'" style="background: linear-gradient(135deg, rgba(145, 70, 255, 0.15), rgba(145, 70, 255, 0.05)); border: 1px solid rgba(145, 70, 255, 0.3); border-radius: 16px; padding: 20px; margin-bottom: 24px; margin-top: 8px; text-align: center; display: flex; flex-direction: column; align-items: center; justify-content: center;">
                     <div style="color: var(--primary); font-size: 12px; font-weight: 800; letter-spacing: 1.5px; text-transform: uppercase; margin-bottom: 8px; display: flex; align-items: center; gap: 6px;">
-                        <span class="material-symbols-rounded" style="font-size: 18px; animation: tickTock 2s infinite ease-in-out;">calendar_month</span> {{ randFuture }}
+                        <span class="material-symbols-rounded" style="font-size: 18px;">calendar_month</span> {{ randFuture }}
                     </div>
                     <div style="font-size: 32px; font-weight: 900; font-variant-numeric: tabular-nums; letter-spacing: 2px; text-shadow: 0 0 10px rgba(145, 70, 255, 0.3); color: var(--text-main);">{{ countdownText }}</div>
                 </div>
 
                 <div v-else-if="streamState === 'late'" style="background: linear-gradient(135deg, rgba(255, 152, 0, 0.15), rgba(255, 152, 0, 0.05)); border: 1px solid rgba(255, 152, 0, 0.3); border-radius: 16px; padding: 20px; margin-bottom: 24px; margin-top: 8px; text-align: center; display: flex; flex-direction: column; align-items: center; justify-content: center;">
                     <div style="color: var(--warning); font-size: 12px; font-weight: 800; letter-spacing: 1.5px; text-transform: uppercase; margin-bottom: 8px; display: flex; align-items: center; gap: 6px;">
-                        <span class="material-symbols-rounded" style="font-size: 18px; animation: scuffShake 0.4s infinite;">warning</span> Waiting for Broadcast
+                        <span class="material-symbols-rounded" style="font-size: 18px;">warning</span> Waiting for Broadcast
                     </div>
                     <div style="font-size: 22px; font-weight: 900; letter-spacing: 1px; color: var(--warning); text-shadow: 0 0 15px rgba(255, 152, 0, 0.4);">{{ randLate }}</div>
                 </div>
 
                 <a v-else-if="streamState === 'live'" href="https://www.twitch.tv/codemiko" target="_blank" style="background: linear-gradient(135deg, rgba(239, 68, 68, 0.15), rgba(145, 70, 255, 0.05)); border: 1px solid rgba(239, 68, 68, 0.4); border-radius: 16px; padding: 20px; margin-bottom: 24px; margin-top: 8px; text-align: center; display: flex; flex-direction: column; align-items: center; justify-content: center; text-decoration: none;">
                     <div style="color: var(--danger); font-size: 12px; font-weight: 800; letter-spacing: 1.5px; text-transform: uppercase; margin-bottom: 8px; display: flex; align-items: center; gap: 6px;">
-                        <span class="material-symbols-rounded" style="font-size: 18px; animation: broadcastPulse 2s infinite ease-in-out;">podcasts</span> {{ randLive }}
+                        <span class="material-symbols-rounded" style="font-size: 18px;">podcasts</span> STREAM IS LIVE
                     </div>
-                    <div style="font-size: 24px; font-weight: 900; letter-spacing: 1px; color: var(--danger); text-shadow: 0 0 15px rgba(239, 68, 68, 0.6);">TAP TO WATCH</div>
+                    <div style="font-size: 24px; font-weight: 900; letter-spacing: 1px; color: var(--danger); text-shadow: 0 0 15px rgba(239, 68, 68, 0.6);">{{ randLive }}</div>
                 </a>
 
                 <div v-else-if="streamState === 'offline'" style="background: var(--card-bg); border: 1px solid var(--border-color); border-radius: 16px; padding: 20px; margin-bottom: 24px; margin-top: 8px; text-align: center; display: flex; flex-direction: column; align-items: center; justify-content: center;">
                     <div style="color: var(--text-muted); font-size: 12px; font-weight: 800; letter-spacing: 1.5px; text-transform: uppercase; margin-bottom: 8px; display: flex; align-items: center; gap: 6px;">
-                        <span class="material-symbols-rounded" style="font-size: 18px; animation: floatSleep 3s infinite ease-in-out;">bedtime</span> Stream Offline
+                        <span class="material-symbols-rounded" style="font-size: 18px;">bedtime</span> Stream Offline
                     </div>
                     <div style="font-size: 20px; font-weight: 900; letter-spacing: 1px; color: var(--text-muted);">{{ randOffline }}</div>
                 </div>
@@ -582,90 +585,6 @@ const MoreView = {
                     </a>
                 </div>
             </transition>
-
-            <transition name="nav-slide">
-                <div v-if="activeSubView === 'about'" style="position: absolute; inset: 0; background: var(--bg-color); z-index: 50; overflow-y: auto; padding: 20px 16px; box-sizing: border-box;">
-                    <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 24px; font-size: 18px; font-weight: bold; color: var(--text-main);">
-                        <button @click="activeSubView = 'main'" style="background: var(--card-bg); border: 1px solid var(--border-color); color: var(--text-main); width: 36px; height: 36px; border-radius: 50%; display: flex; align-items: center; justify-content: center; cursor: pointer; box-shadow: 0 2px 8px rgba(0,0,0,0.05);">
-                            <span class="material-symbols-rounded">arrow_back</span>
-                        </button>
-                        About CodeMiko
-                    </div>
-                    <div style="text-align: center; margin-bottom: 24px;">
-                        <img src="https://raw.githubusercontent.com/meowoccino/MikoTok/main/1000018850.png" style="width: 110px; height: 110px; border-radius: 50%; margin-bottom: 12px;" alt="Avatar">
-                        <h2 style="margin:0; color: var(--text-main);">CodeMiko</h2>
-                        <div style="color:var(--text-muted); font-size:14px; margin-top:4px;">Youna Kang • VTuber & Dev</div>
-                    </div>
-                    <div style="color: var(--text-main); font-size: 14px; line-height: 1.6; background: var(--card-bg); padding: 16px; border-radius: 12px; margin-bottom: 16px; border: 1px solid var(--border-color);">
-                        <div style="text-align: center; margin-bottom: 12px;"><strong style="color:var(--text-main);">The Glitch in the System</strong></div>
-                        CodeMiko is a groundbreaking interactive VTuber project created and operated by "The Technician" (Youna Kang). Using a state-of-the-art Xsens full-body motion capture suit and Unreal Engine 5, Miko pushes the absolute boundaries of digital broadcasting.<br><br>
-                        What makes the stream unique is its interactivity. Chatters can use Bits and channel points to directly trigger interactions, minigames, and catastrophic visual glitches on Miko's avatar in real-time.<br><br>
-                        According to her lore, Miko is an aspiring video game NPC without a game, attempting to find her place in the digital world after being rejected by major AAA titles.
-                    </div>
-                </div>
-            </transition>
-
-            <transition name="nav-slide">
-                <div v-if="activeSubView === 'stats'" style="position: absolute; inset: 0; background: var(--bg-color); z-index: 50; overflow-y: auto; padding: 20px 16px; box-sizing: border-box;">
-                    <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 24px; font-size: 18px; font-weight: bold; color: var(--text-main);">
-                        <button @click="activeSubView = 'main'" style="background: var(--card-bg); border: 1px solid var(--border-color); color: var(--text-main); width: 36px; height: 36px; border-radius: 50%; display: flex; align-items: center; justify-content: center; cursor: pointer;">
-                            <span class="material-symbols-rounded">arrow_back</span>
-                        </button>
-                        Channel Statistics
-                    </div>
-
-                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 24px;">
-                        <div style="background: var(--card-bg); padding: 16px; border-radius: 12px; display: flex; flex-direction: column; align-items: center; text-align: center; border: 1px solid var(--border-color);">
-                            <div style="font-size: 20px; font-weight: bold; color: var(--primary); margin-bottom: 4px;">{{ channelStats.followers }}</div>
-                            <div style="font-size: 11px; color: var(--text-muted); text-transform: uppercase; font-weight: 700; letter-spacing: 0.5px;">Followers</div>
-                        </div>
-                        <div style="background: var(--card-bg); padding: 16px; border-radius: 12px; display: flex; flex-direction: column; align-items: center; text-align: center; border: 1px solid var(--border-color);">
-                            <div style="font-size: 20px; font-weight: bold; color: var(--primary); margin-bottom: 4px;">{{ channelStats.total_views }}</div>
-                            <div style="font-size: 11px; color: var(--text-muted); text-transform: uppercase; font-weight: 700; letter-spacing: 0.5px;">Total Views</div>
-                        </div>
-                        <div style="background: var(--card-bg); padding: 16px; border-radius: 12px; display: flex; flex-direction: column; align-items: center; text-align: center; border: 1px solid var(--border-color);">
-                            <div style="font-size: 20px; font-weight: bold; color: var(--primary); margin-bottom: 4px;">{{ channelStats.avg_viewers }}</div>
-                            <div style="font-size: 11px; color: var(--text-muted); text-transform: uppercase; font-weight: 700; letter-spacing: 0.5px;">Avg Viewers</div>
-                        </div>
-                        <div style="background: var(--card-bg); padding: 16px; border-radius: 12px; display: flex; flex-direction: column; align-items: center; text-align: center; border: 1px solid var(--border-color);">
-                            <div style="font-size: 20px; font-weight: bold; color: var(--primary); margin-bottom: 4px;">{{ channelStats.peak_viewers }}</div>
-                            <div style="font-size: 11px; color: var(--text-muted); text-transform: uppercase; font-weight: 700; letter-spacing: 0.5px;">All-Time Peak</div>
-                        </div>
-                        <div style="background: var(--card-bg); padding: 16px; border-radius: 12px; display: flex; flex-direction: column; align-items: center; text-align: center; border: 1px solid var(--border-color);">
-                            <div style="font-size: 20px; font-weight: bold; color: var(--primary); margin-bottom: 4px;">{{ channelStats.active_subs }}</div>
-                            <div style="font-size: 11px; color: var(--text-muted); text-transform: uppercase; font-weight: 700; letter-spacing: 0.5px;">Active Subs</div>
-                        </div>
-                        <div style="background: var(--card-bg); padding: 16px; border-radius: 12px; display: flex; flex-direction: column; align-items: center; text-align: center; border: 1px solid var(--border-color);">
-                            <div style="font-size: 16px; font-weight: bold; color: var(--primary); margin-top: 4px; margin-bottom: 4px;">{{ channelStats.account_created }}</div>
-                            <div style="font-size: 11px; color: var(--text-muted); text-transform: uppercase; font-weight: 700; letter-spacing: 0.5px;">Account Created</div>
-                        </div>
-                    </div>
-
-                    <div style="font-size:12px; font-weight:bold; color:var(--primary); margin: 24px 0 12px 8px; text-transform:uppercase;">Recent Broadcasting</div>
-                    
-                    <div style="display: flex; gap: 8px; margin-bottom: 12px; background: rgba(145, 70, 255, 0.1); padding: 4px; border-radius: 8px;">
-                        <button @click="statTimeframe = 'week'" :style="statTimeframe === 'week' ? 'background: var(--card-bg); color: var(--text-main); box-shadow: 0 2px 5px rgba(0,0,0,0.1);' : 'background: transparent; color: var(--text-muted);'" style="flex: 1; padding: 8px 0; text-align: center; border-radius: 6px; font-size: 13px; font-weight: 600; cursor: pointer; border:none;">Week</button>
-                        <button @click="statTimeframe = 'month'" :style="statTimeframe === 'month' ? 'background: var(--card-bg); color: var(--text-main); box-shadow: 0 2px 5px rgba(0,0,0,0.1);' : 'background: transparent; color: var(--text-muted);'" style="flex: 1; padding: 8px 0; text-align: center; border-radius: 6px; font-size: 13px; font-weight: 600; cursor: pointer; border:none;">Month</button>
-                        <button @click="statTimeframe = 'year'" :style="statTimeframe === 'year' ? 'background: var(--card-bg); color: var(--text-main); box-shadow: 0 2px 5px rgba(0,0,0,0.1);' : 'background: transparent; color: var(--text-muted);'" style="flex: 1; padding: 8px 0; text-align: center; border-radius: 6px; font-size: 13px; font-weight: 600; cursor: pointer; border:none;">Year</button>
-                    </div>
-
-                    <div v-if="statTimeframe === 'week'" style="display: flex; flex-direction: column; gap: 8px;">
-                        <div style="background: var(--card-bg); padding: 12px 16px; border-radius: 10px; display: flex; justify-content: space-between; font-size: 14px; color: var(--text-muted); border: 1px solid var(--border-color);"><span>Hours Streamed</span><strong style="color: var(--text-main);">{{ channelStats.week_hours }} Hours</strong></div>
-                        <div style="background: var(--card-bg); padding: 12px 16px; border-radius: 10px; display: flex; justify-content: space-between; font-size: 14px; color: var(--text-muted); border: 1px solid var(--border-color);"><span>Top Category</span><strong style="color: var(--text-main);">{{ channelStats.week_category }}</strong></div>
-                        <div style="background: var(--card-bg); padding: 12px 16px; border-radius: 10px; display: flex; justify-content: space-between; font-size: 14px; color: var(--text-muted); border: 1px solid var(--border-color);"><span>Active Days</span><strong style="color: var(--text-main);">{{ channelStats.week_days }} days / week</strong></div>
-                    </div>
-                    <div v-if="statTimeframe === 'month'" style="display: flex; flex-direction: column; gap: 8px;">
-                        <div style="background: var(--card-bg); padding: 12px 16px; border-radius: 10px; display: flex; justify-content: space-between; font-size: 14px; color: var(--text-muted); border: 1px solid var(--border-color);"><span>Hours Streamed</span><strong style="color: var(--text-main);">{{ channelStats.month_hours }} Hours</strong></div>
-                        <div style="background: var(--card-bg); padding: 12px 16px; border-radius: 10px; display: flex; justify-content: space-between; font-size: 14px; color: var(--text-muted); border: 1px solid var(--border-color);"><span>Top Category</span><strong style="color: var(--text-main);">{{ channelStats.month_category }}</strong></div>
-                        <div style="background: var(--card-bg); padding: 12px 16px; border-radius: 10px; display: flex; justify-content: space-between; font-size: 14px; color: var(--text-muted); border: 1px solid var(--border-color);"><span>Active Days</span><strong style="color: var(--text-main);">{{ channelStats.month_days }} days / week</strong></div>
-                    </div>
-                    <div v-if="statTimeframe === 'year'" style="display: flex; flex-direction: column; gap: 8px;">
-                        <div style="background: var(--card-bg); padding: 12px 16px; border-radius: 10px; display: flex; justify-content: space-between; font-size: 14px; color: var(--text-muted); border: 1px solid var(--border-color);"><span>Hours Streamed</span><strong style="color: var(--text-main);">{{ channelStats.year_hours }} Hours</strong></div>
-                        <div style="background: var(--card-bg); padding: 12px 16px; border-radius: 10px; display: flex; justify-content: space-between; font-size: 14px; color: var(--text-muted); border: 1px solid var(--border-color);"><span>Top Category</span><strong style="color: var(--text-main);">{{ channelStats.year_category }}</strong></div>
-                        <div style="background: var(--card-bg); padding: 12px 16px; border-radius: 10px; display: flex; justify-content: space-between; font-size: 14px; color: var(--text-muted); border: 1px solid var(--border-color);"><span>Active Days</span><strong style="color: var(--text-main);">{{ channelStats.year_days }} days / week</strong></div>
-                    </div>
-                </div>
-            </transition>
         </div>
     `
 };
@@ -725,7 +644,7 @@ createApp({
         const tabs = ['home', 'chat', 'gerald', 'more'];
         const initialHash = window.location.hash.replace('#', '');
         const currentTab = ref(tabs.includes(initialHash) ? initialHash : 'home');
-        const appTheme = ref(localStorage.getItem('miko_theme') || 'dark'); // Changed default to dark
+        const appTheme = ref(localStorage.getItem('miko_theme') || 'dark'); 
         const splashVisible = ref(true), splashOpacity = ref(1);
         const clips = ref([]), allClips = ref([]);
         const allClipsCount = computed(() => allClips.value.length);
@@ -780,9 +699,8 @@ createApp({
         const updateThemeClass = () => {
             document.body.className = 'theme-' + appTheme.value;
             document.documentElement.style.colorScheme = appTheme.value;
-            const bgHex = appTheme.value === 'light' ? '#f8f9fa' : '#0d0d11';
+            const bgHex = appTheme.value === 'light' ? '#ffffff' : '#0d0d11';
             
-            // Forces Android / Chrome URL bar and status bar to match theme
             let metaTheme = document.querySelector('meta[name="theme-color"]');
             if (!metaTheme) {
                 metaTheme = document.createElement('meta');
@@ -791,7 +709,6 @@ createApp({
             }
             metaTheme.setAttribute('content', bgHex);
 
-            // Apple specific status bar
             let metaApple = document.querySelector('meta[name="apple-mobile-web-app-status-bar-style"]');
             if (!metaApple) {
                 metaApple = document.createElement('meta');
@@ -1069,7 +986,7 @@ createApp({
                 timestamp,
                 username: twitchUsername.value,
                 html: parseMarkdownText(safeHtml, customEmotes.value),
-                color: '#53FC18', // Clean neutral green instead of Twitch Purple for echo
+                color: localStorage.getItem('tw_user_color') || '#9146FF', 
                 badges: myTwitchBadges.value || []
             });
             
@@ -1079,7 +996,7 @@ createApp({
 
         const disconnectTwitch = () => {
             twitchChatToken.value = null; twitchUsername.value = null;
-            localStorage.removeItem('tw_chat_token'); localStorage.removeItem('tw_username');
+            localStorage.removeItem('tw_chat_token'); localStorage.removeItem('tw_username'); localStorage.removeItem('tw_user_color');
             myTwitchBadges.value = [];
             loadChatHistory().then(() => connectTwitchChat());
         };
@@ -1323,6 +1240,15 @@ createApp({
                             if (d.login) { 
                                 twitchUsername.value = d.login; 
                                 localStorage.setItem('tw_username', d.login); 
+                                
+                                fetch(`https://decapi.me/twitch/avatar_color/${d.login}`)
+                                    .then(res => res.text())
+                                    .then(color => {
+                                        let cleanColor = color.trim();
+                                        if(!cleanColor.startsWith('#')) cleanColor = '#9146FF';
+                                        localStorage.setItem('tw_user_color', cleanColor);
+                                    }).catch(() => {});
+
                                 connectTwitchChat(); 
                             } else disconnectTwitch(); 
                         })
