@@ -1,9 +1,14 @@
-// Injects global CSS to fix the HTML wrapper borders without needing to edit the HTML file
+// Injects global CSS to fix the HTML wrapper borders and add native slide animations
 const styleReset = document.createElement('style');
 styleReset.innerHTML = `
     .app-wrapper { border-left: none !important; border-right: none !important; max-width: 100% !important; }
     html, body { overscroll-behavior-y: none; background-color: var(--bg-color) !important; }
     ::-webkit-scrollbar { width: 0px; background: transparent; }
+    
+    /* Native Slide Transition Classes */
+    .nav-slide-enter-active, .nav-slide-leave-active { transition: transform 0.3s cubic-bezier(0.25, 0.8, 0.25, 1); will-change: transform; }
+    .nav-slide-enter-from, .nav-slide-leave-to { transform: translateX(100%); }
+    .sub-view-overlay { position: absolute; top:0; left:0; right:0; bottom:0; background: var(--bg-color); z-index: 50; overflow-y: auto; padding: 20px 16px; box-sizing: border-box; }
 `;
 document.head.appendChild(styleReset);
 
@@ -116,7 +121,7 @@ const FilterMenu = {
 };
 
 const ProfileModal = {
-    props: ['isOpen', 'currentUser', 'loginEmail', 'loginPass', 'syncState', 'wipeState', 'logoutState', 'nukeState'],
+    props: ['isOpen', 'currentUser', 'loginEmail', 'loginPass', 'apiConfig', 'syncState', 'wipeState', 'logoutState', 'nukeState', 'saveState'],
     template: `
         <div class="modal-overlay" :class="{ open: isOpen }" @click.self="$emit('close')">
             <div class="modal-content" @touchstart="$emit('touch-start', $event)" @touchmove="$emit('touch-move', $event)" @touchend="$emit('touch-end', $event)">
@@ -190,20 +195,24 @@ const ClipModal = {
 
 // Official Native Twitch Chat View
 const ChatView = {
-    props: ['appTheme', 'hostname'],
+    // Catching the props passed from index.html to prevent warnings, even if we don't need all of them.
+    props: ['currentTab', 'chatMessages', 'isLoggedIn', 'twitchAuthUrl', 'customEmotes', 'twitchUsername'],
     computed: {
         chatUrl() {
-            const isDark = this.appTheme === 'dark';
-            return `https://www.twitch.tv/embed/codemiko/chat?parent=${this.hostname}${isDark ? '&darkpopout=true' : ''}`;
+            // Read theme direct from root to ensure it reacts instantly
+            const isDark = this.$root.appTheme === 'dark';
+            // Dynamically grab the hostname to satisfy Twitch CORS
+            const host = window.location.hostname || 'meowoccino.github.io';
+            return `https://www.twitch.tv/embed/codemiko/chat?parent=${host}${isDark ? '&darkpopout=true' : ''}`;
         }
     },
     template: `
-        <div style="flex: 1; display: flex; flex-direction: column; background: var(--bg-color); position: relative; overflow: hidden;">
-            <div style="flex: 1; overflow: hidden; position: relative;">
+        <div style="flex: 1; display: flex; flex-direction: column; background: var(--bg-color); position: relative; overflow: hidden; width: 100%; height: 100%;">
+            <div style="flex: 1; overflow: hidden; position: relative; width: 100%; height: 100%;">
                 <iframe 
                     :src="chatUrl" 
                     style="position: absolute; top: -50px; left: 0; width: 100%; height: calc(100% + 50px); border: none;"
-                    sandbox="allow-storage-access-by-user-activation allow-scripts allow-same-origin allow-popups allow-popups-to-escape-sandbox allow-modals">
+                    allowfullscreen>
                 </iframe>
             </div>
             <div style="position: absolute; top: 0; left: 0; right: 0; height: 10px; background: linear-gradient(to bottom, var(--bg-color) 0%, transparent 100%); pointer-events: none; z-index: 10;"></div>
@@ -318,7 +327,7 @@ const MoreView = {
         const { ref, onMounted, onUnmounted, watch } = Vue;
         
         const activeSubView = ref('main');
-        const statTimeframe = ref('week'); // Default to week
+        const statTimeframe = ref('week');
         const streamState = ref('awaiting'); 
         const countdownText = ref('--:--:--');
         const nextStreamTime = ref(null);
@@ -359,7 +368,6 @@ const MoreView = {
             });
 
             try {
-                // Pointing to the new Edge Function to bypass CORS completely
                 const res = await fetch('https://yhxcuayiwqpjvalyrcqv.supabase.co/functions/v1/twitch-schedule');
                 const d = await res.json();
                 const schedEdges = d.data?.user?.channel?.schedule?.segments?.edges;
@@ -388,7 +396,7 @@ const MoreView = {
     template: `
         <div class="more-container" style="position: relative; height: 100%; width: 100%; background: var(--bg-color); overflow: hidden;">
             
-            <div style="height: 100%; overflow-y: auto; padding: 0 16px 20px;" v-if="activeSubView === 'main'">
+            <div style="height: 100%; overflow-y: auto; padding: 0 16px 20px;" v-show="activeSubView === 'main'">
                 
                 <div v-if="streamState === 'future'" style="background: linear-gradient(135deg, rgba(145, 70, 255, 0.15), rgba(145, 70, 255, 0.05)); border: 1px solid rgba(145, 70, 255, 0.3); border-radius: 16px; padding: 20px; margin-bottom: 24px; margin-top: 8px; text-align: center; display: flex; flex-direction: column; align-items: center; justify-content: center;">
                     <div style="color: var(--primary); font-size: 12px; font-weight: 800; letter-spacing: 1.5px; text-transform: uppercase; margin-bottom: 8px; display: flex; align-items: center; gap: 6px;">
@@ -448,132 +456,80 @@ const MoreView = {
                     <span style="color: var(--text-main); font-size: 14px; font-weight: 600; margin-left: 12px;">Twitch</span>
                     <span class="material-symbols-rounded" style="color: var(--text-muted); margin-left: auto; font-size: 16px;">open_in_new</span>
                 </a>
-                <a href="https://www.youtube.com/@CodeMiko" target="_blank" style="display: flex; align-items: center; width: 100%; box-sizing: border-box; padding: 0 16px; border-radius: 12px; min-height: 48px; background: var(--card-bg); text-decoration: none; margin-bottom: 8px;">
-                    <svg viewBox="0 0 24 24" style="width: 22px; height: 22px; color: #FF0000;"><path fill="currentColor" d="M21.582 6.186a2.6 2.6 0 0 0-1.838-1.85C18.125 3.9 12 3.9 12 3.9s-6.125 0-7.744.436a2.6 2.6 0 0 0-1.838 1.85C2 7.82 2 12 2 12s0 4.18.418 5.814a2.6 2.6 0 0 0 1.838 1.85C5.875 20.1 12 20.1 12 20.1s6.125 0 7.744-.436a2.6 2.6 0 0 0 1.838-1.85C22 16.18 22 12 22 12s0-4.18-.418-5.814zM9.9 15.54V8.46L16.2 12z"/></svg>
-                    <span style="color: var(--text-main); font-size: 14px; font-weight: 600; margin-left: 12px;">YouTube</span>
-                    <span class="material-symbols-rounded" style="color: var(--text-muted); margin-left: auto; font-size: 16px;">open_in_new</span>
-                </a>
-                <a href="https://kick.com/codemiko" target="_blank" style="display: flex; align-items: center; width: 100%; box-sizing: border-box; padding: 0 16px; border-radius: 12px; min-height: 48px; background: var(--card-bg); text-decoration: none; margin-bottom: 8px;">
-                    <svg viewBox="0 0 24 24" style="width: 22px; height: 22px; color: #53FC18;"><path fill="currentColor" d="M19 2H5a3 3 0 0 0-3 3v14a3 3 0 0 0 3 3h14a3 3 0 0 0 3-3V5a3 3 0 0 0-3-3zM10.1 14.5v3.3H7.4V6.2h2.7v4.6l3.3-4.6h3.4l-3.9 5.1 4.2 6.5h-3.5z"/></svg>
-                    <span style="color: var(--text-main); font-size: 14px; font-weight: 600; margin-left: 12px;">Kick</span>
-                    <span class="material-symbols-rounded" style="color: var(--text-muted); margin-left: auto; font-size: 16px;">open_in_new</span>
-                </a>
-                <a href="https://x.com/codemiko" target="_blank" style="display: flex; align-items: center; width: 100%; box-sizing: border-box; padding: 0 16px; border-radius: 12px; min-height: 48px; background: var(--card-bg); text-decoration: none; margin-bottom: 8px;">
-                    <svg viewBox="0 0 24 24" style="width: 22px; height: 22px; color: var(--text-main);"><path fill="currentColor" d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>
-                    <span style="color: var(--text-main); font-size: 14px; font-weight: 600; margin-left: 12px;">X (Twitter)</span>
-                    <span class="material-symbols-rounded" style="color: var(--text-muted); margin-left: auto; font-size: 16px;">open_in_new</span>
-                </a>
-                <a href="https://www.instagram.com/thecodemiko/" target="_blank" style="display: flex; align-items: center; width: 100%; box-sizing: border-box; padding: 0 16px; border-radius: 12px; min-height: 48px; background: var(--card-bg); text-decoration: none; margin-bottom: 8px;">
-                    <svg viewBox="0 0 24 24" style="width: 22px; height: 22px; color: #E1306C;"><path fill="currentColor" d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zM12 0C8.741 0 8.333.014 7.053.072 2.695.272.273 2.69.073 7.052.014 8.333 0 8.741 0 12c0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98C8.333 23.986 8.741 24 12 24c3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98C15.668.014 15.259 0 12 0zm0 5.838a6.162 6.162 0 100 12.324 6.162 6.162 0 000-12.324zM12 16a4 4 0 110-8 4 4 0 010 8zm6.406-11.845a1.44 1.44 0 100 2.881 1.44 1.44 0 000-2.881z"/></svg>
-                    <span style="color: var(--text-main); font-size: 14px; font-weight: 600; margin-left: 12px;">Instagram</span>
-                    <span class="material-symbols-rounded" style="color: var(--text-muted); margin-left: auto; font-size: 16px;">open_in_new</span>
-                </a>
-                <a href="https://www.tiktok.com/@codemiko" target="_blank" style="display: flex; align-items: center; width: 100%; box-sizing: border-box; padding: 0 16px; border-radius: 12px; min-height: 48px; background: var(--card-bg); text-decoration: none; margin-bottom: 8px;">
-                    <svg viewBox="0 0 24 24" style="width: 22px; height: 22px; color: var(--text-main);"><path fill="currentColor" d="M12.53.02C13.84 0 15.14.01 16.44 0c.08 1.53.63 3.09 1.75 4.17 1.12 1.11 2.7 1.62 4.24 1.79v4.03c-1.44-.05-2.89-.35-4.2-.97-.57-.26-1.1-.59-1.62-.93-.01 2.92.01 5.84-.02 8.75-.08 1.4-.54 2.79-1.35 3.94-1.31 1.92-3.58 3.17-5.91 3.21-1.43.08-2.86-.31-4.08-1.03-2.02-1.12-3.44-3.17-3.64-5.41-.02-.21-.02-.41-.02-.62.07-1.44.62-2.83 1.51-3.89 1.05-1.25 2.55-2.06 4.15-2.28 1.1-.15 2.23-.04 3.27.35v4.06c-.34-.13-.7-.2-1.07-.22-.92-.04-1.84.28-2.51.86-.67.57-1.08 1.4-1.1 2.31-.01.91.38 1.77 1.03 2.38.65.61 1.56.93 2.49.88.92-.04 1.78-.45 2.38-1.11.58-.65.88-1.54.88-2.45V.02h-.03z"/></svg>
-                    <span style="color: var(--text-main); font-size: 14px; font-weight: 600; margin-left: 12px;">TikTok</span>
-                    <span class="material-symbols-rounded" style="color: var(--text-muted); margin-left: auto; font-size: 16px;">open_in_new</span>
-                </a>
-                <a href="https://www.snapchat.com/add/codemiko" target="_blank" style="display: flex; align-items: center; width: 100%; box-sizing: border-box; padding: 0 16px; border-radius: 12px; min-height: 48px; background: var(--card-bg); text-decoration: none; margin-bottom: 8px;">
-                    <svg viewBox="0 0 24 24" style="width: 22px; height: 22px; color: #FFFC00;"><path fill="currentColor" d="M12.126 23.955c-1.472-.036-2.502-.455-3.633-.949-.556-.242-1.077-.384-1.657-.202-1.542.483-3.082 1.054-4.73 1.127-1.393.061-1.777-.52-1.205-1.651.488-.962 1.031-1.895 1.48-2.871.21-.453.208-.857-.042-1.272-1.071-1.782-1.637-3.708-1.764-5.748-.04-.633-.037-1.27-.037-1.936 0-3.923 2.115-6.843 5.437-8.318C8.384.975 10.94.39 13.626.54c4.12.232 7.152 2.647 8.527 6.643.518 1.503.655 3.066.621 4.646-.025 1.156-.168 2.298-.485 3.407-.346 1.208-.887 2.336-1.688 3.32-.429.529-.395.96.012 1.488.35.452.704.9 1.057 1.349.52.661.274 1.236-.532 1.274-1.506.072-2.923-.509-4.321-1.052-.777-.302-1.411-.122-2.072.164-1.045.451-2.146.862-3.32.969-.379.034-.764.03-1.299.207z"/></svg>
-                    <span style="color: var(--text-main); font-size: 14px; font-weight: 600; margin-left: 12px;">Snapchat</span>
-                    <span class="material-symbols-rounded" style="color: var(--text-muted); margin-left: auto; font-size: 16px;">open_in_new</span>
-                </a>
-                <a href="https://www.facebook.com/codemikoofficial" target="_blank" style="display: flex; align-items: center; width: 100%; box-sizing: border-box; padding: 0 16px; border-radius: 12px; min-height: 48px; background: var(--card-bg); text-decoration: none; margin-bottom: 8px;">
-                    <svg viewBox="0 0 24 24" style="width: 22px; height: 22px; color: #1877F2;"><path fill="currentColor" d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/></svg>
-                    <span style="color: var(--text-main); font-size: 14px; font-weight: 600; margin-left: 12px;">Facebook</span>
-                    <span class="material-symbols-rounded" style="color: var(--text-muted); margin-left: auto; font-size: 16px;">open_in_new</span>
-                </a>
-                <a href="https://bsky.app/profile/codemiko.bsky.social" target="_blank" style="display: flex; align-items: center; width: 100%; box-sizing: border-box; padding: 0 16px; border-radius: 12px; min-height: 48px; background: var(--card-bg); text-decoration: none; margin-bottom: 8px;">
-                    <svg viewBox="0 0 512 512" style="width: 22px; height: 22px; fill: #0085ff;"><path d="M123.6 44.3C186.2 88.5 222.7 151 256 195.9c33.3-44.9 69.8-107.4 132.4-151.6C416.7 24.3 460 12.5 480 32.5c20 20 8.6 69.5 0 102.5-12.7 48.7-44.5 111.4-106.8 135 63.6 15.3 115 48 116.5 106.3 1.5 58.4-40.4 104-106.8 115.5-59.5 10.3-95-17.7-126.9-46.3-15.3-13.7-27.4-24.5-31.5-24.5s-16.2 10.8-31.5 24.5c-31.9 28.6-67.4 56.6-126.9 46.3C-1.8 479.5-43.7 434 42.2 375.6c1.5-58.3 52.9-91 116.5-106.3-62.3-23.6-94.1-86.3-106.8-135-8.6-33-20-82.5 0-102.5 20-20 63.3-8.2 91.6 12.5z"/></svg>
-                    <span style="color: var(--text-main); font-size: 14px; font-weight: 600; margin-left: 12px;">Bluesky</span>
-                    <span class="material-symbols-rounded" style="color: var(--text-muted); margin-left: auto; font-size: 16px;">open_in_new</span>
-                </a>
-                <a href="https://app.fanfix.io/@codeyuna" target="_blank" style="display: flex; align-items: center; width: 100%; box-sizing: border-box; padding: 0 16px; border-radius: 12px; min-height: 48px; background: var(--card-bg); text-decoration: none; margin-bottom: 24px;">
-                    <svg viewBox="0 0 24 24" style="width: 22px; height: 22px; color: #ef4444;"><path fill="currentColor" d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/></svg>
-                    <span style="color: var(--text-main); font-size: 14px; font-weight: 600; margin-left: 12px;">Fanfix</span>
-                    <span class="material-symbols-rounded" style="color: var(--text-muted); margin-left: auto; font-size: 16px;">open_in_new</span>
-                </a>
             </div>
 
-            <div v-if="activeSubView === 'about'" style="position: absolute; top:0; left:0; right:0; bottom:0; background: var(--bg-color); z-index: 50; overflow-y: auto; padding: 20px 16px; box-sizing: border-box;">
-                <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 24px; font-size: 18px; font-weight: bold; color: var(--text-main);">
-                    <button @click="activeSubView = 'main'" style="background: var(--card-bg); border: 1px solid var(--border-color); color: var(--text-main); width: 36px; height: 36px; border-radius: 50%; display: flex; align-items: center; justify-content: center; cursor: pointer; box-shadow: 0 2px 8px rgba(0,0,0,0.05);">
-                        <span class="material-symbols-rounded">arrow_back</span>
-                    </button>
-                    About CodeMiko
+            <transition name="nav-slide">
+                <div v-if="activeSubView === 'about'" class="sub-view-overlay">
+                    <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 24px; font-size: 18px; font-weight: bold; color: var(--text-main);">
+                        <button @click="activeSubView = 'main'" style="background: var(--card-bg); border: 1px solid var(--border-color); color: var(--text-main); width: 36px; height: 36px; border-radius: 50%; display: flex; align-items: center; justify-content: center; cursor: pointer; box-shadow: 0 2px 8px rgba(0,0,0,0.05);">
+                            <span class="material-symbols-rounded">arrow_back</span>
+                        </button>
+                        About CodeMiko
+                    </div>
+                    <div style="text-align: center; margin-bottom: 24px;">
+                        <img src="https://raw.githubusercontent.com/meowoccino/MikoTok/main/1000018850.png" style="width: 110px; height: 110px; border-radius: 50%; margin-bottom: 12px;" alt="Avatar">
+                        <h2 style="margin:0; color: var(--text-main);">CodeMiko</h2>
+                        <div style="color:var(--text-muted); font-size:14px; margin-top:4px;">Youna Kang • VTuber & Dev</div>
+                    </div>
+                    <div style="color: var(--text-main); font-size: 14px; line-height: 1.6; background: var(--card-bg); padding: 16px; border-radius: 12px; margin-bottom: 16px; border: 1px solid var(--border-color);">
+                        <div style="text-align: center; margin-bottom: 12px;"><strong style="color:var(--text-main);">The Glitch in the System</strong></div>
+                        CodeMiko is a groundbreaking interactive VTuber project created and operated by "The Technician" (Youna Kang). Using a state-of-the-art Xsens full-body motion capture suit and Unreal Engine 5, Miko pushes the absolute boundaries of digital broadcasting.<br><br>
+                        What makes the stream unique is its interactivity. Chatters can use Bits and channel points to directly trigger interactions, minigames, and catastrophic visual glitches on Miko's avatar in real-time.
+                    </div>
                 </div>
-                <div style="text-align: center; margin-bottom: 24px;">
-                    <img src="https://raw.githubusercontent.com/meowoccino/MikoTok/main/1000018850.png" style="width: 110px; height: 110px; border-radius: 50%; margin-bottom: 12px;" alt="Avatar">
-                    <h2 style="margin:0; color: var(--text-main);">CodeMiko</h2>
-                    <div style="color:var(--text-muted); font-size:14px; margin-top:4px;">Youna Kang • VTuber & Dev</div>
-                </div>
-                <div style="color: var(--text-main); font-size: 14px; line-height: 1.6; background: var(--card-bg); padding: 16px; border-radius: 12px; margin-bottom: 16px; border: 1px solid var(--border-color);">
-                    <div style="text-align: center; margin-bottom: 12px;"><strong style="color:var(--text-main);">The Glitch in the System</strong></div>
-                    CodeMiko is a groundbreaking interactive VTuber project created and operated by "The Technician" (Youna Kang). Using a state-of-the-art Xsens full-body motion capture suit and Unreal Engine 5, Miko pushes the absolute boundaries of digital broadcasting.<br><br>
-                    What makes the stream unique is its interactivity. Chatters can use Bits and channel points to directly trigger interactions, minigames, and catastrophic visual glitches on Miko's avatar in real-time.<br><br>
-                    According to her lore, Miko is an aspiring video game NPC without a game, attempting to find her place in the digital world after being rejected by major AAA titles.
-                </div>
-            </div>
+            </transition>
 
-            <div v-if="activeSubView === 'stats'" style="position: absolute; top:0; left:0; right:0; bottom:0; background: var(--bg-color); z-index: 50; overflow-y: auto; padding: 20px 16px; box-sizing: border-box;">
-                <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 24px; font-size: 18px; font-weight: bold; color: var(--text-main);">
-                    <button @click="activeSubView = 'main'" style="background: var(--card-bg); border: 1px solid var(--border-color); color: var(--text-main); width: 36px; height: 36px; border-radius: 50%; display: flex; align-items: center; justify-content: center; cursor: pointer;">
-                        <span class="material-symbols-rounded">arrow_back</span>
-                    </button>
-                    Channel Statistics
-                </div>
+            <transition name="nav-slide">
+                <div v-if="activeSubView === 'stats'" class="sub-view-overlay">
+                    <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 24px; font-size: 18px; font-weight: bold; color: var(--text-main);">
+                        <button @click="activeSubView = 'main'" style="background: var(--card-bg); border: 1px solid var(--border-color); color: var(--text-main); width: 36px; height: 36px; border-radius: 50%; display: flex; align-items: center; justify-content: center; cursor: pointer;">
+                            <span class="material-symbols-rounded">arrow_back</span>
+                        </button>
+                        Channel Statistics
+                    </div>
 
-                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 24px;">
-                    <div style="background: var(--card-bg); padding: 16px; border-radius: 12px; display: flex; flex-direction: column; align-items: center; text-align: center; border: 1px solid var(--border-color);">
-                        <div style="font-size: 20px; font-weight: bold; color: var(--primary); margin-bottom: 4px;">{{ channelStats.followers }}</div>
-                        <div style="font-size: 11px; color: var(--text-muted); text-transform: uppercase; font-weight: 700; letter-spacing: 0.5px;">Followers</div>
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 24px;">
+                        <div style="background: var(--card-bg); padding: 16px; border-radius: 12px; display: flex; flex-direction: column; align-items: center; text-align: center; border: 1px solid var(--border-color);">
+                            <div style="font-size: 20px; font-weight: bold; color: var(--primary); margin-bottom: 4px;">{{ channelStats.followers }}</div>
+                            <div style="font-size: 11px; color: var(--text-muted); text-transform: uppercase; font-weight: 700; letter-spacing: 0.5px;">Followers</div>
+                        </div>
+                        <div style="background: var(--card-bg); padding: 16px; border-radius: 12px; display: flex; flex-direction: column; align-items: center; text-align: center; border: 1px solid var(--border-color);">
+                            <div style="font-size: 20px; font-weight: bold; color: var(--primary); margin-bottom: 4px;">{{ channelStats.total_views }}</div>
+                            <div style="font-size: 11px; color: var(--text-muted); text-transform: uppercase; font-weight: 700; letter-spacing: 0.5px;">Total Views</div>
+                        </div>
+                        <div style="background: var(--card-bg); padding: 16px; border-radius: 12px; display: flex; flex-direction: column; align-items: center; text-align: center; border: 1px solid var(--border-color);">
+                            <div style="font-size: 20px; font-weight: bold; color: var(--primary); margin-bottom: 4px;">{{ channelStats.avg_viewers }}</div>
+                            <div style="font-size: 11px; color: var(--text-muted); text-transform: uppercase; font-weight: 700; letter-spacing: 0.5px;">Avg Viewers</div>
+                        </div>
+                        <div style="background: var(--card-bg); padding: 16px; border-radius: 12px; display: flex; flex-direction: column; align-items: center; text-align: center; border: 1px solid var(--border-color);">
+                            <div style="font-size: 20px; font-weight: bold; color: var(--primary); margin-bottom: 4px;">{{ channelStats.peak_viewers }}</div>
+                            <div style="font-size: 11px; color: var(--text-muted); text-transform: uppercase; font-weight: 700; letter-spacing: 0.5px;">All-Time Peak</div>
+                        </div>
+                        <div style="background: var(--card-bg); padding: 16px; border-radius: 12px; display: flex; flex-direction: column; align-items: center; text-align: center; border: 1px solid var(--border-color);">
+                            <div style="font-size: 20px; font-weight: bold; color: var(--primary); margin-bottom: 4px;">{{ channelStats.active_subs }}</div>
+                            <div style="font-size: 11px; color: var(--text-muted); text-transform: uppercase; font-weight: 700; letter-spacing: 0.5px;">Active Subs</div>
+                        </div>
+                        <div style="background: var(--card-bg); padding: 16px; border-radius: 12px; display: flex; flex-direction: column; align-items: center; text-align: center; border: 1px solid var(--border-color);">
+                            <div style="font-size: 16px; font-weight: bold; color: var(--primary); margin-top: 4px; margin-bottom: 4px;">{{ channelStats.account_created }}</div>
+                            <div style="font-size: 11px; color: var(--text-muted); text-transform: uppercase; font-weight: 700; letter-spacing: 0.5px;">Account Created</div>
+                        </div>
                     </div>
-                    <div style="background: var(--card-bg); padding: 16px; border-radius: 12px; display: flex; flex-direction: column; align-items: center; text-align: center; border: 1px solid var(--border-color);">
-                        <div style="font-size: 20px; font-weight: bold; color: var(--primary); margin-bottom: 4px;">{{ channelStats.total_views }}</div>
-                        <div style="font-size: 11px; color: var(--text-muted); text-transform: uppercase; font-weight: 700; letter-spacing: 0.5px;">Total Views</div>
-                    </div>
-                    <div style="background: var(--card-bg); padding: 16px; border-radius: 12px; display: flex; flex-direction: column; align-items: center; text-align: center; border: 1px solid var(--border-color);">
-                        <div style="font-size: 20px; font-weight: bold; color: var(--primary); margin-bottom: 4px;">{{ channelStats.avg_viewers }}</div>
-                        <div style="font-size: 11px; color: var(--text-muted); text-transform: uppercase; font-weight: 700; letter-spacing: 0.5px;">Avg Viewers</div>
-                    </div>
-                    <div style="background: var(--card-bg); padding: 16px; border-radius: 12px; display: flex; flex-direction: column; align-items: center; text-align: center; border: 1px solid var(--border-color);">
-                        <div style="font-size: 20px; font-weight: bold; color: var(--primary); margin-bottom: 4px;">{{ channelStats.peak_viewers }}</div>
-                        <div style="font-size: 11px; color: var(--text-muted); text-transform: uppercase; font-weight: 700; letter-spacing: 0.5px;">All-Time Peak</div>
-                    </div>
-                    <div style="background: var(--card-bg); padding: 16px; border-radius: 12px; display: flex; flex-direction: column; align-items: center; text-align: center; border: 1px solid var(--border-color);">
-                        <div style="font-size: 20px; font-weight: bold; color: var(--primary); margin-bottom: 4px;">{{ channelStats.active_subs }}</div>
-                        <div style="font-size: 11px; color: var(--text-muted); text-transform: uppercase; font-weight: 700; letter-spacing: 0.5px;">Active Subs</div>
-                    </div>
-                    <div style="background: var(--card-bg); padding: 16px; border-radius: 12px; display: flex; flex-direction: column; align-items: center; text-align: center; border: 1px solid var(--border-color);">
-                        <div style="font-size: 16px; font-weight: bold; color: var(--primary); margin-top: 4px; margin-bottom: 4px;">{{ channelStats.account_created }}</div>
-                        <div style="font-size: 11px; color: var(--text-muted); text-transform: uppercase; font-weight: 700; letter-spacing: 0.5px;">Account Created</div>
-                    </div>
-                </div>
 
-                <div style="font-size:12px; font-weight:bold; color:var(--primary); margin: 24px 0 12px 8px; text-transform:uppercase;">Recent Broadcasting</div>
-                
-                <div style="display: flex; gap: 8px; margin-bottom: 12px; background: rgba(145, 70, 255, 0.1); padding: 4px; border-radius: 8px;">
-                    <button @click="statTimeframe = 'week'" :style="statTimeframe === 'week' ? 'background: var(--card-bg); color: var(--text-main); box-shadow: 0 2px 5px rgba(0,0,0,0.1);' : 'background: transparent; color: var(--text-muted);'" style="flex: 1; padding: 8px 0; text-align: center; border-radius: 6px; font-size: 13px; font-weight: 600; cursor: pointer; border:none;">Week</button>
-                    <button @click="statTimeframe = 'month'" :style="statTimeframe === 'month' ? 'background: var(--card-bg); color: var(--text-main); box-shadow: 0 2px 5px rgba(0,0,0,0.1);' : 'background: transparent; color: var(--text-muted);'" style="flex: 1; padding: 8px 0; text-align: center; border-radius: 6px; font-size: 13px; font-weight: 600; cursor: pointer; border:none;">Month</button>
-                    <button @click="statTimeframe = 'year'" :style="statTimeframe === 'year' ? 'background: var(--card-bg); color: var(--text-main); box-shadow: 0 2px 5px rgba(0,0,0,0.1);' : 'background: transparent; color: var(--text-muted);'" style="flex: 1; padding: 8px 0; text-align: center; border-radius: 6px; font-size: 13px; font-weight: 600; cursor: pointer; border:none;">Year</button>
-                </div>
+                    <div style="font-size:12px; font-weight:bold; color:var(--primary); margin: 24px 0 12px 8px; text-transform:uppercase;">Recent Broadcasting</div>
+                    
+                    <div style="display: flex; gap: 8px; margin-bottom: 12px; background: rgba(145, 70, 255, 0.1); padding: 4px; border-radius: 8px;">
+                        <button @click="statTimeframe = 'week'" :style="statTimeframe === 'week' ? 'background: var(--card-bg); color: var(--text-main); box-shadow: 0 2px 5px rgba(0,0,0,0.1);' : 'background: transparent; color: var(--text-muted);'" style="flex: 1; padding: 8px 0; text-align: center; border-radius: 6px; font-size: 13px; font-weight: 600; cursor: pointer; border:none;">Week</button>
+                        <button @click="statTimeframe = 'month'" :style="statTimeframe === 'month' ? 'background: var(--card-bg); color: var(--text-main); box-shadow: 0 2px 5px rgba(0,0,0,0.1);' : 'background: transparent; color: var(--text-muted);'" style="flex: 1; padding: 8px 0; text-align: center; border-radius: 6px; font-size: 13px; font-weight: 600; cursor: pointer; border:none;">Month</button>
+                        <button @click="statTimeframe = 'year'" :style="statTimeframe === 'year' ? 'background: var(--card-bg); color: var(--text-main); box-shadow: 0 2px 5px rgba(0,0,0,0.1);' : 'background: transparent; color: var(--text-muted);'" style="flex: 1; padding: 8px 0; text-align: center; border-radius: 6px; font-size: 13px; font-weight: 600; cursor: pointer; border:none;">Year</button>
+                    </div>
 
-                <div v-if="statTimeframe === 'week'" style="display: flex; flex-direction: column; gap: 8px;">
-                    <div style="background: var(--card-bg); padding: 12px 16px; border-radius: 10px; display: flex; justify-content: space-between; font-size: 14px; color: var(--text-muted); border: 1px solid var(--border-color);"><span>Hours Streamed</span><strong style="color: var(--text-main);">{{ channelStats.week_hours }} Hours</strong></div>
-                    <div style="background: var(--card-bg); padding: 12px 16px; border-radius: 10px; display: flex; justify-content: space-between; font-size: 14px; color: var(--text-muted); border: 1px solid var(--border-color);"><span>Top Category</span><strong style="color: var(--text-main);">{{ channelStats.week_category }}</strong></div>
-                    <div style="background: var(--card-bg); padding: 12px 16px; border-radius: 10px; display: flex; justify-content: space-between; font-size: 14px; color: var(--text-muted); border: 1px solid var(--border-color);"><span>Active Days</span><strong style="color: var(--text-main);">{{ channelStats.week_days }} days / week</strong></div>
+                    <div v-if="statTimeframe === 'week'" style="display: flex; flex-direction: column; gap: 8px;">
+                        <div style="background: var(--card-bg); padding: 12px 16px; border-radius: 10px; display: flex; justify-content: space-between; font-size: 14px; color: var(--text-muted); border: 1px solid var(--border-color);"><span>Hours Streamed</span><strong style="color: var(--text-main);">{{ channelStats.week_hours }} Hours</strong></div>
+                        <div style="background: var(--card-bg); padding: 12px 16px; border-radius: 10px; display: flex; justify-content: space-between; font-size: 14px; color: var(--text-muted); border: 1px solid var(--border-color);"><span>Top Category</span><strong style="color: var(--text-main);">{{ channelStats.week_category }}</strong></div>
+                        <div style="background: var(--card-bg); padding: 12px 16px; border-radius: 10px; display: flex; justify-content: space-between; font-size: 14px; color: var(--text-muted); border: 1px solid var(--border-color);"><span>Active Days</span><strong style="color: var(--text-main);">{{ channelStats.week_days }} days / week</strong></div>
+                    </div>
                 </div>
-                <div v-if="statTimeframe === 'month'" style="display: flex; flex-direction: column; gap: 8px;">
-                    <div style="background: var(--card-bg); padding: 12px 16px; border-radius: 10px; display: flex; justify-content: space-between; font-size: 14px; color: var(--text-muted); border: 1px solid var(--border-color);"><span>Hours Streamed</span><strong style="color: var(--text-main);">{{ channelStats.month_hours }} Hours</strong></div>
-                    <div style="background: var(--card-bg); padding: 12px 16px; border-radius: 10px; display: flex; justify-content: space-between; font-size: 14px; color: var(--text-muted); border: 1px solid var(--border-color);"><span>Top Category</span><strong style="color: var(--text-main);">{{ channelStats.month_category }}</strong></div>
-                    <div style="background: var(--card-bg); padding: 12px 16px; border-radius: 10px; display: flex; justify-content: space-between; font-size: 14px; color: var(--text-muted); border: 1px solid var(--border-color);"><span>Active Days</span><strong style="color: var(--text-main);">{{ channelStats.month_days }} days / week</strong></div>
-                </div>
-                <div v-if="statTimeframe === 'year'" style="display: flex; flex-direction: column; gap: 8px;">
-                    <div style="background: var(--card-bg); padding: 12px 16px; border-radius: 10px; display: flex; justify-content: space-between; font-size: 14px; color: var(--text-muted); border: 1px solid var(--border-color);"><span>Hours Streamed</span><strong style="color: var(--text-main);">{{ channelStats.year_hours }} Hours</strong></div>
-                    <div style="background: var(--card-bg); padding: 12px 16px; border-radius: 10px; display: flex; justify-content: space-between; font-size: 14px; color: var(--text-muted); border: 1px solid var(--border-color);"><span>Top Category</span><strong style="color: var(--text-main);">{{ channelStats.year_category }}</strong></div>
-                    <div style="background: var(--card-bg); padding: 12px 16px; border-radius: 10px; display: flex; justify-content: space-between; font-size: 14px; color: var(--text-muted); border: 1px solid var(--border-color);"><span>Active Days</span><strong style="color: var(--text-main);">{{ channelStats.year_days }} days / week</strong></div>
-                </div>
-            </div>
+            </transition>
         </div>
     `
 };
@@ -633,7 +589,10 @@ createApp({
         const tabs = ['home', 'chat', 'gerald', 'more'];
         const initialHash = window.location.hash.replace('#', '');
         const currentTab = ref(tabs.includes(initialHash) ? initialHash : 'home');
-        const appTheme = ref(localStorage.getItem('miko_theme') || 'dark'); 
+        
+        // Defaults correctly to light mode now
+        const appTheme = ref(localStorage.getItem('miko_theme') || 'light'); 
+        
         const splashVisible = ref(true), splashOpacity = ref(1);
         const clips = ref([]), allClips = ref([]);
         const allClipsCount = computed(() => allClips.value.length);
@@ -650,6 +609,10 @@ createApp({
         const wipeState = ref('Wipe Gerald Memory');
         const logoutState = ref('Sign Out');
         const nukeState = ref('Nuke App Cache');
+        
+        // Placeholders to prevent Vue warnings from index.html
+        const apiConfig = ref({});
+        const saveState = ref('');
         
         const isHeaderVisible = ref(true);
         const geminiStatus = ref('TESTING BRAIN...');
@@ -684,7 +647,6 @@ createApp({
                 document.head.appendChild(metaTheme);
             }
             metaTheme.setAttribute('content', bgHex);
-            
             document.body.style.backgroundColor = bgHex;
             document.documentElement.style.backgroundColor = bgHex;
         };
@@ -693,7 +655,7 @@ createApp({
             currentTab.value = tab;
             tabOffset.value = tabOrder.indexOf(tab) * -25;
             window.history.pushState(null, '', `#${tab}`);
-            if (tab === 'gerald') setTimeout(scrollToBottom, 300);
+            if (tab === 'gerald') setTimeout(() => { const b = document.getElementById('gerald-msgs'); if (b) b.scrollTop = b.scrollHeight; }, 300);
         };
 
         let swipeStartX = 0;
@@ -714,43 +676,8 @@ createApp({
             if (dy > 80) modals.value.profile = false;
         };
 
-        const runSync = () => {
-            syncState.value = 'REFRESHING...';
-            allClipsLoaded.value = false;
-            allClips.value = [];
-            currentClipOffset.value = 0;
-            loadData(false).then(() => {
-                syncState.value = 'SUCCESS';
-                setTimeout(() => { syncState.value = 'Refresh Feed'; }, 2000);
-            });
-        };
-
-        const nukeCache = () => {
-            nukeState.value = 'NUKING...';
-            localStorage.clear();
-            setTimeout(() => { 
-                nukeState.value = 'SUCCESS'; 
-                window.location.reload(); 
-            }, 1000);
-        };
-
-        const clearGeraldHistory = async () => {
-            if (!currentUser.value) return;
-            wipeState.value = 'WIPING...';
-            try {
-                await sbClient.from('gerald_history').delete().eq('user_id', currentUser.value.id);
-                geraldMessages.value = [{ role: 'gerald', content: '' }];
-                wipeState.value = 'SUCCESS';
-            } catch {
-                wipeState.value = 'Wipe Gerald Memory';
-            }
-            setTimeout(() => { wipeState.value = 'Wipe Gerald Memory'; }, 2500);
-        };
-        
         const toggleTheme = () => { appTheme.value = appTheme.value === 'light' ? 'dark' : 'light'; localStorage.setItem('miko_theme', appTheme.value); updateThemeClass(); };
-        const scrollToBottom = () => { const b = document.getElementById('gerald-msgs'); if (b) b.scrollTop = b.scrollHeight; };
 
-        // Fetches ONLY Custom emotes, paginated, exclusively for Gerald's brain.
         const loadEmotesFromSupabase = async () => {
             try {
                 let fetchMore = true;
@@ -758,144 +685,34 @@ createApp({
                 const step = 1000;
 
                 while (fetchMore) {
-                    const { data, error } = await sbClient
-                        .from('emotes')
-                        .select('name,url')
-                        .range(currentOffset, currentOffset + step - 1);
-
+                    const { data } = await sbClient.from('emotes').select('name,url').range(currentOffset, currentOffset + step - 1);
                     if (data && data.length > 0) {
-                        data.forEach(item => {
-                            if (item.url) { customEmotes.value[item.name] = { url: item.url }; }
-                        });
+                        data.forEach(item => { if (item.url) { customEmotes.value[item.name] = { url: item.url }; } });
                         currentOffset += step;
                         if (data.length < step) fetchMore = false;
-                    } else {
-                        fetchMore = false;
-                    }
+                    } else { fetchMore = false; }
                 }
-            } catch (e) { console.error("Database cache pipeline failed.", e); }
+            } catch (e) {}
         };
 
         const testGeminiBrain = async () => {
             try {
                 const { data, error } = await sbClient.functions.invoke('gerald-chat', { body: { history: [{ role: 'user', parts: [{ text: 'ping' }] }] } });
-                if (!error && data && data.reply) {
-                    geminiStatus.value = 'API_CONNECTED';
-                } else {
-                    geminiStatus.value = 'API_DISCONNECTED';
-                }
+                geminiStatus.value = (!error && data && data.reply) ? 'API_CONNECTED' : 'API_DISCONNECTED';
             } catch { geminiStatus.value = 'API_DISCONNECTED'; }
         };
 
-        const triggerAiMinigame = (gameObj) => {
-            geraldInput.value = "";
-            closePickers();
-            
-            const logMsg = `**[EVENT: ${gameObj.label} Protocol Activated]**`;
-            geraldMessages.value.push({ role: 'user', content: logMsg });
-            
-            if (currentUser.value) {
-                sbClient.from('gerald_history').insert({ user_id: currentUser.value.id, role: 'user', content: logMsg }).then();
-            }
-            
-            isGeraldTyping.value = true;
-            nextTick(scrollToBottom);
-
-            const contextHistory = geraldMessages.value.slice(-10).map(m => ({ role: m.role === 'gerald' ? 'model' : 'user', parts: [{ text: m.content }] }));
-
-            sbClient.functions.invoke('gerald-chat', { 
-                body: { history: contextHistory, system_directive: getGeraldSystemDirective(customEmotes.value, gameObj.prompt) } 
-            }).then(({ data, error }) => {
-                if (!error && data?.reply) {
-                    let formattedReply = enforceGrammar(data.reply.trim());
-                    geraldMessages.value.push({ role: 'gerald', content: formattedReply });
-                    if (currentUser.value) {
-                        sbClient.from('gerald_history').insert({ user_id: currentUser.value.id, role: 'gerald', content: formattedReply }).then();
-                    }
-                } else {
-                    geraldMessages.value.push({ role: 'gerald', content: 'MALFUNCTION: Internal hardware override processing failure.' });
-                }
-            }).catch(() => {
-                geraldMessages.value.push({ role: 'gerald', content: 'MALFUNCTION: Core logic offline.' });
-            }).finally(() => {
-                isGeraldTyping.value = false;
-                nextTick(scrollToBottom);
-            });
-        };
-
-        const talkToGerald = async () => {
-            const inputEl = document.getElementById('gerald-txt-input');
-            if (inputEl && inputEl.value !== geraldInput.value) { geraldInput.value = inputEl.value; }
-            if (!geraldInput.value.trim() || isGeraldTyping.value) return;
-
-            const userMsg = geraldInput.value;
-            geraldMessages.value.push({ role: 'user', content: userMsg });
-
-            if (currentUser.value) {
-                sbClient.from('gerald_history').insert({ user_id: currentUser.value.id, role: 'user', content: userMsg }).then();
-            }
-
-            geraldInput.value = '';
-            if (inputEl) { inputEl.value = ''; inputEl.style.height = 'auto'; }
-
-            isGeraldTyping.value = true; closePickers(); nextTick(scrollToBottom);
-            const geminiHistory = geraldMessages.value.slice(-12).map(m => ({ role: m.role === 'gerald' ? 'model' : 'user', parts: [{ text: m.content }] }));
-
+        const checkLive = async () => {
             try {
-                const { data, error } = await sbClient.functions.invoke('gerald-chat', { 
-                    body: { history: geminiHistory, system_directive: getGeraldSystemDirective(customEmotes.value) } 
-                });
-                if (!error && data?.reply) {
-                    let formattedReply = enforceGrammar(data.reply.trim());
-                    geraldMessages.value.push({ role: 'gerald', content: formattedReply });
-                    if (currentUser.value) {
-                        sbClient.from('gerald_history').insert({ user_id: currentUser.value.id, role: 'gerald', content: formattedReply }).then();
-                    }
-                } else throw error;
-            } catch { geraldMessages.value.push({ role: 'gerald', content: 'SYSTEM FAILURE: Core sync interrupted.' }); }
-            finally { isGeraldTyping.value = false; nextTick(scrollToBottom); }
+                const res = await fetch('https://decapi.me/twitch/uptime/codemiko');
+                isLive.value = !(await res.text()).includes('offline');
+                const gql = await fetch('https://yhxcuayiwqpjvalyrcqv.supabase.co/functions/v1/twitch-schedule');
+                const edges = (await gql.json()).data?.user?.videos?.edges || [];
+                recentVods.value = edges.map(e => ({ id: e.node.id, date: new Date(e.node.createdAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric' }).toUpperCase() }));
+                if (currentVodIndex.value === 0 || currentVodIndex.value === -1) currentVodIndex.value = isLive.value ? -1 : 0;
+            } catch {}
         };
-
-        const handleGeraldEnter = (e) => {
-            if (!e.shiftKey && e.key === 'Enter') {
-                e.preventDefault();
-                talkToGerald();
-            }
-        };
-
-        const nextVod = () => { if (currentVodIndex.value < recentVods.value.length - 1) currentVodIndex.value++; };
-        const prevVod = () => { if (currentVodIndex.value > (isLive.value ? -1 : 0)) currentVodIndex.value--; };
-        const closeFilterMenu = () => { isFilterMenuOpen.value = false; };
-        const playClip = (clip) => { selectedClip.value = clip; };
-        const insertEmote = (name) => { if (currentTab.value === 'gerald') geraldInput.value += ' ' + name + ' '; };
-        const toggleEmotes = () => { showEmotePicker.value = !showEmotePicker.value; showMinigames.value = false; };
-        const toggleMinigames = () => { showMinigames.value = !showMinigames.value; showEmotePicker.value = false; };
-        const closePickers = () => { showEmotePicker.value = false; showMinigames.value = false; };
-
-        const applyFilter = (key, label) => {
-            currentFilter.value = key; activeFilterLabel.value = label; isFilterMenuOpen.value = false;
-            allClipsLoaded.value = false;
-            allClips.value = [];
-            currentClipOffset.value = 0;
-            const el = document.getElementById('home-scroll-element'); if (el) nextTick(() => el.scrollTop = 0);
-            loadData(false);
-        };
-
-        let lastScrollTop = 0;
-        const handleScroll = (e) => {
-            const st = e.target.scrollTop;
-            if (st > lastScrollTop && st > 50) {
-                isHeaderVisible.value = false;
-            } else if (st < lastScrollTop) {
-                isHeaderVisible.value = true;
-            }
-            lastScrollTop = st <= 0 ? 0 : st;
-
-            if (e.target.scrollHeight - e.target.scrollTop - e.target.clientHeight < 200) { 
-                if (currentTab.value === 'home') loadData(true); 
-            }
-        };
-
+        
         const loadData = async (isLoadMore = false) => {
             if (isLoadingMore.value || allClipsLoaded.value) return; isLoadingMore.value = true;
             try {
@@ -927,16 +744,21 @@ createApp({
             } catch {} finally { isLoadingMore.value = false; }
         };
 
-        const checkLive = async () => {
-            try {
-                const res = await fetch('https://decapi.me/twitch/uptime/codemiko');
-                isLive.value = !(await res.text()).includes('offline');
-                const gql = await fetch('https://yhxcuayiwqpjvalyrcqv.supabase.co/functions/v1/twitch-schedule');
-                const edges = (await gql.json()).data?.user?.videos?.edges || [];
-                recentVods.value = edges.map(e => ({ id: e.node.id, date: new Date(e.node.createdAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric' }).toUpperCase() }));
-                if (currentVodIndex.value === 0 || currentVodIndex.value === -1) currentVodIndex.value = isLive.value ? -1 : 0;
-            } catch {}
+        const handleScroll = (e) => {
+            const st = e.target.scrollTop;
+            if (st > lastScrollTop && st > 50) {
+                isHeaderVisible.value = false;
+            } else if (st < lastScrollTop) {
+                isHeaderVisible.value = true;
+            }
+            lastScrollTop = st <= 0 ? 0 : st;
+
+            if (e.target.scrollHeight - e.target.scrollTop - e.target.clientHeight < 200) { 
+                if (currentTab.value === 'home') loadData(true); 
+            }
         };
+        
+        let lastScrollTop = 0;
 
         onMounted(() => {
             document.body.style.overflow = 'hidden';
@@ -947,76 +769,35 @@ createApp({
 
             sbClient.auth.getSession().then(({ data: sessionData }) => {
                 if (sessionData?.session?.user) currentUser.value = sessionData.session.user;
-                
-                sbClient.auth.onAuthStateChange((event, session) => {
-                    currentUser.value = session?.user || null;
-                });
-
-                if (currentUser.value) {
-                    sbClient.from('gerald_history').select('*').eq('user_id', currentUser.value.id).order('created_at', { ascending: true }).then(({ data: hist }) => {
-                        if (hist && hist.length > 0) {
-                            geraldMessages.value = hist.map(r => ({ role: r.role, content: r.content }));
-                            setTimeout(scrollToBottom, 300);
-                        } else {
-                            geraldMessages.value = [{ role: 'gerald', content: '' }];
-                        }
-                    });
-                }
+                sbClient.auth.onAuthStateChange((event, session) => { currentUser.value = session?.user || null; });
             });
 
             Promise.all([
                 loadEmotesFromSupabase(),
-                loadData(false),
+                loadData(),
                 checkLive(),
                 testGeminiBrain()
             ]).then(() => {
                 splashOpacity.value = 0; 
                 setTimeout(() => { splashVisible.value = false; }, 300);
             });
-
-            setInterval(() => {
-                sysStats.value.cpu = Math.floor(Math.random() * (48 - 14 + 1)) + 14;
-                sysStats.value.temp = Math.floor(Math.random() * (89 - 68 + 1)) + 68;
-            }, 3500);
         });
 
         return {
-            hostname, splashVisible, splashOpacity, currentTab, tabOffset, appTheme, toggleTheme, clips, allClipsCount, modals, isLive, currentUser, loginEmail, loginPass, loginError, geraldInput, geraldMessages, isGeraldTyping, talkToGerald, handleGeraldEnter, syncState, wipeState, logoutState, nukeState, isHeaderVisible, handleScroll, currentFilter, activeFilterLabel, isFilterMenuOpen, closeFilterMenu, applyFilter, recentVods, currentVodIndex, nextVod, prevVod, customEmotes, showEmotePicker, insertEmote, toggleEmotes, toggleMinigames, closePickers, nukeCache, activeClipId, switchTab, playClip, selectedClip, showMinigames, runSync, triggerAiMinigame, geminiStatus, sysStats, handleSwipeStart, handleSwipeEnd, handleModalTouchStart, handleModalTouchMove, handleModalTouchEnd, clearGeraldHistory,
+            hostname, splashVisible, splashOpacity, currentTab, tabOffset, appTheme, toggleTheme, clips, allClipsCount, modals, isLive, currentUser, loginEmail, loginPass, loginError, geraldInput, geraldMessages, isGeraldTyping, syncState, wipeState, logoutState, nukeState, isHeaderVisible, currentFilter, activeFilterLabel, isFilterMenuOpen, recentVods, currentVodIndex, customEmotes, showEmotePicker, showMinigames, activeClipId, switchTab, geminiStatus, sysStats, handleSwipeStart, handleSwipeEnd, handleModalTouchStart, handleModalTouchMove, handleModalTouchEnd, handleScroll, apiConfig, saveState,
             logoSvg: (id) => `<svg viewBox="0 0 100 100"><defs><linearGradient id="grad-${id}" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stop-color="#9146FF"/><stop offset="100%" stop-color="#a970ff"/></linearGradient></defs><circle cx="50" cy="50" r="40" fill="url(#grad-${id})"/><path d="M 33 38 L 48 62 L 62 38 L 62 55 Q 62 65 69 64" fill="none" stroke="#ffffff" stroke-width="8" stroke-linecap="round" stroke-linejoin="round"/></svg>`,
-            handleLogin: async () => { 
-                loginError.value = '';
-                try {
-                    if (!loginEmail.value || !loginPass.value) {
-                        loginError.value = 'Please enter email and password.';
-                        return;
-                    }
-                    const email = loginEmail.value.includes('@') ? loginEmail.value : `${loginEmail.value}@miko.com`; 
-                    const { data, error = null } = await sbClient.auth.signInWithPassword({ email, password: loginPass.value }); 
-                    
-                    if (error) {
-                        loginError.value = 'Invalid email or password.';
-                        return;
-                    }
-                    if (data.user) { 
-                        currentUser.value = data.user; 
-                        modals.value.profile = false; 
-                        loginEmail.value = '';
-                        loginPass.value = '';
-                        
-                        const { data: hist = [] } = await sbClient.from('gerald_history').select('*').eq('user_id', currentUser.value.id).order('created_at', { ascending: true });
-                        if (hist && hist.length > 0) { 
-                            geraldMessages.value = hist.map(r => ({ role: r.role, content: r.content })); 
-                            setTimeout(() => { const b = document.getElementById('gerald-msgs'); if (b) b.scrollTop = b.scrollHeight; }, 300);
-                        }
-                    } 
-                } catch (err) {
-                    loginError.value = 'System Error. Please try again.';
-                }
-            },
-            handleLogout: () => { logoutState.value = 'LOGGING OUT...'; setTimeout(() => { sbClient.auth.signOut(); currentUser.value = null; modals.value.profile = false; logoutState.value = 'Sign Out'; }, 1000); },
             optimizeTwitchImg: (u) => u ? u.replace('%{width}', '480').replace('%{height}', '270') : '',
             formatViews: (v) => v ? v.toLocaleString() : '0',
-            formatDate: (d) => new Date(d).toLocaleDateString([], {month:'short', day:'numeric'})
+            formatDate: (d) => new Date(d).toLocaleDateString([], {month:'short', day:'numeric'}),
+            closeFilterMenu: () => { isFilterMenuOpen.value = false; },
+            applyFilter: (key, label) => {
+                currentFilter.value = key; activeFilterLabel.value = label; isFilterMenuOpen.value = false;
+                allClipsLoaded.value = false; allClips.value = []; currentClipOffset.value = 0;
+                loadData(false);
+            },
+            prevVod: () => { if (currentVodIndex.value > (isLive.value ? -1 : 0)) currentVodIndex.value--; },
+            nextVod: () => { if (currentVodIndex.value < recentVods.value.length - 1) currentVodIndex.value++; },
+            playClip: (clip) => { selectedClip.value = clip; }
         };
     }
 }).mount('#app-container');
