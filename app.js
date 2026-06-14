@@ -380,13 +380,13 @@ const MoreView = {
 
         const LBL_FUTURE = ["NEXT STREAM IN", "SCUFF ARRIVES IN", "CHAOS BEGINS IN", "TECHNICIAN SPAWNS", "MOCAP BOOTING IN"];
         const LBL_LATE = ["PREPARING SCUFF...", "CALIBRATING SUIT...", "TECHNICIAN IS LATE", "BOOTING UNREAL...", "FINDING MUTE BUTTON..."];
-        const LBL_LIVE = ["PREPARE YOUR EARS", "SCUFF IS LIVE", "EMBRACE THE CHAOS", "TECHNICIAN UNLEASHED", "RIP HEADPHONE USERS"];
+        const LBL_LIVE = ["STREAM IS LIVE"];
         const LBL_OFFLINE = ["AWAITING SCHEDULE", "RECHARGING SUIT", "MOCAP OFFLINE", "SLEEPING IN VR", "TOUCHING GRASS"];
 
         const randomizeTexts = () => {
             randFuture.value = LBL_FUTURE[Math.floor(Math.random() * LBL_FUTURE.length)];
             randLate.value = LBL_LATE[Math.floor(Math.random() * LBL_LATE.length)];
-            randLive.value = LBL_LIVE[Math.floor(Math.random() * LBL_LIVE.length)];
+            randLive.value = LBL_LIVE[0]; // Kept static and centered as requested
             randOffline.value = LBL_OFFLINE[Math.floor(Math.random() * LBL_OFFLINE.length)];
         };
 
@@ -575,92 +575,9 @@ const MoreView = {
                 </a>
                 <a href="https://www.reddit.com/r/CodeMiko/" target="_blank" style="display: flex; align-items: center; width: 100%; box-sizing: border-box; padding: 0 16px; border-radius: 12px; min-height: 48px; background: var(--card-bg); text-decoration: none; margin-bottom: 24px;">
                     <svg viewBox="0 0 24 24" style="width: 22px; height: 22px; fill: #FF4500;"><path d="M24 11.779c0-1.459-1.192-2.645-2.657-2.645-.715 0-1.363.275-1.84.731-1.81-1.191-4.259-1.949-6.971-2.046l1.483-4.669 4.016.941-.006.058c0 1.193.975 2.163 2.174 2.163 1.198 0 2.172-.97 2.172-2.163s-.975-2.164-2.172-2.164c-.92 0-1.704.574-2.021 1.379l-4.329-1.015c-.189-.046-.381.063-.44.249l-1.654 5.207c-2.838.034-5.409.798-7.3 2.025-.474-.438-1.106-.712-1.796-.712-1.465 0-2.656 1.187-2.656 2.646 0 .97.533 1.811 1.317 2.271-.052.282-.086.567-.086.857 0 3.911 4.808 7.093 10.719 7.093s10.72-3.182 10.72-7.093c0-.274-.029-.544-.075-.81.832-.447 1.405-1.312 1.405-2.318zm-17.224 1.816c0-.868.71-1.575 1.582-1.575.872 0 1.581.707 1.581 1.575s-.709 1.574-1.581 1.574-1.582-.706-1.582-1.574zm9.061 4.669c-1.207 1.214-3.581 1.303-3.69 1.303-.105 0-2.474-.085-3.697-1.303-.146-.145-.145-.382.001-.527.145-.145.381-.144.526.002.825.833 2.378 1.054 3.161 1.054.78 0 2.327-.215 3.153-1.05.145-.147.382-.148.529-.002.146.146.147.383.017.523zm.18-2.925c-.872 0-1.581-.706-1.581-1.574 0-.868.709-1.575 1.581-1.575s1.581.707 1.581 1.575c0 .868-.709 1.574-1.581 1.574z"/></svg>
-                    <span style="color: var(--text-main); font-size: 14px; font-weight: 600; margin-left: 12px;">Reddit</span>
-                    <span class="material-symbols-rounded" style="color: var(--text-muted); margin-left: auto; font-size: 16px;">open_in_new</span>
-                </a>
-            </div>
-
-            <transition name="nav-slide">
-                <div v-if="activeSubView === 'about'" style="position: absolute; inset: 0; background: var(--bg-color); z-index: 50; overflow-y: auto; padding: 20px 16px; box-sizing: border-box;">
-                    <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 24px; font-size: 18px; font-weight: bold; color: var(--text-main);">
-                        <button @click="activeSubView = 'main'" style="background: var(--card-bg); border: 1px solid var(--border-color); color: var(--text-main); width: 36px; height: 36px; border-radius: 50%; display: flex; align-items: center; justify-content: center; cursor: pointer; box-shadow: 0 2px 8px rgba(0,0,0,0.05);">
-                            <span class="material-symbols-rounded">arrow_back</span>
-                        </button>
-                        About CodeMiko
-                    </div>
-                    <div style="text-align: center; margin-bottom: 24px;">
-                        <img src="https://raw.githubusercontent.com/meowoccino/MikoTok/main/1000018850.png" style="width: 110px; height: 110px; border-radius: 50%; margin-bottom: 12px;" alt="Avatar">
-                        <h2 style="margin:0; color: var(--text-main);">CodeMiko</h2>
-                        <div style="color:var(--text-muted); font-size:14px; margin-top:4px;">Youna Kang • VTuber & Dev</div>
-                    </div>
-                    <div style="color: var(--text-main); font-size: 14px; line-height: 1.6; background: var(--card-bg); padding: 16px; border-radius: 12px; margin-bottom: 16px; border: 1px solid var(--border-color);">
-                        <div style="text-align: center; margin-bottom: 12px;"><strong style="color:var(--text-main);">The Glitch in the System</strong></div>
-                        CodeMiko is a groundbreaking interactive VTuber project created and operated by "The Technician" (Youna Kang). Using a state-of-the-art Xsens full-body motion capture suit and Unreal Engine 5, Miko pushes the absolute boundaries of digital broadcasting.<br><br>
-                        What makes the stream unique is its interactivity. Chatters can use Bits and channel points to directly trigger interactions, minigames, and catastrophic visual glitches on Miko's avatar in real-time.<br><br>
-                        According to her lore, Miko is an aspiring video game NPC without a game, attempting to find her place in the digital world after being rejected by major AAA titles.
-                    </div>
-                </div>
-            </transition>
-
-            <transition name="nav-slide">
-                <div v-if="activeSubView === 'stats'" style="position: absolute; inset: 0; background: var(--bg-color); z-index: 50; overflow-y: auto; padding: 20px 16px; box-sizing: border-box;">
-                    <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 24px; font-size: 18px; font-weight: bold; color: var(--text-main);">
-                        <button @click="activeSubView = 'main'" style="background: var(--card-bg); border: 1px solid var(--border-color); color: var(--text-main); width: 36px; height: 36px; border-radius: 50%; display: flex; align-items: center; justify-content: center; cursor: pointer;">
-                            <span class="material-symbols-rounded">arrow_back</span>
-                        </button>
-                        Channel Statistics
-                    </div>
-
-                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 24px;">
-                        <div style="background: var(--card-bg); padding: 16px; border-radius: 12px; display: flex; flex-direction: column; align-items: center; text-align: center; border: 1px solid var(--border-color);">
-                            <div style="font-size: 20px; font-weight: bold; color: var(--primary); margin-bottom: 4px;">{{ channelStats.followers }}</div>
-                            <div style="font-size: 11px; color: var(--text-muted); text-transform: uppercase; font-weight: 700; letter-spacing: 0.5px;">Followers</div>
-                        </div>
-                        <div style="background: var(--card-bg); padding: 16px; border-radius: 12px; display: flex; flex-direction: column; align-items: center; text-align: center; border: 1px solid var(--border-color);">
-                            <div style="font-size: 20px; font-weight: bold; color: var(--primary); margin-bottom: 4px;">{{ channelStats.total_views }}</div>
-                            <div style="font-size: 11px; color: var(--text-muted); text-transform: uppercase; font-weight: 700; letter-spacing: 0.5px;">Total Views</div>
-                        </div>
-                        <div style="background: var(--card-bg); padding: 16px; border-radius: 12px; display: flex; flex-direction: column; align-items: center; text-align: center; border: 1px solid var(--border-color);">
-                            <div style="font-size: 20px; font-weight: bold; color: var(--primary); margin-bottom: 4px;">{{ channelStats.avg_viewers }}</div>
-                            <div style="font-size: 11px; color: var(--text-muted); text-transform: uppercase; font-weight: 700; letter-spacing: 0.5px;">Avg Viewers</div>
-                        </div>
-                        <div style="background: var(--card-bg); padding: 16px; border-radius: 12px; display: flex; flex-direction: column; align-items: center; text-align: center; border: 1px solid var(--border-color);">
-                            <div style="font-size: 20px; font-weight: bold; color: var(--primary); margin-bottom: 4px;">{{ channelStats.peak_viewers }}</div>
-                            <div style="font-size: 11px; color: var(--text-muted); text-transform: uppercase; font-weight: 700; letter-spacing: 0.5px;">All-Time Peak</div>
-                        </div>
-                        <div style="background: var(--card-bg); padding: 16px; border-radius: 12px; display: flex; flex-direction: column; align-items: center; text-align: center; border: 1px solid var(--border-color);">
-                            <div style="font-size: 20px; font-weight: bold; color: var(--primary); margin-bottom: 4px;">{{ channelStats.active_subs }}</div>
-                            <div style="font-size: 11px; color: var(--text-muted); text-transform: uppercase; font-weight: 700; letter-spacing: 0.5px;">Active Subs</div>
-                        </div>
-                        <div style="background: var(--card-bg); padding: 16px; border-radius: 12px; display: flex; flex-direction: column; align-items: center; text-align: center; border: 1px solid var(--border-color);">
-                            <div style="font-size: 16px; font-weight: bold; color: var(--primary); margin-top: 4px; margin-bottom: 4px;">{{ channelStats.account_created }}</div>
-                            <div style="font-size: 11px; color: var(--text-muted); text-transform: uppercase; font-weight: 700; letter-spacing: 0.5px;">Account Created</div>
-                        </div>
-                    </div>
-
-                    <div style="font-size:12px; font-weight:bold; color:var(--primary); margin: 24px 0 12px 8px; text-transform:uppercase;">Recent Broadcasting</div>
-                    
-                    <div style="display: flex; gap: 8px; margin-bottom: 12px; background: rgba(145, 70, 255, 0.1); padding: 4px; border-radius: 8px;">
-                        <button @click="statTimeframe = 'week'" :style="statTimeframe === 'week' ? 'background: var(--card-bg); color: var(--text-main); box-shadow: 0 2px 5px rgba(0,0,0,0.1);' : 'background: transparent; color: var(--text-muted);'" style="flex: 1; padding: 8px 0; text-align: center; border-radius: 6px; font-size: 13px; font-weight: 600; cursor: pointer; border:none;">Week</button>
-                        <button @click="statTimeframe = 'month'" :style="statTimeframe === 'month' ? 'background: var(--card-bg); color: var(--text-main); box-shadow: 0 2px 5px rgba(0,0,0,0.1);' : 'background: transparent; color: var(--text-muted);'" style="flex: 1; padding: 8px 0; text-align: center; border-radius: 6px; font-size: 13px; font-weight: 600; cursor: pointer; border:none;">Month</button>
-                        <button @click="statTimeframe = 'year'" :style="statTimeframe === 'year' ? 'background: var(--card-bg); color: var(--text-main); box-shadow: 0 2px 5px rgba(0,0,0,0.1);' : 'background: transparent; color: var(--text-muted);'" style="flex: 1; padding: 8px 0; text-align: center; border-radius: 6px; font-size: 13px; font-weight: 600; cursor: pointer; border:none;">Year</button>
-                    </div>
-
-                    <div v-if="statTimeframe === 'week'" style="display: flex; flex-direction: column; gap: 8px;">
-                        <div style="background: var(--card-bg); padding: 12px 16px; border-radius: 10px; display: flex; justify-content: space-between; font-size: 14px; color: var(--text-muted); border: 1px solid var(--border-color);"><span>Hours Streamed</span><strong style="color: var(--text-main);">{{ channelStats.week_hours }} Hours</strong></div>
-                        <div style="background: var(--card-bg); padding: 12px 16px; border-radius: 10px; display: flex; justify-content: space-between; font-size: 14px; color: var(--text-muted); border: 1px solid var(--border-color);"><span>Top Category</span><strong style="color: var(--text-main);">{{ channelStats.week_category }}</strong></div>
-                        <div style="background: var(--card-bg); padding: 12px 16px; border-radius: 10px; display: flex; justify-content: space-between; font-size: 14px; color: var(--text-muted); border: 1px solid var(--border-color);"><span>Active Days</span><strong style="color: var(--text-main);">{{ channelStats.week_days }} days / week</strong></div>
-                    </div>
-                    <div v-if="statTimeframe === 'month'" style="display: flex; flex-direction: column; gap: 8px;">
-                        <div style="background: var(--card-bg); padding: 12px 16px; border-radius: 10px; display: flex; justify-content: space-between; font-size: 14px; color: var(--text-muted); border: 1px solid var(--border-color);"><span>Hours Streamed</span><strong style="color: var(--text-main);">{{ channelStats.month_hours }} Hours</strong></div>
-                        <div style="background: var(--card-bg); padding: 12px 16px; border-radius: 10px; display: flex; justify-content: space-between; font-size: 14px; color: var(--text-muted); border: 1px solid var(--border-color);"><span>Top Category</span><strong style="color: var(--text-main);">{{ channelStats.month_category }}</strong></div>
-                        <div style="background: var(--card-bg); padding: 12px 16px; border-radius: 10px; display: flex; justify-content: space-between; font-size: 14px; color: var(--text-muted); border: 1px solid var(--border-color);"><span>Active Days</span><strong style="color: var(--text-main);">{{ channelStats.month_days }} days / week</strong></div>
-                    </div>
-                    <div v-if="statTimeframe === 'year'" style="display: flex; flex-direction: column; gap: 8px;">
-                        <div style="background: var(--card-bg); padding: 12px 16px; border-radius: 10px; display: flex; justify-content: space-between; font-size: 14px; color: var(--text-muted); border: 1px solid var(--border-color);"><span>Hours Streamed</span><strong style="color: var(--text-main);">{{ channelStats.year_hours }} Hours</strong></div>
-                        <div style="background: var(--card-bg); padding: 12px 16px; border-radius: 10px; display: flex; justify-content: space-between; font-size: 14px; color: var(--text-muted); border: 1px solid var(--border-color);"><span>Top Category</span><strong style="color: var(--text-main);">{{ channelStats.year_category }}</strong></div>
-                        <div style="background: var(--card-bg); padding: 12px 16px; border-radius: 10px; display: flex; justify-content: space-between; font-size: 14px; color: var(--text-muted); border: 1px solid var(--border-color);"><span>Active Days</span><strong style="color: var(--text-main);">{{ channelStats.year_days }} days / week</strong></div>
-                    </div>
+                        <span style="color: var(--text-main); font-size: 14px; font-weight: 600; margin-left: 12px;">Reddit</span>
+                        <span class="material-symbols-rounded" style="color: var(--text-muted); margin-left: auto; font-size: 16px;">open_in_new</span>
+                    </a>
                 </div>
             </transition>
         </div>
@@ -869,11 +786,9 @@ createApp({
         })();
         let _persistEnabled = false; 
 
-        // Fix: Properly split and merge Twitch Emotes and 7TV Custom Emotes in one exact pass
         const buildHtml = (text, tagsEmotes) => {
             let rawText = text;
             
-            // 1. Process explicit Twitch emote tags securely before escaping HTML
             if (tagsEmotes) {
                 const replacements = [];
                 tagsEmotes.split('/').forEach(e => {
@@ -894,17 +809,13 @@ createApp({
                 rawText = rawChars.join('');
             }
             
-            // 2. Escape standard HTML to prevent injection
             let html = rawText.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
             
-            // 3. Inject the actual Twitch image tags back into the escaped string
             html = html.replace(/_TWITCH_EMOTE_([^_]+)_([^_]+)_/g, '<img src="https://static-cdn.jtvnw.net/emoticons/v2/$1/default/dark/1.0" class="chat-emote-img" title="$2">');
 
-            // 4. Linkify standard URLs
             const urlPattern = /(\b(https?|ftp|file):\/\/[-A-Z0-9+&@#\/%?=~_|!:,.;]*[-A-Z0-9+&@#\/%=~_|])/ig;
             html = html.replace(urlPattern, "<a href='$1' target='_blank'>$1</a>");
             
-            // 5. Scan the rest of the text strictly for your 7TV Custom Emotes
             if (customEmotes.value) {
                 const tokens = html.split(/(<[^>]+>|[\s]+)/); 
                 const emoteKeys = Object.keys(customEmotes.value);
@@ -926,7 +837,6 @@ createApp({
                 html = tokens.join('');
             }
 
-            // 6. Markdown format final string
             html = html.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>').replace(/\*(.*?)\*/g, '<em>$1</em>');
             return html;
         };
@@ -1118,17 +1028,35 @@ createApp({
             loadChatHistory().then(() => connectTwitchChat());
         };
 
+        // Fully Paginated Supabase Loader
         const loadEmotesFromSupabase = async () => {
             try {
-                const { data, error } = await sbClient.from('emotes').select('id,name,url,provider').limit(3000);
-                if (data) {
-                    data.forEach(item => {
-                        if (item.provider === 'twitch_badge') {
-                            if (item.url) { badgeAssets[item.id] = item.url; }
-                        } else {
-                            if (item.url) { customEmotes.value[item.name] = { url: item.url }; }
+                let fetchMore = true;
+                let currentOffset = 0;
+                const step = 1000;
+
+                while (fetchMore) {
+                    const { data, error } = await sbClient
+                        .from('emotes')
+                        .select('id,name,url,provider')
+                        .range(currentOffset, currentOffset + step - 1);
+
+                    if (data && data.length > 0) {
+                        data.forEach(item => {
+                            if (item.provider === 'twitch_badge') {
+                                if (item.url) { badgeAssets[item.id] = item.url; }
+                            } else {
+                                if (item.url) { customEmotes.value[item.name] = { url: item.url }; }
+                            }
+                        });
+                        
+                        currentOffset += step;
+                        if (data.length < step) {
+                            fetchMore = false;
                         }
-                    });
+                    } else {
+                        fetchMore = false;
+                    }
                 }
             } catch (e) {}
         };
