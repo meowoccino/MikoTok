@@ -204,9 +204,12 @@ const ChatView = {
     },
     template: `
         <div style="flex: 1; display: flex; flex-direction: column; background: var(--bg-color); position: relative; overflow: hidden; width: 100%; height: 100%;">
-            <div style="position: absolute; left: 0; top: 0; bottom: 0; width: 14px; z-index: 1000; background: transparent;" @touchstart="$emit('edge-swipe-start', $event)" @touchend="$emit('edge-swipe-end', $event)"></div>
-            <div style="position: absolute; right: 0; top: 0; bottom: 0; width: 14px; z-index: 1000; background: transparent;" @touchstart="$emit('edge-swipe-start', $event)" @touchend="$emit('edge-swipe-end', $event)"></div>
+            
+            <!-- Transparent Swipe Guardians: Allows native app swiping on the edges of the chat -->
+            <div style="position: absolute; left: 0; top: 0; bottom: 0; width: 15px; z-index: 1000; background: transparent;"></div>
+            <div style="position: absolute; right: 0; top: 0; bottom: 0; width: 15px; z-index: 1000; background: transparent;"></div>
 
+            <!-- Softened guillotine (-38px) brings Sub Goal safely down from address bar -->
             <div style="flex: 1; overflow: hidden; position: relative; width: 100%; height: 100%; margin-top: 4px;">
                 <iframe 
                     :src="chatUrl" 
@@ -457,6 +460,7 @@ const MoreView = {
                 </a>
             </div>
 
+            <!-- Native Slide Overlay for About Page -->
             <transition name="nav-slide">
                 <div v-if="activeSubView === 'about'" class="sub-view-overlay">
                     <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 24px; font-size: 18px; font-weight: bold; color: var(--text-main);">
@@ -478,6 +482,7 @@ const MoreView = {
                 </div>
             </transition>
 
+            <!-- Native Slide Overlay for Stats Page -->
             <transition name="nav-slide">
                 <div v-if="activeSubView === 'stats'" class="sub-view-overlay">
                     <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 24px; font-size: 18px; font-weight: bold; color: var(--text-main);">
@@ -603,6 +608,7 @@ createApp({
         
         const splashVisible = ref(true), splashOpacity = ref(1);
         const clips = ref([]), allClips = ref([]);
+        const allClipsCount = computed(() => allClips.value.length);
         const modals = ref({ profile: false });
         const isLive = ref(false);
         const currentUser = ref(null);
@@ -617,6 +623,12 @@ createApp({
         const logoutState = ref('Sign Out');
         const nukeState = ref('Nuke App Cache');
         
+        // Blank placeholders so Vue does not crash when index.html binds them
+        const chatMessages = ref([]);
+        const twitchChatToken = ref(null);
+        const twitchAuthUrl = ref('');
+        const twitchUsername = ref('');
+        const showLoginPopup = ref(false);
         const apiConfig = ref({});
         const saveState = ref('');
         
@@ -777,7 +789,7 @@ createApp({
 
         const handleLogout = async () => { logoutState.value = 'LOGGING OUT...'; await sbClient.auth.signOut(); currentUser.value = null; modals.value.profile = false; logoutState.value = 'Sign Out'; };
         const runSync = async () => { syncState.value = 'REFRESHING...'; await loadData(false); syncState.value = 'SUCCESS'; setTimeout(() => syncState.value = 'Refresh Feed', 1500); };
-        const clearGeraldHistory = async () => { wipeState.value = 'WIPING...'; geraldMessages.value = [{ role: 'gerald', content: '' }]; wipeState.value = 'SUCCESS'; setTimeout(() => wipeState.value = 'Wipe Gerald Memory', 1500); };
+        const clearGeraldHistory = async () => { wipeState.value = 'WIPING...'; await sbClient.from('gerald_history').delete().eq('user_id', currentUser.value.id); geraldMessages.value = [{ role: 'gerald', content: '' }]; wipeState.value = 'SUCCESS'; setTimeout(() => wipeState.value = 'Wipe Gerald Memory', 1500); };
         const nukeCache = () => { nukeState.value = 'NUKING...'; localStorage.clear(); caches.keys().then(names => { for (let n of names) caches.delete(n); }); nukeState.value = 'SUCCESS'; setTimeout(() => window.location.reload(), 1000); };
 
         const talkToGerald = async () => {
@@ -886,7 +898,8 @@ createApp({
         });
 
         return {
-            hostname, splashVisible, splashOpacity, currentTab, tabOffset, appTheme, toggleTheme, clips, currentUser, loginEmail, loginPass, loginError, geraldInput, geraldMessages, isGeraldTyping, syncState, wipeState, logoutState, nukeState, isHeaderVisible, currentFilter, activeFilterLabel, isFilterMenuOpen, recentVods, currentVodIndex, customEmotes, showEmotePicker, showMinigames, activeClipId, switchTab, geminiStatus, sysStats, handleSwipeStart, handleSwipeEnd, handleModalTouchStart, handleModalTouchMove, handleModalTouchEnd, handleScroll, apiConfig, saveState, selectedClip, modals,
+            // Re-added completely restored variables so index.html does not crash Vue
+            hostname, splashVisible, splashOpacity, currentTab, tabOffset, appTheme, toggleTheme, clips, currentUser, loginEmail, loginPass, loginError, geraldInput, geraldMessages, isGeraldTyping, syncState, wipeState, logoutState, nukeState, isHeaderVisible, currentFilter, activeFilterLabel, isFilterMenuOpen, recentVods, currentVodIndex, customEmotes, showEmotePicker, showMinigames, activeClipId, switchTab, geminiStatus, sysStats, handleSwipeStart, handleSwipeEnd, handleModalTouchStart, handleModalTouchMove, handleModalTouchEnd, handleScroll, apiConfig, saveState, selectedClip, modals, allClipsCount, isLive, chatMessages, twitchChatToken, twitchAuthUrl, twitchUsername, showLoginPopup,
             logoSvg: (id) => `<svg viewBox="0 0 100 100"><defs><linearGradient id="grad-${id}" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stop-color="#9146FF"/><stop offset="100%" stop-color="#a970ff"/></linearGradient></defs><circle cx="50" cy="50" r="40" fill="url(#grad-${id})"/><path d="M 33 38 L 48 62 L 62 38 L 62 55 Q 62 65 69 64" fill="none" stroke="#ffffff" stroke-width="8" stroke-linecap="round" stroke-linejoin="round"/></svg>`,
             optimizeTwitchImg: (u) => u ? u.replace('%{width}', '480').replace('%{height}', '270') : '',
             formatViews: (v) => v ? v.toLocaleString() : '0',
@@ -905,7 +918,9 @@ createApp({
             insertEmote: (name) => { geraldInput.value += ' ' + name + ' '; showEmotePicker.value = false; },
             toggleEmotes: () => { showEmotePicker.value = !showEmotePicker.value; showMinigames.value = false; },
             toggleMinigames: () => { showMinigames.value = !showMinigames.value; showEmotePicker.value = false; },
-            handleGeraldEnter: (e) => { if (!e.shiftKey && e.key === 'Enter') { e.preventDefault(); talkToGerald(); } }
+            handleGeraldEnter: (e) => { if (!e.shiftKey && e.key === 'Enter') { e.preventDefault(); talkToGerald(); } },
+            // Stubs to prevent crash from removed native implementations
+            sendTwitchChatMessage: () => {}, disconnectTwitch: () => {}, saveApiKeys: () => {}
         };
     }
 }).mount('#app-container');
