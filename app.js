@@ -15,7 +15,7 @@ document.head.appendChild(styleReset);
 const parseMarkdownText = (text, emotesMap) => {
     if (!text) return ''; 
     let html = text.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
-    html = html.replace(/\*\*(.*?)\*\"/g, '<strong>$1</strong>').replace(/\*(.*?)\*/g, '<em>$1</em>');
+    html = html.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>').replace(/\*(.*?)\*/g, '<em>$1</em>');
     
     const urlPattern = /(\b(https?|ftp|file):\/\/[-A-Z0-9+&@#\/%?=~_|!:,.;]*[-A-Z0-9+&@#\/%=~_|])/ig;
     html = html.replace(urlPattern, "<a href='$1' target='_blank'>$1</a>");
@@ -223,7 +223,8 @@ const GeraldMinigames = {
     props: ['showMinigames'],
     data() {
         return {
-            gameDeck = [
+            // FIXED: Replaced invalid shorthand assignment (=) with valid object property syntax (:)
+            gameDeck: [
                 { id: 'glitch', label: '🕶️ Glitch Persona', prompt: 'Glitch persona override activated. Act broken, hyper-cynical, and target the stream layout!' },
                 { id: 'shader', label: '🔥 Compile UE5', prompt: 'Compilation error simulation. Complain aggressively about system lag, hardware resources, and VRAM limits.' },
                 { id: 'boba', label: '🥤 Boba Spill', prompt: 'Critical emergency alert! Sticky tapioca fluid has entered your cooling fans. React with mechanical panic!' },
@@ -298,7 +299,7 @@ const GeraldView = {
                 </div>
             </div>
             
-            <div class="gerald-action-area">
+            <div class="gerald-body-action-area">
                 <div class="chat-emote-tray" v-show="showEmotePicker" style="position: absolute; bottom: 100%; left: 0; right: 0; background: var(--card-bg); border-top: 1px solid var(--border-color); border-bottom: none; border-radius: 16px 16px 0 0; padding: 10px 12px; z-index: 200; max-height: 250px; display: flex; flex-direction: column; box-shadow: 0 -4px 20px rgba(0,0,0,0.1);">
                     <div class="emote-picker-grid" style="overscroll-behavior-y: contain; -webkit-overflow-scrolling: touch;">
                         <img v-for="(emote, name) in customEmotes" :key="name" :src="emote.url" :title="name" class="emote-picker-img" @mousedown.prevent="insertEmote(name)">
@@ -335,7 +336,7 @@ const MoreView = {
             week_hours: '...',
             peak_viewers: '...',
             account_created: '...',
-            active_subs: '...', // Serves securely as Average Stream Duration string data
+            active_subs: '...', 
             week_category: '...',
             week_days: '...'
         });
@@ -468,7 +469,7 @@ const MoreView = {
                     <span class="material-symbols-rounded" style="color: var(--text-muted); margin-left: auto; font-size: 16px;">open_in_new</span>
                 </a>
                 <a href="https://www.youtube.com/@CodeMiko" target="_blank" style="display: flex; align-items: center; width: 100%; box-sizing: border-box; padding: 0 16px; border-radius: 12px; min-height: 48px; background: var(--card-bg); text-decoration: none; margin-bottom: 8px;">
-                    <svg viewBox="0 0 24 24" style="width: 22px; height: 22px; color: #FF0000;"><path fill="currentColor" d="M21.582 6.186a2.6 2.6 0 0 0-1.838-1.85C18.125 3.9 12 3.9 12 3.9s-6.125 0-7.744.436a2.6 2.6 0 0 0-1.838 1.85C2 7.82 2 12 2 12s0 4.18'.418 5.814a2.6 2.6 0 0 0 1.838 1.85C5.875 20.1 12 20.1 12 20.1s6.125 0 7.744-.436a2.6 2.6 0 0 0 1.838-1.85C22 16.18 22 12 22 12s0-4.18-.418-5.814zM9.9 15.54V8.46L16.2 12z"/></svg>
+                    <svg viewBox="0 0 24 24" style="width: 22px; height: 22px; color: #FF0000;"><path fill="currentColor" d="M21.582 6.186a2.6 2.6 0 0 0-1.838-1.85C18.125 3.9 12 3.9 12 3.9s-6.125 0-7.744.436a2.6 2.6 0 0 0-1.838 1.85C2 7.82 2 12 2 12s0 4.18.418 5.814a2.6 2.6 0 0 0 1.838 1.85C5.875 20.1 12 20.1 12 20.1s6.125 0 7.744-.436a2.6 2.6 0 0 0 1.838-1.85C22 16.18 22 12 22 12s0-4.18-.418-5.814zM9.9 15.54V8.46L16.2 12z"/></svg>
                     <span style="color: var(--text-main); font-size: 14px; font-weight: 600; margin-left: 12px;">YouTube</span>
                     <span class="material-symbols-rounded" style="color: var(--text-muted); margin-left: auto; font-size: 16px;">open_in_new</span>
                 </a>
