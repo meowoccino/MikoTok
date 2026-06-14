@@ -616,6 +616,36 @@ createApp({
         const scrollChatToBottom = () => { setTimeout(() => { const l = document.getElementById('twitch-chat-list'); if (l) l.scrollTop = l.scrollHeight; }, 100); };
         const scrollToBottom = () => { const b = document.getElementById('gerald-msgs'); if (b) b.scrollTop = b.scrollHeight; };
 
+        // Session start persisted in sessionStorage — survives refresh but resets when tab closes
+        const _chatSessionStart = (() => {
+            let t = sessionStorage.getItem('miko_session_start');
+            if (!t) { t = new Date().toISOString(); sessionStorage.setItem('miko_session_start', t); }
+            return t;
+        })();
+        let _persistEnabled = false; // only persist live WS messages, not history load
+
+        const buildHtml = (text, tagsEmotes) => {
+            let html = text.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+            if (tagsEmotes) {
+                const replacements = [];
+                tagsEmotes.split('/').forEach(e => {
+                    const [id, positions] = e.split(':');
+                    if (!positions) return;
+                    positions.split(',').forEach(pos => { const [s, en] = pos.split('-').map(Number); replacements.push({ s, en, id }); });
+                });
+                replacements.sort((a, b) => b.s - a.s);
+                const chars = [...text];
+                replacements.forEach(({ s, en, id }) => {
+                    const emoteName = chars.slice(s, en + 1).join('');
+                    chars.splice(s, en - s + 1, `<img src="https://static-cdn.jtvnw.net/emoticons/v2/${id}/default/dark/1.0" class="chat-emote-img" title="${emoteName}">`);
+                });
+                html = chars.join('');
+            } else {
+                html = parseMarkdownText(text, customEmotes.value);
+            }
+            return html;
+        };
+
         const parseIrcMessage = (raw) => {
             if (!raw || !raw.includes('PRIVMSG')) return;
             let tags = {}, line = raw;
@@ -636,51 +666,33 @@ createApp({
 
             const badges = [];
             if (tags['badges']) {
-                tags['badges'].split(',').forEach(b => { 
-                    const imgUrl = badgeAssets[b]; 
-                    if (imgUrl) badges.push({ title: b.split('/')[0], img: imgUrl }); 
+                tags['badges'].split(',').forEach(b => {
+                    const imgUrl = badgeAssets[b];
+                    if (imgUrl) badges.push({ title: b.split('/')[0], img: imgUrl });
                 });
             }
 
-            let html = text.replace(/&/g, '&').replace(/</g, '<').replace(/>/g, '>');
-            if (tags['emotes']) {
-                const replacements = [];
-                tags['emotes'].split('/').forEach(e => {
-                    const [id, positions] = e.split(':');
-                    if (!positions) return;
-                    positions.split(',').forEach(pos => { const [s, en] = pos.split('-').map(Number); replacements.push({ s, en, id }); });
-                });
-                replacements.sort((a, b) => b.s - a.s);
-                const chars = [...text];
-                replacements.forEach(({ s, en, id }) => {
-                    const emoteName = chars.slice(s, en + 1).join('');
-                    chars.splice(s, en - s + 1, `<img src="https://static-cdn.jtvnw.net/emoticons/v2/${id}/default/dark/1.0" class="chat-emote-img" title="${emoteName}">`);
-                });
-                html = chars.join('');
-            } else {
-                html = parseMarkdownText(text, customEmotes.value);
-            }
+            const html = buildHtml(text, tags['emotes']);
 
-            // Deduplicate: if we already added this as a local echo, drop the IRC echo
+            // Deduplicate own-message optimistic echo
             const lowerUser = user.toLowerCase();
             const myName = (twitchUsername.value || '').toLowerCase();
             if (lowerUser === myName) {
                 const echoIdx = chatMessages.value.findIndex(m => m._localEcho && m.username.toLowerCase() === lowerUser);
                 if (echoIdx !== -1) {
-                    // Replace the optimistic echo with the confirmed message (has correct badges from IRC)
                     chatMessages.value.splice(echoIdx, 1, { timestamp, username: user, html, color, badges });
                     if (currentTab.value === 'chat') scrollChatToBottom();
-                    persistChatMessage({ username: user, color, html, badges });
+                    if (_persistEnabled) persistChatMessage({ username: user, color, text, badges });
                     return;
                 }
             }
             chatMessages.value.push({ timestamp, username: user, html, color, badges });
             if (chatMessages.value.length > 200) chatMessages.value.shift();
             if (currentTab.value === 'chat') scrollChatToBottom();
-            persistChatMessage({ username: user, color, html, badges });
+            if (_persistEnabled) persistChatMessage({ username: user, color, text, badges });
         };
 
-        // Rolling insert into twitch_chat_logs — keeps last 200 rows, fires and forgets
+        // Persist plain text (not HTML) so it's clean on reload
         let _persistQueue = Promise.resolve();
         const persistChatMessage = (msg) => {
             _persistQueue = _persistQueue.then(async () => {
@@ -688,52 +700,47 @@ createApp({
                     await sbClient.from('twitch_chat_logs').insert({
                         username: msg.username,
                         color: msg.color,
-                        message: msg.html,
+                        message: msg.text,
                         badges: msg.badges || []
                     });
-                    // Prune: keep only latest 200 rows by deleting oldest beyond that
+                    // Prune: delete anything older than our 200-row window
                     const { data: rows } = await sbClient
                         .from('twitch_chat_logs')
                         .select('id,created_at')
                         .order('created_at', { ascending: false })
-                        .range(200, 201);
+                        .range(199, 200);
                     if (rows && rows.length > 0) {
-                        const cutoff = rows[0].created_at;
-                        await sbClient.from('twitch_chat_logs').delete().lt('created_at', cutoff);
+                        await sbClient.from('twitch_chat_logs').delete().lt('created_at', rows[0].created_at);
                     }
                 } catch(e) { console.warn('[MikoTok] persist failed:', e.message); }
             });
         };
 
         const loadChatHistory = async () => {
-            // Check if we have recent Supabase logs (from last 30 mins) — means user refreshed mid-session
+            // Check if Supabase has messages from this session (after app opened)
             try {
-                const thirtyMinsAgo = new Date(Date.now() - 30 * 60 * 1000).toISOString();
                 const { data: logRows, error: logErr } = await sbClient
                     .from('twitch_chat_logs')
                     .select('username,message,color,badges,created_at')
-                    .gte('created_at', thirtyMinsAgo)
+                    .gte('created_at', _chatSessionStart)
                     .order('created_at', { ascending: true })
-                    .limit(100);
-                if (!logErr && logRows && logRows.length > 10) {
-                    // Recent session data exists — use it so messages survive refresh
+                    .limit(150);
+                if (!logErr && logRows && logRows.length > 0) {
+                    // Restore messages from this session
                     logRows.forEach(row => {
                         const d = new Date(row.created_at);
                         const ts = d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
                         const badges = Array.isArray(row.badges) ? row.badges : [];
-                        chatMessages.value.push({
-                            timestamp: ts,
-                            username: row.username,
-                            html: row.message || '',
-                            color: row.color || '#9146FF',
-                            badges
-                        });
+                        // Re-render HTML from stored plain text
+                        const html = parseMarkdownText(row.message || '', customEmotes.value);
+                        chatMessages.value.push({ timestamp: ts, username: row.username, html, color: row.color || '#9146FF', badges });
                     });
                     setTimeout(scrollChatToBottom, 150);
+                    _persistEnabled = true;
                     return;
                 }
             } catch(e) { console.warn('[MikoTok] Supabase history check failed:', e); }
-            // Default: load fresh from robotty (first load, or no recent data)
+            // First load — fetch from robotty for context, don't persist those
             try {
                 const res = await fetch('https://recent-messages.robotty.de/api/v2/recent-messages/codemiko');
                 const data = await res.json();
@@ -742,6 +749,7 @@ createApp({
                     setTimeout(scrollChatToBottom, 150);
                 }
             } catch(e) {}
+            _persistEnabled = true; // start persisting live messages after history is loaded
         };
 
         const connectTwitchChat = () => {
