@@ -366,8 +366,16 @@ const MoreView = {
         
         const activeSubView = ref('main');
         const statTimeframe = ref('month');
-        const streamState = ref('future'); 
+        const streamState = ref('offline'); 
         const countdownText = ref('00:00:00');
+        const nextStreamTime = ref(null);
+        
+        const channelStats = ref({
+            followers: '...', total_views: '...', avg_viewers: '...', peak_viewers: '...', active_subs: '...', account_created: '...',
+            week_hours: '...', week_category: '...', week_days: '...',
+            month_hours: '...', month_category: '...', month_days: '...',
+            year_hours: '...', year_category: '...', year_days: '...'
+        });
         
         const randFuture = ref('');
         const randLate = ref('');
@@ -387,14 +395,17 @@ const MoreView = {
         };
 
         let timerInterval;
-        let targetTime = new Date().getTime() + (4 * 60 * 60 * 1000 + 12 * 60 * 1000 + 45 * 1000);
 
         const updateClock = () => {
             if (props.isLive) {
                 streamState.value = 'live';
                 return;
             }
-            let d = targetTime - new Date().getTime();
+            if (!nextStreamTime.value) {
+                streamState.value = 'offline';
+                return;
+            }
+            let d = nextStreamTime.value - new Date().getTime();
             if (d < 0) {
                 streamState.value = 'late';
             } else {
@@ -406,17 +417,13 @@ const MoreView = {
             }
         };
 
-        onMounted(() => {
+        onMounted(async () => {
             if (!document.getElementById('native-slide-css')) {
                 const style = document.createElement('style');
                 style.id = 'native-slide-css';
                 style.innerHTML = `
-                    .nav-slide-enter-active, .nav-slide-leave-active {
-                        transition: transform 0.25s cubic-bezier(0.25, 0.8, 0.25, 1);
-                    }
-                    .nav-slide-enter-from, .nav-slide-leave-to {
-                        transform: translateX(100%);
-                    }
+                    .nav-slide-enter-active, .nav-slide-leave-active { transition: transform 0.25s cubic-bezier(0.25, 0.8, 0.25, 1); }
+                    .nav-slide-enter-from, .nav-slide-leave-to { transform: translateX(100%); }
                     @keyframes tickTock { 0%, 100% { transform: rotate(0deg); } 25% { transform: rotate(-10deg); } 75% { transform: rotate(10deg); } }
                     @keyframes scuffShake { 0%, 100% { transform: translate(0, 0) rotate(0deg); } 25% { transform: translate(-2px, 1px) rotate(-2deg); } 75% { transform: translate(2px, -1px) rotate(2deg); } }
                     @keyframes broadcastPulse { 0%, 100% { opacity: 1; transform: scale(1); } 50% { opacity: 0.4; transform: scale(1.15); } }
@@ -426,6 +433,26 @@ const MoreView = {
             }
 
             randomizeTexts();
+
+            // Fetch Real Stats from Supabase
+            sbClient.from('channel_stats').select('*').eq('id', 1).single().then(({data}) => {
+                if (data) channelStats.value = data;
+            });
+
+            // Fetch Real Schedule from Twitch GQL
+            try {
+                const gql = await fetch('https://gql.twitch.tv/gql', { 
+                    method: 'POST', 
+                    headers: { 'Client-ID': 'kimne78kx3ncx6brgo4mv6wki5h1ko' }, 
+                    body: JSON.stringify({ query: `query{user(login:"codemiko"){channel{schedule{segments(first:1){edges{node{startAt}}}}}}}` }) 
+                });
+                const d = await gql.json();
+                const schedEdges = d.data?.user?.channel?.schedule?.segments?.edges;
+                if (schedEdges && schedEdges.length > 0) {
+                    nextStreamTime.value = new Date(schedEdges[0].node.startAt).getTime();
+                }
+            } catch {}
+
             updateClock();
             timerInterval = setInterval(updateClock, 1000);
         });
@@ -433,12 +460,11 @@ const MoreView = {
         onUnmounted(() => { clearInterval(timerInterval); });
         watch(() => props.isLive, updateClock);
 
-        return { activeSubView, statTimeframe, streamState, countdownText, randFuture, randLate, randLive, randOffline, randomizeTexts };
+        return { activeSubView, statTimeframe, streamState, countdownText, randFuture, randLate, randLive, randOffline, channelStats };
     },
     template: `
         <div class="more-container" style="position: relative; height: 100%; width: 100%; background: var(--bg-color); overflow: hidden;">
             
-            <!-- VIEW: MAIN TABS (Always sits underneath) -->
             <div style="height: 100%; overflow-y: auto; padding: 0 16px 20px;">
                 
                 <div v-if="streamState === 'future'" style="background: linear-gradient(135deg, rgba(145, 70, 255, 0.15), rgba(145, 70, 255, 0.05)); border: 1px solid rgba(145, 70, 255, 0.3); border-radius: 16px; padding: 20px; margin-bottom: 24px; margin-top: 8px; text-align: center; display: flex; flex-direction: column; align-items: center; justify-content: center;">
@@ -546,18 +572,17 @@ const MoreView = {
                 </a>
                 <a href="https://discord.com/invite/codemiko" target="_blank" style="display: flex; align-items: center; width: 100%; box-sizing: border-box; padding: 0 16px; border-radius: 12px; min-height: 48px; background: var(--card-bg); text-decoration: none; margin-bottom: 8px;">
                     <svg viewBox="0 0 24 24" style="width: 22px; height: 22px; color: #5865F2;"><path fill="currentColor" d="M20.317 4.3698a19.7913 19.7913 0 00-4.8851-1.5152.0741.0741 0 00-.0785.0371c-.211.3753-.4447.8648-.6083 1.2495-1.8447-.2762-3.68-.2762-5.4868 0-.1636-.3933-.4058-.8742-.6177-1.2495a.077.077 0 00-.0785-.037 19.7363 19.7363 0 00-4.8852 1.515.0699.0699 0 00-.0321.0277C.5334 9.0458-.319 13.5799.0992 18.0578a.0824.0824 0 00.0312.0561c2.0528 1.5076 4.0413 2.4228 5.9929 3.0294a.0777.0777 0 00.0842-.0276c.4616-.6304.8731-1.2952 1.226-1.9942a.076.076 0 00-.0416-.1057c-.6528-.2476-1.2743-.5495-1.8722-.8923a.077.077 0 01-.0076-.1277c.1258-.0943.2517-.1923.3718-.2914a.0743.0743 0 01.0776-.0105c3.9278 1.7933 8.18 1.7933 12.0614 0a.0739.0739 0 01.0785.0095c.1202.099.246.1981.3728.2924a.077.077 0 01-.0066.1276 12.2986 12.2986 0 01-1.873.8914.0766.0766 0 00-.0407.1067c.3604.698.7719 1.3628 1.225 1.9932a.076.076 0 00.0842.0286c1.961-.6067 3.9495-1.5219 6.0023-3.0294a.077.077 0 00.0313-.0552c.5004-5.177-.8382-9.6739-3.5485-13.6604a.061.061 0 00-.0312-.0286zM8.02 15.3312c-1.1825 0-2.1569-1.0857-2.1569-2.419 0-1.3332.9555-2.4189 2.157-2.4189 1.2108 0 2.1757 1.0952 2.1568 2.419 0 1.3332-.9555 2.4189-2.1569 2.4189zm7.9748 0c-1.1825 0-2.1569-1.0857-2.1569-2.419 0-1.3332.9554-2.4189 2.1569-2.4189 1.2108 0 2.1757 1.0952 2.1568 2.419 0 1.3332-.946 2.4189-2.1568 2.4189Z"/></svg>
-                        <span style="color: var(--text-main); font-size: 14px; font-weight: 600; margin-left: 12px;">Discord</span>
-                        <span class="material-symbols-rounded" style="color: var(--text-muted); margin-left: auto; font-size: 16px;">open_in_new</span>
-                    </a>
-                    <a href="https://www.reddit.com/r/CodeMiko/" target="_blank" style="display: flex; align-items: center; width: 100%; box-sizing: border-box; padding: 0 16px; border-radius: 12px; min-height: 48px; background: var(--card-bg); text-decoration: none; margin-bottom: 24px;">
-                        <svg viewBox="0 0 24 24" style="width: 22px; height: 22px; fill: #FF4500;"><path d="M24 11.779c0-1.459-1.192-2.645-2.657-2.645-.715 0-1.363.275-1.84.731-1.81-1.191-4.259-1.949-6.971-2.046l1.483-4.669 4.016.941-.006.058c0 1.193.975 2.163 2.174 2.163 1.198 0 2.172-.97 2.172-2.163s-.975-2.164-2.172-2.164c-.92 0-1.704.574-2.021 1.379l-4.329-1.015c-.189-.046-.381.063-.44.249l-1.654 5.207c-2.838.034-5.409.798-7.3 2.025-.474-.438-1.106-.712-1.796-.712-1.465 0-2.656 1.187-2.656 2.646 0 .97.533 1.811 1.317 2.271-.052.282-.086.567-.086.857 0 3.911 4.808 7.093 10.719 7.093s10.72-3.182 10.72-7.093c0-.274-.029-.544-.075-.81.832-.447 1.405-1.312 1.405-2.318zm-17.224 1.816c0-.868.71-1.575 1.582-1.575.872 0 1.581.707 1.581 1.575s-.709 1.574-1.581 1.574-1.582-.706-1.582-1.574zm9.061 4.669c-1.207 1.214-3.581 1.303-3.69 1.303-.105 0-2.474-.085-3.697-1.303-.146-.145-.145-.382.001-.527.145-.145.381-.144.526.002.825.833 2.378 1.054 3.161 1.054.78 0 2.327-.215 3.153-1.05.145-.147.382-.148.529-.002.146.146.147.383.017.523zm.18-2.925c-.872 0-1.581-.706-1.581-1.574 0-.868.709-1.575 1.581-1.575s1.581.707 1.581 1.575c0 .868-.709 1.574-1.581 1.574z"/></svg>
+                    <span style="color: var(--text-main); font-size: 14px; font-weight: 600; margin-left: 12px;">Discord</span>
+                    <span class="material-symbols-rounded" style="color: var(--text-muted); margin-left: auto; font-size: 16px;">open_in_new</span>
+                </a>
+                <a href="https://www.reddit.com/r/CodeMiko/" target="_blank" style="display: flex; align-items: center; width: 100%; box-sizing: border-box; padding: 0 16px; border-radius: 12px; min-height: 48px; background: var(--card-bg); text-decoration: none; margin-bottom: 24px;">
+                    <svg viewBox="0 0 24 24" style="width: 22px; height: 22px; fill: #FF4500;"><path d="M24 11.779c0-1.459-1.192-2.645-2.657-2.645-.715 0-1.363.275-1.84.731-1.81-1.191-4.259-1.949-6.971-2.046l1.483-4.669 4.016.941-.006.058c0 1.193.975 2.163 2.174 2.163 1.198 0 2.172-.97 2.172-2.163s-.975-2.164-2.172-2.164c-.92 0-1.704.574-2.021 1.379l-4.329-1.015c-.189-.046-.381.063-.44.249l-1.654 5.207c-2.838.034-5.409.798-7.3 2.025-.474-.438-1.106-.712-1.796-.712-1.465 0-2.656 1.187-2.656 2.646 0 .97.533 1.811 1.317 2.271-.052.282-.086.567-.086.857 0 3.911 4.808 7.093 10.719 7.093s10.72-3.182 10.72-7.093c0-.274-.029-.544-.075-.81.832-.447 1.405-1.312 1.405-2.318zm-17.224 1.816c0-.868.71-1.575 1.582-1.575.872 0 1.581.707 1.581 1.575s-.709 1.574-1.581 1.574-1.582-.706-1.582-1.574zm9.061 4.669c-1.207 1.214-3.581 1.303-3.69 1.303-.105 0-2.474-.085-3.697-1.303-.146-.145-.145-.382.001-.527.145-.145.381-.144.526.002.825.833 2.378 1.054 3.161 1.054.78 0 2.327-.215 3.153-1.05.145-.147.382-.148.529-.002.146.146.147.383.017.523zm.18-2.925c-.872 0-1.581-.706-1.581-1.574 0-.868.709-1.575 1.581-1.575s1.581.707 1.581 1.575c0 .868-.709 1.574-1.581 1.574z"/></svg>
                         <span style="color: var(--text-main); font-size: 14px; font-weight: 600; margin-left: 12px;">Reddit</span>
                         <span class="material-symbols-rounded" style="color: var(--text-muted); margin-left: auto; font-size: 16px;">open_in_new</span>
                     </a>
                 </div>
-            </div>
+            </transition>
 
-            <!-- NATIVE SLIDE OVERLAYS -->
             <transition name="nav-slide">
                 <div v-if="activeSubView === 'about'" style="position: absolute; inset: 0; background: var(--bg-color); z-index: 50; overflow-y: auto; padding: 20px 16px; box-sizing: border-box;">
                     <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 24px; font-size: 18px; font-weight: bold; color: var(--text-main);">
@@ -567,7 +592,7 @@ const MoreView = {
                         About CodeMiko
                     </div>
                     <div style="text-align: center; margin-bottom: 24px;">
-                        <img src="https://raw.githubusercontent.com/meowoccino/MikoTok/main/1000018850.png" style="width: 110px; height: 110px; border-radius: 50%; border: 3px solid var(--primary); margin-bottom: 12px; background: #222;" alt="Avatar">
+                        <img src="https://raw.githubusercontent.com/meowoccino/MikoTok/main/1000018850.png" style="width: 110px; height: 110px; border-radius: 50%; margin-bottom: 12px;" alt="Avatar">
                         <h2 style="margin:0; color: var(--text-main);">CodeMiko</h2>
                         <div style="color:var(--text-muted); font-size:14px; margin-top:4px;">Youna Kang • VTuber & Dev</div>
                     </div>
@@ -591,27 +616,27 @@ const MoreView = {
 
                     <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 24px;">
                         <div style="background: var(--card-bg); padding: 16px; border-radius: 12px; display: flex; flex-direction: column; align-items: center; text-align: center; border: 1px solid var(--border-color);">
-                            <div style="font-size: 20px; font-weight: bold; color: var(--primary); margin-bottom: 4px;">915K</div>
+                            <div style="font-size: 20px; font-weight: bold; color: var(--primary); margin-bottom: 4px;">{{ channelStats.followers }}</div>
                             <div style="font-size: 11px; color: var(--text-muted); text-transform: uppercase; font-weight: 700; letter-spacing: 0.5px;">Followers</div>
                         </div>
                         <div style="background: var(--card-bg); padding: 16px; border-radius: 12px; display: flex; flex-direction: column; align-items: center; text-align: center; border: 1px solid var(--border-color);">
-                            <div style="font-size: 20px; font-weight: bold; color: var(--primary); margin-bottom: 4px;">215M</div>
+                            <div style="font-size: 20px; font-weight: bold; color: var(--primary); margin-bottom: 4px;">{{ channelStats.total_views }}</div>
                             <div style="font-size: 11px; color: var(--text-muted); text-transform: uppercase; font-weight: 700; letter-spacing: 0.5px;">Total Views</div>
                         </div>
                         <div style="background: var(--card-bg); padding: 16px; border-radius: 12px; display: flex; flex-direction: column; align-items: center; text-align: center; border: 1px solid var(--border-color);">
-                            <div style="font-size: 20px; font-weight: bold; color: var(--primary); margin-bottom: 4px;">1,604</div>
+                            <div style="font-size: 20px; font-weight: bold; color: var(--primary); margin-bottom: 4px;">{{ channelStats.avg_viewers }}</div>
                             <div style="font-size: 11px; color: var(--text-muted); text-transform: uppercase; font-weight: 700; letter-spacing: 0.5px;">Avg Viewers</div>
                         </div>
                         <div style="background: var(--card-bg); padding: 16px; border-radius: 12px; display: flex; flex-direction: column; align-items: center; text-align: center; border: 1px solid var(--border-color);">
-                            <div style="font-size: 20px; font-weight: bold; color: var(--primary); margin-bottom: 4px;">25K</div>
+                            <div style="font-size: 20px; font-weight: bold; color: var(--primary); margin-bottom: 4px;">{{ channelStats.peak_viewers }}</div>
                             <div style="font-size: 11px; color: var(--text-muted); text-transform: uppercase; font-weight: 700; letter-spacing: 0.5px;">All-Time Peak</div>
                         </div>
                         <div style="background: var(--card-bg); padding: 16px; border-radius: 12px; display: flex; flex-direction: column; align-items: center; text-align: center; border: 1px solid var(--border-color);">
-                            <div style="font-size: 20px; font-weight: bold; color: var(--primary); margin-bottom: 4px;">2,104</div>
+                            <div style="font-size: 20px; font-weight: bold; color: var(--primary); margin-bottom: 4px;">{{ channelStats.active_subs }}</div>
                             <div style="font-size: 11px; color: var(--text-muted); text-transform: uppercase; font-weight: 700; letter-spacing: 0.5px;">Active Subs</div>
                         </div>
                         <div style="background: var(--card-bg); padding: 16px; border-radius: 12px; display: flex; flex-direction: column; align-items: center; text-align: center; border: 1px solid var(--border-color);">
-                            <div style="font-size: 16px; font-weight: bold; color: var(--primary); margin-top: 4px; margin-bottom: 4px;">Apr 2020</div>
+                            <div style="font-size: 16px; font-weight: bold; color: var(--primary); margin-top: 4px; margin-bottom: 4px;">{{ channelStats.account_created }}</div>
                             <div style="font-size: 11px; color: var(--text-muted); text-transform: uppercase; font-weight: 700; letter-spacing: 0.5px;">Account Created</div>
                         </div>
                     </div>
@@ -625,19 +650,19 @@ const MoreView = {
                     </div>
 
                     <div v-if="statTimeframe === 'week'" style="display: flex; flex-direction: column; gap: 8px;">
-                        <div style="background: var(--card-bg); padding: 12px 16px; border-radius: 10px; display: flex; justify-content: space-between; font-size: 14px; color: var(--text-muted); border: 1px solid var(--border-color);"><span>Hours Streamed</span><strong style="color: var(--text-main);">18 Hours</strong></div>
-                        <div style="background: var(--card-bg); padding: 12px 16px; border-radius: 10px; display: flex; justify-content: space-between; font-size: 14px; color: var(--text-muted); border: 1px solid var(--border-color);"><span>Top Category</span><strong style="color: var(--text-main);">Elden Ring</strong></div>
-                        <div style="background: var(--card-bg); padding: 12px 16px; border-radius: 10px; display: flex; justify-content: space-between; font-size: 14px; color: var(--text-muted); border: 1px solid var(--border-color);"><span>Active Days</span><strong style="color: var(--text-main);">3 days / week</strong></div>
+                        <div style="background: var(--card-bg); padding: 12px 16px; border-radius: 10px; display: flex; justify-content: space-between; font-size: 14px; color: var(--text-muted); border: 1px solid var(--border-color);"><span>Hours Streamed</span><strong style="color: var(--text-main);">{{ channelStats.week_hours }} Hours</strong></div>
+                        <div style="background: var(--card-bg); padding: 12px 16px; border-radius: 10px; display: flex; justify-content: space-between; font-size: 14px; color: var(--text-muted); border: 1px solid var(--border-color);"><span>Top Category</span><strong style="color: var(--text-main);">{{ channelStats.week_category }}</strong></div>
+                        <div style="background: var(--card-bg); padding: 12px 16px; border-radius: 10px; display: flex; justify-content: space-between; font-size: 14px; color: var(--text-muted); border: 1px solid var(--border-color);"><span>Active Days</span><strong style="color: var(--text-main);">{{ channelStats.week_days }} days / week</strong></div>
                     </div>
                     <div v-if="statTimeframe === 'month'" style="display: flex; flex-direction: column; gap: 8px;">
-                        <div style="background: var(--card-bg); padding: 12px 16px; border-radius: 10px; display: flex; justify-content: space-between; font-size: 14px; color: var(--text-muted); border: 1px solid var(--border-color);"><span>Hours Streamed</span><strong style="color: var(--text-main);">77 Hours</strong></div>
-                        <div style="background: var(--card-bg); padding: 12px 16px; border-radius: 10px; display: flex; justify-content: space-between; font-size: 14px; color: var(--text-muted); border: 1px solid var(--border-color);"><span>Top Category</span><strong style="color: var(--text-main);">Just Chatting</strong></div>
-                        <div style="background: var(--card-bg); padding: 12px 16px; border-radius: 10px; display: flex; justify-content: space-between; font-size: 14px; color: var(--text-muted); border: 1px solid var(--border-color);"><span>Active Days</span><strong style="color: var(--text-main);">4.6 days / week</strong></div>
+                        <div style="background: var(--card-bg); padding: 12px 16px; border-radius: 10px; display: flex; justify-content: space-between; font-size: 14px; color: var(--text-muted); border: 1px solid var(--border-color);"><span>Hours Streamed</span><strong style="color: var(--text-main);">{{ channelStats.month_hours }} Hours</strong></div>
+                        <div style="background: var(--card-bg); padding: 12px 16px; border-radius: 10px; display: flex; justify-content: space-between; font-size: 14px; color: var(--text-muted); border: 1px solid var(--border-color);"><span>Top Category</span><strong style="color: var(--text-main);">{{ channelStats.month_category }}</strong></div>
+                        <div style="background: var(--card-bg); padding: 12px 16px; border-radius: 10px; display: flex; justify-content: space-between; font-size: 14px; color: var(--text-muted); border: 1px solid var(--border-color);"><span>Active Days</span><strong style="color: var(--text-main);">{{ channelStats.month_days }} days / week</strong></div>
                     </div>
                     <div v-if="statTimeframe === 'year'" style="display: flex; flex-direction: column; gap: 8px;">
-                        <div style="background: var(--card-bg); padding: 12px 16px; border-radius: 10px; display: flex; justify-content: space-between; font-size: 14px; color: var(--text-muted); border: 1px solid var(--border-color);"><span>Hours Streamed</span><strong style="color: var(--text-main);">840 Hours</strong></div>
-                        <div style="background: var(--card-bg); padding: 12px 16px; border-radius: 10px; display: flex; justify-content: space-between; font-size: 14px; color: var(--text-muted); border: 1px solid var(--border-color);"><span>Top Category</span><strong style="color: var(--text-main);">Just Chatting</strong></div>
-                        <div style="background: var(--card-bg); padding: 12px 16px; border-radius: 10px; display: flex; justify-content: space-between; font-size: 14px; color: var(--text-muted); border: 1px solid var(--border-color);"><span>Active Days</span><strong style="color: var(--text-main);">4.1 days / week</strong></div>
+                        <div style="background: var(--card-bg); padding: 12px 16px; border-radius: 10px; display: flex; justify-content: space-between; font-size: 14px; color: var(--text-muted); border: 1px solid var(--border-color);"><span>Hours Streamed</span><strong style="color: var(--text-main);">{{ channelStats.year_hours }} Hours</strong></div>
+                        <div style="background: var(--card-bg); padding: 12px 16px; border-radius: 10px; display: flex; justify-content: space-between; font-size: 14px; color: var(--text-muted); border: 1px solid var(--border-color);"><span>Top Category</span><strong style="color: var(--text-main);">{{ channelStats.year_category }}</strong></div>
+                        <div style="background: var(--card-bg); padding: 12px 16px; border-radius: 10px; display: flex; justify-content: space-between; font-size: 14px; color: var(--text-muted); border: 1px solid var(--border-color);"><span>Active Days</span><strong style="color: var(--text-main);">{{ channelStats.year_days }} days / week</strong></div>
                     </div>
                 </div>
             </transition>
@@ -700,7 +725,7 @@ createApp({
         const tabs = ['home', 'chat', 'gerald', 'more'];
         const initialHash = window.location.hash.replace('#', '');
         const currentTab = ref(tabs.includes(initialHash) ? initialHash : 'home');
-        const appTheme = ref(localStorage.getItem('miko_theme') || 'light');
+        const appTheme = ref(localStorage.getItem('miko_theme') || 'dark'); // Changed default to dark
         const splashVisible = ref(true), splashOpacity = ref(1);
         const clips = ref([]), allClips = ref([]);
         const allClipsCount = computed(() => allClips.value.length);
@@ -757,6 +782,7 @@ createApp({
             document.documentElement.style.colorScheme = appTheme.value;
             const bgHex = appTheme.value === 'light' ? '#f8f9fa' : '#0d0d11';
             
+            // Forces Android / Chrome URL bar and status bar to match theme
             let metaTheme = document.querySelector('meta[name="theme-color"]');
             if (!metaTheme) {
                 metaTheme = document.createElement('meta');
@@ -764,6 +790,15 @@ createApp({
                 document.head.appendChild(metaTheme);
             }
             metaTheme.setAttribute('content', bgHex);
+
+            // Apple specific status bar
+            let metaApple = document.querySelector('meta[name="apple-mobile-web-app-status-bar-style"]');
+            if (!metaApple) {
+                metaApple = document.createElement('meta');
+                metaApple.name = "apple-mobile-web-app-status-bar-style";
+                document.head.appendChild(metaApple);
+            }
+            metaApple.setAttribute('content', appTheme.value === 'light' ? 'default' : 'black-translucent');
             
             document.body.style.backgroundColor = bgHex;
             document.documentElement.style.backgroundColor = bgHex;
@@ -1034,7 +1069,7 @@ createApp({
                 timestamp,
                 username: twitchUsername.value,
                 html: parseMarkdownText(safeHtml, customEmotes.value),
-                color: '#53FC18',
+                color: '#53FC18', // Clean neutral green instead of Twitch Purple for echo
                 badges: myTwitchBadges.value || []
             });
             
