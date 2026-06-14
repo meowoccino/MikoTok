@@ -668,7 +668,14 @@ createApp({
             if (tags['badges']) {
                 tags['badges'].split(',').forEach(b => {
                     const imgUrl = badgeAssets[b];
-                    if (imgUrl) badges.push({ title: b.split('/')[0], img: imgUrl });
+                    if (imgUrl) {
+                        badges.push({ title: b.split('/')[0], img: imgUrl });
+                    } else {
+                        // Version fallback: e.g. subscriber/24 not in DB, try subscriber/12 or any subscriber/*
+                        const [badgeName] = b.split('/');
+                        const fallbackKey = Object.keys(badgeAssets).find(k => k.startsWith(badgeName + '/'));
+                        if (fallbackKey) badges.push({ title: badgeName, img: badgeAssets[fallbackKey] });
+                    }
                 });
             }
 
@@ -783,9 +790,18 @@ createApp({
                                 tagsPart.substring(1).split(';').forEach(t => { const [k, ...v] = t.split('='); tags[k] = v.join('='); });
                                 if (tags['badges']) {
                                     const parsedBadges = [];
-                                    tags['badges'].split(',').forEach(b => { 
+                                    const rawBadgeStr = tags['badges'];
+                                    rawBadgeStr.split(',').forEach(b => { 
                                         const imgUrl = badgeAssets[b]; 
-                                        if (imgUrl) parsedBadges.push({ title: b.split('/')[0], img: imgUrl }); 
+                                        if (imgUrl) {
+                                            parsedBadges.push({ title: b.split('/')[0], img: imgUrl });
+                                        } else {
+                                            // Try version fallback: subscriber/24 -> subscriber/12, subscriber/6 etc
+                                            const [badgeName] = b.split('/');
+                                            const fallbackKey = Object.keys(badgeAssets).find(k => k.startsWith(badgeName + '/'));
+                                            if (fallbackKey) parsedBadges.push({ title: badgeName, img: badgeAssets[fallbackKey] });
+                                            else console.warn('[MikoTok] No badge asset for:', b, '| Available:', Object.keys(badgeAssets).filter(k=>k.startsWith(badgeName)));
+                                        }
                                     });
                                     myTwitchBadges.value = parsedBadges;
                                 }
