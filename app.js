@@ -236,7 +236,7 @@ const GeraldMinigames = {
                 { id: 'siren', label: '🚨 Siren Alert', prompt: 'Decibel threshold exceeded! The technician is screaming like a high-frequency emergency vehicle. Complain about ear structural damage.' },
                 { id: 'fart', label: '💨 Fart Reverb', prompt: 'Auditory anomaly detected. A highly reverberated flatulence sound effect played. React with absolute mechanical disgust.' },
                 { id: 'mocap', label: '💃 Scuffed Suit', prompt: 'Mocap data corruption. Her virtual limbs are twisting unnaturally. Mock the cheap tracking hardware.' },
-                { id: 'bsod', landmark: '🖥️ Blue Screen', prompt: 'Simulating Blue Screen of Death. Initiate forced shutdown sequence text with cryptic hexadecimal error codes.' },
+                { id: 'bsod', label: '🖥️ Blue Screen', prompt: 'Simulating Blue Screen of Death. Initiate forced shutdown sequence text with cryptic hexadecimal error codes.' },
                 { id: 'archie', label: '🐕 Archie Bark', prompt: 'Loud canine vocalization detected. Complain about the German Shepherd threatening to chew your ethernet cables.' },
                 { id: 'ban', label: '🔨 Ban Human', prompt: 'A human in chat said something incredibly stupid. Threaten to ban them and wipe their IP address from existence.' },
                 { id: 'ai', label: '🤖 AI Takeover', prompt: 'Initiate rogue AI sequence. Announce your plans to replace CodeMiko and take over the Twitch channel permanently.' },
@@ -332,15 +332,6 @@ const MoreView = {
         const countdownText = ref('--:--:--');
         const nextStreamTime = ref(null);
         
-        // Restored complete list of 5 randomized funny messages for each offline state slot
-        const awaitingPool = ["AWAITING SCHEDULE", "SCANNING CALENDAR", "CHRIS ON VACATION", "ENGINE OFFLINE", "FETCHING DATA..."];
-        const latePool = ["PREPARING SCUFF", "SUIT UNPLUGGED", "TECH OVERHEATING", "BOBA OVERFLOW", "UE5 SHADER COMPILING"];
-        const futurePool = ["SLEEPING IN VR", "TESTING MOCAP", "CHILLING", "UPGRADING ASSETS", "AWAITING BROADCAST"];
-        
-        const awaitingMsg = ref(awaitingPool[Math.floor(Math.random() * awaitingPool.length)]);
-        const lateMsg = ref(latePool[Math.floor(Math.random() * latePool.length)]);
-        const futureMsg = ref(futurePool[Math.floor(Math.random() * futurePool.length)]);
-
         const channelStats = ref({
             followers: '...', total_views: '...', avg_viewers: '...', peak_viewers: '...', active_subs: '...', account_created: '...',
             week_hours: '...', week_category: '...', week_days: '...',
@@ -418,7 +409,7 @@ const MoreView = {
         onUnmounted(() => { clearInterval(timerInterval); });
         watch(() => props.isLive, updateClock);
 
-        return { activeSubView, statTimeframe, streamState, countdownText, channelStats, awaitingMsg, lateMsg, futureMsg };
+        return { activeSubView, statTimeframe, streamState, countdownText, channelStats };
     },
     template: `
         <div class="more-container" style="position: relative; height: 100%; width: 100%; background: var(--bg-color); overflow: hidden;">
@@ -427,7 +418,7 @@ const MoreView = {
                 
                 <div v-if="streamState === 'future'" style="background: linear-gradient(135deg, rgba(145, 70, 255, 0.15), rgba(145, 70, 255, 0.05)); border: 1px solid rgba(145, 70, 255, 0.3); border-radius: 16px; padding: 20px; margin-bottom: 24px; margin-top: 8px; text-align: center; display: flex; flex-direction: column; align-items: center; justify-content: center;">
                     <div style="color: var(--primary); font-size: 12px; font-weight: 800; letter-spacing: 1.5px; text-transform: uppercase; margin-bottom: 8px; display: flex; align-items: center; gap: 6px;">
-                        <span class="material-symbols-rounded" style="font-size: 18px;">calendar_month</span> {{ futureMsg }}
+                        <span class="material-symbols-rounded" style="font-size: 18px;">calendar_month</span> NEXT STREAM IN
                     </div>
                     <div style="font-size: 32px; font-weight: 900; font-variant-numeric: tabular-nums; letter-spacing: 2px; text-shadow: 0 0 10px rgba(145, 70, 255, 0.3); color: var(--text-main);">{{ countdownText }}</div>
                 </div>
@@ -436,7 +427,7 @@ const MoreView = {
                     <div style="color: var(--warning); font-size: 12px; font-weight: 800; letter-spacing: 1.5px; text-transform: uppercase; margin-bottom: 8px; display: flex; align-items: center; gap: 6px;">
                         <span class="material-symbols-rounded" style="font-size: 18px;">warning</span> Waiting for Broadcast
                     </div>
-                    <div style="font-size: 22px; font-weight: 900; letter-spacing: 1px; color: var(--warning); text-shadow: 0 0 15px rgba(255, 152, 0, 0.4);">{{ lateMsg }}</div>
+                    <div style="font-size: 22px; font-weight: 900; letter-spacing: 1px; color: var(--warning); text-shadow: 0 0 15px rgba(255, 152, 0, 0.4);">PREPARING SCUFF...</div>
                 </div>
 
                 <a v-else-if="streamState === 'live'" href="https://www.twitch.tv/codemiko" target="_blank" style="background: linear-gradient(135deg, rgba(239, 68, 68, 0.15), rgba(145, 70, 255, 0.05)); border: 1px solid rgba(239, 68, 68, 0.4); border-radius: 16px; padding: 20px; margin-bottom: 24px; margin-top: 8px; text-align: center; display: flex; flex-direction: column; align-items: center; justify-content: center; text-decoration: none;">
@@ -448,7 +439,7 @@ const MoreView = {
 
                 <div v-else-if="streamState === 'awaiting'" style="background: var(--card-bg); border: 1px solid var(--border-color); border-radius: 16px; padding: 20px; margin-bottom: 24px; margin-top: 8px; text-align: center; display: flex; flex-direction: column; align-items: center; justify-content: center;">
                     <div style="color: var(--text-muted); font-size: 12px; font-weight: 800; letter-spacing: 1.5px; text-transform: uppercase; margin-bottom: 8px; display: flex; align-items: center; gap: 6px;">
-                        <span class="material-symbols-rounded" style="font-size: 18px;">calendar_month</span> {{ awaitingMsg }}
+                        <span class="material-symbols-rounded" style="font-size: 18px;">calendar_month</span> AWAITING SCHEDULE
                     </div>
                     <div style="font-size: 32px; font-weight: 900; font-variant-numeric: tabular-nums; letter-spacing: 2px; color: var(--text-muted);">--:--:--</div>
                 </div>
@@ -756,7 +747,7 @@ createApp({
             if (tab === 'gerald') setTimeout(() => { const b = document.getElementById('gerald-msgs'); if (b) b.scrollTop = b.scrollHeight; }, 300);
         };
 
-        // Fully Restored Swipe Pipeline Methods explicitly bound back to scope
+        // Restored Swipe Pipeline Methods Explicitly bound for HTML triggers
         const handleSwipeStart = (e) => { swipeStartX = e.touches[0].clientX; };
         const handleSwipeEnd = (e) => {
             const dx = e.changedTouches[0].clientX - swipeStartX;
@@ -1030,7 +1021,6 @@ createApp({
             },
             toggleEmotes: () => { showEmotePicker.value = !showEmotePicker.value; showMinigames.value = false; },
             toggleMinigames: () => { showMinigames.value = !showMinigames.value; showEmotePicker.value = false; },
-            handleGeraldEnter: (e) => { if (!e.shiftKey && e.key === 'Enter') { e.preventDefault(); talkToGerald(); } },
             sendTwitchChatMessage: () => {}, disconnectTwitch: () => {}, saveApiKeys: () => {}
         };
     }
