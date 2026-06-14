@@ -2,7 +2,7 @@
 const styleReset = document.createElement('style');
 styleReset.innerHTML = `
     .app-wrapper { border-left: none !important; border-right: none !important; max-width: 100% !important; }
-    html, body { overscroll-behavior-y: none; background-color: var(--bg-color) !important; }
+    html, body { overscroll-behavior-y: none; background-color: var(--bg-color) !important; color-scheme: dark light; }
     ::-webkit-scrollbar { width: 0px; background: transparent; }
     
     /* Native Slide Transition Classes */
@@ -204,14 +204,14 @@ const ChatView = {
     },
     template: `
         <div style="flex: 1; display: flex; flex-direction: column; background: var(--bg-color); position: relative; overflow: hidden; width: 100%; height: 100%;">
-            <div style="position: absolute; left: 0; top: 0; bottom: 0; width: 15px; z-index: 1000; background: transparent;"></div>
-            <div style="position: absolute; right: 0; top: 0; bottom: 0; width: 15px; z-index: 1000; background: transparent;"></div>
+            
+            <div style="position: absolute; left: 0; top: 0; bottom: 0; width: 15px; z-index: 1000; background: transparent;" @touchstart="$emit('edge-swipe-start', $event)" @touchend="$emit('edge-swipe-end', $event)"></div>
+            <div style="position: absolute; right: 0; top: 0; bottom: 0; width: 15px; z-index: 1000; background: transparent;" @touchstart="$emit('edge-swipe-start', $event)" @touchend="$emit('edge-swipe-end', $event)"></div>
 
-            <!-- Softened top offset to -42px and aligned backgrounds to eliminate the light visual gap line completely -->
-            <div style="flex: 1; overflow: hidden; position: relative; width: 100%; height: 100%; background: var(--bg-color);">
+            <div style="flex: 1; overflow: hidden; position: relative; width: 100%; height: 100%; margin-top: 4px;">
                 <iframe 
                     :src="chatUrl" 
-                    style="position: absolute; top: -42px; left: 0; width: 100%; height: calc(100% + 42px); border: none; background: transparent;"
+                    style="position: absolute; top: -38px; left: 0; width: 100%; height: calc(100% + 38px); border: none;"
                     allowfullscreen>
                 </iframe>
             </div>
@@ -513,7 +513,6 @@ const MoreView = {
                 </a>
             </div>
 
-            <!-- Native Slide Overlay for About Page -->
             <transition name="nav-slide">
                 <div v-if="activeSubView === 'about'" class="sub-view-overlay">
                     <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 24px; font-size: 18px; font-weight: bold; color: var(--text-main);">
@@ -535,7 +534,6 @@ const MoreView = {
                 </div>
             </transition>
 
-            <!-- Native Slide Overlay for Stats Page -->
             <transition name="nav-slide">
                 <div v-if="activeSubView === 'stats'" class="sub-view-overlay">
                     <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 24px; font-size: 18px; font-weight: bold; color: var(--text-main);">
@@ -609,7 +607,7 @@ const HomeView = {
                 <div class="header-controls" style="margin-bottom:12px; display:flex;">
                     <div :class="['premium-badge', isLive ? 'live-badge' : 'vod']">
                         <div class="dot"></div>
-                        <span>{{ isLive ? 'LIVE' : (recentVods[currentVodIndex] ? 'VOD • ' + recentVods[currentVodIndex].date : 'PAST STREAM') }}</span>
+                        <span>{{ isLive ? 'LIVE' : (recentVods && recentVods[currentVodIndex] ? 'VOD • ' + recentVods[currentVodIndex].date : 'PAST STREAM') }}</span>
                     </div>
                 </div>
                 <div class="video-wrapper-outer">
@@ -618,7 +616,7 @@ const HomeView = {
                         <iframe v-else-if="recentVods && recentVods[currentVodIndex]" :src="'https://player.twitch.tv/?video=' + recentVods[currentVodIndex].id + '&parent=' + hostname + '&autoplay=false'" allow="autoplay; fullscreen" allowfullscreen style="width:100%; height:100%; border:none;"></iframe>
                     </div>
                 </div>
-                <div class="carousel-controls" v-if="recentVods && recentVods.length > 0 && !isLive" style="margin-top:12px; justify-content:flex-end;">
+                <div class="carousel-controls" v-if="recentVods && recentVods.length > 0 && !isLive && currentVodIndex !== -1" style="margin-top:12px; justify-content:flex-end;">
                     <button class="carousel-btn" :class="{ 'hidden-arrow': currentVodIndex <= 0 }" @click.stop="$emit('prev-vod')"><span class="material-symbols-rounded">chevron_left</span></button>
                     <button class="carousel-btn" :class="{ 'hidden-arrow': currentVodIndex >= recentVods.length - 1 }" @click.stop="$emit('next-vod')"><span class="material-symbols-rounded">chevron_right</span></button>
                 </div>
@@ -777,19 +775,20 @@ createApp({
                 const res = await fetch('https://decapi.me/twitch/uptime/codemiko');
                 isLive.value = !(await res.text()).includes('offline');
                 
-                // Repaired: Pull raw recent stream files directly via official Twitch public endpoints
+                // Restored exact working original VOD logic
                 const gql = await fetch('https://gql.twitch.tv/gql', { 
                     method: 'POST', 
                     headers: { 'Client-ID': 'kimne78kx3ncx6brgo4mv6wki5h1ko' }, 
-                    body: JSON.stringify([{ operationName: "FilterFilterVideos", variables: { limit: 10, channelLogin: "codemiko", sort: "TIME" }, extensions: { persistedQuery: { version: 1, sha256Hash: "a437158b090fbc993e5066db2c21966a27e7ca4a0b2138980b181db8fb93e25b" } } }])
+                    body: JSON.stringify({ query: `query{user(login:"codemiko"){videos(first:10){edges{node{id createdAt}}}}}` }) 
                 });
-                const edges = (await gql.json())[0].data?.user?.videos?.edges || [];
+                const d = await gql.json();
+                const edges = d.data?.user?.videos?.edges || [];
                 recentVods.value = edges.map(e => ({ id: e.node.id, date: new Date(e.node.createdAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric' }).toUpperCase() }));
-                if (currentVodIndex.value === 0 || currentVodIndex.value === -1) currentVodIndex.value = isLive.value ? -1 : 0;
-            } catch {
-                // Fallback baseline data row if network scraper timeouts hit to keep UI tracking safe
-                recentVods.value = [{ id: "421069", date: "RECENT STREAM" }];
-            }
+                
+                if (currentVodIndex.value === 0 || currentVodIndex.value === -1) {
+                    currentVodIndex.value = isLive.value ? -1 : 0;
+                }
+            } catch (err) { console.error("VOD Fetch Error:", err); }
         };
         
         const loadData = async (isLoadMore = false) => {
@@ -851,7 +850,17 @@ createApp({
         const handleLogout = async () => { logoutState.value = 'LOGGING OUT...'; await sbClient.auth.signOut(); currentUser.value = null; modals.value.profile = false; logoutState.value = 'Sign Out'; };
         const runSync = async () => { syncState.value = 'REFRESHING...'; await loadData(false); syncState.value = 'SUCCESS'; setTimeout(() => syncState.value = 'Refresh Feed', 1500); };
         const clearGeraldHistory = async () => { wipeState.value = 'WIPING...'; await sbClient.from('gerald_history').delete().eq('user_id', currentUser.value.id); geraldMessages.value = [{ role: 'gerald', content: '' }]; wipeState.value = 'SUCCESS'; setTimeout(() => wipeState.value = 'Wipe Gerald Memory', 1500); };
-        const nukeCache = () => { nukeState.value = 'NUKING...'; localStorage.clear(); caches.keys().then(names => { for (let n of names) caches.delete(n); }); nukeState.value = 'SUCCESS'; setTimeout(() => window.location.reload(), 1000); };
+        
+        // Fixed: Nuke Cache with a 50ms delay so the spinning UI animation has time to paint before freezing
+        const nukeCache = () => { 
+            nukeState.value = 'NUKING...'; 
+            setTimeout(() => {
+                localStorage.clear(); 
+                caches.keys().then(names => { for (let n of names) caches.delete(n); }); 
+                nukeState.value = 'SUCCESS'; 
+                setTimeout(() => window.location.reload(), 1000); 
+            }, 50);
+        };
 
         const talkToGerald = async () => {
             const inputEl = document.getElementById('gerald-txt-input');
@@ -975,7 +984,13 @@ createApp({
             playClip: (clip) => { selectedClip.value = clip; },
             handleLogin, handleLogout, runSync, clearGeraldHistory, nukeCache, talkToGerald, triggerAiMinigame,
             closePickers: () => { showEmotePicker.value = false; showMinigames.value = false; },
-            insertEmote: (name) => { geraldInput.value += name; },
+            
+            // Fixed: Safely adds spaces around the emote and closes the picker properly
+            insertEmote: (name) => { 
+                geraldInput.value += (geraldInput.value && !geraldInput.value.endsWith(' ') ? ' ' : '') + name + ' '; 
+                showEmotePicker.value = false; 
+            },
+            
             toggleEmotes: () => { showEmotePicker.value = !showEmotePicker.value; showMinigames.value = false; },
             toggleMinigames: () => { showMinigames.value = !showMinigames.value; showEmotePicker.value = false; },
             handleGeraldEnter: (e) => { if (!e.shiftKey && e.key === 'Enter') { e.preventDefault(); talkToGerald(); } },
