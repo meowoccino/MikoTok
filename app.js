@@ -1,13 +1,43 @@
-// GLOBAL ASSET STORAGE - Accessible by all background processors and UI components
-const badgeAssets = {};
-
 // Injects global CSS to fix the HTML wrapper borders without needing to edit the HTML file
 const styleReset = document.createElement('style');
 styleReset.innerHTML = `
     .app-wrapper { border-left: none !important; border-right: none !important; max-width: 100% !important; }
     html, body { overscroll-behavior-y: none; background-color: var(--bg-color) !important; }
+    ::-webkit-scrollbar { width: 0px; background: transparent; }
 `;
 document.head.appendChild(styleReset);
+
+const parseMarkdownText = (text, emotesMap) => {
+    if (!text) return ''; 
+    let html = text.replace(/&/g, '&').replace(/</g, '<').replace(/>/g, '>');
+    html = html.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>').replace(/\*(.*?)\*/g, '<em>$1</em>');
+    
+    const urlPattern = /(\b(https?|ftp|file):\/\/[-A-Z0-9+&@#\/%?=~_|!:,.;]*[-A-Z0-9+&@#\/%=~_|])/ig;
+    html = html.replace(urlPattern, "<a href='$1' target='_blank'>$1</a>");
+    
+    if (emotesMap) {
+        const tokens = html.split(/(<[^>]+>|[\s]+)/); 
+        const emoteKeys = Object.keys(emotesMap);
+        
+        const lowerMap = {};
+        emoteKeys.forEach(k => lowerMap[k.toLowerCase()] = k);
+
+        for (let i = 0; i < tokens.length; i++) {
+            const token = tokens[i];
+            if (!token || token.startsWith('<') || token.trim() === '') continue;
+            
+            const cleanToken = token.replace(/^:|:$/g, '').replace(/[.,!?]/g, '').trim().toLowerCase();
+            if (lowerMap[cleanToken]) {
+                const actualKey = lowerMap[cleanToken];
+                const url = emotesMap[actualKey].url;
+                const escapedClean = cleanToken.replace(/[-\/\\^$*+?.()|[\]{}]/g, '\\$&');
+                tokens[i] = token.replace(new RegExp(`:?${escapedClean}:?`, 'i'), `<img src="${url}" class="chat-emote-img" title="${actualKey}">`);
+            }
+        }
+        html = tokens.join('');
+    }
+    return html;
+};
 
 const enforceGrammar = (text) => {
     if (!text) return '';
@@ -158,74 +188,25 @@ const ClipModal = {
     `
 };
 
+// Official Native Twitch Chat View
 const ChatView = {
-    props: ['chatMessages', 'isLoggedIn', 'twitchAuthUrl', 'customEmotes', 'twitchUsername'],
-    data() { return { showPicker: false, pickerQuery: '', localInput: '' }; },
+    props: ['appTheme', 'hostname'],
     computed: {
-        filteredEmotes() {
-            const all = Object.entries(this.customEmotes || {});
-            if (!this.pickerQuery) return all;
-            return all.filter(([name]) => name.toLowerCase().includes(this.pickerQuery.toLowerCase()));
+        chatUrl() {
+            const isDark = this.appTheme === 'dark';
+            return `https://www.twitch.tv/embed/codemiko/chat?parent=${this.hostname}${isDark ? '&darkpopout=true' : ''}`;
         }
     },
-    methods: {
-        getEmoteUrl(name, emote) { return badgeAssets[name] || emote.url; },
-        insertEmote(name) { this.localInput = (this.localInput + ' ' + name + ' ').replace(/\s+/g, ' ').trimStart(); this.showPicker = false; },
-        handleInteraction() { if (!this.isLoggedIn) { this.$root.showLoginPopup = true; return false; } return true; },
-        togglePicker() { if (!this.handleInteraction()) return; this.showPicker = !this.showPicker; },
-        closePicker() { this.showPicker = false; this.pickerQuery = ''; },
-        handleSend() { if(!this.localInput.trim()) return; this.$emit('send-chat', this.localInput.trim()); this.localInput = ''; this.closePicker(); }
-    },
     template: `
-        <div class="chat-wrapper" style="display: flex; flex-direction: column; height: 100%; width: 100%; background: var(--bg-color); padding-top: 0px;">
-            <div v-if="isLoggedIn" class="chat-public-auth-banner" style="z-index: 60; flex-shrink: 0;">
-                <span class="user-pill">💬 Connected as <b>{{ twitchUsername }}</b></span>
-                <button class="public-disconnect-btn" @click="$emit('disconnect-public-twitch')">Disconnect</button>
+        <div style="flex: 1; display: flex; flex-direction: column; background: var(--bg-color); position: relative; overflow: hidden;">
+            <div style="flex: 1; overflow: hidden; position: relative;">
+                <iframe 
+                    :src="chatUrl" 
+                    style="position: absolute; top: -50px; left: 0; width: 100%; height: calc(100% + 50px); border: none;"
+                    sandbox="allow-storage-access-by-user-activation allow-scripts allow-same-origin allow-popups allow-popups-to-escape-sandbox allow-modals">
+                </iframe>
             </div>
-
-            <div class="twitch-chat-list" id="twitch-chat-list" @click="closePicker" style="flex: 1; overflow-y: auto; overscroll-behavior-y: contain; -webkit-overflow-scrolling: touch; padding: 10px 12px; display: flex; flex-direction: column;">
-                <div style="flex: 1 1 auto; min-height: 0;"></div>
-                
-                <div v-if="chatMessages.length === 0" class="chat-empty-state">
-                    <span class="material-symbols-rounded" style="font-size:32px; color:var(--text-muted); margin-bottom:8px;">chat_bubble_outline</span>
-                    <span style="font-size:13px; color:var(--text-muted); font-weight:600;">Loading channels…</span>
-                </div>
-                
-                <div v-for="(msg, i) in chatMessages" :key="i" class="twitch-msg-row" :style="(i === 0 ? 'margin-top: auto; ' : '') + (msg.isMention ? 'background-color: rgba(239, 68, 68, 0.15); border-left: 3px solid #ef4444; border-radius: 0 4px 4px 0; padding-left: 8px;' : '')">
-                    <span class="chat-timestamp">{{ msg.timestamp }}</span>
-                    <span class="twitch-badges">
-                        <img v-for="(badge, bi) in (msg.badges || [])" :key="bi" :src="badge.img" :title="badge.title" class="badge-img">
-                    </span>
-                    <span class="twitch-username" :style="{ color: msg.color || '#9146FF' }">{{ msg.username }}</span><span class="twitch-colon">: </span>
-                    <span class="twitch-text" v-html="msg.html"></span>
-                </div>
-            </div>
-
-            <div class="custom-chat-input-area">
-                <div class="chat-emote-tray" v-show="showPicker && isLoggedIn" @click.stop style="position: absolute; bottom: 100%; left: 0; right: 0; background: var(--card-bg); border-top: 1px solid var(--border-color); border-bottom: none; border-radius: 16px 16px 0 0; padding: 10px 12px; z-index: 200; max-height: 250px; display: flex; flex-direction: column; gap: 8px; box-shadow: 0 -4px 20px rgba(0,0,0,0.1);">
-                    <input v-model="pickerQuery" class="emote-search-input" placeholder="Search emotes…">
-                    <div class="emote-picker-grid" style="overscroll-behavior-y: contain; -webkit-overflow-scrolling: touch;">
-                        <img v-for="([name, emote]) in filteredEmotes" :key="name" :src="getEmoteUrl(name, emote)" :title="name" class="emote-picker-img" @click="insertEmote(name)">
-                    </div>
-                </div>
-
-                <button class="chat-icon-btn" :class="{ 'chat-icon-active': showPicker }" @click.stop="togglePicker"><span class="material-symbols-rounded" style="font-size:22px;">mood</span></button>
-                <input type="text" class="custom-chat-input" placeholder="Send a message…" v-model="localInput" @keydown.enter="handleSend" @focus="handleInteraction" :readonly="!isLoggedIn">
-                <button class="chat-send-btn" @click="handleSend" :disabled="!isLoggedIn || !localInput.trim()"><span class="material-symbols-rounded" style="font-size:20px;">send</span></button>
-            </div>
-
-            <teleport to="#app-container">
-                <div v-if="$root.showLoginPopup" class="chat-login-popup-overlay" @click.self="$root.showLoginPopup = false" style="position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; background: rgba(0,0,0,0.8); z-index: 99999; backdrop-filter: blur(5px);">
-                    <div class="chat-login-card" style="background: var(--card-bg); padding: 24px; border-radius: 16px; width: 85%; max-width: 340px; text-align: center; position: relative; box-shadow: 0 10px 30px rgba(0,0,0,0.3);">
-                        <button @click="$root.showLoginPopup = false" style="position: absolute; top: 12px; right: 12px; background: transparent; border: none; color: var(--text-muted); font-size: 24px; line-height:1; cursor: pointer;">×</button>
-                        <svg viewBox="0 0 24 24" class="chat-login-icon" style="width: 48px; height: 48px; margin: 0 auto 16px; color: #9146FF;"><path fill="currentColor" d="M11.571 4.714h1.715v5.143H11.57zm4.715 0H18v5.143h-1.714zM6 0L1.714 4.286v15.428h5.143V24l4.286-4.286h3.428L22.286 12V0zm14.571 11.143l-3.428 3.428h-3.429l-3 3v-3H6.857V1.714h13.714Z"/></svg>
-                        <p class="chat-login-title" style="font-size: 20px; font-weight: bold; margin-bottom: 8px;">Join the chat</p>
-                        <p class="chat-login-sub" style="font-size: 14px; color: var(--text-muted); margin-bottom: 20px;">Connect your Twitch account to read and send messages live.</p>
-                        
-                        <a :href="twitchAuthUrl || '#'" @click="$root.showLoginPopup = false" style="display: block; background: #9146FF; color: white; padding: 12px; border-radius: 8px; text-decoration: none; font-weight: bold;">Connect with Twitch</a>
-                    </div>
-                </div>
-            </teleport>
+            <div style="position: absolute; top: 0; left: 0; right: 0; height: 10px; background: linear-gradient(to bottom, var(--bg-color) 0%, transparent 100%); pointer-events: none; z-index: 10;"></div>
         </div>
     `
 };
@@ -270,31 +251,7 @@ const GeraldView = {
     components: { GeraldMinigames },
     props: ['currentTab', 'geraldMessages', 'isGeraldTyping', 'geraldInput', 'showEmotePicker', 'showMinigames', 'customEmotes', 'geminiStatus', 'sysStats'],
     methods: {
-        getEmoteUrl(emote) { return emote.url; },
-        formatMarkdown(text) { 
-            let html = text.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
-            if (this.customEmotes) {
-                const tokens = html.split(/(<[^>]+>|[\s]+)/); 
-                const emoteKeys = Object.keys(this.customEmotes);
-                const lowerMap = {};
-                emoteKeys.forEach(k => lowerMap[k.toLowerCase()] = k);
-
-                for (let i = 0; i < tokens.length; i++) {
-                    const token = tokens[i];
-                    if (!token || token.startsWith('<') || token.trim() === '') continue;
-                    
-                    const cleanToken = token.replace(/^:|:$/g, '').replace(/[.,!?"'()[\]{}]/g, '').trim().toLowerCase();
-                    if (lowerMap[cleanToken]) {
-                        const actualKey = lowerMap[cleanToken];
-                        const url = this.customEmotes[actualKey].url;
-                        const escapedClean = cleanToken.replace(/[-\/\\^$*+?.()|[\]{}]/g, '\\$&');
-                        tokens[i] = token.replace(new RegExp(`:?${escapedClean}:?`, 'i'), `<img src="${url}" class="chat-emote-img" title="${actualKey}">`);
-                    }
-                }
-                html = tokens.join('');
-            }
-            return html;
-        },
+        formatMarkdown(text) { return parseMarkdownText(text, this.customEmotes); },
         insertEmote(name) { this.$emit('insert-emote', name); }
     },
     template: `
@@ -336,7 +293,7 @@ const GeraldView = {
             <div class="gerald-action-area">
                 <div class="chat-emote-tray" v-show="showEmotePicker" style="position: absolute; bottom: 100%; left: 0; right: 0; background: var(--card-bg); border-top: 1px solid var(--border-color); border-bottom: none; border-radius: 16px 16px 0 0; padding: 10px 12px; z-index: 200; max-height: 250px; display: flex; flex-direction: column; box-shadow: 0 -4px 20px rgba(0,0,0,0.1);">
                     <div class="emote-picker-grid" style="overscroll-behavior-y: contain; -webkit-overflow-scrolling: touch;">
-                        <img v-for="(emote, name) in customEmotes" :key="name" :src="getEmoteUrl(emote)" :title="name" class="emote-picker-img" @mousedown.prevent="insertEmote(name)">
+                        <img v-for="(emote, name) in customEmotes" :key="name" :src="emote.url" :title="name" class="emote-picker-img" @mousedown.prevent="insertEmote(name)">
                     </div>
                 </div>
 
@@ -361,9 +318,9 @@ const MoreView = {
         const { ref, onMounted, onUnmounted, watch } = Vue;
         
         const activeSubView = ref('main');
-        const statTimeframe = ref('month');
-        const streamState = ref('offline'); 
-        const countdownText = ref('00:00:00');
+        const statTimeframe = ref('week'); // Default to week
+        const streamState = ref('awaiting'); 
+        const countdownText = ref('--:--:--');
         const nextStreamTime = ref(null);
         
         const channelStats = ref({
@@ -373,23 +330,6 @@ const MoreView = {
             year_hours: '...', year_category: '...', year_days: '...'
         });
         
-        const randFuture = ref('');
-        const randLate = ref('');
-        const randLive = ref('');
-        const randOffline = ref('');
-
-        const LBL_FUTURE = ["NEXT STREAM IN", "SCUFF ARRIVES IN", "CHAOS BEGINS IN", "TECHNICIAN SPAWNS", "MOCAP BOOTING IN"];
-        const LBL_LATE = ["PREPARING SCUFF...", "CALIBRATING SUIT...", "TECHNICIAN IS LATE", "BOOTING UNREAL...", "FINDING MUTE BUTTON..."];
-        const LBL_LIVE = ["STREAM IS LIVE"];
-        const LBL_OFFLINE = ["AWAITING SCHEDULE", "RECHARGING SUIT", "MOCAP OFFLINE", "SLEEPING IN VR", "TOUCHING GRASS"];
-
-        const randomizeTexts = () => {
-            randFuture.value = LBL_FUTURE[Math.floor(Math.random() * LBL_FUTURE.length)];
-            randLate.value = LBL_LATE[Math.floor(Math.random() * LBL_LATE.length)];
-            randLive.value = LBL_LIVE[0]; // Kept static and centered as requested
-            randOffline.value = LBL_OFFLINE[Math.floor(Math.random() * LBL_OFFLINE.length)];
-        };
-
         let timerInterval;
 
         const updateClock = () => {
@@ -398,7 +338,7 @@ const MoreView = {
                 return;
             }
             if (!nextStreamTime.value) {
-                streamState.value = 'offline';
+                streamState.value = 'awaiting';
                 return;
             }
             let d = nextStreamTime.value - new Date().getTime();
@@ -414,29 +354,14 @@ const MoreView = {
         };
 
         onMounted(async () => {
-            if (!document.getElementById('native-slide-css')) {
-                const style = document.createElement('style');
-                style.id = 'native-slide-css';
-                style.innerHTML = `
-                    .nav-slide-enter-active, .nav-slide-leave-active { transition: transform 0.3s cubic-bezier(0.25, 0.8, 0.25, 1); will-change: transform; }
-                    .nav-slide-enter-from, .nav-slide-leave-to { transform: translate3d(100%, 0, 0); }
-                `;
-                document.head.appendChild(style);
-            }
-
-            randomizeTexts();
-
             sbClient.from('channel_stats').select('*').eq('id', 1).single().then(({data}) => {
                 if (data) channelStats.value = data;
             });
 
             try {
-                const gql = await fetch('https://gql.twitch.tv/gql', { 
-                    method: 'POST', 
-                    headers: { 'Client-ID': 'kimne78kx3ncx6brgo4mv6wki5h1ko' }, 
-                    body: JSON.stringify({ query: `query{user(login:"codemiko"){channel{schedule{segments(first:20){edges{node{startAt}}}}}}}` }) 
-                });
-                const d = await gql.json();
+                // Pointing to the new Edge Function to bypass CORS completely
+                const res = await fetch('https://yhxcuayiwqpjvalyrcqv.supabase.co/functions/v1/twitch-schedule');
+                const d = await res.json();
                 const schedEdges = d.data?.user?.channel?.schedule?.segments?.edges;
                 if (schedEdges && schedEdges.length > 0) {
                     const now = Date.now();
@@ -458,16 +383,16 @@ const MoreView = {
         onUnmounted(() => { clearInterval(timerInterval); });
         watch(() => props.isLive, updateClock);
 
-        return { activeSubView, statTimeframe, streamState, countdownText, randFuture, randLate, randLive, randOffline, channelStats };
+        return { activeSubView, statTimeframe, streamState, countdownText, channelStats };
     },
     template: `
         <div class="more-container" style="position: relative; height: 100%; width: 100%; background: var(--bg-color); overflow: hidden;">
             
-            <div style="height: 100%; overflow-y: auto; padding: 0 16px 20px;" v-show="activeSubView === 'main'">
+            <div style="height: 100%; overflow-y: auto; padding: 0 16px 20px;" v-if="activeSubView === 'main'">
                 
                 <div v-if="streamState === 'future'" style="background: linear-gradient(135deg, rgba(145, 70, 255, 0.15), rgba(145, 70, 255, 0.05)); border: 1px solid rgba(145, 70, 255, 0.3); border-radius: 16px; padding: 20px; margin-bottom: 24px; margin-top: 8px; text-align: center; display: flex; flex-direction: column; align-items: center; justify-content: center;">
                     <div style="color: var(--primary); font-size: 12px; font-weight: 800; letter-spacing: 1.5px; text-transform: uppercase; margin-bottom: 8px; display: flex; align-items: center; gap: 6px;">
-                        <span class="material-symbols-rounded" style="font-size: 18px;">calendar_month</span> {{ randFuture }}
+                        <span class="material-symbols-rounded" style="font-size: 18px;">calendar_month</span> NEXT STREAM IN
                     </div>
                     <div style="font-size: 32px; font-weight: 900; font-variant-numeric: tabular-nums; letter-spacing: 2px; text-shadow: 0 0 10px rgba(145, 70, 255, 0.3); color: var(--text-main);">{{ countdownText }}</div>
                 </div>
@@ -476,21 +401,21 @@ const MoreView = {
                     <div style="color: var(--warning); font-size: 12px; font-weight: 800; letter-spacing: 1.5px; text-transform: uppercase; margin-bottom: 8px; display: flex; align-items: center; gap: 6px;">
                         <span class="material-symbols-rounded" style="font-size: 18px;">warning</span> Waiting for Broadcast
                     </div>
-                    <div style="font-size: 22px; font-weight: 900; letter-spacing: 1px; color: var(--warning); text-shadow: 0 0 15px rgba(255, 152, 0, 0.4);">{{ randLate }}</div>
+                    <div style="font-size: 22px; font-weight: 900; letter-spacing: 1px; color: var(--warning); text-shadow: 0 0 15px rgba(255, 152, 0, 0.4);">PREPARING SCUFF...</div>
                 </div>
 
                 <a v-else-if="streamState === 'live'" href="https://www.twitch.tv/codemiko" target="_blank" style="background: linear-gradient(135deg, rgba(239, 68, 68, 0.15), rgba(145, 70, 255, 0.05)); border: 1px solid rgba(239, 68, 68, 0.4); border-radius: 16px; padding: 20px; margin-bottom: 24px; margin-top: 8px; text-align: center; display: flex; flex-direction: column; align-items: center; justify-content: center; text-decoration: none;">
                     <div style="color: var(--danger); font-size: 12px; font-weight: 800; letter-spacing: 1.5px; text-transform: uppercase; margin-bottom: 8px; display: flex; align-items: center; gap: 6px;">
                         <span class="material-symbols-rounded" style="font-size: 18px;">podcasts</span> STREAM IS LIVE
                     </div>
-                    <div style="font-size: 24px; font-weight: 900; letter-spacing: 1px; color: var(--danger); text-shadow: 0 0 15px rgba(239, 68, 68, 0.6);">{{ randLive }}</div>
+                    <div style="font-size: 24px; font-weight: 900; letter-spacing: 1px; color: var(--danger); text-shadow: 0 0 15px rgba(239, 68, 68, 0.6);">EMBRACE THE CHAOS</div>
                 </a>
 
-                <div v-else-if="streamState === 'offline'" style="background: var(--card-bg); border: 1px solid var(--border-color); border-radius: 16px; padding: 20px; margin-bottom: 24px; margin-top: 8px; text-align: center; display: flex; flex-direction: column; align-items: center; justify-content: center;">
+                <div v-else-if="streamState === 'awaiting'" style="background: var(--card-bg); border: 1px solid var(--border-color); border-radius: 16px; padding: 20px; margin-bottom: 24px; margin-top: 8px; text-align: center; display: flex; flex-direction: column; align-items: center; justify-content: center;">
                     <div style="color: var(--text-muted); font-size: 12px; font-weight: 800; letter-spacing: 1.5px; text-transform: uppercase; margin-bottom: 8px; display: flex; align-items: center; gap: 6px;">
-                        <span class="material-symbols-rounded" style="font-size: 18px;">bedtime</span> Stream Offline
+                        <span class="material-symbols-rounded" style="font-size: 18px;">calendar_month</span> AWAITING SCHEDULE
                     </div>
-                    <div style="font-size: 20px; font-weight: 900; letter-spacing: 1px; color: var(--text-muted);">{{ randOffline }}</div>
+                    <div style="font-size: 32px; font-weight: 900; font-variant-numeric: tabular-nums; letter-spacing: 2px; color: var(--text-muted);">--:--:--</div>
                 </div>
 
                 <div style="font-size: 12px; font-weight: 800; letter-spacing: 1.2px; text-transform: uppercase; color: var(--text-muted); margin: 28px 0 10px 8px;">Explore</div>
@@ -563,23 +488,92 @@ const MoreView = {
                     <span style="color: var(--text-main); font-size: 14px; font-weight: 600; margin-left: 12px;">Bluesky</span>
                     <span class="material-symbols-rounded" style="color: var(--text-muted); margin-left: auto; font-size: 16px;">open_in_new</span>
                 </a>
-                <a href="https://app.fanfix.io/@codeyuna" target="_blank" style="display: flex; align-items: center; width: 100%; box-sizing: border-box; padding: 0 16px; border-radius: 12px; min-height: 48px; background: var(--card-bg); text-decoration: none; margin-bottom: 8px;">
+                <a href="https://app.fanfix.io/@codeyuna" target="_blank" style="display: flex; align-items: center; width: 100%; box-sizing: border-box; padding: 0 16px; border-radius: 12px; min-height: 48px; background: var(--card-bg); text-decoration: none; margin-bottom: 24px;">
                     <svg viewBox="0 0 24 24" style="width: 22px; height: 22px; color: #ef4444;"><path fill="currentColor" d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/></svg>
                     <span style="color: var(--text-main); font-size: 14px; font-weight: 600; margin-left: 12px;">Fanfix</span>
                     <span class="material-symbols-rounded" style="color: var(--text-muted); margin-left: auto; font-size: 16px;">open_in_new</span>
                 </a>
-                <a href="https://discord.com/invite/codemiko" target="_blank" style="display: flex; align-items: center; width: 100%; box-sizing: border-box; padding: 0 16px; border-radius: 12px; min-height: 48px; background: var(--card-bg); text-decoration: none; margin-bottom: 8px;">
-                    <svg viewBox="0 0 24 24" style="width: 22px; height: 22px; color: #5865F2;"><path fill="currentColor" d="M20.317 4.3698a19.7913 19.7913 0 00-4.8851-1.5152.0741.0741 0 00-.0785.0371c-.211.3753-.4447.8648-.6083 1.2495-1.8447-.2762-3.68-.2762-5.4868 0-.1636-.3933-.4058-.8742-.6177-1.2495a.077.077 0 00-.0785-.037 19.7363 19.7363 0 00-4.8852 1.515.0699.0699 0 00-.0321.0277C.5334 9.0458-.319 13.5799.0992 18.0578a.0824.0824 0 00.0312.0561c2.0528 1.5076 4.0413 2.4228 5.9929 3.0294a.0777.0777 0 00.0842-.0276c.4616-.6304.8731-1.2952 1.226-1.9942a.076.076 0 00-.0416-.1057c-.6528-.2476-1.2743-.5495-1.8722-.8923a.077.077 0 01-.0076-.1277c.1258-.0943.2517-.1923.3718-.2914a.0743.0743 0 01.0776-.0105c3.9278 1.7933 8.18 1.7933 12.0614 0a.0739.0739 0 01.0785.0095c.1202.099.246.1981.3728.2924a.077.077 0 01-.0066.1276 12.2986 12.2986 0 01-1.873.8914.0766.0766 0 00-.0407.1067c.3604.698.7719 1.3628 1.225 1.9932a.076.076 0 00.0842.0286c1.961-.6067 3.9495-1.5219 6.0023-3.0294a.077.077 0 00.0313-.0552c.5004-5.177-.8382-9.6739-3.5485-13.6604a.061.061 0 00-.0312-.0286zM8.02 15.3312c-1.1825 0-2.1569-1.0857-2.1569-2.419 0-1.3332.9555-2.4189 2.157-2.4189 1.2108 0 2.1757 1.0952 2.1568 2.419 0 1.3332-.9555 2.4189-2.1569 2.4189zm7.9748 0c-1.1825 0-2.1569-1.0857-2.1569-2.419 0-1.3332.9554-2.4189 2.1569-2.4189 1.2108 0 2.1757 1.0952 2.1568 2.419 0 1.3332-.946 2.4189-2.1568 2.4189Z"/></svg>
-                    <span style="color: var(--text-main); font-size: 14px; font-weight: 600; margin-left: 12px;">Discord</span>
-                    <span class="material-symbols-rounded" style="color: var(--text-muted); margin-left: auto; font-size: 16px;">open_in_new</span>
-                </a>
-                <a href="https://www.reddit.com/r/CodeMiko/" target="_blank" style="display: flex; align-items: center; width: 100%; box-sizing: border-box; padding: 0 16px; border-radius: 12px; min-height: 48px; background: var(--card-bg); text-decoration: none; margin-bottom: 24px;">
-                    <svg viewBox="0 0 24 24" style="width: 22px; height: 22px; fill: #FF4500;"><path d="M24 11.779c0-1.459-1.192-2.645-2.657-2.645-.715 0-1.363.275-1.84.731-1.81-1.191-4.259-1.949-6.971-2.046l1.483-4.669 4.016.941-.006.058c0 1.193.975 2.163 2.174 2.163 1.198 0 2.172-.97 2.172-2.163s-.975-2.164-2.172-2.164c-.92 0-1.704.574-2.021 1.379l-4.329-1.015c-.189-.046-.381.063-.44.249l-1.654 5.207c-2.838.034-5.409.798-7.3 2.025-.474-.438-1.106-.712-1.796-.712-1.465 0-2.656 1.187-2.656 2.646 0 .97.533 1.811 1.317 2.271-.052.282-.086.567-.086.857 0 3.911 4.808 7.093 10.719 7.093s10.72-3.182 10.72-7.093c0-.274-.029-.544-.075-.81.832-.447 1.405-1.312 1.405-2.318zm-17.224 1.816c0-.868.71-1.575 1.582-1.575.872 0 1.581.707 1.581 1.575s-.709 1.574-1.581 1.574-1.582-.706-1.582-1.574zm9.061 4.669c-1.207 1.214-3.581 1.303-3.69 1.303-.105 0-2.474-.085-3.697-1.303-.146-.145-.145-.382.001-.527.145-.145.381-.144.526.002.825.833 2.378 1.054 3.161 1.054.78 0 2.327-.215 3.153-1.05.145-.147.382-.148.529-.002.146.146.147.383.017.523zm.18-2.925c-.872 0-1.581-.706-1.581-1.574 0-.868.709-1.575 1.581-1.575s1.581.707 1.581 1.575c0 .868-.709 1.574-1.581 1.574z"/></svg>
-                        <span style="color: var(--text-main); font-size: 14px; font-weight: 600; margin-left: 12px;">Reddit</span>
-                        <span class="material-symbols-rounded" style="color: var(--text-muted); margin-left: auto; font-size: 16px;">open_in_new</span>
-                    </a>
+            </div>
+
+            <div v-if="activeSubView === 'about'" style="position: absolute; top:0; left:0; right:0; bottom:0; background: var(--bg-color); z-index: 50; overflow-y: auto; padding: 20px 16px; box-sizing: border-box;">
+                <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 24px; font-size: 18px; font-weight: bold; color: var(--text-main);">
+                    <button @click="activeSubView = 'main'" style="background: var(--card-bg); border: 1px solid var(--border-color); color: var(--text-main); width: 36px; height: 36px; border-radius: 50%; display: flex; align-items: center; justify-content: center; cursor: pointer; box-shadow: 0 2px 8px rgba(0,0,0,0.05);">
+                        <span class="material-symbols-rounded">arrow_back</span>
+                    </button>
+                    About CodeMiko
                 </div>
-            </transition>
+                <div style="text-align: center; margin-bottom: 24px;">
+                    <img src="https://raw.githubusercontent.com/meowoccino/MikoTok/main/1000018850.png" style="width: 110px; height: 110px; border-radius: 50%; margin-bottom: 12px;" alt="Avatar">
+                    <h2 style="margin:0; color: var(--text-main);">CodeMiko</h2>
+                    <div style="color:var(--text-muted); font-size:14px; margin-top:4px;">Youna Kang • VTuber & Dev</div>
+                </div>
+                <div style="color: var(--text-main); font-size: 14px; line-height: 1.6; background: var(--card-bg); padding: 16px; border-radius: 12px; margin-bottom: 16px; border: 1px solid var(--border-color);">
+                    <div style="text-align: center; margin-bottom: 12px;"><strong style="color:var(--text-main);">The Glitch in the System</strong></div>
+                    CodeMiko is a groundbreaking interactive VTuber project created and operated by "The Technician" (Youna Kang). Using a state-of-the-art Xsens full-body motion capture suit and Unreal Engine 5, Miko pushes the absolute boundaries of digital broadcasting.<br><br>
+                    What makes the stream unique is its interactivity. Chatters can use Bits and channel points to directly trigger interactions, minigames, and catastrophic visual glitches on Miko's avatar in real-time.<br><br>
+                    According to her lore, Miko is an aspiring video game NPC without a game, attempting to find her place in the digital world after being rejected by major AAA titles.
+                </div>
+            </div>
+
+            <div v-if="activeSubView === 'stats'" style="position: absolute; top:0; left:0; right:0; bottom:0; background: var(--bg-color); z-index: 50; overflow-y: auto; padding: 20px 16px; box-sizing: border-box;">
+                <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 24px; font-size: 18px; font-weight: bold; color: var(--text-main);">
+                    <button @click="activeSubView = 'main'" style="background: var(--card-bg); border: 1px solid var(--border-color); color: var(--text-main); width: 36px; height: 36px; border-radius: 50%; display: flex; align-items: center; justify-content: center; cursor: pointer;">
+                        <span class="material-symbols-rounded">arrow_back</span>
+                    </button>
+                    Channel Statistics
+                </div>
+
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 24px;">
+                    <div style="background: var(--card-bg); padding: 16px; border-radius: 12px; display: flex; flex-direction: column; align-items: center; text-align: center; border: 1px solid var(--border-color);">
+                        <div style="font-size: 20px; font-weight: bold; color: var(--primary); margin-bottom: 4px;">{{ channelStats.followers }}</div>
+                        <div style="font-size: 11px; color: var(--text-muted); text-transform: uppercase; font-weight: 700; letter-spacing: 0.5px;">Followers</div>
+                    </div>
+                    <div style="background: var(--card-bg); padding: 16px; border-radius: 12px; display: flex; flex-direction: column; align-items: center; text-align: center; border: 1px solid var(--border-color);">
+                        <div style="font-size: 20px; font-weight: bold; color: var(--primary); margin-bottom: 4px;">{{ channelStats.total_views }}</div>
+                        <div style="font-size: 11px; color: var(--text-muted); text-transform: uppercase; font-weight: 700; letter-spacing: 0.5px;">Total Views</div>
+                    </div>
+                    <div style="background: var(--card-bg); padding: 16px; border-radius: 12px; display: flex; flex-direction: column; align-items: center; text-align: center; border: 1px solid var(--border-color);">
+                        <div style="font-size: 20px; font-weight: bold; color: var(--primary); margin-bottom: 4px;">{{ channelStats.avg_viewers }}</div>
+                        <div style="font-size: 11px; color: var(--text-muted); text-transform: uppercase; font-weight: 700; letter-spacing: 0.5px;">Avg Viewers</div>
+                    </div>
+                    <div style="background: var(--card-bg); padding: 16px; border-radius: 12px; display: flex; flex-direction: column; align-items: center; text-align: center; border: 1px solid var(--border-color);">
+                        <div style="font-size: 20px; font-weight: bold; color: var(--primary); margin-bottom: 4px;">{{ channelStats.peak_viewers }}</div>
+                        <div style="font-size: 11px; color: var(--text-muted); text-transform: uppercase; font-weight: 700; letter-spacing: 0.5px;">All-Time Peak</div>
+                    </div>
+                    <div style="background: var(--card-bg); padding: 16px; border-radius: 12px; display: flex; flex-direction: column; align-items: center; text-align: center; border: 1px solid var(--border-color);">
+                        <div style="font-size: 20px; font-weight: bold; color: var(--primary); margin-bottom: 4px;">{{ channelStats.active_subs }}</div>
+                        <div style="font-size: 11px; color: var(--text-muted); text-transform: uppercase; font-weight: 700; letter-spacing: 0.5px;">Active Subs</div>
+                    </div>
+                    <div style="background: var(--card-bg); padding: 16px; border-radius: 12px; display: flex; flex-direction: column; align-items: center; text-align: center; border: 1px solid var(--border-color);">
+                        <div style="font-size: 16px; font-weight: bold; color: var(--primary); margin-top: 4px; margin-bottom: 4px;">{{ channelStats.account_created }}</div>
+                        <div style="font-size: 11px; color: var(--text-muted); text-transform: uppercase; font-weight: 700; letter-spacing: 0.5px;">Account Created</div>
+                    </div>
+                </div>
+
+                <div style="font-size:12px; font-weight:bold; color:var(--primary); margin: 24px 0 12px 8px; text-transform:uppercase;">Recent Broadcasting</div>
+                
+                <div style="display: flex; gap: 8px; margin-bottom: 12px; background: rgba(145, 70, 255, 0.1); padding: 4px; border-radius: 8px;">
+                    <button @click="statTimeframe = 'week'" :style="statTimeframe === 'week' ? 'background: var(--card-bg); color: var(--text-main); box-shadow: 0 2px 5px rgba(0,0,0,0.1);' : 'background: transparent; color: var(--text-muted);'" style="flex: 1; padding: 8px 0; text-align: center; border-radius: 6px; font-size: 13px; font-weight: 600; cursor: pointer; border:none;">Week</button>
+                    <button @click="statTimeframe = 'month'" :style="statTimeframe === 'month' ? 'background: var(--card-bg); color: var(--text-main); box-shadow: 0 2px 5px rgba(0,0,0,0.1);' : 'background: transparent; color: var(--text-muted);'" style="flex: 1; padding: 8px 0; text-align: center; border-radius: 6px; font-size: 13px; font-weight: 600; cursor: pointer; border:none;">Month</button>
+                    <button @click="statTimeframe = 'year'" :style="statTimeframe === 'year' ? 'background: var(--card-bg); color: var(--text-main); box-shadow: 0 2px 5px rgba(0,0,0,0.1);' : 'background: transparent; color: var(--text-muted);'" style="flex: 1; padding: 8px 0; text-align: center; border-radius: 6px; font-size: 13px; font-weight: 600; cursor: pointer; border:none;">Year</button>
+                </div>
+
+                <div v-if="statTimeframe === 'week'" style="display: flex; flex-direction: column; gap: 8px;">
+                    <div style="background: var(--card-bg); padding: 12px 16px; border-radius: 10px; display: flex; justify-content: space-between; font-size: 14px; color: var(--text-muted); border: 1px solid var(--border-color);"><span>Hours Streamed</span><strong style="color: var(--text-main);">{{ channelStats.week_hours }} Hours</strong></div>
+                    <div style="background: var(--card-bg); padding: 12px 16px; border-radius: 10px; display: flex; justify-content: space-between; font-size: 14px; color: var(--text-muted); border: 1px solid var(--border-color);"><span>Top Category</span><strong style="color: var(--text-main);">{{ channelStats.week_category }}</strong></div>
+                    <div style="background: var(--card-bg); padding: 12px 16px; border-radius: 10px; display: flex; justify-content: space-between; font-size: 14px; color: var(--text-muted); border: 1px solid var(--border-color);"><span>Active Days</span><strong style="color: var(--text-main);">{{ channelStats.week_days }} days / week</strong></div>
+                </div>
+                <div v-if="statTimeframe === 'month'" style="display: flex; flex-direction: column; gap: 8px;">
+                    <div style="background: var(--card-bg); padding: 12px 16px; border-radius: 10px; display: flex; justify-content: space-between; font-size: 14px; color: var(--text-muted); border: 1px solid var(--border-color);"><span>Hours Streamed</span><strong style="color: var(--text-main);">{{ channelStats.month_hours }} Hours</strong></div>
+                    <div style="background: var(--card-bg); padding: 12px 16px; border-radius: 10px; display: flex; justify-content: space-between; font-size: 14px; color: var(--text-muted); border: 1px solid var(--border-color);"><span>Top Category</span><strong style="color: var(--text-main);">{{ channelStats.month_category }}</strong></div>
+                    <div style="background: var(--card-bg); padding: 12px 16px; border-radius: 10px; display: flex; justify-content: space-between; font-size: 14px; color: var(--text-muted); border: 1px solid var(--border-color);"><span>Active Days</span><strong style="color: var(--text-main);">{{ channelStats.month_days }} days / week</strong></div>
+                </div>
+                <div v-if="statTimeframe === 'year'" style="display: flex; flex-direction: column; gap: 8px;">
+                    <div style="background: var(--card-bg); padding: 12px 16px; border-radius: 10px; display: flex; justify-content: space-between; font-size: 14px; color: var(--text-muted); border: 1px solid var(--border-color);"><span>Hours Streamed</span><strong style="color: var(--text-main);">{{ channelStats.year_hours }} Hours</strong></div>
+                    <div style="background: var(--card-bg); padding: 12px 16px; border-radius: 10px; display: flex; justify-content: space-between; font-size: 14px; color: var(--text-muted); border: 1px solid var(--border-color);"><span>Top Category</span><strong style="color: var(--text-main);">{{ channelStats.year_category }}</strong></div>
+                    <div style="background: var(--card-bg); padding: 12px 16px; border-radius: 10px; display: flex; justify-content: space-between; font-size: 14px; color: var(--text-muted); border: 1px solid var(--border-color);"><span>Active Days</span><strong style="color: var(--text-main);">{{ channelStats.year_days }} days / week</strong></div>
+                </div>
+            </div>
         </div>
     `
 };
@@ -650,8 +644,7 @@ createApp({
         const loginEmail = ref('');
         const loginPass = ref('');
         const loginError = ref(''); 
-        const showLoginPopup = ref(false);
-
+        
         const hostname = window.location.hostname || 'meowoccino.github.io';
         const syncState = ref('Refresh Feed');
         const wipeState = ref('Wipe Gerald Memory');
@@ -659,13 +652,9 @@ createApp({
         const nukeState = ref('Nuke App Cache');
         
         const isHeaderVisible = ref(true);
-
-        const TWITCH_PUBLIC_CLIENT_ID = 'i2fjxfk0oq6ybixle760zryrtvdqjg';
-        
         const geminiStatus = ref('TESTING BRAIN...');
         const sysStats = ref({ cpu: 23, mem: 1.8, temp: 74 });
 
-        const myTwitchBadges = ref([]); 
         const activeClipId = ref(null);
         const currentClipOffset = ref(0);
         const isLoadingMore = ref(false);
@@ -678,14 +667,6 @@ createApp({
         const currentFilter = ref('latest'), activeFilterLabel = ref('Latest'), isFilterMenuOpen = ref(false);
         const recentVods = ref([]), currentVodIndex = ref(0);
         const selectedClip = ref(null);
-        const chatMessages = ref([]);
-        const twitchChatToken = ref(localStorage.getItem('tw_chat_token') || null);
-        const twitchUsername = ref(localStorage.getItem('tw_username') || null);
-        
-        const twitchAuthUrl = ref('');
-        
-        let twitchWs = null;
-        let wsAuthenticated = false;
 
         const tabOrder = ['home', 'chat', 'gerald', 'more'];
         const initialTabIdx = tabOrder.indexOf(tabs.includes(window.location.hash.replace('#','')) ? window.location.hash.replace('#','') : 'home');
@@ -694,7 +675,7 @@ createApp({
         const updateThemeClass = () => {
             document.body.className = 'theme-' + appTheme.value;
             document.documentElement.style.colorScheme = appTheme.value;
-            const bgHex = appTheme.value === 'light' ? '#ffffff' : '#0d0d11';
+            const bgHex = appTheme.value === 'light' ? '#f8f9fa' : '#0d0d11';
             
             let metaTheme = document.querySelector('meta[name="theme-color"]');
             if (!metaTheme) {
@@ -703,14 +684,6 @@ createApp({
                 document.head.appendChild(metaTheme);
             }
             metaTheme.setAttribute('content', bgHex);
-
-            let metaApple = document.querySelector('meta[name="apple-mobile-web-app-status-bar-style"]');
-            if (!metaApple) {
-                metaApple = document.createElement('meta');
-                metaApple.name = "apple-mobile-web-app-status-bar-style";
-                document.head.appendChild(metaApple);
-            }
-            metaApple.setAttribute('content', appTheme.value === 'light' ? 'default' : 'black-translucent');
             
             document.body.style.backgroundColor = bgHex;
             document.documentElement.style.backgroundColor = bgHex;
@@ -720,7 +693,6 @@ createApp({
             currentTab.value = tab;
             tabOffset.value = tabOrder.indexOf(tab) * -25;
             window.history.pushState(null, '', `#${tab}`);
-            if (tab === 'chat') setTimeout(() => { const l = document.getElementById('twitch-chat-list'); if (l) l.scrollTop = l.scrollHeight; }, 150);
             if (tab === 'gerald') setTimeout(scrollToBottom, 300);
         };
 
@@ -776,259 +748,9 @@ createApp({
         };
         
         const toggleTheme = () => { appTheme.value = appTheme.value === 'light' ? 'dark' : 'light'; localStorage.setItem('miko_theme', appTheme.value); updateThemeClass(); };
-        const scrollChatToBottom = () => { setTimeout(() => { const l = document.getElementById('twitch-chat-list'); if (l) l.scrollTop = l.scrollHeight; }, 100); };
         const scrollToBottom = () => { const b = document.getElementById('gerald-msgs'); if (b) b.scrollTop = b.scrollHeight; };
 
-        const _chatSessionStart = (() => {
-            let t = sessionStorage.getItem('miko_session_start');
-            if (!t) { t = new Date().toISOString(); sessionStorage.setItem('miko_session_start', t); }
-            return t;
-        })();
-        let _persistEnabled = false; 
-
-        const buildHtml = (text, tagsEmotes) => {
-            let rawText = text;
-            
-            if (tagsEmotes) {
-                const replacements = [];
-                tagsEmotes.split('/').forEach(e => {
-                    const [id, positions] = e.split(':');
-                    if (!positions) return;
-                    positions.split(',').forEach(pos => { 
-                        const [s, en] = pos.split('-').map(Number); 
-                        replacements.push({ s, en, id }); 
-                    });
-                });
-                replacements.sort((a, b) => b.s - a.s);
-                const rawChars = [...text];
-                
-                replacements.forEach(({ s, en, id }) => {
-                    const emoteName = rawChars.slice(s, en + 1).join('');
-                    rawChars.splice(s, en - s + 1, `_TWITCH_EMOTE_${id}_${emoteName}_`);
-                });
-                rawText = rawChars.join('');
-            }
-            
-            let html = rawText.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
-            
-            html = html.replace(/_TWITCH_EMOTE_([^_]+)_([^_]+)_/g, '<img src="https://static-cdn.jtvnw.net/emoticons/v2/$1/default/dark/1.0" class="chat-emote-img" title="$2">');
-
-            const urlPattern = /(\b(https?|ftp|file):\/\/[-A-Z0-9+&@#\/%?=~_|!:,.;]*[-A-Z0-9+&@#\/%=~_|])/ig;
-            html = html.replace(urlPattern, "<a href='$1' target='_blank'>$1</a>");
-            
-            if (customEmotes.value) {
-                const tokens = html.split(/(<[^>]+>|[\s]+)/); 
-                const emoteKeys = Object.keys(customEmotes.value);
-                const lowerMap = {};
-                emoteKeys.forEach(k => lowerMap[k.toLowerCase()] = k);
-
-                for (let i = 0; i < tokens.length; i++) {
-                    const token = tokens[i];
-                    if (!token || token.startsWith('<') || token.trim() === '') continue;
-                    
-                    const cleanToken = token.replace(/^:|:$/g, '').replace(/[.,!?"'()[\]{}]/g, '').trim().toLowerCase();
-                    if (lowerMap[cleanToken]) {
-                        const actualKey = lowerMap[cleanToken];
-                        const url = customEmotes.value[actualKey].url;
-                        const escapedClean = cleanToken.replace(/[-\/\\^$*+?.()|[\]{}]/g, '\\$&');
-                        tokens[i] = token.replace(new RegExp(`:?${escapedClean}:?`, 'i'), `<img src="${url}" class="chat-emote-img" title="${actualKey}">`);
-                    }
-                }
-                html = tokens.join('');
-            }
-
-            html = html.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>').replace(/\*(.*?)\*/g, '<em>$1</em>');
-            return html;
-        };
-
-        const parseIrcMessage = (raw) => {
-            if (!raw || !raw.includes('PRIVMSG')) return;
-            let tags = {}, line = raw;
-            if (line.startsWith('@')) {
-                const sp = line.indexOf(' ');
-                line.substring(1, sp).split(';').forEach(t => { const [k, ...v] = t.split('='); tags[k] = v.join('='); });
-                line = line.substring(sp + 1);
-            }
-            const matchUser = line.match(/:([^!]+)!/);
-            const matchText = line.match(/PRIVMSG #[a-zA-Z0-9_]+ :(.+)/);
-            if (!matchUser || !matchText) return;
-
-            const user = tags['display-name'] || matchUser[1];
-            const color = tags['color'] || '#9146FF';
-            const text = matchText[1].trim();
-            const d = new Date(tags['tmi-sent-ts'] ? parseInt(tags['tmi-sent-ts']) : Date.now());
-            const timestamp = d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-
-            const badges = [];
-            if (tags['badges']) {
-                tags['badges'].split(',').forEach(b => {
-                    const imgUrl = badgeAssets[b];
-                    if (imgUrl) {
-                        badges.push({ title: b.split('/')[0], img: imgUrl });
-                    } else {
-                        const [badgeName] = b.split('/');
-                        const fallbackKey = Object.keys(badgeAssets).find(k => k.startsWith(badgeName + '/'));
-                        if (fallbackKey) badges.push({ title: badgeName, img: badgeAssets[fallbackKey] });
-                    }
-                });
-            }
-
-            const html = buildHtml(text, tags['emotes']);
-            
-            const myName = (twitchUsername.value || '').toLowerCase();
-            const isMention = myName && text.toLowerCase().includes(`@${myName}`);
-
-            chatMessages.value.push({ timestamp, username: user, html, color, badges, isMention });
-            if (chatMessages.value.length > 200) chatMessages.value.shift();
-            if (currentTab.value === 'chat') scrollChatToBottom();
-            if (_persistEnabled) persistChatMessage({ username: user, color, text, badges });
-        };
-
-        let _persistQueue = Promise.resolve();
-        const persistChatMessage = (msg) => {
-            _persistQueue = _persistQueue.then(async () => {
-                try {
-                    await sbClient.from('twitch_chat_logs').insert({
-                        username: msg.username,
-                        color: msg.color,
-                        message: msg.text,
-                        badges: msg.badges || []
-                    });
-                    const { data: rows } = await sbClient
-                        .from('twitch_chat_logs')
-                        .select('id,created_at')
-                        .order('created_at', { ascending: false })
-                        .range(199, 200);
-                    if (rows && rows.length > 0) {
-                        await sbClient.from('twitch_chat_logs').delete().lt('created_at', rows[0].created_at);
-                    }
-                } catch(e) {}
-            });
-        };
-
-        const loadChatHistory = async () => {
-            const myName = (twitchUsername.value || '').toLowerCase();
-            
-            try {
-                const { data: logRows, error: logErr } = await sbClient
-                    .from('twitch_chat_logs')
-                    .select('username,message,color,badges,created_at')
-                    .gte('created_at', _chatSessionStart)
-                    .order('created_at', { ascending: true })
-                    .limit(150);
-                if (!logErr && logRows && logRows.length > 0) {
-                    logRows.forEach(row => {
-                        const d = new Date(row.created_at);
-                        const ts = d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-                        const badges = Array.isArray(row.badges) ? row.badges : [];
-                        const html = buildHtml(row.message || '', null);
-                        
-                        const isMention = myName && row.message && row.message.toLowerCase().includes(`@${myName}`);
-                        
-                        chatMessages.value.push({ timestamp: ts, username: row.username, html, color: row.color || '#9146FF', badges, isMention });
-                    });
-                    setTimeout(scrollChatToBottom, 150);
-                    _persistEnabled = true;
-                    return;
-                }
-            } catch(e) {}
-            try {
-                const res = await fetch('https://recent-messages.robotty.de/api/v2/recent-messages/codemiko');
-                const data = await res.json();
-                if (data && data.messages) {
-                    data.messages.slice(-50).forEach(raw => parseIrcMessage(raw));
-                    setTimeout(scrollChatToBottom, 150);
-                }
-            } catch(e) {}
-            _persistEnabled = true; 
-        };
-
-        const connectTwitchChat = () => {
-            if (twitchWs) { try { twitchWs.close(); } catch(e) {} }
-            wsAuthenticated = false;
-            twitchWs = new WebSocket('wss://irc-ws.chat.twitch.tv:443');
-            
-            twitchWs.onopen = () => {
-                twitchWs.send('CAP REQ :twitch.tv/tags twitch.tv/commands');
-                if (twitchChatToken.value && twitchUsername.value) {
-                    twitchWs.send(`PASS oauth:${twitchChatToken.value}`); 
-                    twitchWs.send(`NICK ${twitchUsername.value.toLowerCase()}`); 
-                } else {
-                    twitchWs.send('PASS oauth:anonymous'); 
-                    twitchWs.send('NICK justinfan12345'); 
-                }
-                twitchWs.send('JOIN #codemiko');
-                wsAuthenticated = true;
-            };
-            
-            twitchWs.onmessage = (e) => { 
-                e.data.split('\r\n').forEach(raw => { 
-                    if (!raw) return;
-                    if (raw.startsWith('PING')) { 
-                        twitchWs.send('PONG :tmi.twitch.tv'); 
-                    } else { 
-                        if (raw.includes('USERSTATE') || raw.includes('GLOBALUSERSTATE')) {
-                            let tags = {};
-                            const tagsPart = raw.split(' ')[0];
-                            if (tagsPart.startsWith('@')) {
-                                tagsPart.substring(1).split(';').forEach(t => { const [k, ...v] = t.split('='); tags[k] = v.join('='); });
-                                if (tags['badges']) {
-                                    const parsedBadges = [];
-                                    const rawBadgeStr = tags['badges'];
-                                    rawBadgeStr.split(',').forEach(b => { 
-                                        const imgUrl = badgeAssets[b]; 
-                                        if (imgUrl) {
-                                            parsedBadges.push({ title: b.split('/')[0], img: imgUrl });
-                                        } else {
-                                            const [badgeName] = b.split('/');
-                                            const fallbackKey = Object.keys(badgeAssets).find(k => k.startsWith(badgeName + '/'));
-                                            if (fallbackKey) parsedBadges.push({ title: badgeName, img: badgeAssets[fallbackKey] });
-                                        }
-                                    });
-                                    myTwitchBadges.value = parsedBadges;
-                                }
-                            }
-                        }
-                        parseIrcMessage(raw); 
-                    } 
-                }); 
-            };
-
-            twitchWs.onclose = () => {
-                wsAuthenticated = false;
-                setTimeout(() => {
-                    if (!wsAuthenticated) connectTwitchChat();
-                }, 3000);
-            };
-        };
-
-        const sendTwitchChatMessage = (msg) => {
-            if (!msg || !twitchWs || !wsAuthenticated) return;
-            twitchWs.send(`PRIVMSG #codemiko :${msg}`);
-            
-            const now = new Date();
-            const timestamp = now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-            
-            chatMessages.value.push({
-                timestamp,
-                username: twitchUsername.value,
-                html: buildHtml(msg, null),
-                color: localStorage.getItem('tw_user_color') || '#9146FF', 
-                badges: myTwitchBadges.value || []
-            });
-            
-            if (chatMessages.value.length > 200) chatMessages.value.shift();
-            scrollChatToBottom();
-        };
-
-        const disconnectTwitch = () => {
-            twitchChatToken.value = null; twitchUsername.value = null;
-            localStorage.removeItem('tw_chat_token'); localStorage.removeItem('tw_username'); localStorage.removeItem('tw_user_color');
-            myTwitchBadges.value = [];
-            loadChatHistory().then(() => connectTwitchChat());
-        };
-
-        // Fully Paginated Supabase Loader
+        // Fetches ONLY Custom emotes, paginated, exclusively for Gerald's brain.
         const loadEmotesFromSupabase = async () => {
             try {
                 let fetchMore = true;
@@ -1038,27 +760,20 @@ createApp({
                 while (fetchMore) {
                     const { data, error } = await sbClient
                         .from('emotes')
-                        .select('id,name,url,provider')
+                        .select('name,url')
                         .range(currentOffset, currentOffset + step - 1);
 
                     if (data && data.length > 0) {
                         data.forEach(item => {
-                            if (item.provider === 'twitch_badge') {
-                                if (item.url) { badgeAssets[item.id] = item.url; }
-                            } else {
-                                if (item.url) { customEmotes.value[item.name] = { url: item.url }; }
-                            }
+                            if (item.url) { customEmotes.value[item.name] = { url: item.url }; }
                         });
-                        
                         currentOffset += step;
-                        if (data.length < step) {
-                            fetchMore = false;
-                        }
+                        if (data.length < step) fetchMore = false;
                     } else {
                         fetchMore = false;
                     }
                 }
-            } catch (e) {}
+            } catch (e) { console.error("Database cache pipeline failed.", e); }
         };
 
         const testGeminiBrain = async () => {
@@ -1089,10 +804,7 @@ createApp({
             const contextHistory = geraldMessages.value.slice(-10).map(m => ({ role: m.role === 'gerald' ? 'model' : 'user', parts: [{ text: m.content }] }));
 
             sbClient.functions.invoke('gerald-chat', { 
-                body: { 
-                    history: contextHistory, 
-                    system_directive: getGeraldSystemDirective(customEmotes.value, gameObj.prompt) 
-                } 
+                body: { history: contextHistory, system_directive: getGeraldSystemDirective(customEmotes.value, gameObj.prompt) } 
             }).then(({ data, error }) => {
                 if (!error && data?.reply) {
                     let formattedReply = enforceGrammar(data.reply.trim());
@@ -1131,10 +843,7 @@ createApp({
 
             try {
                 const { data, error } = await sbClient.functions.invoke('gerald-chat', { 
-                    body: { 
-                        history: geminiHistory,
-                        system_directive: getGeraldSystemDirective(customEmotes.value)
-                    } 
+                    body: { history: geminiHistory, system_directive: getGeraldSystemDirective(customEmotes.value) } 
                 });
                 if (!error && data?.reply) {
                     let formattedReply = enforceGrammar(data.reply.trim());
@@ -1222,12 +931,8 @@ createApp({
             try {
                 const res = await fetch('https://decapi.me/twitch/uptime/codemiko');
                 isLive.value = !(await res.text()).includes('offline');
-                const gql = await fetch('https://gql.twitch.tv/gql', { 
-                    method: 'POST', 
-                    headers: { 'Client-ID': 'kimne78kx3ncx6brgo4mv6wki5h1ko' }, 
-                    body: JSON.stringify({ query: `query{user(login:"codemiko"){videos(first:10){edges{node{id createdAt}}}}}` }) 
-                });
-                const edges = (await gql.json()).data.user.videos.edges;
+                const gql = await fetch('https://yhxcuayiwqpjvalyrcqv.supabase.co/functions/v1/twitch-schedule');
+                const edges = (await gql.json()).data?.user?.videos?.edges || [];
                 recentVods.value = edges.map(e => ({ id: e.node.id, date: new Date(e.node.createdAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric' }).toUpperCase() }));
                 if (currentVodIndex.value === 0 || currentVodIndex.value === -1) currentVodIndex.value = isLive.value ? -1 : 0;
             } catch {}
@@ -1239,24 +944,6 @@ createApp({
             document.documentElement.style.overflow = 'hidden';
 
             updateThemeClass();
-            
-            const redirectUri = encodeURIComponent('https://meowoccino.github.io/MikoTok/');
-            twitchAuthUrl.value = `https://id.twitch.tv/oauth2/authorize?client_id=${TWITCH_PUBLIC_CLIENT_ID}&redirect_uri=${redirectUri}&response_type=token&scope=chat:read+chat:edit&force_verify=true`;
-
-            if (window.location.hash.includes('access_token')) {
-                const params = new URLSearchParams(window.location.hash.substring(1));
-                if (params.get('access_token')) { 
-                    twitchChatToken.value = params.get('access_token'); 
-                    localStorage.setItem('tw_chat_token', twitchChatToken.value); 
-                    window.location.hash = '#chat'; 
-                }
-            }
-
-            document.addEventListener('visibilitychange', () => {
-                if (document.visibilityState === 'visible' && (!twitchWs || twitchWs.readyState === WebSocket.CLOSED)) {
-                    loadChatHistory().then(() => connectTwitchChat());
-                }
-            });
 
             sbClient.auth.getSession().then(({ data: sessionData }) => {
                 if (sessionData?.session?.user) currentUser.value = sessionData.session.user;
@@ -1277,38 +964,14 @@ createApp({
                 }
             });
 
-            loadEmotesFromSupabase().then(() => {
-                if (twitchChatToken.value) {
-                    fetch('https://id.twitch.tv/oauth2/validate', { headers: { 'Authorization': 'OAuth ' + twitchChatToken.value } })
-                        .then(r => r.json())
-                        .then(d => { 
-                            if (d.login) { 
-                                twitchUsername.value = d.login; 
-                                localStorage.setItem('tw_username', d.login); 
-                                
-                                fetch(`https://decapi.me/twitch/avatar_color/${d.login}`)
-                                    .then(res => res.text())
-                                    .then(color => {
-                                        let cleanColor = color.trim();
-                                        if(!cleanColor.startsWith('#')) cleanColor = '#9146FF';
-                                        localStorage.setItem('tw_user_color', cleanColor);
-                                    }).catch(() => {});
-
-                                connectTwitchChat(); 
-                            } else disconnectTwitch(); 
-                        })
-                        .catch(() => connectTwitchChat()); 
-                } else connectTwitchChat();
-
-                Promise.all([
-                    loadChatHistory(),
-                    loadData(false),
-                    checkLive(),
-                    testGeminiBrain()
-                ]).then(() => {
-                    splashOpacity.value = 0; 
-                    setTimeout(() => { splashVisible.value = false; }, 300);
-                });
+            Promise.all([
+                loadEmotesFromSupabase(),
+                loadData(false),
+                checkLive(),
+                testGeminiBrain()
+            ]).then(() => {
+                splashOpacity.value = 0; 
+                setTimeout(() => { splashVisible.value = false; }, 300);
             });
 
             setInterval(() => {
@@ -1318,7 +981,7 @@ createApp({
         });
 
         return {
-            hostname, splashVisible, splashOpacity, currentTab, tabOffset, appTheme, toggleTheme, clips, allClipsCount, modals, isLive, currentUser, loginEmail, loginPass, loginError, showLoginPopup, geraldInput, geraldMessages, isGeraldTyping, talkToGerald, handleGeraldEnter, syncState, wipeState, logoutState, nukeState, isHeaderVisible, handleScroll, currentFilter, activeFilterLabel, isFilterMenuOpen, closeFilterMenu, applyFilter, parseMarkdown: (text) => buildHtml(text, null), recentVods, currentVodIndex, nextVod, prevVod, customEmotes, showEmotePicker, insertEmote, toggleEmotes, toggleMinigames, closePickers, nukeCache, activeClipId, switchTab, playClip, selectedClip, showMinigames, runSync, disconnectTwitch, triggerAiMinigame, geminiStatus, sysStats, chatMessages, twitchChatToken, twitchAuthUrl, twitchUsername, sendTwitchChatMessage, handleSwipeStart, handleSwipeEnd, handleModalTouchStart, handleModalTouchMove, handleModalTouchEnd, clearGeraldHistory,
+            hostname, splashVisible, splashOpacity, currentTab, tabOffset, appTheme, toggleTheme, clips, allClipsCount, modals, isLive, currentUser, loginEmail, loginPass, loginError, geraldInput, geraldMessages, isGeraldTyping, talkToGerald, handleGeraldEnter, syncState, wipeState, logoutState, nukeState, isHeaderVisible, handleScroll, currentFilter, activeFilterLabel, isFilterMenuOpen, closeFilterMenu, applyFilter, recentVods, currentVodIndex, nextVod, prevVod, customEmotes, showEmotePicker, insertEmote, toggleEmotes, toggleMinigames, closePickers, nukeCache, activeClipId, switchTab, playClip, selectedClip, showMinigames, runSync, triggerAiMinigame, geminiStatus, sysStats, handleSwipeStart, handleSwipeEnd, handleModalTouchStart, handleModalTouchMove, handleModalTouchEnd, clearGeraldHistory,
             logoSvg: (id) => `<svg viewBox="0 0 100 100"><defs><linearGradient id="grad-${id}" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stop-color="#9146FF"/><stop offset="100%" stop-color="#a970ff"/></linearGradient></defs><circle cx="50" cy="50" r="40" fill="url(#grad-${id})"/><path d="M 33 38 L 48 62 L 62 38 L 62 55 Q 62 65 69 64" fill="none" stroke="#ffffff" stroke-width="8" stroke-linecap="round" stroke-linejoin="round"/></svg>`,
             handleLogin: async () => { 
                 loginError.value = '';
@@ -1345,7 +1008,6 @@ createApp({
                             geraldMessages.value = hist.map(r => ({ role: r.role, content: r.content })); 
                             setTimeout(() => { const b = document.getElementById('gerald-msgs'); if (b) b.scrollTop = b.scrollHeight; }, 300);
                         }
-                        await loadChatHistory();
                     } 
                 } catch (err) {
                     loginError.value = 'System Error. Please try again.';
