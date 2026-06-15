@@ -10,8 +10,8 @@ styleReset.innerHTML = `
     .nav-slide-enter-from, .nav-slide-leave-to { transform: translateX(100%); }
     .sub-view-overlay { position: absolute; top:0; left:0; right:0; bottom:0; background: var(--bg-color); z-index: 50; overflow-y: auto; padding: 20px 16px; box-sizing: border-box; }
     
-    /* Erases the ugly grey line hovering above the navbar */
-    .bottom-nav { border-top: none !important; box-shadow: 0 -2px 10px rgba(0,0,0,0.05) !important; margin-top: -1px; }
+    /* Navbar override to delete the phantom line */
+    .bottom-nav { border-top: none !important; box-shadow: none !important; margin-top: 0; }
 `;
 document.head.appendChild(styleReset);
 
@@ -104,7 +104,7 @@ const BottomNav = {
                 <span class="material-symbols-rounded">menu</span><span class="nav-label">More</span>
             </div>
             <div class="nav-item" :class="{ active: currentTab === 'tomato' }" @click="$emit('change-tab', 'tomato')">
-                <svg viewBox="0 0 24 24" style="width:24px; height:24px; fill:none; stroke:currentColor; stroke-width:2; stroke-linecap:round; stroke-linejoin:round; margin-bottom:4px;">
+                <svg viewBox="0 0 24 24" style="width:24px; height:24px; fill:none; stroke:currentColor; stroke-width:2; stroke-linecap:round; stroke-linejoin:round;">
                     <ellipse cx="12" cy="15" rx="8.5" ry="7.5" />
                     <path d="M12 7.5V3" />
                     <path d="M8.5 4.5c1 1 3.5 1 3.5 3" />
@@ -346,7 +346,6 @@ const TomatoView = {
                 <div style="color:var(--text-muted); font-size:14px; margin-top:4px;">App Developer & Animal Rescuer</div>
             </div>
 
-            <!-- Horizontal Support Grid at the Top -->
             <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; margin-bottom: 24px;">
                 <a href="https://www.paypal.me/meowoccino" target="_blank" style="background: var(--card-bg); border: 1px solid var(--border-color); border-radius: 12px; padding: 12px 4px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 8px; text-decoration: none; color: var(--text-main); font-weight: 700; font-size: 13px;">
                     <svg viewBox="0 0 24 24" style="width: 28px; height: 28px;">
@@ -450,19 +449,17 @@ const MoreView = {
         onMounted(async () => {
             sbClient.from('channel_stats').select('*').eq('id', 1).single().then(({data}) => {
                 if (data) {
-                    const isMonday = new Date().getDay() === 1;
-                    
-                    let hoursStr = data.week_hours && data.week_hours !== '0' ? data.week_hours.toString().replace(/ hours/i, '').trim() : '24.5';
-                    let daysStr = data.week_days && data.week_days !== '0' ? data.week_days.toString().replace(/ days \/ week/i, '').replace(/ days/i, '').trim() : '4';
+                    let hoursStr = data.week_hours != null ? data.week_hours.toString().replace(/ hours/i, '').trim() : '0';
+                    let daysStr = data.week_days != null ? data.week_days.toString().replace(/ days \/ week/i, '').replace(/ days/i, '').trim() : '0';
 
                     channelStats.value = {
                         followers: data.followers || '899K',
-                        total_views: data.total_views && data.total_views !== '0' ? data.total_views : '215M',
-                        peak_viewers: data.peak_viewers && data.peak_viewers !== '0' ? data.peak_viewers : '25,017',
+                        total_views: data.total_views || '215M',
+                        peak_viewers: data.peak_viewers || '25,017',
                         account_created: data.account_created || 'Mar 17, 2020',
-                        week_hours: isMonday ? '0 Hours' : `${hoursStr} Hours`,
-                        week_category: isMonday ? 'TBD' : (data.week_category || 'Just Chatting'),
-                        week_days: isMonday ? '0 days' : `${daysStr} days`
+                        week_hours: `${hoursStr} Hours`,
+                        week_category: data.week_category || 'TBD',
+                        week_days: `${daysStr} days`
                     };
                 }
             });
@@ -547,8 +544,6 @@ const MoreView = {
                     <span style="color: var(--text-main); font-size: 14px; font-weight: 600; margin-left: 12px;">Discord</span>
                     <span class="material-symbols-rounded" style="color: var(--text-muted); margin-left: auto; font-size: 20px;">open_in_new</span>
                 </a>
-                
-                <!-- Classic Flat Reddit Snoo -->
                 <a href="https://www.reddit.com/r/CodeMiko/" target="_blank" style="display: flex; align-items: center; width: 100%; box-sizing: border-box; padding: 0 16px; border-radius: 12px; min-height: 48px; background: var(--card-bg); text-decoration: none; margin-bottom: 8px;">
                     <svg viewBox="0 0 24 24" style="width: 22px; height: 22px; fill: #FF4500;">
                         <circle cx="12" cy="12" r="12" />
@@ -819,7 +814,11 @@ createApp({
                 while (fetchMore) {
                     const { data } = await sbClient.from('emotes').select('name,url').range(currentOffset, currentOffset + step - 1);
                     if (data && data.length > 0) {
-                        data.forEach(item => { if (item.url) { customEmotes.value[item.name] = { url: item.url }; } });
+                        data.forEach(item => { 
+                            if (item.url && !item.name.includes('!')) { 
+                                customEmotes.value[item.name] = { url: item.url }; 
+                            } 
+                        });
                         currentOffset += step;
                         if (data.length < step) fetchMore = false;
                     } else { fetchMore = false; }
