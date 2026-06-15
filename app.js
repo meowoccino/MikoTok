@@ -14,7 +14,7 @@ document.head.appendChild(styleReset);
 
 const parseMarkdownText = (text, emotesMap) => {
     if (!text) return ''; 
-    let html = text.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+    let html = text.replace(/&/g, '&').replace(/</g, '<').replace(/>/g, '>');
     html = html.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>').replace(/\*(.*?)\*/g, '<em>$1</em>');
     
     const urlPattern = /(\b(https?|ftp|file):\/\/[-A-Z0-9+&@#\/%?=~_|!:,.;]*[-A-Z0-9+&@#\/%=~_|])/ig;
@@ -207,7 +207,6 @@ const ChatView = {
             <div style="position: absolute; left: 0; top: 0; bottom: 0; width: 15px; z-index: 1000; background: transparent;"></div>
             <div style="position: absolute; right: 0; top: 0; bottom: 0; width: 15px; z-index: 1000; background: transparent;"></div>
 
-            <!-- Adjusted to -45px with precise color backing to pull the stream chat up flush against the view bound -->
             <div style="flex: 1; overflow: hidden; position: relative; width: 100%; height: 100%; background: var(--bg-color); margin-top: 0px;">
                 <iframe 
                     :src="chatUrl" 
@@ -353,7 +352,7 @@ const MoreView = {
             total_views: '...', 
             peak_viewers: '...', 
             account_created: '...',
-            active_subs: '...', 
+            week_hours: '...', 
             week_category: '...', 
             week_days: '...'
         });
@@ -401,7 +400,7 @@ const MoreView = {
                         total_views: data.total_views && data.total_views !== '0' ? data.total_views : '215M',
                         peak_viewers: data.peak_viewers && data.peak_viewers !== '0' ? data.peak_viewers : '25,017',
                         account_created: data.account_created || 'Mar 17, 2020',
-                        active_subs: data.active_subs || '5.4 Hours',
+                        week_hours: data.week_hours && data.week_hours !== '0' ? data.week_hours : '24.5',
                         week_category: data.week_category || 'Just Chatting',
                         week_days: data.week_days && data.week_days !== '0' ? data.week_days : '4'
                     };
@@ -584,9 +583,9 @@ const MoreView = {
                     <div style="font-size:12px; font-weight:bold; color:var(--primary); margin: 24px 0 12px 8px; text-transform:uppercase;">Weekly Stats</div>
                     
                     <div style="display: flex; flex-direction: column; gap: 8px;">
-                        <div style="background: var(--card-bg); padding: 12px 16px; border-radius: 10px; display: flex; justify-content: space-between; font-size: 14px; color: var(--text-muted); border: 1px solid var(--border-color);"><span>Avg Stream Duration</span><strong style="color: var(--text-main);">{{ channelStats.active_subs }}</strong></div>
+                        <div style="background: var(--card-bg); padding: 12px 16px; border-radius: 10px; display: flex; justify-content: space-between; font-size: 14px; color: var(--text-muted); border: 1px solid var(--border-color);"><span>Hours Streamed</span><strong style="color: var(--text-main);">{{ channelStats.week_hours }} Hours</strong></div>
                         <div style="background: var(--card-bg); padding: 12px 16px; border-radius: 10px; display: flex; justify-content: space-between; font-size: 14px; color: var(--text-muted); border: 1px solid var(--border-color);"><span>Top Category</span><strong style="color: var(--text-main);">{{ channelStats.week_category }}</strong></div>
-                        <div style="background: var(--card-bg); padding: 12px 16px; border-radius: 10px; display: flex; justify-content: space-between; font-size: 14px; color: var(--text-muted); border: 1px solid var(--border-color);"><span>Active Days</span><strong style="color: var(--text-main);">{{ channelStats.week_days }}</strong></div>
+                        <div style="background: var(--card-bg); padding: 12px 16px; border-radius: 10px; display: flex; justify-content: space-between; font-size: 14px; color: var(--text-muted); border: 1px solid var(--border-color);"><span>Active Days</span><strong style="color: var(--text-main);">{{ channelStats.week_days }} days / week</strong></div>
                     </div>
                 </div>
             </transition>
@@ -597,7 +596,7 @@ const MoreView = {
 const HomeView = {
     props: ['currentTab', 'currentVodIndex', 'recentVods', 'isLive', 'hostname', 'clips', 'activeFilterLabel', 'optimizeTwitchImg', 'formatViews', 'formatDate', 'activeClipId'],
     template: `
-        <div style="flex: 1; overflow-y: auto; overscroll-behavior-y: contain; -webkit-overflow-scrolling: touch; padding-bottom: 20px;" @scroll="$emit('home-scroll', $event)" id="home-scroll-element">
+        <div style="padding-bottom: 20px;" id="home-scroll-element">
             <div class="hero-section">
                 <div class="header-controls" style="margin-bottom:12px; display:flex;">
                     <div :class="['premium-badge', isLive ? 'live-badge' : 'vod']">
@@ -682,7 +681,6 @@ createApp({
         const sysStats = ref({ cpu: 23, mem: 1.8, temp: 74 });
 
         const activeClipId = ref(null);
-        const currentClipOffset = ref(0);
         const isLoadingMore = ref(false);
         const allClipsLoaded = ref(false);
         
@@ -786,10 +784,12 @@ createApp({
         };
         
         const loadData = async (isLoadMore = false) => {
-            if (isLoadingMore.value || allClipsLoaded.value) return; isLoadingMore.value = true;
+            if (isLoadingMore.value || allClipsLoaded.value) return; 
+            isLoadingMore.value = true;
             try {
                 if (!isLoadMore) {
-                    currentClipOffset.value = 0; allClipsLoaded.value = false; allClips.value = [];
+                    allClipsLoaded.value = false; 
+                    allClips.value = [];
                 }
                 
                 let query = sbClient.from('clips').select('*');
@@ -809,11 +809,30 @@ createApp({
                     query = query.order('view_count', { ascending: false });
                 }
 
-                const fetchAmount = isLoadMore ? 25 : 24;
-                const { data: c } = await query.range(currentClipOffset.value, currentClipOffset.value + fetchAmount);
-                if (c && c.length > 0) { allClips.value.push(...c); currentClipOffset.value += fetchAmount + 1; clips.value = allClips.value; }
-                else { allClipsLoaded.value = true; }
-            } catch {} finally { isLoadingMore.value = false; }
+                const startOffset = allClips.value.length;
+                const fetchAmount = 24; 
+                
+                const { data: c, error } = await query.range(startOffset, startOffset + fetchAmount);
+                
+                if (error) {
+                    console.error("Supabase Fetch Error:", error);
+                    throw error; 
+                }
+
+                if (c && c.length > 0) { 
+                    allClips.value.push(...c); 
+                    clips.value = allClips.value; 
+                    if (c.length < fetchAmount + 1) {
+                        allClipsLoaded.value = true;
+                    }
+                } else { 
+                    allClipsLoaded.value = true; 
+                }
+            } catch (err) {
+                console.error("Failed to load clips:", err);
+            } finally { 
+                isLoadingMore.value = false; 
+            }
         };
 
         const handleScroll = (e) => {
@@ -825,7 +844,7 @@ createApp({
             }
             lastScrollTop = st <= 0 ? 0 : st;
 
-            if (e.target.scrollHeight - e.target.scrollTop - e.target.clientHeight < 200) { 
+            if (e.target.scrollHeight - e.target.scrollTop - e.target.clientHeight < 600) { 
                 if (currentTab.value === 'home') loadData(true); 
             }
         };
@@ -981,8 +1000,7 @@ createApp({
             closeFilterMenu: () => { isFilterMenuOpen.value = false; },
             applyFilter: (key, label) => {
                 currentFilter.value = key; activeFilterLabel.value = label; isFilterMenuOpen.value = false;
-                allClipsLoaded.value = false; allClips.value = []; clips.value = []; currentClipOffset.value = 0;
-                isLoadingMore.value = false; // cancel any in-progress load so new filter isn't blocked
+                allClipsLoaded.value = false; allClips.value = [];
                 loadData(false);
             },
             prevVod: () => { if (currentVodIndex.value > (isLive.value ? -1 : 0)) currentVodIndex.value--; },
