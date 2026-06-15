@@ -743,7 +743,7 @@ createApp({
         const recentVods = ref([]), currentVodIndex = ref(0);
         const selectedClip = ref(null);
 
-        const tabOrder = ['home', 'chat', 'gerald', 'tomato', 'more'];
+        const tabOrder = ['home', 'chat', 'gerald', 'more', 'tomato'];
         const initialTabIdx = tabOrder.indexOf(tabs.includes(window.location.hash.replace('#','')) ? window.location.hash.replace('#','') : 'home');
         
         // Math calculation fixed to 20% increments for 5 total tabs!
