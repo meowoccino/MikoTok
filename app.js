@@ -224,6 +224,8 @@ const GeraldMinigames = {
     data() {
         return {
             gameDeck: [
+                { id: 'whiskey', label: '🥃 Give Whiskey', prompt: 'You were just given a glass of high-grade whiskey. Acknowledge your processors are lubricated, overclocked, and highly unstable.' },
+                { id: 'taco', label: '🌮 Taco Bell', prompt: 'You received a cheesy gordita crunch and a baja blast. Express absolute mechanical delight and claim your internal database structures are fully optimized.' },
                 { id: 'glitch', label: '🕶️ Glitch Persona', prompt: 'Glitch persona override activated. Act broken, hyper-cynical, and target the stream layout!' },
                 { id: 'shader', label: '🔥 Compile UE5', prompt: 'Compilation error simulation. Complain aggressively about system lag, hardware resources, and VRAM limits.' },
                 { id: 'boba', label: '🥤 Boba Spill', prompt: 'Critical emergency alert! Sticky tapioca fluid has entered your cooling fans. React with mechanical panic!' },
@@ -534,7 +536,6 @@ const MoreView = {
                 </a>
             </div>
 
-            <!-- Native Slide Overlay for About Page -->
             <transition name="nav-slide">
                 <div v-if="activeSubView === 'about'" class="sub-view-overlay">
                     <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 24px; font-size: 18px; font-weight: bold; color: var(--text-main);">
@@ -556,7 +557,6 @@ const MoreView = {
                 </div>
             </transition>
 
-            <!-- Native Slide Overlay for Channels Statistics Page -->
             <transition name="nav-slide">
                 <div v-if="activeSubView === 'stats'" class="sub-view-overlay">
                     <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 24px; font-size: 18px; font-weight: bold; color: var(--text-main);">
