@@ -704,6 +704,9 @@ createApp({
             document.documentElement.style.backgroundColor = isDark ? '#0d0d11' : '#f8f9fa';
             document.body.style.backgroundColor = isDark ? '#0d0d11' : '#f8f9fa';
             
+            // CRITICAL SYSTEM OVERLAY FIX: Inverts Android's native bottom keys theme
+            document.documentElement.style.colorScheme = isDark ? 'dark' : 'light';
+            
             let metaTheme = document.querySelector('meta[name="theme-color"]');
             if (!metaTheme) {
                 metaTheme = document.createElement('meta');
