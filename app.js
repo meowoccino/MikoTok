@@ -582,6 +582,7 @@ const MoreView = {
                 </a>
             </div>
 
+            <!-- Native Slide Overlay for About Page -->
             <transition name="nav-slide">
                 <div v-if="activeSubView === 'about'" class="sub-view-overlay">
                     <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 24px; font-size: 18px; font-weight: bold; color: var(--text-main);">
@@ -603,6 +604,7 @@ const MoreView = {
                 </div>
             </transition>
 
+            <!-- Native Slide Overlay for Channels Statistics Page -->
             <transition name="nav-slide">
                 <div v-if="activeSubView === 'stats'" class="sub-view-overlay">
                     <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 24px; font-size: 18px; font-weight: bold; color: var(--text-main);">
@@ -1013,3 +1015,4 @@ createApp({
         };
     }
 }).mount('#app-container');
+
