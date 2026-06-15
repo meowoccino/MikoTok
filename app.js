@@ -101,8 +101,9 @@ const BottomNav = {
                 <span class="material-symbols-rounded">menu</span><span class="nav-label">More</span>
             </div>
             <div class="nav-item" :class="{ active: currentTab === 'tomato' }" @click="$emit('change-tab', 'tomato')">
-                <svg viewBox="0 0 24 24" style="width:24px; height:24px; fill:currentColor; margin-bottom:4px;">
-                    <path d="M12.1 2C10.7 2 9.5 2.9 9.1 4.2 8.7 3.8 8.1 3.5 7.5 3.5 6.1 3.5 5 4.6 5 6c0 .7.3 1.4.7 1.8C4.1 8.9 3 10.9 3 13.3c0 4.1 3.6 7.7 8.3 8.2 1.4.1 2.8 0 4.1-.5 3.8-1.5 6.1-5.4 5.6-9.5-.4-3.3-2.8-6-6.1-6.8C14.7 4.2 14.5 4 14.2 4 13.9 4 13.7 4.1 13.5 4.3 13.3 3 12.8 2 12.1 2zm0 1.5c.3 0 .6.4.8 1.1l-1.3 1.3C11.5 4.7 11.7 3.5 12.1 3.5zm-4.6.5c.6 0 1 .4 1 1 0 .6-.4 1-1 1s-1-.4-1-1 .4-1 1-1z"/>
+                <svg viewBox="0 0 24 24" style="width:24px; height:24px; fill:none; stroke:currentColor; stroke-width:2; stroke-linecap:round; stroke-linejoin:round;">
+                    <circle cx="12" cy="13.5" r="7" />
+                    <path d="M12 6.5V3.5M12 6.5c-1-1.2-2.5-1.2-2.5-1.2M12 6.5c1-1.2 2.5-1.2 2.5-1.2" />
                 </svg>
                 <span class="nav-label">tomato_24</span>
             </div>
@@ -242,7 +243,7 @@ const GeraldMinigames = {
                 { id: 'bald', label: '🧑\u200D🦲 Delete Hair', prompt: 'Direct vertex asset manipulation. Optimize engine loads by deleting the technician\'s hair mesh layers. Laugh at her baldness.' },
                 { id: 'siren', label: '🚨 Siren Alert', prompt: 'Decibel threshold exceeded! The technician is screaming like a high-frequency emergency vehicle. Complain about ear structural damage.' },
                 { id: 'fart', label: '💨 Fart Reverb', prompt: 'Auditory anomaly detected. A highly reverberated flatulence sound effect played. React with absolute mechanical disgust.' },
-                { id: 'mocap', label: '💃 Scuffed Suit', prompt: 'Mocap data corruption. Her virtual limbs are twisting unnaturally. Mock the cheap tracking hardware.' },
+                { id: 'mocap', label: '💃 Scuffed Suit', stroke: 'Mocap data corruption. Her virtual limbs are twisting unnaturally. Mock the cheap tracking hardware.' },
                 { id: 'bsod', label: '🖥️ Blue Screen', prompt: 'Simulating Blue Screen of Death. Initiate forced shutdown sequence text with cryptic hexadecimal error codes.' },
                 { id: 'archie', label: '🐕 Archie Bark', prompt: 'Loud canine vocalization detected. Complain about the German Shepherd threatening to chew your ethernet cables.' },
                 { id: 'ban', label: '🔨 Ban Human', prompt: 'A human in chat said something incredibly stupid. Threaten to ban them and wipe their IP address from existence.' },
@@ -360,7 +361,7 @@ const TomatoView = {
             </a>
 
             <a href="https://revolut.me/tomato24" target="_blank" style="display: flex; align-items: center; width: 100%; box-sizing: border-box; padding: 0 16px; border-radius: 12px; min-height: 48px; background: var(--card-bg); text-decoration: none; margin-bottom: 24px; border: 1px solid var(--border-color);">
-                <svg viewBox="0 0 24 24" style="width: 22px; height: 22px; color: var(--text-main); fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round;"><circle cx="12" cy="12" r="10"/><path d="M12 16V8M9 11h6"/></svg>
+                <svg viewBox="0 0 24 24" style="width: 22px; height: 22px; fill: currentColor;"><path d="M4 2h7.5c3.58 0 6.5 2.92 6.5 6.5 0 2.27-1.17 4.27-2.94 5.46L20 22h-5.25l-4.13-7H8v7H4V2zm4 4v5h3.5c1.38 0 2.5-1.12 2.5-2.5S12.88 6 11.5 6H8z"/></svg>
                 <span style="color: var(--text-main); font-size: 14px; font-weight: 600; margin-left: 12px;">Revolut</span>
                 <span class="material-symbols-rounded" style="color: var(--text-muted); margin-left: auto; font-size: 20px;">open_in_new</span>
             </a>
@@ -541,7 +542,7 @@ const MoreView = {
                     <span class="material-symbols-rounded" style="color: var(--text-muted); margin-left: auto; font-size: 20px;">open_in_new</span>
                 </a>
                 <a href="https://www.reddit.com/r/CodeMiko/" target="_blank" style="display: flex; align-items: center; width: 100%; box-sizing: border-box; padding: 0 16px; border-radius: 12px; min-height: 48px; background: var(--card-bg); text-decoration: none; margin-bottom: 8px;">
-                    <svg viewBox="0 0 24 24" style="width: 22px; height: 22px; color: #FF4500;"><path fill="currentColor" d="M12 0A12 12 0 0 0 0 12a12 12 0 0 0 12 12 12 12 0 0 0 12-12A12 12 0 0 0 12 0zm5.01 4.744c.688 0 1.25.561 1.25 1.249a1.25 1.25 0 0 1-2.498.056l-2.597-.547-.8 3.747c1.824.07 3.48.632(12.0614 0)4.674 1.488.308-.309.73-.491 1.207-.491.968 0 1.754.786 1.754 1.754 0 .716-.435 1.333-1.01 1.614a3.111 3.111 0 0 1 .042.52c0 2.694-3.13 4.87-7.004 4.87-3.874 0-7.004-2.176-7.004-4.87 0-.183.015-.366.043-.534A1.748 1.748 0 0 1 4.028 12c0-.968.786-1.754 1.754-1.754.463 0 .883.175 1.188.467 1.226-.883 2.936-1.465 4.814-1.527l.881-4.122c.045-.205.244-.343.454-.301l2.97 6.225a1.26 1.26 0 0 1 1.171-.644zm-9.046 5.86c-.732 0-1.325.592-1.325 1.324s.593 1.325 1.325 1.325 1.325-.593 1.325-1.325-.593-1.324-1.325-1.324zm6.062 0c-.732 0-1.325.592-1.325 1.324s.593 1.325 1.325 1.325 1.325-.593 1.325-1.325-.593-1.324-1.325-1.324zm-3.031 4.846c-1.334 0-2.584-.339-3.356-.918a.382.382 0 0 0-.533.053.38.38 0 0 0 .052.533c.96.711 2.385 1.096 3.837 1.096 1.45 0 2.875-.385 3.836-1.096a.38.38 0 0 0 .053-.533.382.382 0 0 0-.534-.053c-.771.579-2.02.918-3.355.918z"/></svg>
+                    <svg viewBox="0 0 24 24" style="width: 22px; height: 22px; color: #FF4500;"><path fill="currentColor" d="M12 0A12 12 0 0 0 0 12a12 12 0 0 0 12 12 12 12 0 0 0 12-12A12 12 0 0 0 12 0zm5.01 4.744c.688 0 1.25.561 1.25 1.249a1.25 1.25 0 0 1-2.498.056l-2.597-.547-.8 3.747c1.824.07 3.48.632c1.207-.491.968 0 1.754.786 1.754 1.754 0 .716-.435 1.333-1.01 1.614a3.111 3.111 0 0 1 .042.52c0 2.694-3.13 4.87-7.004 4.87-3.874 0-7.004-2.176-7.004-4.87 0-.183.015-.366.043-.534A1.748 1.748 0 0 1 4.028 12c0-.968.786-1.754 1.754-1.754.463 0 .883.175 1.188.467 1.226-.883 2.936-1.465 4.814-1.527l.881-4.122c.045-.205.244-.343.454-.301l2.97 6.225a1.26 1.26 0 0 1 1.171-.644zm-9.046 5.86c-.732 0-1.325.592-1.325 1.324s.593 1.325 1.325 1.325 1.325-.593 1.325-1.325-.593-1.324-1.325-1.324zm6.062 0c-.732 0-1.325.592-1.325 1.324s.593 1.325 1.325 1.325 1.325-.593 1.325-1.325-.593-1.324-1.325-1.324zm-3.031 4.846c-1.334 0-2.584-.339-3.356-.918a.382.382 0 0 0-.533.053.38.38 0 0 0 .052.533c.96.711 2.385 1.096 3.837 1.096 1.45 0 2.875-.385 3.836-1.096a.38.38 0 0 0 .053-.533.382.382 0 0 0-.534-.053c-.771.579-2.02.918-3.355.918z"/></svg>
                     <span style="color: var(--text-main); font-size: 14px; font-weight: 600; margin-left: 12px;">Reddit</span>
                     <span class="material-symbols-rounded" style="color: var(--text-muted); margin-left: auto; font-size: 20px;">open_in_new</span>
                 </a>
@@ -556,7 +557,7 @@ const MoreView = {
                     <span class="material-symbols-rounded" style="color: var(--text-muted); margin-left: auto; font-size: 20px;">open_in_new</span>
                 </a>
                 <a href="https://www.tiktok.com/@codemiko" target="_blank" style="display: flex; align-items: center; width: 100%; box-sizing: border-box; padding: 0 16px; border-radius: 12px; min-height: 48px; background: var(--card-bg); text-decoration: none; margin-bottom: 8px;">
-                    <svg viewBox="0 0 24 24" style="width: 22px; height: 22px; color: var(--text-main);"><path fill="currentColor" d="M12.53.02C13.84 0 15.14.01 16.44 0c.08 1.53.63 3.09 1.75 4.17 1.12 1.11 2.7 1.62 4.24 1.79v4.03c-1.44-.05-2.89-.35-4.2-.97-.57-.26-1.1-.59-1.62-.93-.01 2.92.01 5.84-.02 8.75-.08 1.4-.54 2.79-1.35 3.94-1.31 1.92-3.58 3.17-5.91 3.21-1.43.08-2.86-.31-4.08-1.03-2.02-1.12-3.44-3.17-3.64-5.41-.02-.21-.02-.41-.02-.62.07-1.44.62-2.83 1.51-3.89 1.05-1.25 2.55-2.06 4.15-2.28 1.1-.15 2.23-.04 3.27.35v4.06c-.34-.13-.7-.2-1.07-.22-.92-.04-1.84.28-2.51.86-.67.57-1.08 1.4-1.1 2.31-.01.91.38 1.77 1.03 2.38.65.61 1.56.93 2.49.88.92-.04 1.78-.45 2.38-1.11.58-.65.88-1.54.88-2.45V.02h-.03z"/></svg>
+                    <svg viewBox="0 0 24 24" style="width: 22px; height: 22px; color: var(--text-main);"><path fill="currentColor" d="M12.53.02C13.84 0 15.14.01 16.44 0c.08 1.53.63 3.09 1.75 4.17 1.12 1.11 2.7 1.62 4.24 1.79v4.03c-1.44-.05-2.89-.35-4.20-.97-.57-.26-1.1-.59-1.62-.93-.01 2.92.01 5.84-.02 8.75-.08 1.4-.54 2.79-1.35 3.94-1.31 1.92-3.58 3.17-5.91 3.21-1.43.08-2.86-.31-4.08-1.03-2.02-1.12-3.44-3.17-3.64-5.41-.02-.21-.02-.41-.02-.62.07-1.44.62-2.83 1.51-3.89 1.05-1.25 2.55-2.06 4.15-2.28 1.1-.15 2.23-.04 3.27.35v4.06c-.34-.13-.7-.2-1.07-.22-.92-.04-1.84.28-2.51.86-.67.57-1.08 1.4-1.1 2.31-.01.91.38 1.77 1.03 2.38.65.61 1.56.93 2.49.88.92-.04 1.78-.45 2.38-1.11.58-.65.88-1.54.88-2.45V.02h-.03z"/></svg>
                     <span style="color: var(--text-main); font-size: 14px; font-weight: 600; margin-left: 12px;">TikTok</span>
                     <span class="material-symbols-rounded" style="color: var(--text-muted); margin-left: auto; font-size: 20px;">open_in_new</span>
                 </a>
@@ -696,7 +697,7 @@ const sbClient = supabase.createClient('https://yhxcuayiwqpjvalyrcqv.supabase.co
 createApp({
     components: { SplashScreen, AppHeader, BottomNav, FilterMenu, ProfileModal, ClipModal, ChatView, GeraldMinigames, GeraldView, TomatoView, MoreView, HomeView },
     setup() {
-        const tabs = ['home', 'chat', 'gerald', 'tomato', 'more'];
+        const tabs = ['home', 'chat', 'gerald', 'more', 'tomato'];
         const initialHash = window.location.hash.replace('#', '');
         const currentTab = ref(tabs.includes(initialHash) ? initialHash : 'home');
         
@@ -740,13 +741,13 @@ createApp({
         const geraldInput = ref(''), geraldMessages = ref([{ role: 'gerald', content: '' }]);
         const isGeraldTyping = ref(false), showEmotePicker = ref(false), showMinigames = ref(false);
         const currentFilter = ref('latest'), activeFilterLabel = ref('Latest'), isFilterMenuOpen = ref(false);
-        const recentVods = ref([]), currentVodIndex = ref(0);
+        const recent Vods = ref([]), currentVodIndex = ref(0);
         const selectedClip = ref(null);
 
+        // Core hierarchy strictly reordered to perfectly match user frame layouts
         const tabOrder = ['home', 'chat', 'gerald', 'more', 'tomato'];
         const initialTabIdx = tabOrder.indexOf(tabs.includes(window.location.hash.replace('#','')) ? window.location.hash.replace('#','') : 'home');
         
-        // Math calculation fixed to 20% increments for 5 total tabs!
         const tabOffset = ref(initialTabIdx * -20);
 
         const updateThemeClass = () => {
@@ -770,15 +771,12 @@ createApp({
 
         const switchTab = (tab) => {
             currentTab.value = tab;
-            
-            // Fixed navigation step calculations to perfectly center the views!
             tabOffset.value = tabOrder.indexOf(tab) * -20;
             
             window.history.pushState(null, '', `#${tab}`);
             if (tab === 'gerald') setTimeout(() => { const b = document.getElementById('gerald-msgs'); if (b) b.scrollTop = b.scrollHeight; }, 300);
         };
 
-        // Fixed touch interaction limits to support all 5 screens fluently
         let swipeStartX = 0;
         const handleSwipeStart = (e) => { swipeStartX = e.touches[0].clientX; };
         const handleSwipeEnd = (e) => {
