@@ -1,4 +1,4 @@
-```text
+
 # 📱 MikoTok
 
 The ultimate, lightweight mobile Progressive Web App (PWA) built exclusively for the CodeMiko community. 
@@ -122,6 +122,3 @@ SELECT cron.schedule(
 This project is licensed under the MIT License - see the code manifest for raw authorization tracking details.
 > *"Maintained by tomato_24. Gerald OS is operational. Please ensure the Technician doesn't spill boba on the primary server chassis."*
 > 
-```
-
-```
