@@ -338,7 +338,7 @@ const GeraldView = {
 
 const TomatoView = {
     template: `
-        <div style="height: 100%; width: 100%; background: var(--bg-color); overflow-y: auto; padding: 20px 16px; box-sizing: border-box; padding-bottom: 120px;">
+        <div style="height: 100%; width: 100%; background: var(--bg-color); overflow-y: auto; padding: 20px 16px 140px; box-sizing: border-box;">
             
             <div style="text-align: center; margin-bottom: 24px;">
                 <img src="https://raw.githubusercontent.com/meowoccino/MikoTok/main/a_2.png" style="width: 110px; height: 110px; border-radius: 50%; margin-bottom: 12px; object-fit: cover;" alt="Avatar">
@@ -476,7 +476,7 @@ const MoreView = {
     template: `
         <div class="more-container" style="position: relative; height: 100%; width: 100%; background: var(--bg-color); overflow: hidden;">
             
-            <div style="height: 100%; overflow-y: auto; padding: 0 16px 20px;" v-show="activeSubView === 'main'">
+            <div style="height: 100%; overflow-y: auto; padding: 0 16px 120px;" v-show="activeSubView === 'main'">
                 
                 <div v-if="streamState === 'future'" style="background: linear-gradient(135deg, rgba(145, 70, 255, 0.15), rgba(145, 70, 255, 0.05)); border: 1px solid rgba(145, 70, 255, 0.3); border-radius: 16px; padding: 20px; margin-bottom: 24px; margin-top: 8px; text-align: center; display: flex; flex-direction: column; align-items: center; justify-content: center;">
                     <div style="color: var(--primary); font-size: 12px; font-weight: 800; letter-spacing: 1.5px; text-transform: uppercase; margin-bottom: 8px; display: flex; align-items: center; gap: 6px;">
