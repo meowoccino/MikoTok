@@ -36,82 +36,25 @@
 <body>
     <div id="app-container" v-cloak :class="['theme-' + appTheme, {'gerald-theme': currentTab === 'gerald'}]" @click="closeFilterMenu">
         
-        <splash-screen 
-            :splash-visible="splashVisible" 
-            :splash-opacity="splashOpacity" 
-            :logo-svg="logoSvg">
-        </splash-screen>
+        <splash-screen :splash-visible="splashVisible" :splash-opacity="splashOpacity" :logo-svg="logoSvg"></splash-screen>
 
-        <app-header 
-            :is-header-visible="isHeaderVisible" 
-            :current-tab="currentTab" 
-            :logo-svg="logoSvg"
-            :app-theme="appTheme"
-            @open-profile="modals.profile = true"
-            @toggle-theme="toggleTheme">
-        </app-header>
+        <app-header :is-header-visible="isHeaderVisible" :current-tab="currentTab" :logo-svg="logoSvg" :app-theme="appTheme" @open-profile="modals.profile = true" @toggle-theme="toggleTheme"></app-header>
 
         <div class="view-port" @touchstart="handleSwipeStart" @touchend="handleSwipeEnd">
             <div class="tab-slider" :style="{ transform: 'translate3d(' + tabOffset + '%, 0, 0)' }">
                 
                 <div class="tab-view scroll-area home-scroll" id="home-scroll" @scroll="handleScroll">
-                    <home-view
-                        :current-tab="currentTab"
-                        :current-vod-index="currentVodIndex"
-                        :recent-vods="recentVods"
-                        :is-live="isLive"
-                        :hostname="hostname"
-                        :clips="clips"
-                        :active-filter-label="activeFilterLabel"
-                        :optimize-twitch-img="optimizeTwitchImg"
-                        :format-views="formatViews"
-                        :format-date="formatDate"
-                        :active-clip-id="activeClipId"
-                        @prev-vod="prevVod"
-                        @next-vod="nextVod"
-                        @open-filter="isFilterMenuOpen = true"
-                        @play-clip="playClip">
-                    </home-view>
+                    <home-view :current-tab="currentTab" :current-vod-index="currentVodIndex" :recent-vods="recentVods" :is-live="isLive" :hostname="hostname" :clips="clips" :active-filter-label="activeFilterLabel" :optimize-twitch-img="optimizeTwitchImg" :format-views="formatViews" :format-date="formatDate" :active-clip-id="activeClipId" @prev-vod="prevVod" @next-vod="nextVod" @open-filter="isFilterMenuOpen = true" @play-clip="playClip"></home-view>
                 </div>
 
                 <div class="tab-view">
-                    <chat-view
-                        :current-tab="currentTab"
-                        :chat-messages="chatMessages"
-                        :is-logged-in="!!twitchChatToken"
-                        :twitch-auth-url="twitchAuthUrl"
-                        :custom-emotes="customEmotes"
-                        :twitch-username="twitchUsername"
-                        @send-chat="sendTwitchChatMessage"
-                        @insert-chat-emote="insertEmote"
-                        @disconnect-public-twitch="disconnectTwitch"
-                        @close-login-popup="showLoginPopup = false">
-                    </chat-view>
+                    <chat-view :current-tab="currentTab" :chat-messages="chatMessages" :is-logged-in="!!twitchChatToken" :twitch-auth-url="twitchAuthUrl" :custom-emotes="customEmotes" :twitch-username="twitchUsername" @send-chat="sendTwitchChatMessage" @insert-chat-emote="insertEmote" @disconnect-public-twitch="disconnectTwitch" @close-login-popup="showLoginPopup = false"></chat-view>
                 </div>
 
                 <div class="tab-view">
-                    <gerald-view
-                        :current-tab="currentTab"
-                        :gerald-messages="geraldMessages"
-                        :is-gerald-typing="isGeraldTyping"
-                        :gerald-input="geraldInput"
-                        :show-emote-picker="showEmotePicker"
-                        :show-minigames="showMinigames"
-                        :custom-emotes="customEmotes"
-                        :gemini-status="geminiStatus"
-                        :sys-stats="sysStats"
-                        @close-pickers="closePickers"
-                        @insert-emote="insertEmote"
-                        @play-game="triggerAiMinigame"
-                        @toggle-emotes="toggleEmotes"
-                        @toggle-minigames="toggleMinigames"
-                        @update-input="e => geraldInput = e"
-                        @key-down="handleGeraldEnter"
-                        @send="talkToGerald">
-                    </gerald-view>
+                    <gerald-view :current-tab="currentTab" :gerald-messages="geraldMessages" :is-gerald-typing="isGeraldTyping" :gerald-input="geraldInput" :show-emote-picker="showEmotePicker" :show-minigames="showMinigames" :custom-emotes="customEmotes" :gemini-status="geminiStatus" :sys-stats="sysStats" @close-pickers="closePickers" @insert-emote="insertEmote" @play-game="triggerAiMinigame" @toggle-emotes="toggleEmotes" @toggle-minigames="toggleMinigames" @update-input="e => geraldInput = e" @key-down="handleGeraldEnter" @send="talkToGerald"></gerald-view>
                 </div>
 
-                <!-- NEW 5TH TAB ADDED HERE -->
                 <div class="tab-view scroll-area">
                     <tomato-view></tomato-view>
                 </div>
@@ -123,68 +66,25 @@
             </div>
         </div>
 
-        <filter-menu
-            :is-open="isFilterMenuOpen"
-            :current-filter="currentFilter"
-            @close="isFilterMenuOpen = false"
-            @apply="applyFilter">
-        </filter-menu>
+        <filter-menu :is-open="isFilterMenuOpen" :current-filter="currentFilter" @close="isFilterMenuOpen = false" @apply="applyFilter"></filter-menu>
+        <clip-modal :clip="selectedClip" :hostname="hostname" @close="selectedClip = null"></clip-modal>
+        <profile-modal :is-open="modals.profile" :current-user="currentUser" :login-email="loginEmail" :login-pass="loginPass" :api-config="apiConfig" :sync-state="syncState" :wipe-state="wipeState" :nuke-state="nukeState" :logout-state="logoutState" :save-state="saveState" @close="modals.profile = false" @touch-start="handleModalTouchStart" @touch-move="handleModalTouchMove" @touch-end="handleModalTouchEnd" @update-email="e => loginEmail = e" @update-pass="e => loginPass = e" @login="handleLogin" @save-keys="saveApiKeys" @sync="runSync" @wipe="clearGeraldHistory" @logout="handleLogout" @nuke-cache="nukeCache"></profile-modal>
 
-        <clip-modal
-            :clip="selectedClip"
-            :hostname="hostname"
-            @close="selectedClip = null">
-        </clip-modal>
-
-        <profile-modal
-            :is-open="modals.profile"
-            :current-user="currentUser"
-            :login-email="loginEmail"
-            :login-pass="loginPass"
-            :api-config="apiConfig"
-            :sync-state="syncState"
-            :wipe-state="wipeState"
-            :nuke-state="nukeState"
-            :logout-state="logoutState"
-            :save-state="saveState"
-            @close="modals.profile = false"
-            @touch-start="handleModalTouchStart"
-            @touch-move="handleModalTouchMove"
-            @touch-end="handleModalTouchEnd"
-            @update-email="e => loginEmail = e"
-            @update-pass="e => loginPass = e"
-            @login="handleLogin"
-            @save-keys="saveApiKeys"
-            @sync="runSync"
-            @wipe="clearGeraldHistory"
-            @logout="handleLogout"
-            @nuke-cache="nukeCache">
-        </profile-modal>
-
-        <bottom-nav
-            :current-tab="currentTab"
-            @change-tab="switchTab">
-        </bottom-nav>
-
+        <bottom-nav :current-tab="currentTab" @change-tab="switchTab"></bottom-nav>
     </div>
 
-    <!-- LOAD THE NEW COMPONENT SCRIPT HERE -->
-    <script src="./components/TomatoView.js"></script>
-
-    <!-- ASSUMING YOU LOAD YOUR OTHER COMPONENTS HERE BASED ON YOUR GITHUB -->
+    <script src="./components/SplashScreen.js"></script>
     <script src="./components/AppHeader.js"></script>
     <script src="./components/BottomNav.js"></script>
-    <script src="./components/ChatBubble.js"></script>
-    <script src="./components/EventOverlays.js"></script>
-    <script src="./components/FeedView.js"></script>
     <script src="./components/FilterMenu.js"></script>
-    <script src="./components/GeraldView.js"></script>
-    <script src="./components/HomeView.js"></script>
-    <script src="./components/MediaCard.js"></script>
     <script src="./components/ProfileModal.js"></script>
-    <script src="./components/PullToRefresh.js"></script>
-    <script src="./components/SplashScreen.js"></script>
-    <script src="./components/ToastPopup.js"></script>
+    <script src="./components/ClipModal.js"></script>
+    <script src="./components/ChatView.js"></script>
+    <script src="./components/GeraldMinigames.js"></script>
+    <script src="./components/GeraldView.js"></script>
+    <script src="./components/TomatoView.js"></script>
+    <script src="./components/MoreView.js"></script>
+    <script src="./components/HomeView.js"></script>
 
     <script src="./app.js?v=11"></script>
 </body>
