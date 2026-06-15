@@ -101,9 +101,16 @@ const BottomNav = {
                 <span class="material-symbols-rounded">menu</span><span class="nav-label">More</span>
             </div>
             <div class="nav-item" :class="{ active: currentTab === 'tomato' }" @click="$emit('change-tab', 'tomato')">
-                <svg viewBox="0 0 24 24" style="width:24px; height:24px; fill:none; stroke:currentColor; stroke-width:2; stroke-linecap:round; stroke-linejoin:round;">
-                    <path d="M12 21c4.418 0 8-3.134 8-7s-3.582-7-8-7-8 3.134-8 7 3.582 7 8 7z"/>
-                    <path d="M12 7c0-2-1-3.5-1-3.5M12 7c-.8-1.5-2.5-2-2.5-2M12 7c.8-1.5 2.5-2 2.5-2M9.5 7.5C11 6.8 12 7 12 7M14.5 7.5C13 6.8 12 7 12 7"/>
+                <!-- Outlined state for unselected, matching Material style -->
+                <svg v-if="currentTab !== 'tomato'" viewBox="0 0 24 24" style="width:24px; height:24px; fill:none; stroke:currentColor; stroke-width:2; stroke-linecap:round; stroke-linejoin:round; margin-bottom:4px;">
+                    <path d="M12 21c-4.4 0-8-3.1-8-7s3.6-7 8-7 8 3.1 8 7-3.6 7-8 7z"/>
+                    <path d="M12 7V4"/>
+                    <path d="M8 5c1.5 1.5 3 2 4 2s2.5-.5 4-2"/>
+                </svg>
+                <!-- Filled state for selected -->
+                <svg v-else viewBox="0 0 24 24" style="width:24px; height:24px; fill:currentColor; margin-bottom:4px;">
+                    <path d="M12,22c-4.97,0-9-3.58-9-8c0-4.42,4.03-8,9-8s9,3.58,9,8C21,18.42,16.97,22,12,22z"/>
+                    <path d="M12,2c-0.83,0-1.5,0.67-1.5,1.5c0,0.47,0.22,0.89,0.56,1.16c-0.95-0.12-1.89-0.14-2.82,0.06C7.68,4.84,7.1,5.32,6.96,5.92C6.81,6.56,7.2,7.21,7.84,7.35C8.8,7.56,9.81,7.55,10.8,7.4c-0.18,0.72-0.09,1.52,0.34,2.16c0.46,0.68,1.25,1.01,2.05,0.88c0.81-0.13,1.45-0.72,1.75-1.48c0.11-0.29,0.18-0.6,0.18-0.91c0.75,0.1,1.5,0.06,2.23-0.06c0.64-0.11,1.08-0.71,0.97-1.35c-0.11-0.64-0.71-1.08-1.35-0.97c-0.75,0.13-1.52,0.14-2.3,0.05c0.32-0.25,0.53-0.65,0.53-1.08C13.5,2.67,12.83,2,12,2z"/>
                 </svg>
                 <span class="nav-label">tomato_24</span>
             </div>
@@ -329,6 +336,7 @@ const GeraldView = {
     `
 };
 
+// FULLY REDESIGNED TOMATO VIEW: Links horizontally at the top, official SVGs.
 const TomatoView = {
     template: `
         <div style="height: 100%; width: 100%; background: var(--bg-color); overflow-y: auto; padding: 20px 16px; box-sizing: border-box; padding-bottom: 120px;">
@@ -338,6 +346,21 @@ const TomatoView = {
                 <h2 style="margin:0; color: var(--text-main);">tomato_24</h2>
                 <div style="color:var(--text-muted); font-size:14px; margin-top:4px;">App Developer & Animal Rescuer</div>
             </div>
+
+            <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; margin-bottom: 24px;">
+                <a href="https://www.paypal.me/meowoccino" target="_blank" style="background: var(--card-bg); border: 1px solid var(--border-color); border-radius: 12px; padding: 12px 4px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 8px; text-decoration: none; color: var(--text-main); font-weight: 700; font-size: 13px;">
+                    <svg viewBox="0 0 24 24" style="width: 24px; height: 24px;"><path d="M7.076 21.337H2.47a.641.641 0 0 1-.633-.74L4.944.901C5.026.382 5.474 0 5.998 0h7.46c2.57 0 4.578.543 5.69 1.81 1.01 1.15 1.304 2.42 1.012 4.287-.023.143-.047.288-.077.437-.983 5.05-4.349 6.797-8.647 6.797h-2.19c-.524 0-.968.382-1.05.9l-1.12 7.106z" fill="#003087"/><path d="M11.603 13.33H9.412c-.524 0-.968.382-1.05.9l-1.12 7.106-.11.696a.641.641 0 0 0 .633.74h3.693c.48 0 .89-.35.967-.825l.024-.13.717-4.54.04-.21a.987.987 0 0 1 .974-.834h.16c3.606 0 6.425-1.468 7.25-5.698.24-1.226.17-2.39-.234-3.418-1.01 2.92-3.613 4.218-7.747 4.218z" fill="#0079C1"/></svg>
+                    PayPal
+                </a>
+                <a href="https://throne.com/tomato_24" target="_blank" style="background: var(--card-bg); border: 1px solid var(--border-color); border-radius: 12px; padding: 12px 4px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 8px; text-decoration: none; color: var(--text-main); font-weight: 700; font-size: 13px;">
+                    <svg viewBox="0 0 24 24" style="width: 24px; height: 24px; fill: #ef4444;"><path d="M20 6h-2.18c.11-.31.18-.65.18-1 0-1.66-.84-3-2-3-1.22 0-2.42 1.55-3 2.52-.58-.97-1.78-2.52-3-2.52-1.16 0-2 1.34-2 3 0 .35.07.69.18 1H4c-1.11 0-1.99.89-1.99 2L2 19c0 1.11.89 2 2 2h16c1.11 0 2-.89 2-2V8c0-1.11-.89-2-2-2zm-5-3c.55 0 1 .45 1 1s-.45 1-1 1-1-.45-1-1 .45-1 1-1zm-6 0c.55 0 1 .45 1 1s-.45 1-1 1-1-.45-1-1 .45-1 1-1zm11 16H4V8h16v11z"/></svg>
+                    Throne
+                </a>
+                <a href="https://revolut.me/tomato24" target="_blank" style="background: var(--card-bg); border: 1px solid var(--border-color); border-radius: 12px; padding: 12px 4px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 8px; text-decoration: none; color: var(--text-main); font-weight: 700; font-size: 13px;">
+                    <svg viewBox="0 0 24 24" style="width: 24px; height: 24px; fill: currentColor;"><path d="M6 3h7.5c3.59 0 6.5 2.91 6.5 6.5s-2.91 6.5-6.5 6.5h-2l4 5h-3.5l-3.6-4.5H6V3zm3 2.5v7h4.5c2.21 0 4-1.79 4-4s-1.79-4-4-4H9z"/></svg>
+                    Revolut
+                </a>
+            </div>
             
             <div style="color: var(--text-main); font-size: 14px; line-height: 1.6; background: var(--card-bg); padding: 16px; border-radius: 12px; margin-bottom: 24px; border: 1px solid var(--border-color);">
                 <div style="text-align: center; margin-bottom: 12px;"><strong style="color:var(--text-main);">Code, AI & Animal Fostering</strong></div>
@@ -345,27 +368,6 @@ const TomatoView = {
                 If you are enjoying the app and want to support my work, I would be incredibly grateful. Any contributions go directly toward covering the expensive API token costs required to keep Gerald's AI brain running smoothly, funding future app updates, and—most importantly—supporting my animal rescue efforts.<br><br>
                 I currently care for a small army of felines (4 indoor, 3 outdoor) plus various neighborhood strays, so every bit helps keep the app servers online and the food bowls fully stocked 🐾
             </div>
-
-            <div style="font-size: 12px; font-weight: 800; letter-spacing: 1.2px; text-transform: uppercase; color: var(--text-muted); margin: 28px 0 10px 8px;">Support Links</div>
-            
-            <a href="https://www.paypal.me/meowoccino" target="_blank" style="display: flex; align-items: center; width: 100%; box-sizing: border-box; padding: 0 16px; border-radius: 12px; min-height: 48px; background: var(--card-bg); text-decoration: none; margin-bottom: 8px; border: 1px solid var(--border-color);">
-                <svg viewBox="0 0 24 24" style="width: 22px; height: 22px; fill: #00457C;"><path d="M7.076 21.337H2.47a.641.641 0 0 1-.633-.74L4.944.901C5.026.382 5.474 0 5.998 0h7.46c2.57 0 4.578.543 5.69 1.81 1.01 1.15 1.304 2.42 1.012 4.287-.023.143-.047.288-.077.437-.983 5.05-4.349 6.797-8.647 6.797h-2.19c-.524 0-.968.382-1.05.9l-1.12 7.106z"/><path d="M11.603 13.33H9.412c-.524 0-.968.382-1.05.9l-1.12 7.106-.11.696a.641.641 0 0 0 .633.74h3.693c.48 0 .89-.35.967-.825l.024-.13.717-4.54.04-.21a.987.987 0 0 1 .974-.834h.16c3.606 0 6.425-1.468 7.25-5.698.24-1.226.17-2.39-.234-3.418-1.01 2.92-3.613 4.218-7.747 4.218z" fill="#0079C1"/></svg>
-                <span style="color: var(--text-main); font-size: 14px; font-weight: 600; margin-left: 12px;">PayPal</span>
-                <span class="material-symbols-rounded" style="color: var(--text-muted); margin-left: auto; font-size: 20px;">open_in_new</span>
-            </a>
-
-            <a href="https://throne.com/tomato_24" target="_blank" style="display: flex; align-items: center; width: 100%; box-sizing: border-box; padding: 0 16px; border-radius: 12px; min-height: 48px; background: var(--card-bg); text-decoration: none; margin-bottom: 8px; border: 1px solid var(--border-color);">
-                <svg viewBox="0 0 24 24" style="width: 22px; height: 22px; fill: #ef4444;"><path d="M20 6h-2.18c.11-.31.18-.65.18-1 0-1.66-.84-3-2-3-1.22 0-2.42 1.55-3 2.52-.58-.97-1.78-2.52-3-2.52-1.16 0-2 1.34-2 3 0 .35.07.69.18 1H4c-1.11 0-1.99.89-1.99 2L2 19c0 1.11.89 2 2 2h16c1.11 0 2-.89 2-2V8c0-1.11-.89-2-2-2zm-5-3c.55 0 1 .45 1 1s-.45 1-1 1-1-.45-1-1 .45-1 1-1zm-6 0c.55 0 1 .45 1 1s-.45 1-1 1-1-.45-1-1 .45-1 1-1zm11 16H4V8h16v11z"/></svg>
-                <span style="color: var(--text-main); font-size: 14px; font-weight: 600; margin-left: 12px;">Throne</span>
-                <span class="material-symbols-rounded" style="color: var(--text-muted); margin-left: auto; font-size: 20px;">open_in_new</span>
-            </a>
-
-            <!-- RESTORED: Symmetrical official Revolut glyph badge layout -->
-            <a href="https://revolut.me/tomato24" target="_blank" style="display: flex; align-items: center; width: 100%; box-sizing: border-box; padding: 0 16px; border-radius: 12px; min-height: 48px; background: var(--card-bg); text-decoration: none; margin-bottom: 24px; border: 1px solid var(--border-color);">
-                <svg viewBox="0 0 24 24" style="width: 22px; height: 22px; fill: currentColor;"><path d="M4 2h7.5c3.58 0 6.5 2.92 6.5 6.5 0 2.27-1.17 4.27-2.94 5.46L20 22h-5.25l-4.13-7H8v7H4V2zm4 4v5h3.5c1.38 0 2.5-1.12 2.5-2.5S12.88 6 11.5 6H8z"/></svg>
-                <span style="color: var(--text-main); font-size: 14px; font-weight: 600; margin-left: 12px;">Revolut</span>
-                <span class="material-symbols-rounded" style="color: var(--text-muted); margin-left: auto; font-size: 20px;">open_in_new</span>
-            </a>
         </div>
     `
 };
@@ -528,7 +530,7 @@ const MoreView = {
                     <span class="material-symbols-rounded" style="color: var(--text-muted); margin-left: auto; font-size: 20px;">open_in_new</span>
                 </a>
                 <a href="https://www.youtube.com/@CodeMiko" target="_blank" style="display: flex; align-items: center; width: 100%; box-sizing: border-box; padding: 0 16px; border-radius: 12px; min-height: 48px; background: var(--card-bg); text-decoration: none; margin-bottom: 8px;">
-                    <svg viewBox="0 0 24 24" style="width: 22px; height: 22px; color: #FF0000;"><path fill="currentColor" d="M21.582 6.186a2.6 2.6 0 0 0-1.838-1.85C18.125 3.9 12 3.9 12 3.9s-6.125 0-7.744.436a2.6 2.6 0 0 0-1.838 1.85C2 7.82 2 12 2 12s0 4.18-.418 5.814a2.6 2.6 0 0 0 1.838 1.85C5.875 20.1 12 20.1 12 20.1s6.125 0 7.744-.436a2.6 2.6 0 0 0 1.838-1.85C22 16.18 22 12 22 12s0-4.18-.418-5.814zM9.9 15.54V8.46L16.2 12z"/></svg>
+                    <svg viewBox="0 0 24 24" style="width: 22px; height: 22px; color: #FF0000;"><path fill="currentColor" d="M21.582 6.186a2.6 2.6 0 0 0-1.838-1.85C18.125 3.9 12 3.9 12 3.9s-6.125 0-7.744.436a2.6 2.6 0 0 0-1.838 1.85C2 7.82 2 12 2 12s0 4.18.418 5.814a2.6 2.6 0 0 0 1.838 1.85C5.875 20.1 12 20.1 12 20.1s6.125 0 7.744-.436a2.6 2.6 0 0 0 1.838-1.85C22 16.18 22 12 22 12s0-4.18-.418-5.814zM9.9 15.54V8.46L16.2 12z"/></svg>
                     <span style="color: var(--text-main); font-size: 14px; font-weight: 600; margin-left: 12px;">YouTube</span>
                     <span class="material-symbols-rounded" style="color: var(--text-muted); margin-left: auto; font-size: 20px;">open_in_new</span>
                 </a>
@@ -542,10 +544,8 @@ const MoreView = {
                     <span style="color: var(--text-main); font-size: 14px; font-weight: 600; margin-left: 12px;">Discord</span>
                     <span class="material-symbols-rounded" style="color: var(--text-muted); margin-left: auto; font-size: 20px;">open_in_new</span>
                 </a>
-                
-                <!-- RESTORED: Pristine full monochrome official Reddit Snoo face circle mask -->
-                <a href="https://www.reddit.com/r/CodeMiko/" target="_blank" style="display: flex; align-items: center; width: 100%; box-sizing: border-box; padding: 0 16px; border-radius: 12px; min-height: 48px; background: var(--card-bg); text-decoration: none; margin-bottom: 8px; border: 1px solid var(--border-color);">
-                    <svg viewBox="0 0 16 16" style="width: 22px; height: 22px; fill: #FF4500;"><path d="M6.167 8a.83.83 0 0 0-.83.83c0 .459.372.84.83.831a.831.831 0 0 0 0-1.661m1.843 3.647c.315 0 1.403-.038 1.976-.611a.23.23 0 0 0 0-.306.213.213 0 0 0-.306 0c-.353.363-1.126.487-1.67.487-.545 0-1.317-.124-1.67-.487a.213.213 0 0 0-.306 0 .23.23 0 0 0 0 .306c.573.573 1.661.611 1.976.611m1.823-3.647a.83.83 0 0 0-.83.83c0 .459.372.84.83.831a.831.831 0 0 0 0-1.661M16 8A8 8 0 1 1 0 8a8 8 0 0 1 16 0m-3.822-1.342a1.2 1.2 0 0 0-1.908-.943c-1.007-.463-2.3-.766-3.71-.82l.784-2.463 2.13.453c.01.597.505 1.077 1.113 1.077a1.12 1.12 0 1 0-1.114-1.117l-2.313-.492a.42.42 0 0 0-.496.29L5.8 4.887c-1.427.048-2.735.353-3.75.82a1.2 1.2 0 0 0-1.902.943c0 .52.307.967.75 1.186-.03.176-.046.356-.046.538 0 2.212 2.73 4.006 6.097 4.006 3.366 0 6.096-1.794 6.096-4.006 0-.182-.015-.362-.045-.538a1.2 1.2 0 0 0 .748-1.186"/></svg>
+                <a href="https://www.reddit.com/r/CodeMiko/" target="_blank" style="display: flex; align-items: center; width: 100%; box-sizing: border-box; padding: 0 16px; border-radius: 12px; min-height: 48px; background: var(--card-bg); text-decoration: none; margin-bottom: 8px;">
+                    <svg viewBox="0 0 24 24" style="width: 22px; height: 22px; fill: #FF4500;"><path d="M22 11.465c0-1.225-.99-2.215-2.215-2.215-.6 0-1.14.23-1.545.61-1.635-1.165-3.86-1.925-6.325-2.02l1.34-6.32 4.29 1.045c.03 1.135.96 2.05 2.105 2.05 1.165 0 2.115-.95 2.115-2.115 0-1.16-.95-2.11-2.115-2.11-.91 0-1.685.585-1.985 1.405l-4.785-1.165c-.215-.05-.435.06-.505.27L10.87 7.82c-2.525.045-4.825.805-6.51 1.995-.41-.39-.96-.63-1.56-.63C1.575 9.185.585 10.175.585 11.4c0 .825.46 1.545 1.14 1.91-.035.21-.055.425-.055.65 0 3.515 4.635 6.375 10.33 6.375 5.695 0 10.33-2.86 10.33-6.375 0-.225-.02-.44-.055-.65.68-.365 1.14-1.085 1.14-1.91zm-15.65 1.34c0-1.025.835-1.86 1.86-1.86s1.86.835 1.86 1.86-.835 1.86-1.86 1.86-1.86-.835-1.86-1.86zm8.93 4.88c-1.42 1.42-4.145 1.45-5.28 1.45-1.135 0-3.86-.03-5.28-1.45-.195-.195-.195-.515 0-.71.195-.195.515-.195.71 0 1.035 1.035 3.305 1.16 4.57 1.16 1.265 0 3.535-.125 4.57-1.16.195-.195.515-.195.71 0 .195.195.195.515 0 .71zm-1.07-2.45c-1.025 0-1.86-.835-1.86-1.86s.835-1.86 1.86-1.86 1.86.835 1.86 1.86-.835 1.86-1.86 1.86z"/></svg>
                     <span style="color: var(--text-main); font-size: 14px; font-weight: 600; margin-left: 12px;">Reddit</span>
                     <span class="material-symbols-rounded" style="color: var(--text-muted); margin-left: auto; font-size: 20px;">open_in_new</span>
                 </a>
@@ -574,10 +574,8 @@ const MoreView = {
                     <span style="color: var(--text-main); font-size: 14px; font-weight: 600; margin-left: 12px;">Facebook</span>
                     <span class="material-symbols-rounded" style="color: var(--text-muted); margin-left: auto; font-size: 20px;">open_in_new</span>
                 </a>
-                
-                <!-- RESTORED: Symmetrical official corporate Bluesky butterfly outline -->
-                <a href="https://bsky.app/profile/codemiko.bsky.social" target="_blank" style="display: flex; align-items: center; width: 100%; box-sizing: border-box; padding: 0 16px; border-radius: 12px; min-height: 48px; background: var(--card-bg); text-decoration: none; margin-bottom: 8px; border: 1px solid var(--border-color);">
-                    <svg viewBox="0 0 16 16" style="width: 22px; height: 22px; fill: #0085ff;"><path d="M3.468 1.948C5.303 3.325 7.276 6.118 8 7.616c.725-1.498 2.698-4.29 4.532-5.668C13.855.955 16 .186 16 2.632c0 .489-.28 4.105-.444 4.692-.572 2.04-2.653 2.561-4.504 2.246 3.236.551 4.062 1.481 4.108 3.102.054 1.922-1.317 3.364-3.415 3.821-2.616.57-5.06-1.543-5.385-2.915C6.039 14.543 3.596 16.5 1.06 15.93c-2.115-.472-3.414-2.158-3.1-3.922.143-1.62 1.351-2.647 4.108-3.102-1.85.315-3.932-.206-4.504-2.246C-2.72 6.737-3 3.12-3 2.632c0-2.446 2.146-3.213 3.532-2.316"/></svg>
+                <a href="https://bsky.app/profile/codemiko.bsky.social" target="_blank" style="display: flex; align-items: center; width: 100%; box-sizing: border-box; padding: 0 16px; border-radius: 12px; min-height: 48px; background: var(--card-bg); text-decoration: none; margin-bottom: 8px;">
+                    <svg viewBox="0 0 512 512" style="width: 22px; height: 22px; fill: #0085ff;"><path d="M123.6 44.3C186.2 88.5 222.7 151 256 195.9c33.3-44.9 69.8-107.4 132.4-151.6C416.7 24.3 460 12.5 480 32.5c20 20 8.6 69.5 0 102.5-12.7 48.7-44.5 111.4-106.8 135 63.6 15.3 115 48 116.5 106.3 1.5 58.4-40.4 104-106.8 115.5-59.5 10.3-95-17.7-126.9-46.3-15.3-13.7-27.4-24.5-31.5-24.5s-16.2 10.8-31.5 24.5c-31.9 28.6-67.4 56.6-126.9 46.3C-1.8 479.5-43.7 434 42.2 375.6c1.5-58.3 52.9-91 116.5-106.3-62.3-23.6-94.1-86.3-106.8-135-8.6-33-20-82.5 0-102.5 20-20 63.3-8.2 91.6 12.5z"/></svg>
                     <span style="color: var(--text-main); font-size: 14px; font-weight: 600; margin-left: 12px;">Bluesky</span>
                     <span class="material-symbols-rounded" style="color: var(--text-muted); margin-left: auto; font-size: 20px;">open_in_new</span>
                 </a>
@@ -588,7 +586,6 @@ const MoreView = {
                 </a>
             </div>
 
-            <!-- Native Slide Overlay for About Page -->
             <transition name="nav-slide">
                 <div v-if="activeSubView === 'about'" class="sub-view-overlay">
                     <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 24px; font-size: 18px; font-weight: bold; color: var(--text-main);">
@@ -610,7 +607,6 @@ const MoreView = {
                 </div>
             </transition>
 
-            <!-- Native Slide Overlay for Channels Statistics Page -->
             <transition name="nav-slide">
                 <div v-if="activeSubView === 'stats'" class="sub-view-overlay">
                     <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 24px; font-size: 18px; font-weight: bold; color: var(--text-main);">
@@ -749,7 +745,6 @@ createApp({
         const isGeraldTyping = ref(false), showEmotePicker = ref(false), showMinigames = ref(false);
         const currentFilter = ref('latest'), activeFilterLabel = ref('Latest'), isFilterMenuOpen = ref(false);
         
-        // FIXED: Typo space completely eliminated between "recent" and "Vods"
         const recentVods = ref([]), currentVodIndex = ref(0);
         const selectedClip = ref(null);
 
@@ -788,7 +783,6 @@ createApp({
         let swipeStartX = 0;
         const handleSwipeStart = (e) => { swipeStartX = e.touches[0].clientX; };
         const handleSwipeEnd = (e) => {
-            // FIXED: Automatically ignores swipe commands if user is currently typing to prevent accidental tab jumping
             if (document.activeElement && ['INPUT', 'TEXTAREA'].includes(document.activeElement.tagName)) return;
             
             const dx = e.changedTouches[0].clientX - swipeStartX;
