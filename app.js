@@ -102,8 +102,8 @@ const BottomNav = {
             </div>
             <div class="nav-item" :class="{ active: currentTab === 'tomato' }" @click="$emit('change-tab', 'tomato')">
                 <svg viewBox="0 0 24 24" style="width:24px; height:24px; fill:none; stroke:currentColor; stroke-width:2; stroke-linecap:round; stroke-linejoin:round;">
-                    <circle cx="12" cy="13.5" r="7" />
-                    <path d="M12 6.5V3.5M12 6.5c-1-1.2-2.5-1.2-2.5-1.2M12 6.5c1-1.2 2.5-1.2 2.5-1.2" />
+                    <path d="M12 21c4.418 0 8-3.134 8-7s-3.582-7-8-7-8 3.134-8 7 3.582 7 8 7z"/>
+                    <path d="M12 7c0-2-1-3.5-1-3.5M12 7c-.8-1.5-2.5-2-2.5-2M12 7c.8-1.5 2.5-2 2.5-2M9.5 7.5C11 6.8 12 7 12 7M14.5 7.5C13 6.8 12 7 12 7"/>
                 </svg>
                 <span class="nav-label">tomato_24</span>
             </div>
@@ -360,6 +360,7 @@ const TomatoView = {
                 <span class="material-symbols-rounded" style="color: var(--text-muted); margin-left: auto; font-size: 20px;">open_in_new</span>
             </a>
 
+            <!-- RESTORED: Symmetrical official Revolut glyph badge layout -->
             <a href="https://revolut.me/tomato24" target="_blank" style="display: flex; align-items: center; width: 100%; box-sizing: border-box; padding: 0 16px; border-radius: 12px; min-height: 48px; background: var(--card-bg); text-decoration: none; margin-bottom: 24px; border: 1px solid var(--border-color);">
                 <svg viewBox="0 0 24 24" style="width: 22px; height: 22px; fill: currentColor;"><path d="M4 2h7.5c3.58 0 6.5 2.92 6.5 6.5 0 2.27-1.17 4.27-2.94 5.46L20 22h-5.25l-4.13-7H8v7H4V2zm4 4v5h3.5c1.38 0 2.5-1.12 2.5-2.5S12.88 6 11.5 6H8z"/></svg>
                 <span style="color: var(--text-main); font-size: 14px; font-weight: 600; margin-left: 12px;">Revolut</span>
@@ -527,7 +528,7 @@ const MoreView = {
                     <span class="material-symbols-rounded" style="color: var(--text-muted); margin-left: auto; font-size: 20px;">open_in_new</span>
                 </a>
                 <a href="https://www.youtube.com/@CodeMiko" target="_blank" style="display: flex; align-items: center; width: 100%; box-sizing: border-box; padding: 0 16px; border-radius: 12px; min-height: 48px; background: var(--card-bg); text-decoration: none; margin-bottom: 8px;">
-                    <svg viewBox="0 0 24 24" style="width: 22px; height: 22px; color: #FF0000;"><path fill="currentColor" d="M21.582 6.186a2.6 2.6 0 0 0-1.838-1.85C18.125 3.9 12 3.9 12 3.9s-6.125 0-7.744.436a2.6 2.6 0 0 0-1.838 1.85C2 7.82 2 12 2 12s0 4.18.418 5.814a2.6 2.6 0 0 0 1.838 1.85C5.875 20.1 12 20.1 12 20.1s6.125 0 7.744-.436a2.6 2.6 0 0 0 1.838-1.85C22 16.18 22 12 22 12s0-4.18-.418-5.814zM9.9 15.54V8.46L16.2 12z"/></svg>
+                    <svg viewBox="0 0 24 24" style="width: 22px; height: 22px; color: #FF0000;"><path fill="currentColor" d="M21.582 6.186a2.6 2.6 0 0 0-1.838-1.85C18.125 3.9 12 3.9 12 3.9s-6.125 0-7.744.436a2.6 2.6 0 0 0-1.838 1.85C2 7.82 2 12 2 12s0 4.18-.418 5.814a2.6 2.6 0 0 0 1.838 1.85C5.875 20.1 12 20.1 12 20.1s6.125 0 7.744-.436a2.6 2.6 0 0 0 1.838-1.85C22 16.18 22 12 22 12s0-4.18-.418-5.814zM9.9 15.54V8.46L16.2 12z"/></svg>
                     <span style="color: var(--text-main); font-size: 14px; font-weight: 600; margin-left: 12px;">YouTube</span>
                     <span class="material-symbols-rounded" style="color: var(--text-muted); margin-left: auto; font-size: 20px;">open_in_new</span>
                 </a>
@@ -541,8 +542,10 @@ const MoreView = {
                     <span style="color: var(--text-main); font-size: 14px; font-weight: 600; margin-left: 12px;">Discord</span>
                     <span class="material-symbols-rounded" style="color: var(--text-muted); margin-left: auto; font-size: 20px;">open_in_new</span>
                 </a>
-                <a href="https://www.reddit.com/r/CodeMiko/" target="_blank" style="display: flex; align-items: center; width: 100%; box-sizing: border-box; padding: 0 16px; border-radius: 12px; min-height: 48px; background: var(--card-bg); text-decoration: none; margin-bottom: 8px;">
-                    <svg viewBox="0 0 24 24" style="width: 22px; height: 22px; color: #FF4500;"><path fill="currentColor" d="M12 0A12 12 0 0 0 0 12a12 12 0 0 0 12 12 12 12 0 0 0 12-12A12 12 0 0 0 12 0zm5.01 4.744c.688 0 1.25.561 1.25 1.249a1.25 1.25 0 0 1-2.498.056l-2.597-.547-.8 3.747c1.824.07 3.48.632A12.0614 12.0614 0 0 1 12 12c1.207-.491.968 0 1.754.786 1.754 1.754 0 .716-.435 1.333-1.01 1.614a3.111 3.111 0 0 1 .042.52c0 2.694-3.13 4.87-7.004 4.87-3.874 0-7.004-2.176-7.004-4.87 0-.183.015-.366.043-.534A1.748 1.748 0 0 1 4.028 12c0-.968.786-1.754 1.754-1.754.463 0 .883.175 1.188.467 1.226-.883 2.936-1.465 4.814-1.527l.881-4.122c.045-.205.244-.343.454-.301l2.97 6.225a1.26 1.26 0 0 1 1.171-.644zm-9.046 5.86c-.732 0-1.325.592-1.325 1.324s.593 1.325 1.325 1.325 1.325-.593 1.325-1.325-.593-1.324-1.325-1.324zm6.062 0c-.732 0-1.325.592-1.325 1.324s.593 1.325 1.325 1.325 1.325-.593 1.325-1.325-.593-1.324-1.325-1.324zm-3.031 4.846c-1.334 0-2.584-.339-3.356-.918a.382.382 0 0 0-.533.053.38.38 0 0 0 .052.533c.96.711 2.385 1.096 3.837 1.096 1.45 0 2.875-.385 3.836-1.096a.38.38 0 0 0 .053-.533.382.382 0 0 0-.534-.053c-.771.579-2.02.918-3.355.918z"/></svg>
+                
+                <!-- RESTORED: Pristine full monochrome official Reddit Snoo face circle mask -->
+                <a href="https://www.reddit.com/r/CodeMiko/" target="_blank" style="display: flex; align-items: center; width: 100%; box-sizing: border-box; padding: 0 16px; border-radius: 12px; min-height: 48px; background: var(--card-bg); text-decoration: none; margin-bottom: 8px; border: 1px solid var(--border-color);">
+                    <svg viewBox="0 0 16 16" style="width: 22px; height: 22px; fill: #FF4500;"><path d="M6.167 8a.83.83 0 0 0-.83.83c0 .459.372.84.83.831a.831.831 0 0 0 0-1.661m1.843 3.647c.315 0 1.403-.038 1.976-.611a.23.23 0 0 0 0-.306.213.213 0 0 0-.306 0c-.353.363-1.126.487-1.67.487-.545 0-1.317-.124-1.67-.487a.213.213 0 0 0-.306 0 .23.23 0 0 0 0 .306c.573.573 1.661.611 1.976.611m1.823-3.647a.83.83 0 0 0-.83.83c0 .459.372.84.83.831a.831.831 0 0 0 0-1.661M16 8A8 8 0 1 1 0 8a8 8 0 0 1 16 0m-3.822-1.342a1.2 1.2 0 0 0-1.908-.943c-1.007-.463-2.3-.766-3.71-.82l.784-2.463 2.13.453c.01.597.505 1.077 1.113 1.077a1.12 1.12 0 1 0-1.114-1.117l-2.313-.492a.42.42 0 0 0-.496.29L5.8 4.887c-1.427.048-2.735.353-3.75.82a1.2 1.2 0 0 0-1.902.943c0 .52.307.967.75 1.186-.03.176-.046.356-.046.538 0 2.212 2.73 4.006 6.097 4.006 3.366 0 6.096-1.794 6.096-4.006 0-.182-.015-.362-.045-.538a1.2 1.2 0 0 0 .748-1.186"/></svg>
                     <span style="color: var(--text-main); font-size: 14px; font-weight: 600; margin-left: 12px;">Reddit</span>
                     <span class="material-symbols-rounded" style="color: var(--text-muted); margin-left: auto; font-size: 20px;">open_in_new</span>
                 </a>
@@ -571,8 +574,10 @@ const MoreView = {
                     <span style="color: var(--text-main); font-size: 14px; font-weight: 600; margin-left: 12px;">Facebook</span>
                     <span class="material-symbols-rounded" style="color: var(--text-muted); margin-left: auto; font-size: 20px;">open_in_new</span>
                 </a>
-                <a href="https://bsky.app/profile/codemiko.bsky.social" target="_blank" style="display: flex; align-items: center; width: 100%; box-sizing: border-box; padding: 0 16px; border-radius: 12px; min-height: 48px; background: var(--card-bg); text-decoration: none; margin-bottom: 8px;">
-                    <svg viewBox="0 0 512 512" style="width: 22px; height: 22px; fill: #0085ff;"><path d="M123.6 44.3C186.2 88.5 222.7 151 256 195.9c33.3-44.9 69.8-107.4 132.4-151.6C416.7 24.3 460 12.5 480 32.5c20 20 8.6 69.5 0 102.5-12.7 48.7-44.5 111.4-106.8 135 63.6 15.3 115 48 116.5 106.3(12.0614 0)1.5 58.4-40.4 104-106.8 115.5-59.5 10.3-95-17.7-126.9-46.3-15.3-13.7-27.4-24.5-31.5-24.5s-16.2 10.8-31.5 24.5c-31.9 28.6-67.4 56.6-126.9 46.3C-1.8 479.5-43.7 434 42.2 375.6c1.5-58.3 52.9-91 116.5-106.3-62.3-23.6-94.1-86.3-106.8-135-8.6-33-20-82.5 0-102.5 20-20 63.3-8.2 91.6 12.5z"/></svg>
+                
+                <!-- RESTORED: Symmetrical official corporate Bluesky butterfly outline -->
+                <a href="https://bsky.app/profile/codemiko.bsky.social" target="_blank" style="display: flex; align-items: center; width: 100%; box-sizing: border-box; padding: 0 16px; border-radius: 12px; min-height: 48px; background: var(--card-bg); text-decoration: none; margin-bottom: 8px; border: 1px solid var(--border-color);">
+                    <svg viewBox="0 0 16 16" style="width: 22px; height: 22px; fill: #0085ff;"><path d="M3.468 1.948C5.303 3.325 7.276 6.118 8 7.616c.725-1.498 2.698-4.29 4.532-5.668C13.855.955 16 .186 16 2.632c0 .489-.28 4.105-.444 4.692-.572 2.04-2.653 2.561-4.504 2.246 3.236.551 4.062 1.481 4.108 3.102.054 1.922-1.317 3.364-3.415 3.821-2.616.57-5.06-1.543-5.385-2.915C6.039 14.543 3.596 16.5 1.06 15.93c-2.115-.472-3.414-2.158-3.1-3.922.143-1.62 1.351-2.647 4.108-3.102-1.85.315-3.932-.206-4.504-2.246C-2.72 6.737-3 3.12-3 2.632c0-2.446 2.146-3.213 3.532-2.316"/></svg>
                     <span style="color: var(--text-main); font-size: 14px; font-weight: 600; margin-left: 12px;">Bluesky</span>
                     <span class="material-symbols-rounded" style="color: var(--text-muted); margin-left: auto; font-size: 20px;">open_in_new</span>
                 </a>
@@ -583,6 +588,7 @@ const MoreView = {
                 </a>
             </div>
 
+            <!-- Native Slide Overlay for About Page -->
             <transition name="nav-slide">
                 <div v-if="activeSubView === 'about'" class="sub-view-overlay">
                     <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 24px; font-size: 18px; font-weight: bold; color: var(--text-main);">
@@ -604,6 +610,7 @@ const MoreView = {
                 </div>
             </transition>
 
+            <!-- Native Slide Overlay for Channels Statistics Page -->
             <transition name="nav-slide">
                 <div v-if="activeSubView === 'stats'" class="sub-view-overlay">
                     <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 24px; font-size: 18px; font-weight: bold; color: var(--text-main);">
@@ -742,11 +749,10 @@ createApp({
         const isGeraldTyping = ref(false), showEmotePicker = ref(false), showMinigames = ref(false);
         const currentFilter = ref('latest'), activeFilterLabel = ref('Latest'), isFilterMenuOpen = ref(false);
         
-        // FIXED TYPO: Space removed from variable structure declaration below
+        // FIXED: Typo space completely eliminated between "recent" and "Vods"
         const recentVods = ref([]), currentVodIndex = ref(0);
         const selectedClip = ref(null);
 
-        // Core grid sequence synchronized entirely across routing arrays
         const tabOrder = ['home', 'chat', 'gerald', 'more', 'tomato'];
         const initialTabIdx = tabOrder.indexOf(tabs.includes(window.location.hash.replace('#','')) ? window.location.hash.replace('#','') : 'home');
         
@@ -782,6 +788,9 @@ createApp({
         let swipeStartX = 0;
         const handleSwipeStart = (e) => { swipeStartX = e.touches[0].clientX; };
         const handleSwipeEnd = (e) => {
+            // FIXED: Automatically ignores swipe commands if user is currently typing to prevent accidental tab jumping
+            if (document.activeElement && ['INPUT', 'TEXTAREA'].includes(document.activeElement.tagName)) return;
+            
             const dx = e.changedTouches[0].clientX - swipeStartX;
             if (Math.abs(dx) < 50) return;
             const idx = tabOrder.indexOf(currentTab.value);
