@@ -41,25 +41,30 @@
         <app-header :is-header-visible="isHeaderVisible" :current-tab="currentTab" :logo-svg="logoSvg" :app-theme="appTheme" @open-profile="modals.profile = true" @toggle-theme="toggleTheme"></app-header>
 
         <div class="view-port" @touchstart="handleSwipeStart" @touchend="handleSwipeEnd">
-            <div class="tab-slider" :style="{ transform: 'translate3d(' + tabOffset + '%, 0, 0)' }" style="width: 500%; display: flex;">
+            <div class="tab-slider" :style="{ transform: 'translate3d(' + tabOffset + '%, 0, 0)' }">
                 
-                <div class="tab-view scroll-area home-scroll" id="home-scroll" @scroll="handleScroll" style="width: 20%;">
+                <!-- 1. Home Panel -->
+                <div class="tab-view scroll-area home-scroll" id="home-scroll" @scroll="handleScroll">
                     <home-view :current-tab="currentTab" :current-vod-index="currentVodIndex" :recent-vods="recentVods" :is-live="isLive" :hostname="hostname" :clips="clips" :active-filter-label="activeFilterLabel" :optimize-twitch-img="optimizeTwitchImg" :format-views="formatViews" :format-date="formatDate" :active-clip-id="activeClipId" @prev-vod="prevVod" @next-vod="nextVod" @open-filter="isFilterMenuOpen = true" @play-clip="playClip"></home-view>
                 </div>
 
-                <div class="tab-view" style="width: 20%;">
+                <!-- 2. Chat Panel -->
+                <div class="tab-view">
                     <chat-view :current-tab="currentTab" :chat-messages="chatMessages" :is-logged-in="!!twitchChatToken" :twitch-auth-url="twitchAuthUrl" :custom-emotes="customEmotes" :twitch-username="twitchUsername" @send-chat="sendTwitchChatMessage" @insert-chat-emote="insertEmote" @disconnect-public-twitch="disconnectTwitch" @close-login-popup="showLoginPopup = false"></chat-view>
                 </div>
 
-                <div class="tab-view" style="width: 20%;">
+                <!-- 3. Gerald Panel -->
+                <div class="tab-view">
                     <gerald-view :current-tab="currentTab" :gerald-messages="geraldMessages" :is-gerald-typing="isGeraldTyping" :gerald-input="geraldInput" :show-emote-picker="showEmotePicker" :show-minigames="showMinigames" :custom-emotes="customEmotes" :gemini-status="geminiStatus" :sys-stats="sysStats" @close-pickers="closePickers" @insert-emote="insertEmote" @play-game="triggerAiMinigame" @toggle-emotes="toggleEmotes" @toggle-minigames="toggleMinigames" @update-input="e => geraldInput = e" @key-down="handleGeraldEnter" @send="talkToGerald"></gerald-view>
                 </div>
 
-                <div class="tab-view scroll-area more-scroll" style="width: 20%; display: flex; flex-direction: column;">
-                    <more-view></more-view>
+                <!-- 4. More Panel -->
+                <div class="tab-view scroll-area more-scroll" style="display: flex; flex-direction: column;">
+                    <more-view :is-live="isLive"></more-view>
                 </div>
 
-                <div class="tab-view scroll-area" style="width: 20%;">
+                <!-- 5. Tomato Panel -->
+                <div class="tab-view scroll-area">
                     <tomato-view></tomato-view>
                 </div>
 
@@ -73,9 +78,6 @@
         <bottom-nav :current-tab="currentTab" @change-tab="switchTab"></bottom-nav>
     </div>
 
-    <script src="./components/BottomNav.js"></script>
-    <script src="./components/TomatoView.js"></script>
-    
-    <script src="./app.js?v=5"></script>
+    <script src="./app.js?v=15"></script>
 </body>
 </html>
