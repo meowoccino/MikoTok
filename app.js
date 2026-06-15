@@ -327,38 +327,69 @@ const MoreView = {
         const { ref, onMounted, onUnmounted, watch } = Vue;
         
         const activeSubView = ref('main');
-        const statTimeframe = ref('week');
         const streamState = ref('awaiting'); 
         const countdownText = ref('--:--:--');
-        const nextStreamTime = ref(null);
+        
+        const lateMessages = [
+            "Untangling the mocap suit...",
+            "Technician is restarting UE5 (again)...",
+            "Currently negotiating with a crash reporter...",
+            "Spilled boba on the router. Please stand by.",
+            "Calibrating the scuff generators..."
+        ];
+        
+        const liveMessages = [
+            "EMBRACE THE SCUFF!",
+            "Braincells are currently melting...",
+            "Warning: High levels of chaos ahead.",
+            "The AI has breached containment.",
+            "Mocap is live! Pray for the PC."
+        ];
+        
+        const currentFunnyMessage = ref('');
         
         const channelStats = ref({
-            followers: '...', total_views: '...', avg_viewers: '...', peak_viewers: '...', active_subs: '...', account_created: '...',
-            week_hours: '...', week_category: '...', week_days: '...',
-            month_hours: '...', month_category: '...', month_days: '...',
-            year_hours: '...', year_category: '...', year_days: '...'
+            followers: '...', 
+            total_views: '...', 
+            peak_viewers: '...', 
+            account_created: '...',
+            active_subs: '...', 
+            week_category: '...', 
+            week_days: '...'
         });
         
         let timerInterval;
 
         const updateClock = () => {
+            const tickCount = Math.floor(Date.now() / 4000);
+
             if (props.isLive) {
                 streamState.value = 'live';
+                currentFunnyMessage.value = liveMessages[tickCount % liveMessages.length];
                 return;
             }
-            if (!nextStreamTime.value) {
-                streamState.value = 'awaiting';
-                return;
+
+            const now = new Date();
+            const pNow = new Date(now.toLocaleString("en-US", {timeZone: "America/Los_Angeles"}));
+            const pTarget = new Date(pNow);
+            pTarget.setHours(13, 0, 0, 0);
+
+            let diff = pTarget.getTime() - pNow.getTime();
+
+            if (diff <= -6 * 60 * 60 * 1000) {
+                pTarget.setDate(pTarget.getDate() + 1);
+                diff = pTarget.getTime() - pNow.getTime();
             }
-            let d = nextStreamTime.value - new Date().getTime();
-            if (d < 0) {
-                streamState.value = 'late';
-            } else {
+
+            if (diff > 0) {
                 streamState.value = 'future';
-                let h = String(Math.floor((d % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60))).padStart(2, '0');
-                let m = String(Math.floor((d % (1000 * 60 * 60)) / (1000 * 60))).padStart(2, '0');
-                let s = String(Math.floor((d % (1000 * 60)) / 1000)).padStart(2, '0');
+                let h = String(Math.floor((diff / (1000 * 60 * 60)) % 24)).padStart(2, '0');
+                let m = String(Math.floor((diff / 1000 / 60) % 60)).padStart(2, '0');
+                let s = String(Math.floor((diff / 1000) % 60)).padStart(2, '0');
                 countdownText.value = h + ":" + m + ":" + s;
+            } else {
+                streamState.value = 'late';
+                currentFunnyMessage.value = lateMessages[tickCount % lateMessages.length];
             }
         };
 
@@ -366,41 +397,16 @@ const MoreView = {
             sbClient.from('channel_stats').select('*').eq('id', 1).single().then(({data}) => {
                 if (data) {
                     channelStats.value = {
-                        followers: data.followers || '898K',
-                        total_views: data.total_views && data.total_views !== '0' ? data.total_views : '14.2M',
-                        avg_viewers: data.avg_viewers && data.avg_viewers !== '0' ? data.avg_viewers : '3,850',
-                        peak_viewers: data.peak_viewers && data.peak_viewers !== '0' ? data.peak_viewers : '101,420',
-                        active_subs: data.active_subs || '2,104',
-                        account_created: data.account_created || 'Apr 2020',
-                        week_hours: data.week_hours && data.week_hours !== '0' ? data.week_hours : '24.5',
+                        followers: data.followers || '899K',
+                        total_views: data.total_views && data.total_views !== '0' ? data.total_views : '215M',
+                        peak_viewers: data.peak_viewers && data.peak_viewers !== '0' ? data.peak_viewers : '25,017',
+                        account_created: data.account_created || 'Mar 17, 2020',
+                        active_subs: data.active_subs || '5.4 Hours',
                         week_category: data.week_category || 'Just Chatting',
-                        week_days: data.week_days && data.week_days !== '0' ? data.week_days : '4',
-                        month_hours: data.month_hours && data.month_hours !== '0' ? data.month_hours : '98.2',
-                        month_category: data.month_category || 'Just Chatting',
-                        month_days: data.month_days && data.month_days !== '0' ? data.month_days : '4',
-                        year_hours: data.year_hours && data.year_hours !== '0' ? data.year_hours : '1,120',
-                        year_category: data.year_category || 'Unreal Engine',
-                        year_days: data.year_days && data.year_days !== '0' ? data.year_days : '3'
+                        week_days: data.week_days && data.week_days !== '0' ? data.week_days : '4'
                     };
                 }
             });
-
-            try {
-                const res = await fetch('https://yhxcuayiwqpjvalyrcqv.supabase.co/functions/v1/twitch-schedule');
-                const d = await res.json();
-                const schedEdges = d.data?.user?.channel?.schedule?.segments?.edges;
-                if (schedEdges && schedEdges.length > 0) {
-                    const now = Date.now();
-                    const upcoming = schedEdges.find(e => {
-                        if (!e.node.startAt) return false;
-                        const estimatedEndTime = new Date(e.node.startAt).getTime() + (4 * 60 * 60 * 1000); 
-                        return estimatedEndTime > now;
-                    });
-                    if (upcoming) {
-                        nextStreamTime.value = new Date(upcoming.node.startAt).getTime();
-                    }
-                }
-            } catch {}
 
             updateClock();
             timerInterval = setInterval(updateClock, 1000);
@@ -409,7 +415,7 @@ const MoreView = {
         onUnmounted(() => { clearInterval(timerInterval); });
         watch(() => props.isLive, updateClock);
 
-        return { activeSubView, statTimeframe, streamState, countdownText, channelStats };
+        return { activeSubView, streamState, countdownText, channelStats, currentFunnyMessage };
     },
     template: `
         <div class="more-container" style="position: relative; height: 100%; width: 100%; background: var(--bg-color); overflow: hidden;">
@@ -427,22 +433,15 @@ const MoreView = {
                     <div style="color: var(--warning); font-size: 12px; font-weight: 800; letter-spacing: 1.5px; text-transform: uppercase; margin-bottom: 8px; display: flex; align-items: center; gap: 6px;">
                         <span class="material-symbols-rounded" style="font-size: 18px;">warning</span> Waiting for Broadcast
                     </div>
-                    <div style="font-size: 22px; font-weight: 900; letter-spacing: 1px; color: var(--warning); text-shadow: 0 0 15px rgba(255, 152, 0, 0.4);">PREPARING SCUFF...</div>
+                    <div style="font-size: 16px; font-weight: 900; letter-spacing: 1px; color: var(--warning); text-shadow: 0 0 15px rgba(255, 152, 0, 0.4); text-transform: uppercase; margin-top: 4px;">{{ currentFunnyMessage }}</div>
                 </div>
 
                 <a v-else-if="streamState === 'live'" href="https://www.twitch.tv/codemiko" target="_blank" style="background: linear-gradient(135deg, rgba(239, 68, 68, 0.15), rgba(145, 70, 255, 0.05)); border: 1px solid rgba(239, 68, 68, 0.4); border-radius: 16px; padding: 20px; margin-bottom: 24px; margin-top: 8px; text-align: center; display: flex; flex-direction: column; align-items: center; justify-content: center; text-decoration: none;">
                     <div style="color: var(--danger); font-size: 12px; font-weight: 800; letter-spacing: 1.5px; text-transform: uppercase; margin-bottom: 8px; display: flex; align-items: center; gap: 6px;">
                         <span class="material-symbols-rounded" style="font-size: 18px;">podcasts</span> STREAM IS LIVE
                     </div>
-                    <div style="font-size: 24px; font-weight: 900; letter-spacing: 1px; color: var(--danger); text-shadow: 0 0 15px rgba(239, 68, 68, 0.6);">EMBRACE THE CHAOS</div>
+                    <div style="font-size: 16px; font-weight: 900; letter-spacing: 1px; color: var(--danger); text-shadow: 0 0 15px rgba(239, 68, 68, 0.6); text-transform: uppercase; margin-top: 4px;">{{ currentFunnyMessage }}</div>
                 </a>
-
-                <div v-else-if="streamState === 'awaiting'" style="background: var(--card-bg); border: 1px solid var(--border-color); border-radius: 16px; padding: 20px; margin-bottom: 24px; margin-top: 8px; text-align: center; display: flex; flex-direction: column; align-items: center; justify-content: center;">
-                    <div style="color: var(--text-muted); font-size: 12px; font-weight: 800; letter-spacing: 1.5px; text-transform: uppercase; margin-bottom: 8px; display: flex; align-items: center; gap: 6px;">
-                        <span class="material-symbols-rounded" style="font-size: 18px;">calendar_month</span> AWAITING SCHEDULE
-                    </div>
-                    <div style="font-size: 32px; font-weight: 900; font-variant-numeric: tabular-nums; letter-spacing: 2px; color: var(--text-muted);">--:--:--</div>
-                </div>
 
                 <div style="font-size: 12px; font-weight: 800; letter-spacing: 1.2px; text-transform: uppercase; color: var(--text-muted); margin: 28px 0 10px 8px;">Explore</div>
                 <button @click="activeSubView = 'about'" style="display: flex; align-items: center; width: 100%; padding: 0 16px; border-radius: 12px; min-height: 48px; background: var(--card-bg); border: 1px solid transparent; cursor: pointer; margin-bottom: 8px;">
@@ -573,16 +572,8 @@ const MoreView = {
                             <div style="font-size: 11px; color: var(--text-muted); text-transform: uppercase; font-weight: 700; letter-spacing: 0.5px;">Total Views</div>
                         </div>
                         <div style="background: var(--card-bg); padding: 16px; border-radius: 12px; display: flex; flex-direction: column; align-items: center; text-align: center; border: 1px solid var(--border-color);">
-                            <div style="font-size: 20px; font-weight: bold; color: var(--primary); margin-bottom: 4px;">{{ channelStats.avg_viewers }}</div>
-                            <div style="font-size: 11px; color: var(--text-muted); text-transform: uppercase; font-weight: 700; letter-spacing: 0.5px;">Avg Viewers</div>
-                        </div>
-                        <div style="background: var(--card-bg); padding: 16px; border-radius: 12px; display: flex; flex-direction: column; align-items: center; text-align: center; border: 1px solid var(--border-color);">
                             <div style="font-size: 20px; font-weight: bold; color: var(--primary); margin-bottom: 4px;">{{ channelStats.peak_viewers }}</div>
                             <div style="font-size: 11px; color: var(--text-muted); text-transform: uppercase; font-weight: 700; letter-spacing: 0.5px;">All-Time Peak</div>
-                        </div>
-                        <div style="background: var(--card-bg); padding: 16px; border-radius: 12px; display: flex; flex-direction: column; align-items: center; text-align: center; border: 1px solid var(--border-color);">
-                            <div style="font-size: 20px; font-weight: bold; color: var(--primary); margin-bottom: 4px;">{{ channelStats.active_subs }}</div>
-                            <div style="font-size: 11px; color: var(--text-muted); text-transform: uppercase; font-weight: 700; letter-spacing: 0.5px;">Active Subs</div>
                         </div>
                         <div style="background: var(--card-bg); padding: 16px; border-radius: 12px; display: flex; flex-direction: column; align-items: center; text-align: center; border: 1px solid var(--border-color);">
                             <div style="font-size: 16px; font-weight: bold; color: var(--primary); margin-top: 4px; margin-bottom: 4px;">{{ channelStats.account_created }}</div>
@@ -590,28 +581,12 @@ const MoreView = {
                         </div>
                     </div>
 
-                    <div style="font-size:12px; font-weight:bold; color:var(--primary); margin: 24px 0 12px 8px; text-transform:uppercase;">Recent Broadcasting</div>
+                    <div style="font-size:12px; font-weight:bold; color:var(--primary); margin: 24px 0 12px 8px; text-transform:uppercase;">Weekly Stats</div>
                     
-                    <div style="display: flex; gap: 8px; margin-bottom: 12px; background: rgba(145, 70, 255, 0.1); padding: 4px; border-radius: 8px;">
-                        <button @click="statTimeframe = 'week'" :style="statTimeframe === 'week' ? 'background: var(--card-bg); color: var(--text-main); box-shadow: 0 2px 5px rgba(0,0,0,0.1);' : 'background: transparent; color: var(--text-muted);'" style="flex: 1; padding: 8px 0; text-align: center; border-radius: 6px; font-size: 13px; font-weight: 600; cursor: pointer; border:none;">Week</button>
-                        <button @click="statTimeframe = 'month'" :style="statTimeframe === 'month' ? 'background: var(--card-bg); color: var(--text-main); box-shadow: 0 2px 5px rgba(0,0,0,0.1);' : 'background: transparent; color: var(--text-muted);'" style="flex: 1; padding: 8px 0; text-align: center; border-radius: 6px; font-size: 13px; font-weight: 600; cursor: pointer; border:none;">Month</button>
-                        <button @click="statTimeframe = 'year'" :style="statTimeframe === 'year' ? 'background: var(--card-bg); color: var(--text-main); box-shadow: 0 2px 5px rgba(0,0,0,0.1);' : 'background: transparent; color: var(--text-muted);'" style="flex: 1; padding: 8px 0; text-align: center; border-radius: 6px; font-size: 13px; font-weight: 600; cursor: pointer; border:none;">Year</button>
-                    </div>
-
-                    <div v-if="statTimeframe === 'week'" style="display: flex; flex-direction: column; gap: 8px;">
-                        <div style="background: var(--card-bg); padding: 12px 16px; border-radius: 10px; display: flex; justify-content: space-between; font-size: 14px; color: var(--text-muted); border: 1px solid var(--border-color);"><span>Hours Streamed</span><strong style="color: var(--text-main);">{{ channelStats.week_hours }} Hours</strong></div>
+                    <div style="display: flex; flex-direction: column; gap: 8px;">
+                        <div style="background: var(--card-bg); padding: 12px 16px; border-radius: 10px; display: flex; justify-content: space-between; font-size: 14px; color: var(--text-muted); border: 1px solid var(--border-color);"><span>Avg Stream Duration</span><strong style="color: var(--text-main);">{{ channelStats.active_subs }}</strong></div>
                         <div style="background: var(--card-bg); padding: 12px 16px; border-radius: 10px; display: flex; justify-content: space-between; font-size: 14px; color: var(--text-muted); border: 1px solid var(--border-color);"><span>Top Category</span><strong style="color: var(--text-main);">{{ channelStats.week_category }}</strong></div>
-                        <div style="background: var(--card-bg); padding: 12px 16px; border-radius: 10px; display: flex; justify-content: space-between; font-size: 14px; color: var(--text-muted); border: 1px solid var(--border-color);"><span>Active Days</span><strong style="color: var(--text-main);">{{ channelStats.week_days }} days / week</strong></div>
-                    </div>
-                    <div v-if="statTimeframe === 'month'" style="display: flex; flex-direction: column; gap: 8px;">
-                        <div style="background: var(--card-bg); padding: 12px 16px; border-radius: 10px; display: flex; justify-content: space-between; font-size: 14px; color: var(--text-muted); border: 1px solid var(--border-color);"><span>Hours Streamed</span><strong style="color: var(--text-main);">{{ channelStats.month_hours }} Hours</strong></div>
-                        <div style="background: var(--card-bg); padding: 12px 16px; border-radius: 10px; display: flex; justify-content: space-between; font-size: 14px; color: var(--text-muted); border: 1px solid var(--border-color);"><span>Top Category</span><strong style="color: var(--text-main);">{{ channelStats.month_category }}</strong></div>
-                        <div style="background: var(--card-bg); padding: 12px 16px; border-radius: 10px; display: flex; justify-content: space-between; font-size: 14px; color: var(--text-muted); border: 1px solid var(--border-color);"><span>Active Days</span><strong style="color: var(--text-main);">{{ channelStats.month_days }} days / week</strong></div>
-                    </div>
-                    <div v-if="statTimeframe === 'year'" style="display: flex; flex-direction: column; gap: 8px;">
-                        <div style="background: var(--card-bg); padding: 12px 16px; border-radius: 10px; display: flex; justify-content: space-between; font-size: 14px; color: var(--text-muted); border: 1px solid var(--border-color);"><span>Hours Streamed</span><strong style="color: var(--text-main);">{{ channelStats.year_hours }} Hours</strong></div>
-                        <div style="background: var(--card-bg); padding: 12px 16px; border-radius: 10px; display: flex; justify-content: space-between; font-size: 14px; color: var(--text-muted); border: 1px solid var(--border-color);"><span>Top Category</span><strong style="color: var(--text-main);">{{ channelStats.year_category }}</strong></div>
-                        <div style="background: var(--card-bg); padding: 12px 16px; border-radius: 10px; display: flex; justify-content: space-between; font-size: 14px; color: var(--text-muted); border: 1px solid var(--border-color);"><span>Active Days</span><strong style="color: var(--text-main);">{{ channelStats.year_days }} days / week</strong></div>
+                        <div style="background: var(--card-bg); padding: 12px 16px; border-radius: 10px; display: flex; justify-content: space-between; font-size: 14px; color: var(--text-muted); border: 1px solid var(--border-color);"><span>Active Days</span><strong style="color: var(--text-main);">{{ channelStats.week_days }}</strong></div>
                     </div>
                 </div>
             </transition>
@@ -747,7 +722,6 @@ createApp({
             if (tab === 'gerald') setTimeout(() => { const b = document.getElementById('gerald-msgs'); if (b) b.scrollTop = b.scrollHeight; }, 300);
         };
 
-        // Restored Swipe Pipeline Methods Explicitly bound for HTML triggers
         const handleSwipeStart = (e) => { swipeStartX = e.touches[0].clientX; };
         const handleSwipeEnd = (e) => {
             const dx = e.changedTouches[0].clientX - swipeStartX;
