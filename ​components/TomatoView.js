@@ -1,7 +1,6 @@
 const TomatoView = {
     template: `
-        <div style="height: 100%; width: 100%; background: var(--bg-color); overflow-y: auto; padding: 20px 16px; box-sizing: border-box; padding-bottom: 120px;">
-            
+        <div style="height: 100%; width: 100%; background: var(--bg-color); padding: 20px 16px; box-sizing: border-box; padding-bottom: 120px;">
             <div style="text-align: center; margin-bottom: 24px;">
                 <img src="https://raw.githubusercontent.com/meowoccino/MikoTok/main/a_2.png" style="width: 110px; height: 110px; border-radius: 50%; margin-bottom: 12px; object-fit: cover;" alt="Avatar">
                 <h2 style="margin:0; color: var(--text-main);">tomato_24</h2>
