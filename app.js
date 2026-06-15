@@ -395,14 +395,19 @@ const MoreView = {
         onMounted(async () => {
             sbClient.from('channel_stats').select('*').eq('id', 1).single().then(({data}) => {
                 if (data) {
+                    const isMonday = new Date().getDay() === 1;
+                    
+                    let hoursStr = data.week_hours && data.week_hours !== '0' ? data.week_hours.toString().replace(/ hours/i, '').trim() : '24.5';
+                    let daysStr = data.week_days && data.week_days !== '0' ? data.week_days.toString().replace(/ days \/ week/i, '').replace(/ days/i, '').trim() : '4';
+
                     channelStats.value = {
                         followers: data.followers || '899K',
                         total_views: data.total_views && data.total_views !== '0' ? data.total_views : '215M',
                         peak_viewers: data.peak_viewers && data.peak_viewers !== '0' ? data.peak_viewers : '25,017',
                         account_created: data.account_created || 'Mar 17, 2020',
-                        week_hours: data.week_hours && data.week_hours !== '0' ? data.week_hours : '24.5',
-                        week_category: data.week_category || 'Just Chatting',
-                        week_days: data.week_days && data.week_days !== '0' ? data.week_days : '4'
+                        week_hours: isMonday ? '0 Hours' : `${hoursStr} Hours`,
+                        week_category: isMonday ? 'TBD' : (data.week_category || 'Just Chatting'),
+                        week_days: isMonday ? '0 days' : `${daysStr} days`
                     };
                 }
             });
@@ -583,9 +588,9 @@ const MoreView = {
                     <div style="font-size:12px; font-weight:bold; color:var(--primary); margin: 24px 0 12px 8px; text-transform:uppercase;">Weekly Stats</div>
                     
                     <div style="display: flex; flex-direction: column; gap: 8px;">
-                        <div style="background: var(--card-bg); padding: 12px 16px; border-radius: 10px; display: flex; justify-content: space-between; font-size: 14px; color: var(--text-muted); border: 1px solid var(--border-color);"><span>Hours Streamed</span><strong style="color: var(--text-main);">{{ channelStats.week_hours }} Hours</strong></div>
+                        <div style="background: var(--card-bg); padding: 12px 16px; border-radius: 10px; display: flex; justify-content: space-between; font-size: 14px; color: var(--text-muted); border: 1px solid var(--border-color);"><span>Hours Streamed</span><strong style="color: var(--text-main);">{{ channelStats.week_hours }}</strong></div>
                         <div style="background: var(--card-bg); padding: 12px 16px; border-radius: 10px; display: flex; justify-content: space-between; font-size: 14px; color: var(--text-muted); border: 1px solid var(--border-color);"><span>Top Category</span><strong style="color: var(--text-main);">{{ channelStats.week_category }}</strong></div>
-                        <div style="background: var(--card-bg); padding: 12px 16px; border-radius: 10px; display: flex; justify-content: space-between; font-size: 14px; color: var(--text-muted); border: 1px solid var(--border-color);"><span>Active Days</span><strong style="color: var(--text-main);">{{ channelStats.week_days }} days / week</strong></div>
+                        <div style="background: var(--card-bg); padding: 12px 16px; border-radius: 10px; display: flex; justify-content: space-between; font-size: 14px; color: var(--text-muted); border: 1px solid var(--border-color);"><span>Active Days</span><strong style="color: var(--text-main);">{{ channelStats.week_days }}</strong></div>
                     </div>
                 </div>
             </transition>
