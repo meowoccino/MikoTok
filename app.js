@@ -556,7 +556,7 @@ const MoreView = {
                     <span class="material-symbols-rounded" style="color: var(--text-muted); margin-left: auto; font-size: 20px;">open_in_new</span>
                 </a>
                 <a href="https://www.tiktok.com/@codemiko" target="_blank" style="display: flex; align-items: center; width: 100%; box-sizing: border-box; padding: 0 16px; border-radius: 12px; min-height: 48px; background: var(--card-bg); text-decoration: none; margin-bottom: 8px;">
-                    <svg viewBox="0 0 24 24" style="width: 22px; height: 22px; color: var(--text-main);"><path fill="currentColor" d="M12.53.02C13.84 0 15.14.01 16.44 0c.08 1.53.63 3.09 1.75 4.17 1.12 1.11 2.7 1.62 4.24 1.79v4.03c-1.44-.05-2.89-.35-4.2-.97-.57-.26-1.1-.59-1.62-.93-.01 2.92.01 5.84-.02 8.75-.08 1.4-.54 2.79-1.35 3.94-1.31 1.92-3.58 3.17-5.91 3.21-1.43.08-2.86-.31-4.08-1.03-2.02-1.12-3.44-3.17-3.64-5.41-.02-.21-.02-.41-.02-.62.07-1.44.62-2.83 1.51-3.89 1.05-1.25 2.55-2.06 4.15-2.28 1.1-.15 2.23-.04 3.27.35v4.06c-.34-.13-.7-.2-1.07-.22-.92-.04-1.84.28-2.51.86-.67.57-1.08 1.4-1.1 2.31-.01.91.38 1.77 1.03 2.38.65.61 1.56.93 2.49.88.92-.04 1.78-.45 2.38-1.11.58-.65.88-1.54.88-2.45V.02h-.03z"/></svg>
+                    <svg viewBox="0 0 24 24" style="width: 22px; height: 22px; color: var(--text-main);"><path fill="currentColor" d="M12.53.02C13.84 0 15.14.01 16.44 0c.08 1.53.63 3.09 1.75 4.17 1.12 1.11 2.7 1.62 4.24 1.79v4.03c-1.44-.05-2.89-.35-4.20-.97-.57-.26-1.1-.59-1.62-.93-.01 2.92.01 5.84-.02 8.75-.08 1.4-.54 2.79-1.35 3.94-1.31 1.92-3.58 3.17-5.91 3.21-1.43.08-2.86-.31-4.08-1.03-2.02-1.12-3.44-3.17-3.64-5.41-.02-.21-.02-.41-.02-.62.07-1.44.62-2.83 1.51-3.89 1.05-1.25 2.55-2.06 4.15-2.28 1.1-.15 2.23-.04 3.27.35v4.06c-.34-.13-.7-.2-1.07-.22-.92-.04-1.84.28-2.51.86-.67.57-1.08 1.4-1.1 2.31-.01.91.38 1.77 1.03 2.38.65.61 1.56.93 2.49.88.92-.04 1.78-.45 2.38-1.11.58-.65.88-1.54.88-2.45V.02h-.03z"/></svg>
                     <span style="color: var(--text-main); font-size: 14px; font-weight: 600; margin-left: 12px;">TikTok</span>
                     <span class="material-symbols-rounded" style="color: var(--text-muted); margin-left: auto; font-size: 20px;">open_in_new</span>
                 </a>
@@ -582,7 +582,6 @@ const MoreView = {
                 </a>
             </div>
 
-            <!-- Native Slide Overlay for About Page -->
             <transition name="nav-slide">
                 <div v-if="activeSubView === 'about'" class="sub-view-overlay">
                     <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 24px; font-size: 18px; font-weight: bold; color: var(--text-main);">
@@ -604,7 +603,6 @@ const MoreView = {
                 </div>
             </transition>
 
-            <!-- Native Slide Overlay for Channels Statistics Page -->
             <transition name="nav-slide">
                 <div v-if="activeSubView === 'stats'" class="sub-view-overlay">
                     <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 24px; font-size: 18px; font-weight: bold; color: var(--text-main);">
@@ -747,7 +745,9 @@ createApp({
 
         const tabOrder = ['home', 'chat', 'gerald', 'tomato', 'more'];
         const initialTabIdx = tabOrder.indexOf(tabs.includes(window.location.hash.replace('#','')) ? window.location.hash.replace('#','') : 'home');
-        const tabOffset = ref(initialTabIdx * -25);
+        
+        // Math calculation fixed to 20% increments for 5 total tabs!
+        const tabOffset = ref(initialTabIdx * -20);
 
         const updateThemeClass = () => {
             document.body.className = 'theme-' + appTheme.value;
@@ -770,11 +770,16 @@ createApp({
 
         const switchTab = (tab) => {
             currentTab.value = tab;
-            tabOffset.value = tabOrder.indexOf(tab) * -25;
+            
+            // Fixed navigation step calculations to perfectly center the views!
+            tabOffset.value = tabOrder.indexOf(tab) * -20;
+            
             window.history.pushState(null, '', `#${tab}`);
             if (tab === 'gerald') setTimeout(() => { const b = document.getElementById('gerald-msgs'); if (b) b.scrollTop = b.scrollHeight; }, 300);
         };
 
+        // Fixed touch interaction limits to support all 5 screens fluently
+        let swipeStartX = 0;
         const handleSwipeStart = (e) => { swipeStartX = e.touches[0].clientX; };
         const handleSwipeEnd = (e) => {
             const dx = e.changedTouches[0].clientX - swipeStartX;
@@ -1015,4 +1020,3 @@ createApp({
         };
     }
 }).mount('#app-container');
-
