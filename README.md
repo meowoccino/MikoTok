@@ -1,4 +1,3 @@
-
 # 📱 MikoTok
 
 The ultimate, lightweight mobile Progressive Web App (PWA) built exclusively for the CodeMiko community. 
@@ -15,14 +14,14 @@ Make sure to support CodeMiko across all her official channels!
 * 🎁 **Throne:** [throne.com/codemiko](https://throne.com/codemiko) (Pinned)
 * 🔮 **Twitch:** [twitch.tv/codemiko](https://www.twitch.tv/codemiko)
 * 🎥 **YouTube:** [youtube.com/@CodeMiko](https://youtube.com/@CodeMiko)
-* 🦋 **Bluesky:** [bsky.app/profile/codemiko.bsky.social](https://bsky.app/profile/codemiko.bsky.social)
 * 💚 **Kick:** [kick.com/codemiko](https://kick.com/codemiko)
 * 💬 **Discord:** [discord.gg/codemiko](https://discord.com/invite/codemiko)
-* 💖 **Fanfix:** [app.fanfix.io/@codeyuna](https://app.fanfix.io/@codeyuna)
+* 🦋 **Fanfix:** [app.fanfix.io/@codeyuna](https://app.fanfix.io/@codeyuna)
 * 🖤 **TikTok:** [tiktok.com/@codemiko](https://www.tiktok.com/@codemiko)
-* 𝕏 **X (Twitter):** [x.com/codemiko](https://x.com/codemiko)
+* 🐦 **X (Twitter):** [twitter.com/codemiko](https://twitter.com/codemiko)
 * 📸 **Instagram:** [instagram.com/thecodemiko/](https://www.instagram.com/thecodemiko/)
-* 💛 **Snapchat:** [snapchat.com/add/codemiko](https://snapchat.com/add/codemiko)
+* 🧵 **Threads:** [threads.net/@thecodemiko](https://www.threads.net/@thecodemiko)
+* 💛 **Snapchat:** [snapchat.com/add/codemiko](https://www.snapchat.com/add/codemiko)
 * 💙 **Facebook:** [facebook.com/codemikoofficial](https://www.facebook.com/codemikoofficial)
 
 ---
@@ -30,11 +29,9 @@ Make sure to support CodeMiko across all her official channels!
 ## ✨ Features
 
 * **🔴 Auto-Live Twitch Integration:** Automatically detects when CodeMiko goes live and maps the player container directly to the active broadcast. Swipe or tap through chronological historical VODs when offline.
-* **🎬 Infinite Scroll Clip Vault:** Implements a high-performance, foolproof bounding-range infinite scrolling feed serving 3,000+ historical clips. Features accurate arithmetic sorting using native integer datasets across specialized filters (**Latest, Weekly, Monthly, 6 Months, All Time**).
-* **⏱️ 4-Hour Time-Chunked Background Sync:** Runs an advanced background scraping pipeline utilizing Supabase `pg_cron` routines on a strict 4-hour cycle. Rather than fetching single-block years which trigger Twitch Helix 1,000-clip limitation walls, the engine queries time data in 30-day "chunks" across the last 12 months. This catches everything from 200k+ viral hits to micro-scale 1-view community moments with seamless `upsert` duplication protection.
-* **🌗 Native Android OS UI Synchronization:** Features progressive layout adaptability that intercepts theme switches. Leverages standard platform overlay styling (`color-scheme`) to force Android system navigation controls (Back, Home, Multitasking menu bars) to invert dynamically, eliminating bright white contrast breaks in Dark Mode.
-* **🤖 Gerald OS Chatbot:** An advanced AI layout wrapper powered by serverless Supabase Edge Functions. Gerald features real-time simulated system metrics (CPU, Memory, VRAM Temp) and dynamically tracks system API connectivity.
-* **🎮 16x Protocol Event Grid:** Launch 16 unique layout-disrupting minigames/events (e.g., *Boba Spill, Compile UE5, Scuffed Suit, Mute Mic, Delete Hair*) that dynamically override Gerald's baseline system prompt, triggering chaotic, mechanical panic responses.
+* **💬 Real-Time Twitch IRC Chat:** Render a native, bottom-anchored, live Twitch chat box with full tag support. Intercepts `USERSTATE` protocols to pull user badges directly from Twitch servers and processes standard channel assets effortlessly.
+* **🤖 Gerald OS Chatbot:** An advanced AI layout wrapper powered by Supabase Edge Functions. Gerald features real-time simulated system metrics (CPU, Memory, VRAM Temp) and dynamically tracks system API connectivity.
+* **🎮 4x4 Event Protocol Grid:** Launch 16 structural minigames/events (e.g., Boba Spill, Compile UE5, Scuffed Suit, Mute Mic) that override Gerald's base prompt context, triggering mechanical panic responses to local channel chaos.
 * **⌨️ Global 7TV Emote Integration:** Automatically fetches global and channel-specific 7TV asset sets. Implements a responsive mood picker tray to inject high-fidelity emotes natively into chat logs and AI history maps.
 
 ---
@@ -43,82 +40,56 @@ Make sure to support CodeMiko across all her official channels!
 
 MikoTok behaves as a Progressive Web App, enabling you to pin it straight to your mobile system launcher without utilizing an app marketplace.
 
-**For Android (Chrome):**
-1. Load the site link inside **Chrome**.
-2. Tap the **Three Dots (Menu)** utility in the top-right corner.
-3. Tap **Add to Home screen** (or "Install app").
-
 **For iOS (Safari):**
 1. Load the site link inside **Safari**.
 2. Tap the system **Share** action tab at the bottom toolbar.
 3. Scroll down the panel and tap **Add to Home Screen**.
 
+**For Android (Chrome):**
+1. Load the site link inside **Chrome**.
+2. Tap the **Three Dots (Menu)** utility in the top-right corner.
+3. Tap **Add to Home screen** (or "Install app").
+
 ---
 
 ## 🛠️ Tech Stack
 
-This project is engineered to run completely serverless, providing rapid execution environments on mobile viewport targets.
+This project is engineered to run serverless, providing rapid execution environments on mobile viewport targets.
 
 * **Frontend Framework:** HTML5, CSS3, Vue.js 3 (Production CDN Distribution)
-* **Backend Database & Automation:** Supabase PostgreSQL Database, `pg_cron` Engine extension
-* **Serverless Compute Layer:** Supabase Edge Functions (Deno DBR Runtime Env)
-* **API Providers:** Twitch Helix GraphQL API, 7TV CDN Asset Pipeline, DecAPI
+* **Backend Database:** Supabase (PostgreSQL Data Logs, Edge Functions, Authentication Engine)
+* **API Providers:** Twitch Helix API, 7TV CDN Asset Pipeline, DecAPI
 
 ---
 
-## ⚙️ Project Architecture & Deployment
+## ⚙️ Local Development
 
 To clone this layout configuration and manage it locally, you will need to map your own database architecture and developer credentials.
 
-### 1. Database Table Initialization
-Execute the following schema configurations within your Supabase SQL Editor to map the clips, custom emotes, and profile matrices correctly:
+1. Clone this repository to your tracking folder.
+2. Open `app.js` and input your personal database client reference:
+   `const sbClient = supabase.createClient('YOUR_SUPABASE_URL', 'YOUR_PUBLISHABLE_ANON_KEY');`
+3. Deploy a Supabase Edge Function named `gerald-chat` to manage the underlying AI logic structures.
+4. Tap the **MikoTok Logo** icon inside the app header to open the Admin Panel. 
+5. Authenticate via your credentials, enter your developer keys into the **TWITCH API CONFIG** segment, and click **Save Credentials** to trigger animated success validation tracking.
 
-```sql
--- Clips Master Data Storage
-CREATE TABLE clips (
-    id TEXT PRIMARY KEY,
-    title TEXT,
-    view_count INTEGER, -- Explicitly integer for true value mathematical sorting
-    created_at TIMESTAMPTZ,
-    thumbnail_url TEXT
-);
+---
 
--- Channel Statistics Container Row
-CREATE TABLE channel_stats (
-    id INTEGER PRIMARY KEY,
-    followers TEXT,
-    total_views TEXT,
-    peak_viewers TEXT,
-    account_created TEXT,
-    week_hours TEXT,
-    week_category TEXT,
-    week_days TEXT
-);
-
-```
-### 2. Edge Function Deployments
-Deploy two core Supabase serverless edge routines:
- * gerald-chat: Integrates with Gemini AI models, pulling emote vocab lists dynamically.
- * fetch-clips: Handles the 12-month chunked backend Twitch sweep.
-### 3. Autopilot Background Synchronization
-To automate data retrieval every 4 hours, arm a single master automated background worker inside your SQL panel:
-```sql
-SELECT cron.schedule(
-  'master-clip-fetcher-4h',
-  '0 */4 * * *', -- Fires every 4 hours on the dot
-  $$
-  SELECT net.http_post(
-      url := 'https://YOUR_PROJECT_ID.supabase.co/functions/v1/fetch-clips',
-      headers := '{"Content-Type": "application/json"}'::jsonb
-  )
-  $$
-);
-
-```
-### 4. Application Linkage
- * Map your live keys to app.js via supabase.createClient('URL', 'KEY');.
- * Tap the **MikoTok Logo** inside your mobile layout header to unlock the admin gateway, authenticate your credentials, update your Twitch Application secrets, and execute a cash-forward sweep!
 ## 📄 License
-This project is licensed under the MIT License - see the code manifest for raw authorization tracking details.
-> *"Maintained by tomato_24. Gerald OS is operational. Please ensure the Technician doesn't spill boba on the primary server chassis."*
-> 
+
+This project is licensed under the MIT License.
+
+**MIT License**
+Copyright (c) 2026 tomato_24
+
+Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the "Software"), to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+
+---
+
+> *"Maintained by tomato_24. Gerald OS is operational. Please ensure the Technician doesn't kick the primary ethernet array."*
+
+can you update it so it's up a date? with all features etc. don't forgot formating for GitHub
