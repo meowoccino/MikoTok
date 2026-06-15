@@ -9,6 +9,9 @@ styleReset.innerHTML = `
     .nav-slide-enter-active, .nav-slide-leave-active { transition: transform 0.3s cubic-bezier(0.25, 0.8, 0.25, 1); will-change: transform; }
     .nav-slide-enter-from, .nav-slide-leave-to { transform: translateX(100%); }
     .sub-view-overlay { position: absolute; top:0; left:0; right:0; bottom:0; background: var(--bg-color); z-index: 50; overflow-y: auto; padding: 20px 16px; box-sizing: border-box; }
+    
+    /* Erases the ugly grey line hovering above the navbar */
+    .bottom-nav { border-top: none !important; box-shadow: 0 -2px 10px rgba(0,0,0,0.05) !important; margin-top: -1px; }
 `;
 document.head.appendChild(styleReset);
 
@@ -101,14 +104,13 @@ const BottomNav = {
                 <span class="material-symbols-rounded">menu</span><span class="nav-label">More</span>
             </div>
             <div class="nav-item" :class="{ active: currentTab === 'tomato' }" @click="$emit('change-tab', 'tomato')">
-                <svg v-if="currentTab !== 'tomato'" viewBox="0 0 24 24" style="width:24px; height:24px; fill:none; stroke:currentColor; stroke-width:2; stroke-linecap:round; stroke-linejoin:round; margin-bottom:4px;">
-                    <path d="M12 7c-4.418 0-8 3.134-8 7s3.582 7 8 7 8-3.134 8-7-3.582-7-8-7z"/>
-                    <path d="M12 7V4M8 5c1.5 1.5 3 2 4 2s2.5-.5 4-2"/>
-                </svg>
-                <svg v-else viewBox="0 0 24 24" style="width:24px; height:24px; margin-bottom:4px;">
-                    <path d="M12 7c-4.418 0-8 3.134-8 7s3.582 7 8 7 8-3.134 8-7-3.582-7-8-7z" fill="currentColor"/>
-                    <path d="M15 11c0 1.5-1 2.5-2 2.5" stroke="var(--bg-color)" stroke-width="2" stroke-linecap="round" fill="none"/>
-                    <path d="M12 7V4M8 5c1.5 1.5 3 2 4 2s2.5-.5 4-2" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+                <svg viewBox="0 0 24 24" style="width:24px; height:24px; fill:none; stroke:currentColor; stroke-width:2; stroke-linecap:round; stroke-linejoin:round; margin-bottom:4px;">
+                    <ellipse cx="12" cy="15" rx="8.5" ry="7.5" />
+                    <path d="M12 7.5V3" />
+                    <path d="M8.5 4.5c1 1 3.5 1 3.5 3" />
+                    <path d="M15.5 4.5c-1 1-3.5 1-3.5 3" />
+                    <path d="M12 7.5c-2 0-4 .5-5 1.5" />
+                    <path d="M12 7.5c2 0 4 .5 5 1.5" />
                 </svg>
                 <span class="nav-label">tomato_24</span>
             </div>
@@ -344,20 +346,21 @@ const TomatoView = {
                 <div style="color:var(--text-muted); font-size:14px; margin-top:4px;">App Developer & Animal Rescuer</div>
             </div>
 
+            <!-- Horizontal Support Grid at the Top -->
             <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; margin-bottom: 24px;">
                 <a href="https://www.paypal.me/meowoccino" target="_blank" style="background: var(--card-bg); border: 1px solid var(--border-color); border-radius: 12px; padding: 12px 4px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 8px; text-decoration: none; color: var(--text-main); font-weight: 700; font-size: 13px;">
-                    <svg viewBox="0 0 24 24" style="width: 24px; height: 24px;">
-                        <path d="M7.076 21.337H2.47a.641.641 0 0 1-.633-.74L4.944.901C5.026.382 5.474 0 5.998 0h7.46c2.57 0 4.578.543 5.69 1.81 1.01 1.15 1.304 2.42 1.012 4.287-.023.143-.047.288-.077.437-.983 5.05-4.349 6.797-8.647 6.797h-2.19c-.524 0-.968.382-1.05.9l-1.12 7.106z" fill="#003087"/>
-                        <path d="M11.603 13.33H9.412c-.524 0-.968.382-1.05.9l-1.12 7.106-.11.696a.641.641 0 0 0 .633.74h3.693c.48 0 .89-.35.967-.825l.024-.13.717-4.54.04-.21a.987.987 0 0 1 .974-.834h.16c3.606 0 6.425-1.468 7.25-5.698.24-1.226.17-2.39-.234-3.418-1.01 2.92-3.613 4.218-7.747 4.218z" fill="#0079C1"/>
+                    <svg viewBox="0 0 24 24" style="width: 28px; height: 28px;">
+                        <path fill="#003087" d="M7.076 21.337H2.47a.641.641 0 0 1-.633-.74L4.944.901C5.026.382 5.474 0 5.998 0h7.46c2.57 0 4.578.543 5.69 1.81 1.01 1.15 1.304 2.42 1.012 4.287-.023.143-.047.288-.077.437-.983 5.05-4.349 6.797-8.647 6.797h-2.19c-.524 0-.968.382-1.05.9l-1.12 7.106z"/>
+                        <path fill="#0079C1" d="M11.603 13.33H9.412c-.524 0-.968.382-1.05.9l-1.12 7.106-.11.696a.641.641 0 0 0 .633.74h3.693c.48 0 .89-.35.967-.825l.024-.13.717-4.54.04-.21a.987.987 0 0 1 .974-.834h.16c3.606 0 6.425-1.468 7.25-5.698.24-1.226.17-2.39-.234-3.418-1.01 2.92-3.613 4.218-7.747 4.218z"/>
                     </svg>
                     PayPal
                 </a>
                 <a href="https://throne.com/tomato_24" target="_blank" style="background: var(--card-bg); border: 1px solid var(--border-color); border-radius: 12px; padding: 12px 4px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 8px; text-decoration: none; color: var(--text-main); font-weight: 700; font-size: 13px;">
-                    <svg viewBox="0 0 24 24" style="width: 24px; height: 24px; fill: #ef4444;"><path d="M20 6h-2.18c.11-.31.18-.65.18-1 0-1.66-.84-3-2-3-1.22 0-2.42 1.55-3 2.52-.58-.97-1.78-2.52-3-2.52-1.16 0-2 1.34-2 3 0 .35.07.69.18 1H4c-1.11 0-1.99.89-1.99 2L2 19c0 1.11.89 2 2 2h16c1.11 0 2-.89 2-2V8c0-1.11-.89-2-2-2zm-5-3c.55 0 1 .45 1 1s-.45 1-1 1-1-.45-1-1 .45-1 1-1zm-6 0c.55 0 1 .45 1 1s-.45 1-1 1-1-.45-1-1 .45-1 1-1zm11 16H4V8h16v11z"/></svg>
+                    <svg viewBox="0 0 24 24" style="width: 28px; height: 28px; fill: #ef4444;"><path d="M20 6h-2.18c.11-.31.18-.65.18-1 0-1.66-.84-3-2-3-1.22 0-2.42 1.55-3 2.52-.58-.97-1.78-2.52-3-2.52-1.16 0-2 1.34-2 3 0 .35.07.69.18 1H4c-1.11 0-1.99.89-1.99 2L2 19c0 1.11.89 2 2 2h16c1.11 0 2-.89 2-2V8c0-1.11-.89-2-2-2zm-5-3c.55 0 1 .45 1 1s-.45 1-1 1-1-.45-1-1 .45-1 1-1zm-6 0c.55 0 1 .45 1 1s-.45 1-1 1-1-.45-1-1 .45-1 1-1zm11 16H4V8h16v11z"/></svg>
                     Throne
                 </a>
                 <a href="https://revolut.me/tomato24" target="_blank" style="background: var(--card-bg); border: 1px solid var(--border-color); border-radius: 12px; padding: 12px 4px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 8px; text-decoration: none; color: var(--text-main); font-weight: 700; font-size: 13px;">
-                    <svg viewBox="0 0 24 24" style="width: 24px; height: 24px; fill: currentColor;"><path d="M16.516 12.167c1.331-.798 2.247-2.355 2.247-3.924 0-2.898-2.457-5.243-5.5-5.243H5v18h4.5v-5.5h3.253l3.847 5.5h5.153l-4.498-6.327c-.702-.413-1.353-.745-2.052-.924zM9.5 7h2.754c.997 0 1.846.832 1.846 1.832s-.849 1.833-1.846 1.833H9.5V7z"/></svg>
+                    <svg viewBox="0 0 24 24" style="width: 28px; height: 28px; fill: currentColor;"><path d="M16.516 12.167c1.331-.798 2.247-2.355 2.247-3.924 0-2.898-2.457-5.243-5.5-5.243H5v18h4.5v-5.5h3.253l3.847 5.5h5.153l-4.498-6.327c-.702-.413-1.353-.745-2.052-.924zM9.5 7h2.754c.997 0 1.846.832 1.846 1.832s-.849 1.833-1.846 1.833H9.5V7z"/></svg>
                     Revolut
                 </a>
             </div>
@@ -530,7 +533,7 @@ const MoreView = {
                     <span class="material-symbols-rounded" style="color: var(--text-muted); margin-left: auto; font-size: 20px;">open_in_new</span>
                 </a>
                 <a href="https://www.youtube.com/@CodeMiko" target="_blank" style="display: flex; align-items: center; width: 100%; box-sizing: border-box; padding: 0 16px; border-radius: 12px; min-height: 48px; background: var(--card-bg); text-decoration: none; margin-bottom: 8px;">
-                    <svg viewBox="0 0 24 24" style="width: 22px; height: 22px; color: #FF0000;"><path fill="currentColor" d="M21.582 6.186a2.6 2.6 0 0 0-1.838-1.85C18.125 3.9 12 3.9 12 3.9s-6.125 0-7.744.436a2.6 2.6 0 0 0-1.838 1.85C2 7.82 2 12 2 12s0 4.18.418 5.814a2.6 2.6 0 0 0 1.838 1.85C5.875 20.1 12 20.1 12 20.1s6.125 0 7.744-.436a2.6 2.6 0 0 0 1.838-1.85C22 16.18 22 12 22 12s0-4.18-.418-5.814zM9.9 15.54V8.46L16.2 12z"/></svg>
+                    <svg viewBox="0 0 24 24" style="width: 22px; height: 22px; color: #FF0000;"><path fill="currentColor" d="M21.582 6.186a2.6 2.6 0 0 0-1.838-1.85C18.125 3.9 12 3.9 12 3.9s-6.125 0-7.744.436a2.6 2.6 0 0 0-1.838 1.85C2 7.82 2 12 2 12s0 4.18-.418 5.814a2.6 2.6 0 0 0 1.838 1.85C5.875 20.1 12 20.1 12 20.1s6.125 0 7.744-.436a2.6 2.6 0 0 0 1.838-1.85C22 16.18 22 12 22 12s0-4.18-.418-5.814zM9.9 15.54V8.46L16.2 12z"/></svg>
                     <span style="color: var(--text-main); font-size: 14px; font-weight: 600; margin-left: 12px;">YouTube</span>
                     <span class="material-symbols-rounded" style="color: var(--text-muted); margin-left: auto; font-size: 20px;">open_in_new</span>
                 </a>
@@ -544,8 +547,13 @@ const MoreView = {
                     <span style="color: var(--text-main); font-size: 14px; font-weight: 600; margin-left: 12px;">Discord</span>
                     <span class="material-symbols-rounded" style="color: var(--text-muted); margin-left: auto; font-size: 20px;">open_in_new</span>
                 </a>
+                
+                <!-- Classic Flat Reddit Snoo -->
                 <a href="https://www.reddit.com/r/CodeMiko/" target="_blank" style="display: flex; align-items: center; width: 100%; box-sizing: border-box; padding: 0 16px; border-radius: 12px; min-height: 48px; background: var(--card-bg); text-decoration: none; margin-bottom: 8px;">
-                    <svg viewBox="0 0 24 24" style="width: 22px; height: 22px; fill: #FF4500;"><path d="M12.006 0C5.378 0 0 5.378 0 12.006c0 6.627 5.378 12.006 12.006 12.006 6.627 0 12.006-5.379 12.006-12.006C24.012 5.378 18.633 0 12.006 0zm5.176 8.35c.783 0 1.41.626 1.41 1.408 0 .428-.19.81-.482 1.074.016.14.025.285.025.433 0 2.766-2.923 5.01-6.52 5.01-3.595 0-6.518-2.244-6.518-5.01 0-.148.01-.293.025-.433-.292-.264-.482-.646-.482-1.074 0-.782.626-1.408 1.41-1.408.533 0 1.0.297 1.233.727 1.033-.717 2.457-1.18 4.022-1.246l.86-4.045 2.808.595c.026.473.414.85.894.85.494 0 .895-.4.895-.893 0-.494-.4-.894-.894-.894-.368 0-.692.22-.828.538l-3.092-.654c-.1-.02-.198.04-.225.138l-.946 4.453c1.615.05 3.084.512 4.14 1.24.234-.43.702-.727 1.237-.727zm-7.65 3.208c-.604 0-1.096.49-1.096 1.095 0 .604.492 1.095 1.096 1.095.604 0 1.096-.49 1.096-1.095 0-.605-.492-1.095-1.096-1.095zm5.727 4.023c-1.127 1.127-3.085 1.162-3.805 1.162-.72 0-2.678-.035-3.805-1.162-.178-.178-.178-.466 0-.644.177-.178.465-.178.644 0 .835.835 2.45 1.002 3.16 1.002.71 0 2.327-.167 3.16-1.002.178-.178.466-.178.644 0 .178.178.178.466 0 .644zm-.827-1.928c-.604 0-1.096-.49-1.096-1.095 0-.604.492-1.095 1.096-1.095.604 0 1.096.49 1.096 1.095 0 .605-.492 1.095-1.096 1.095z"/></svg>
+                    <svg viewBox="0 0 24 24" style="width: 22px; height: 22px; fill: #FF4500;">
+                        <circle cx="12" cy="12" r="12" />
+                        <path fill="#ffffff" d="M16.7 10.6c-.6 0-1.1.3-1.4.7-.9-.6-2.1-1-3.5-1.1l.6-2.9 2 .4c0 .6.5 1.1 1.1 1.1.6 0 1.1-.5 1.1-1.1 0-.6-.5-1.1-1.1-1.1-.5 0-.9.3-1 .8l-2.2-.5c-.1 0-.2 0-.2.1l-.7 3.3c-1.4.1-2.6.4-3.5 1-.3-.4-.8-.7-1.4-.7-.9 0-1.6.7-1.6 1.6 0 .6.3 1.1.8 1.4-.1.2-.1.4-.1.6 0 2.4 2.8 4.4 6.3 4.4s6.3-2 6.3-4.4c0-.2 0-.4-.1-.6.5-.3.8-.8.8-1.4 0-.9-.7-1.6-1.6-1.6zm-7.2 4.2c-.5 0-.9-.4-.9-.9s.4-.9.9-.9.9.4.9.9-.4.9-.9.9zm5.3 2c-1 .6-2.5.6-2.8.6s-1.8 0-2.8-.6c-.2-.1-.2-.3-.1-.4.1-.2.3-.2.4-.1.8.4 2 .5 2.5.5s1.7-.1 2.5-.5c.2-.1.4-.1.4.1.2.1.2.3.1.4zm-.4-2c-.5 0-.9-.4-.9-.9s.4-.9.9-.9.9.4.9.9-.4.9-.9.9z"/>
+                    </svg>
                     <span style="color: var(--text-main); font-size: 14px; font-weight: 600; margin-left: 12px;">Reddit</span>
                     <span class="material-symbols-rounded" style="color: var(--text-muted); margin-left: auto; font-size: 20px;">open_in_new</span>
                 </a>
@@ -744,6 +752,7 @@ createApp({
         const geraldInput = ref(''), geraldMessages = ref([{ role: 'gerald', content: '' }]);
         const isGeraldTyping = ref(false), showEmotePicker = ref(false), showMinigames = ref(false);
         const currentFilter = ref('latest'), activeFilterLabel = ref('Latest'), isFilterMenuOpen = ref(false);
+        
         const recentVods = ref([]), currentVodIndex = ref(0);
         const selectedClip = ref(null);
 
