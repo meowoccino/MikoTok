@@ -1,11 +1,16 @@
+// Injects global CSS to fix structural margins, clear gaps, and configure color schemes
 const styleReset = document.createElement('style');
 styleReset.innerHTML = `
     .app-wrapper { border-left: none !important; border-right: none !important; max-width: 100% !important; }
     html, body { overscroll-behavior-y: none; background-color: var(--bg-color) !important; margin: 0; padding: 0; height: 100%; width: 100%; }
     ::-webkit-scrollbar { width: 0px; background: transparent; }
+    
+    /* Native Slide Transition Classes */
     .nav-slide-enter-active, .nav-slide-leave-active { transition: transform 0.3s cubic-bezier(0.25, 0.8, 0.25, 1); will-change: transform; }
     .nav-slide-enter-from, .nav-slide-leave-to { transform: translateX(100%); }
     .sub-view-overlay { position: absolute; top:0; left:0; right:0; bottom:0; background: var(--bg-color); z-index: 50; overflow-y: auto; padding: 20px 16px; box-sizing: border-box; }
+    
+    /* Navbar override to delete the phantom line */
     .bottom-nav { border-top: none !important; box-shadow: none !important; margin-top: 0; }
 `;
 document.head.appendChild(styleReset);
@@ -293,7 +298,7 @@ const GeraldView = {
                 </div>
             </div>
 
-            <div class="gerald-messages" id="gerald-msgs" @click="$emit('close-pickers')">
+            <div class="gerald-messages" id="gerald-msgs" @click="$emit('close-pickers')" style="flex: 1; overflow-y: auto; overscroll-behavior-y: contain; -webkit-overflow-scrolling: touch; display: flex; flex-direction: column; padding: 2px 16px;">
                 <template v-for="(m, i) in geraldMessages" :key="i">
                     <div v-if="i === 0 && m.role === 'gerald' && !m.content" class="chat-bubble gerald startup-anim">
                         <span>GERALD_CORE initialized.<br>Awaiting human input...</span>
@@ -749,8 +754,10 @@ createApp({
         
         const tabOffset = ref(initialTabIdx * -20);
 
-        // Tracker for 1:1 Swipe Physics
+        // Tracker for 1:1 Swipe Physics + Directional Locking
         let swipeStartX = 0;
+        let swipeStartY = 0;
+        let isVerticalScroll = false;
         const isSwiping = ref(false);
         const swipeDeltaX = ref(0);
         
@@ -802,17 +809,31 @@ createApp({
 
         const handleSwipeStart = (e) => { 
             if (document.activeElement && ['INPUT', 'TEXTAREA'].includes(document.activeElement.tagName)) return;
+            if (e.target.closest('.chat-emote-tray')) return;
+
             swipeStartX = e.touches[0].clientX; 
+            swipeStartY = e.touches[0].clientY; 
             isSwiping.value = true;
             swipeDeltaX.value = 0;
+            isVerticalScroll = false;
         };
         
         const handleSwipeMove = (e) => {
             if (!isSwiping.value) return;
+            
             const dx = e.touches[0].clientX - swipeStartX;
+            const dy = e.touches[0].clientY - swipeStartY;
+            
+            if (!isVerticalScroll && Math.abs(dy) > Math.abs(dx) && Math.abs(dy) > 5) {
+                isVerticalScroll = true;
+                isSwiping.value = false;
+                swipeDeltaX.value = 0;
+                return;
+            }
+
+            if (isVerticalScroll) return;
             
             const idx = tabOrder.indexOf(currentTab.value);
-            // Apply heavy friction if trying to swipe out of bounds
             if ((idx === 0 && dx > 0) || (idx === tabOrder.length - 1 && dx < 0)) {
                 swipeDeltaX.value = dx * 0.2; 
             } else {
@@ -826,8 +847,8 @@ createApp({
             
             const dx = swipeDeltaX.value;
             swipeDeltaX.value = 0; 
+            isVerticalScroll = false;
             
-            // Snap back if distance wasn't far enough
             if (Math.abs(dx) < 60) return; 
             
             const idx = tabOrder.indexOf(currentTab.value);
