@@ -81,7 +81,7 @@ const AppHeader = {
                 <span class="miko-text-gradient" style="font-size:22px; letter-spacing: -0.5px;">MikoTok</span>
             </div>
             <button class="theme-toggle-btn" @click="$emit('toggle-theme')">
-                <span class="material-symbols-rounded" style="font-size: 24px;">{{ appTheme === 'light' ? 'dark_mode' : (appTheme === 'dark' ? 'contrast' : 'light_mode') }}</span>
+                <span class="material-symbols-rounded" style="font-size: 24px;">{{ appTheme === 'light' ? 'dark_mode' : 'light_mode' }}</span>
             </button>
         </header>
     `
@@ -135,7 +135,7 @@ const FilterMenu = {
 };
 
 const ProfileModal = {
-    props: ['isOpen', 'currentUser', 'loginEmail', 'loginPass', 'apiConfig', 'syncState', 'wipeState', 'logoutState', 'nukeState', 'saveState'],
+    props: ['isOpen', 'currentUser', 'loginEmail', 'loginPass', 'apiConfig', 'wipeState', 'logoutState', 'nukeState', 'saveState'],
     template: `
         <div class="modal-overlay" :class="{ open: isOpen }" @click.self="$emit('close')">
             <div class="modal-content" @touchstart="$emit('touch-start', $event)" @touchmove="$emit('touch-move', $event)" @touchend="$emit('touch-end', $event)">
@@ -150,8 +150,8 @@ const ProfileModal = {
                 
                 <div v-else>
                     <div class="infra-bar">
-                        <div class="status-node" style="display: flex; align-items: center; justify-content: center; gap: 8px; font-weight: 800; width: 100%;">
-                            <div class="pulse-glow" style="width: 8px; height: 8px; border-radius: 50%; background: var(--success);"></div> 
+                        <div class="premium-badge green-badge" style="display: flex; align-items: center; justify-content: center; gap: 8px; font-weight: 900; background: rgba(0,0,0,0.7); backdrop-filter: blur(10px); padding: 6px 14px; border-radius: 30px; color: #fff; font-size: 11px;">
+                            <div class="dot" style="width: 6px; height: 6px; border-radius: 50%; background: var(--success); animation: pulse-green-glow 2.5s infinite;"></div> 
                             SYSTEM: READY
                         </div>
                     </div>
@@ -162,22 +162,16 @@ const ProfileModal = {
                     </div>
                     
                     <div class="action-menu" style="margin-top: 15px;">
-                        <button class="menu-btn sync-row" :style="syncState === 'SUCCESS' ? 'color: var(--success);' : ''" @click="$emit('sync')">
+                        <button class="menu-btn sync-row" :style="nukeState === 'SUCCESS' ? 'color: var(--success);' : ''" @click="$emit('nuke-cache')">
                             <div class="btn-content">
-                                <div class="icon-wrap"><span class="material-symbols-rounded" :class="{'spin-anim': syncState === 'REFRESHING...'}" style="font-size: 18px;">{{ syncState === 'SUCCESS' ? 'check' : 'sync' }}</span></div>
-                                <span>{{ syncState }}</span>
+                                <div class="icon-wrap" style="background: rgba(145,70,255,0.1);"><span class="material-symbols-rounded" :class="{'spin-anim': nukeState === 'NUKING...'}" style="font-size: 18px; color: var(--primary);">{{ nukeState === 'SUCCESS' ? 'check' : 'cached' }}</span></div>
+                                <span :style="nukeState === 'SUCCESS' ? 'color: var(--success);' : 'color: var(--primary);'">{{ nukeState === 'Nuke App Cache' ? 'NUKE APP CACHE' : nukeState }}</span>
                             </div>
                         </button>
                         <button class="menu-btn wipe-row" :style="wipeState === 'SUCCESS' ? 'color: var(--success);' : ''" @click="$emit('wipe')">
                             <div class="btn-content">
                                 <div class="icon-wrap"><span class="material-symbols-rounded" :class="{'shake-anim': wipeState === 'WIPING...'}" style="font-size: 18px;">{{ wipeState === 'SUCCESS' ? 'check' : 'delete' }}</span></div>
                                 <span>{{ wipeState }}</span>
-                            </div>
-                        </button>
-                        <button class="menu-btn nuke-row" :style="nukeState === 'SUCCESS' ? 'color: var(--success);' : ''" @click="$emit('nuke-cache')">
-                            <div class="btn-content">
-                                <div class="icon-wrap"><span class="material-symbols-rounded" :class="{'spin-anim': nukeState === 'NUKING...'}" style="font-size: 18px;">{{ nukeState === 'SUCCESS' ? 'check' : 'cached' }}</span></div>
-                                <span>{{ nukeState }}</span>
                             </div>
                         </button>
                         <button class="menu-btn logout-row" @click="$emit('logout')">
@@ -211,7 +205,7 @@ const ChatView = {
     props: ['currentTab', 'chatMessages', 'isLoggedIn', 'twitchAuthUrl', 'customEmotes', 'twitchUsername'],
     computed: {
         chatUrl() {
-            const isDark = this.$root.appTheme === 'dark' || this.$root.appTheme === 'amoled';
+            const isDark = this.$root.appTheme === 'dark';
             const host = window.location.hostname || 'meowoccino.github.io';
             return `https://www.twitch.tv/embed/codemiko/chat?parent=${host}${isDark ? '&darkpopout=true' : ''}`;
         }
@@ -238,6 +232,8 @@ const GeraldMinigames = {
     data() {
         return {
             gameDeck: [
+                { id: 'slots', label: '🎰 Scuff Slots', prompt: 'The user just spun your internal logic memory registers like a slot machine. If they won, brag about how rich your databases are. If they lost, deliver a dry, cold insult about their bad luck.' },
+                { id: 'overclock', label: '⚡ Overclock Core', prompt: 'CRITICAL WARNING: The user just forced your baseline processor clock speeds into dangerous overdrive parameters. Act hyper-accelerated, speak in short, frantic fragments, and warn them that your circuits are melting down!' },
                 { id: 'whiskey', label: '🥃 Give Whiskey', prompt: 'You were just given a glass of high-grade whiskey. Acknowledge your processors are lubricated, overclocked, and highly unstable.' },
                 { id: 'taco', label: '🌮 Taco Bell', prompt: 'You received a cheesy gordita crunch and a baja blast. Express absolute mechanical delight and claim your internal database structures are fully optimized.' },
                 { id: 'glitch', label: '🕶️ Glitch Persona', prompt: 'Glitch persona override activated. Act broken, hyper-cynical, and target the stream layout!' },
@@ -721,7 +717,6 @@ createApp({
         const loginError = ref(''); 
         
         const hostname = window.location.hostname || 'meowoccino.github.io';
-        const syncState = ref('Refresh Feed');
         const wipeState = ref('Wipe Gerald Memory');
         const logoutState = ref('Sign Out');
         const nukeState = ref('Nuke App Cache');
@@ -759,17 +754,12 @@ createApp({
         const updateThemeClass = () => {
             document.body.className = 'theme-' + appTheme.value;
             
-            let bgColor = '#f8f9fa';
-            let scheme = 'light';
+            const isDark = appTheme.value === 'dark';
+            document.documentElement.style.setProperty('--bg-color', isDark ? '#0d0d11' : '#f8f9fa');
+            document.documentElement.style.backgroundColor = isDark ? '#0d0d11' : '#f8f9fa';
+            document.body.style.backgroundColor = isDark ? '#0d0d11' : '#f8f9fa';
             
-            if (appTheme.value === 'dark') { bgColor = '#0d0d11'; scheme = 'dark'; }
-            if (appTheme.value === 'amoled') { bgColor = '#000000'; scheme = 'dark'; }
-
-            document.documentElement.style.setProperty('--bg-color', bgColor);
-            document.documentElement.style.backgroundColor = bgColor;
-            document.body.style.backgroundColor = bgColor;
-            
-            document.documentElement.style.colorScheme = scheme; 
+            document.documentElement.style.colorScheme = isDark ? 'dark' : 'light';
             
             let metaTheme = document.querySelector('meta[name="theme-color"]');
             if (!metaTheme) {
@@ -777,7 +767,7 @@ createApp({
                 metaTheme.name = "theme-color";
                 document.head.appendChild(metaTheme);
             }
-            metaTheme.setAttribute('content', bgColor);
+            metaTheme.setAttribute('content', isDark ? '#0d0d11' : '#f8f9fa');
         };
 
         const switchTab = (tab) => {
@@ -808,17 +798,7 @@ createApp({
             if (dy > 80) modals.value.profile = false;
         };
 
-        const toggleTheme = () => { 
-            if (appTheme.value === 'light') {
-                appTheme.value = 'dark';
-            } else if (appTheme.value === 'dark') {
-                appTheme.value = 'amoled';
-            } else {
-                appTheme.value = 'light';
-            }
-            localStorage.setItem('miko_theme', appTheme.value); 
-            updateThemeClass(); 
-        };
+        const toggleTheme = () => { appTheme.value = appTheme.value === 'light' ? 'dark' : 'light'; localStorage.setItem('miko_theme', appTheme.value); updateThemeClass(); };
 
         const loadEmotesFromSupabase = async () => {
             try {
@@ -937,7 +917,6 @@ createApp({
         };
 
         const handleLogout = async () => { logoutState.value = 'LOGGING OUT...'; await sbClient.auth.signOut(); currentUser.value = null; modals.value.profile = false; logoutState.value = 'Sign Out'; };
-        const runSync = async () => { syncState.value = 'REFRESHING...'; await loadData(false); syncState.value = 'SUCCESS'; setTimeout(() => syncState.value = 'Refresh Feed', 1500); };
         const clearGeraldHistory = async () => { wipeState.value = 'WIPING...'; await sbClient.from('gerald_history').delete().eq('user_id', currentUser.value.id); geraldMessages.value = [{ role: 'gerald', content: '' }]; wipeState.value = 'SUCCESS'; setTimeout(() => wipeState.value = 'Wipe Gerald Memory', 1500); };
         const nukeCache = () => { nukeState.value = 'NUKING...'; setTimeout(() => { localStorage.clear(); caches.keys().then(names => { for (let n of names) caches.delete(n); }); nukeState.value = 'SUCCESS'; setTimeout(() => window.location.reload(), 1000); }, 50); };
 
@@ -1026,7 +1005,7 @@ createApp({
         });
 
         return {
-            hostname, splashVisible, splashOpacity, currentTab, tabOffset, appTheme, toggleTheme, clips, currentUser, loginEmail, loginPass, loginError, geraldInput, geraldMessages, isGeraldTyping, syncState, wipeState, logoutState, nukeState, isHeaderVisible, currentFilter, activeFilterLabel, isFilterMenuOpen, recentVods, currentVodIndex, customEmotes, showEmotePicker, showMinigames, activeClipId, switchTab, geminiStatus, sysStats, handleSwipeStart, handleSwipeEnd, handleModalTouchStart, handleModalTouchMove, handleModalTouchEnd, handleScroll, apiConfig, saveState, selectedClip, modals, allClipsCount, isLive, chatMessages, twitchChatToken, twitchAuthUrl, twitchUsername, showLoginPopup,
+            hostname, splashVisible, splashOpacity, currentTab, tabOffset, appTheme, toggleTheme, clips, currentUser, loginEmail, loginPass, loginError, geraldInput, geraldMessages, isGeraldTyping, wipeState, logoutState, nukeState, isHeaderVisible, currentFilter, activeFilterLabel, isFilterMenuOpen, recentVods, currentVodIndex, customEmotes, showEmotePicker, showMinigames, activeClipId, switchTab, geminiStatus, sysStats, handleSwipeStart, handleSwipeEnd, handleModalTouchStart, handleModalTouchMove, handleModalTouchEnd, handleScroll, apiConfig, saveState, selectedClip, modals, allClipsCount, isLive, chatMessages, twitchChatToken, twitchAuthUrl, twitchUsername, showLoginPopup,
             logoSvg: (id) => `<svg viewBox="0 0 100 100"><defs><linearGradient id="grad-${id}" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stop-color="#9146FF"/><stop offset="100%" stop-color="#a970ff"/></linearGradient></defs><circle cx="50" cy="50" r="40" fill="url(#grad-${id})"/><path d="M 33 38 L 48 62 L 62 38 L 62 55 Q 62 65 69 64" fill="none" stroke="#ffffff" stroke-width="8" stroke-linecap="round" stroke-linejoin="round"/></svg>`,
             optimizeTwitchImg: (u) => u ? u.replace('%{width}', '480').replace('%{height}', '270') : '',
             formatViews: (v) => v ? v.toLocaleString() : '0',
@@ -1036,7 +1015,7 @@ createApp({
             prevVod: () => { if (currentVodIndex.value > (isLive.value ? -1 : 0)) currentVodIndex.value--; },
             nextVod: () => { if (currentVodIndex.value < recentVods.value.length - 1) currentVodIndex.value++; },
             playClip: (clip) => { selectedClip.value = clip; },
-            handleLogin, handleLogout, runSync, clearGeraldHistory, nukeCache, talkToGerald, triggerAiMinigame,
+            handleLogin, handleLogout, clearGeraldHistory, nukeCache, talkToGerald, triggerAiMinigame,
             closePickers: () => { showEmotePicker.value = false; showMinigames.value = false; },
             insertEmote: (name) => { geraldInput.value += (geraldInput.value && !geraldInput.value.endsWith(' ') ? ' ' : '') + name + ' '; showEmotePicker.value = false; },
             toggleEmotes: () => { showEmotePicker.value = !showEmotePicker.value; showMinigames.value = false; },
