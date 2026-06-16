@@ -27,6 +27,22 @@
     --modal-bg: #16161c;
 }
 
+.theme-amoled {
+    --bg-color: #000000;
+    --card-bg: #09090b;
+    --text-main: #ffffff;
+    --text-muted: #71717a;
+    --border-color: #18181b;
+    --nav-bg: #000000;
+    --modal-bg: #09090b;
+}
+
+.theme-amoled .miko-text-gradient {
+    background: linear-gradient(135deg, #d8b4fe 0%, #ffffff 100%);
+    -webkit-background-clip: text; 
+    -webkit-text-fill-color: transparent;
+}
+
 * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; font-family: 'Inter', sans-serif; }
 
 body, html {
