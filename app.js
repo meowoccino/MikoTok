@@ -81,7 +81,7 @@ const AppHeader = {
                 <span class="miko-text-gradient" style="font-size:22px; letter-spacing: -0.5px;">MikoTok</span>
             </div>
             <button class="theme-toggle-btn" @click="$emit('toggle-theme')">
-                <span class="material-symbols-rounded" style="font-size: 24px;">{{ appTheme === 'light' ? 'dark_mode' : 'light_mode' }}</span>
+                <span class="material-symbols-rounded" style="font-size: 24px;">{{ appTheme === 'light' ? 'dark_mode' : (appTheme === 'dark' ? 'contrast' : 'light_mode') }}</span>
             </button>
         </header>
     `
@@ -211,7 +211,7 @@ const ChatView = {
     props: ['currentTab', 'chatMessages', 'isLoggedIn', 'twitchAuthUrl', 'customEmotes', 'twitchUsername'],
     computed: {
         chatUrl() {
-            const isDark = this.$root.appTheme === 'dark';
+            const isDark = this.$root.appTheme === 'dark' || this.$root.appTheme === 'amoled';
             const host = window.location.hostname || 'meowoccino.github.io';
             return `https://www.twitch.tv/embed/codemiko/chat?parent=${host}${isDark ? '&darkpopout=true' : ''}`;
         }
@@ -759,12 +759,17 @@ createApp({
         const updateThemeClass = () => {
             document.body.className = 'theme-' + appTheme.value;
             
-            const isDark = appTheme.value === 'dark';
-            document.documentElement.style.setProperty('--bg-color', isDark ? '#0d0d11' : '#f8f9fa');
-            document.documentElement.style.backgroundColor = isDark ? '#0d0d11' : '#f8f9fa';
-            document.body.style.backgroundColor = isDark ? '#0d0d11' : '#f8f9fa';
+            let bgColor = '#f8f9fa';
+            let scheme = 'light';
             
-            document.documentElement.style.colorScheme = isDark ? 'dark' : 'light';
+            if (appTheme.value === 'dark') { bgColor = '#0d0d11'; scheme = 'dark'; }
+            if (appTheme.value === 'amoled') { bgColor = '#000000'; scheme = 'dark'; }
+
+            document.documentElement.style.setProperty('--bg-color', bgColor);
+            document.documentElement.style.backgroundColor = bgColor;
+            document.body.style.backgroundColor = bgColor;
+            
+            document.documentElement.style.colorScheme = scheme; 
             
             let metaTheme = document.querySelector('meta[name="theme-color"]');
             if (!metaTheme) {
@@ -772,7 +777,7 @@ createApp({
                 metaTheme.name = "theme-color";
                 document.head.appendChild(metaTheme);
             }
-            metaTheme.setAttribute('content', isDark ? '#0d0d11' : '#f8f9fa');
+            metaTheme.setAttribute('content', bgColor);
         };
 
         const switchTab = (tab) => {
@@ -803,7 +808,17 @@ createApp({
             if (dy > 80) modals.value.profile = false;
         };
 
-        const toggleTheme = () => { appTheme.value = appTheme.value === 'light' ? 'dark' : 'light'; localStorage.setItem('miko_theme', appTheme.value); updateThemeClass(); };
+        const toggleTheme = () => { 
+            if (appTheme.value === 'light') {
+                appTheme.value = 'dark';
+            } else if (appTheme.value === 'dark') {
+                appTheme.value = 'amoled';
+            } else {
+                appTheme.value = 'light';
+            }
+            localStorage.setItem('miko_theme', appTheme.value); 
+            updateThemeClass(); 
+        };
 
         const loadEmotesFromSupabase = async () => {
             try {
