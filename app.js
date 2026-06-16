@@ -1,16 +1,11 @@
-// Injects global CSS to fix structural margins, clear gaps, and configure color schemes
 const styleReset = document.createElement('style');
 styleReset.innerHTML = `
     .app-wrapper { border-left: none !important; border-right: none !important; max-width: 100% !important; }
     html, body { overscroll-behavior-y: none; background-color: var(--bg-color) !important; margin: 0; padding: 0; height: 100%; width: 100%; }
     ::-webkit-scrollbar { width: 0px; background: transparent; }
-    
-    /* Native Slide Transition Classes */
     .nav-slide-enter-active, .nav-slide-leave-active { transition: transform 0.3s cubic-bezier(0.25, 0.8, 0.25, 1); will-change: transform; }
     .nav-slide-enter-from, .nav-slide-leave-to { transform: translateX(100%); }
     .sub-view-overlay { position: absolute; top:0; left:0; right:0; bottom:0; background: var(--bg-color); z-index: 50; overflow-y: auto; padding: 20px 16px; box-sizing: border-box; }
-    
-    /* Navbar override to delete the phantom line */
     .bottom-nav { border-top: none !important; box-shadow: none !important; margin-top: 0; }
 `;
 document.head.appendChild(styleReset);
@@ -298,7 +293,7 @@ const GeraldView = {
                 </div>
             </div>
 
-            <div class="gerald-messages" id="gerald-msgs" @click="$emit('close-pickers')" style="flex: 1; overflow-y: auto; overscroll-behavior-y: contain; -webkit-overflow-scrolling: touch; display: flex; flex-direction: column; padding: 2px 16px;">
+            <div class="gerald-messages" id="gerald-msgs" @click="$emit('close-pickers')">
                 <template v-for="(m, i) in geraldMessages" :key="i">
                     <div v-if="i === 0 && m.role === 'gerald' && !m.content" class="chat-bubble gerald startup-anim">
                         <span>GERALD_CORE initialized.<br>Awaiting human input...</span>
@@ -754,6 +749,15 @@ createApp({
         
         const tabOffset = ref(initialTabIdx * -20);
 
+        // Tracker for 1:1 Swipe Physics
+        let swipeStartX = 0;
+        const isSwiping = ref(false);
+        const swipeDeltaX = ref(0);
+        
+        const sliderTransform = computed(() => {
+            return `translate3d(calc(${tabOffset.value}% + ${swipeDeltaX.value}px), 0, 0)`;
+        });
+
         // Fetch version from index.html script tag
         const getAppVersion = () => {
             const scripts = document.getElementsByTagName('script');
@@ -796,16 +800,39 @@ createApp({
             if (tab === 'gerald') setTimeout(() => { const b = document.getElementById('gerald-msgs'); if (b) b.scrollTop = b.scrollHeight; }, 300);
         };
 
-        let swipeStartX = 0;
-        const handleSwipeStart = (e) => { swipeStartX = e.touches[0].clientX; };
-        const handleSwipeEnd = (e) => {
+        const handleSwipeStart = (e) => { 
             if (document.activeElement && ['INPUT', 'TEXTAREA'].includes(document.activeElement.tagName)) return;
+            swipeStartX = e.touches[0].clientX; 
+            isSwiping.value = true;
+            swipeDeltaX.value = 0;
+        };
+        
+        const handleSwipeMove = (e) => {
+            if (!isSwiping.value) return;
+            const dx = e.touches[0].clientX - swipeStartX;
             
-            const dx = e.changedTouches[0].clientX - swipeStartX;
-            if (Math.abs(dx) < 50) return;
+            const idx = tabOrder.indexOf(currentTab.value);
+            // Apply heavy friction if trying to swipe out of bounds
+            if ((idx === 0 && dx > 0) || (idx === tabOrder.length - 1 && dx < 0)) {
+                swipeDeltaX.value = dx * 0.2; 
+            } else {
+                swipeDeltaX.value = dx;
+            }
+        };
+
+        const handleSwipeEnd = (e) => {
+            if (!isSwiping.value) return;
+            isSwiping.value = false;
+            
+            const dx = swipeDeltaX.value;
+            swipeDeltaX.value = 0; 
+            
+            // Snap back if distance wasn't far enough
+            if (Math.abs(dx) < 60) return; 
+            
             const idx = tabOrder.indexOf(currentTab.value);
             if (dx < 0 && idx < tabOrder.length - 1) switchTab(tabOrder[idx + 1]);
-            if (dx > 0 && idx > 0) switchTab(tabOrder[idx - 1]);
+            else if (dx > 0 && idx > 0) switchTab(tabOrder[idx - 1]);
         };
 
         let modalDragStartY = 0;
@@ -1023,7 +1050,7 @@ createApp({
         });
 
         return {
-            hostname, splashVisible, splashOpacity, currentTab, tabOffset, appTheme, toggleTheme, clips, currentUser, loginEmail, loginPass, loginError, geraldInput, geraldMessages, isGeraldTyping, wipeState, logoutState, nukeState, isHeaderVisible, currentFilter, activeFilterLabel, isFilterMenuOpen, recentVods, currentVodIndex, customEmotes, showEmotePicker, showMinigames, activeClipId, switchTab, geminiStatus, sysStats, handleSwipeStart, handleSwipeEnd, handleModalTouchStart, handleModalTouchMove, handleModalTouchEnd, handleScroll, apiConfig, saveState, selectedClip, modals, allClipsCount, isLive, chatMessages, twitchChatToken, twitchAuthUrl, twitchUsername, showLoginPopup, formattedVersion,
+            hostname, splashVisible, splashOpacity, currentTab, tabOffset, appTheme, toggleTheme, clips, currentUser, loginEmail, loginPass, loginError, geraldInput, geraldMessages, isGeraldTyping, wipeState, logoutState, nukeState, isHeaderVisible, currentFilter, activeFilterLabel, isFilterMenuOpen, recentVods, currentVodIndex, customEmotes, showEmotePicker, showMinigames, activeClipId, switchTab, geminiStatus, sysStats, handleSwipeStart, handleSwipeMove, handleSwipeEnd, isSwiping, sliderTransform, handleModalTouchStart, handleModalTouchMove, handleModalTouchEnd, handleScroll, apiConfig, saveState, selectedClip, modals, allClipsCount, isLive, chatMessages, twitchChatToken, twitchAuthUrl, twitchUsername, showLoginPopup, formattedVersion,
             logoSvg: (id) => `<svg viewBox="0 0 100 100"><defs><linearGradient id="grad-${id}" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stop-color="#9146FF"/><stop offset="100%" stop-color="#a970ff"/></linearGradient></defs><circle cx="50" cy="50" r="40" fill="url(#grad-${id})"/><path d="M 33 38 L 48 62 L 62 38 L 62 55 Q 62 65 69 64" fill="none" stroke="#ffffff" stroke-width="8" stroke-linecap="round" stroke-linejoin="round"/></svg>`,
             optimizeTwitchImg: (u) => u ? u.replace('%{width}', '480').replace('%{height}', '270') : '',
             formatViews: (v) => v ? v.toLocaleString() : '0',
