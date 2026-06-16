@@ -55,11 +55,11 @@
                     <gerald-view :current-tab="currentTab" :gerald-messages="geraldMessages" :is-gerald-typing="isGeraldTyping" :gerald-input="geraldInput" :show-emote-picker="showEmotePicker" :show-minigames="showMinigames" :custom-emotes="customEmotes" :gemini-status="geminiStatus" :sys-stats="sysStats" @close-pickers="closePickers" @insert-emote="insertEmote" @play-game="triggerAiMinigame" @toggle-emotes="toggleEmotes" @toggle-minigames="toggleMinigames" @update-input="e => geraldInput = e" @key-down="handleGeraldEnter" @send="talkToGerald"></gerald-view>
                 </div>
 
-                <div class="tab-view scroll-area more-scroll" style="display: flex; flex-direction: column;">
+                <div class="tab-view" style="display: flex; flex-direction: column;">
                     <more-view :is-live="isLive"></more-view>
                 </div>
 
-                <div class="tab-view scroll-area">
+                <div class="tab-view">
                     <tomato-view></tomato-view>
                 </div>
 
