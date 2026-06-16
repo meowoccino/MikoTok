@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <meta name="theme-color" content="#f8f9fa">
+    <meta name="theme-color" content="#ffffff">
     
     <title>MikoTok</title>
     
@@ -68,7 +68,7 @@
 
         <filter-menu :is-open="isFilterMenuOpen" :current-filter="currentFilter" @close="isFilterMenuOpen = false" @apply="applyFilter"></filter-menu>
         <clip-modal :clip="selectedClip" :hostname="hostname" @close="selectedClip = null"></clip-modal>
-        <profile-modal :is-open="modals.profile" :current-user="currentUser" :login-email="loginEmail" :login-pass="loginPass" :api-config="apiConfig" :sync-state="syncState" :wipe-state="wipeState" :nuke-state="nukeState" :logout-state="logoutState" :save-state="saveState" @close="modals.profile = false" @touch-start="handleModalTouchStart" @touch-move="handleModalTouchMove" @touch-end="handleModalTouchEnd" @update-email="e => loginEmail = e" @update-pass="e => loginPass = e" @login="handleLogin" @save-keys="saveApiKeys" @sync="runSync" @wipe="clearGeraldHistory" @logout="handleLogout" @nuke-cache="nukeCache"></profile-modal>
+        <profile-modal :is-open="modals.profile" :current-user="currentUser" :login-email="loginEmail" :login-pass="loginPass" :api-config="apiConfig" :sync-state="syncState" :wipe-state="wipeState" :nuke-state="nukeState" :logout-state="logoutState" :save-state="saveState" @close="modals.profile = false" @touch-start="handleModalTouchStart" @touch-move="handleModalTouchMove" @touch-end="handleModalTouchEnd" @update-email="e => loginEmail = e" @update-pass="e => loginPass = e" @login="handleLogin" @wipe="clearGeraldHistory" @logout="handleLogout" @nuke-cache="nukeCache"></profile-modal>
 
         <bottom-nav :current-tab="currentTab" @change-tab="switchTab"></bottom-nav>
     </div>
