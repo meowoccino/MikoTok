@@ -135,7 +135,7 @@ const FilterMenu = {
 };
 
 const ProfileModal = {
-    props: ['isOpen', 'currentUser', 'loginEmail', 'loginPass', 'apiConfig', 'wipeState', 'logoutState', 'nukeState', 'saveState'],
+    props: ['isOpen', 'currentUser', 'loginEmail', 'loginPass', 'apiConfig', 'wipeState', 'logoutState', 'nukeState', 'formattedVersion'],
     template: `
         <div class="modal-overlay" :class="{ open: isOpen }" @click.self="$emit('close')">
             <div class="modal-content" @touchstart="$emit('touch-start', $event)" @touchmove="$emit('touch-move', $event)" @touchend="$emit('touch-end', $event)">
@@ -150,10 +150,13 @@ const ProfileModal = {
                 
                 <div v-else>
                     <div class="infra-bar">
-                        <div class="premium-badge green-badge" style="display: flex; align-items: center; justify-content: center; gap: 8px; font-weight: 900; background: rgba(0,0,0,0.7); backdrop-filter: blur(10px); padding: 6px 14px; border-radius: 30px; color: #fff; font-size: 11px;">
-                            <div class="dot" style="width: 6px; height: 6px; border-radius: 50%; background: var(--success); animation: pulse-green-glow 2.5s infinite;"></div> 
-                            SYSTEM: READY
-                        </div>
+                        <div class="dot"></div> 
+                        <span>SYSTEM: READY</span>
+                    </div>
+                    
+                    <div class="version-bar">
+                        <span class="version-text">APP BUILD v2.0.{{ formattedVersion }}</span>
+                        <div class="status-pill">UP TO DATE</div>
                     </div>
                     
                     <div class="stat-grid">
@@ -162,10 +165,10 @@ const ProfileModal = {
                     </div>
                     
                     <div class="action-menu" style="margin-top: 15px;">
-                        <button class="menu-btn sync-row" :style="nukeState === 'SUCCESS' ? 'color: var(--success);' : ''" @click="$emit('nuke-cache')">
+                        <button class="menu-btn nuke-row" :style="nukeState === 'SUCCESS' ? 'color: var(--success);' : ''" @click="$emit('nuke-cache')">
                             <div class="btn-content">
-                                <div class="icon-wrap" style="background: rgba(145,70,255,0.1);"><span class="material-symbols-rounded" :class="{'spin-anim': nukeState === 'NUKING...'}" style="font-size: 18px; color: var(--primary);">{{ nukeState === 'SUCCESS' ? 'check' : 'cached' }}</span></div>
-                                <span :style="nukeState === 'SUCCESS' ? 'color: var(--success);' : 'color: var(--primary);'">{{ nukeState === 'Nuke App Cache' ? 'NUKE APP CACHE' : nukeState }}</span>
+                                <div class="icon-wrap"><span class="material-symbols-rounded" :class="{'spin-anim': nukeState === 'NUKING...'}" style="font-size: 18px;">{{ nukeState === 'SUCCESS' ? 'check' : 'cached' }}</span></div>
+                                <span :style="nukeState === 'SUCCESS' ? 'color: var(--success);' : ''">{{ nukeState === 'Nuke App Cache' ? 'NUKE APP CACHE' : nukeState }}</span>
                             </div>
                         </button>
                         <button class="menu-btn wipe-row" :style="wipeState === 'SUCCESS' ? 'color: var(--success);' : ''" @click="$emit('wipe')">
@@ -751,6 +754,21 @@ createApp({
         
         const tabOffset = ref(initialTabIdx * -20);
 
+        // Fetch version from index.html script tag
+        const getAppVersion = () => {
+            const scripts = document.getElementsByTagName('script');
+            let vNum = "1";
+            for (let i = 0; i < scripts.length; i++) {
+                if (scripts[i].src && scripts[i].src.includes('app.js?v=')) {
+                    vNum = scripts[i].src.split('?v=')[1];
+                    break;
+                }
+            }
+            const parsed = parseInt(vNum) || 1;
+            return parsed < 10 ? `0.${parsed}` : `${parsed}.0`;
+        };
+        const formattedVersion = ref(getAppVersion());
+
         const updateThemeClass = () => {
             document.body.className = 'theme-' + appTheme.value;
             
@@ -1005,7 +1023,7 @@ createApp({
         });
 
         return {
-            hostname, splashVisible, splashOpacity, currentTab, tabOffset, appTheme, toggleTheme, clips, currentUser, loginEmail, loginPass, loginError, geraldInput, geraldMessages, isGeraldTyping, wipeState, logoutState, nukeState, isHeaderVisible, currentFilter, activeFilterLabel, isFilterMenuOpen, recentVods, currentVodIndex, customEmotes, showEmotePicker, showMinigames, activeClipId, switchTab, geminiStatus, sysStats, handleSwipeStart, handleSwipeEnd, handleModalTouchStart, handleModalTouchMove, handleModalTouchEnd, handleScroll, apiConfig, saveState, selectedClip, modals, allClipsCount, isLive, chatMessages, twitchChatToken, twitchAuthUrl, twitchUsername, showLoginPopup,
+            hostname, splashVisible, splashOpacity, currentTab, tabOffset, appTheme, toggleTheme, clips, currentUser, loginEmail, loginPass, loginError, geraldInput, geraldMessages, isGeraldTyping, wipeState, logoutState, nukeState, isHeaderVisible, currentFilter, activeFilterLabel, isFilterMenuOpen, recentVods, currentVodIndex, customEmotes, showEmotePicker, showMinigames, activeClipId, switchTab, geminiStatus, sysStats, handleSwipeStart, handleSwipeEnd, handleModalTouchStart, handleModalTouchMove, handleModalTouchEnd, handleScroll, apiConfig, saveState, selectedClip, modals, allClipsCount, isLive, chatMessages, twitchChatToken, twitchAuthUrl, twitchUsername, showLoginPopup, formattedVersion,
             logoSvg: (id) => `<svg viewBox="0 0 100 100"><defs><linearGradient id="grad-${id}" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stop-color="#9146FF"/><stop offset="100%" stop-color="#a970ff"/></linearGradient></defs><circle cx="50" cy="50" r="40" fill="url(#grad-${id})"/><path d="M 33 38 L 48 62 L 62 38 L 62 55 Q 62 65 69 64" fill="none" stroke="#ffffff" stroke-width="8" stroke-linecap="round" stroke-linejoin="round"/></svg>`,
             optimizeTwitchImg: (u) => u ? u.replace('%{width}', '480').replace('%{height}', '270') : '',
             formatViews: (v) => v ? v.toLocaleString() : '0',
