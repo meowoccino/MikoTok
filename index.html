@@ -40,8 +40,8 @@
 
         <app-header :is-header-visible="isHeaderVisible" :current-tab="currentTab" :logo-svg="logoSvg" :app-theme="appTheme" @open-profile="modals.profile = true" @toggle-theme="toggleTheme"></app-header>
 
-        <div class="view-port" @touchstart="handleSwipeStart" @touchmove="handleSwipeMove" @touchend="handleSwipeEnd">
-            <div class="tab-slider" :class="{ 'is-swiping': isSwiping }" :style="{ transform: sliderTransform }">
+        <div class="view-port" @touchstart="handleSwipeStart" @touchend="handleSwipeEnd">
+            <div class="tab-slider" :style="{ transform: 'translate3d(' + tabOffset + '%, 0, 0)' }">
                 
                 <div class="tab-view scroll-area home-scroll" id="home-scroll" @scroll="handleScroll">
                     <home-view :current-tab="currentTab" :current-vod-index="currentVodIndex" :recent-vods="recentVods" :is-live="isLive" :hostname="hostname" :clips="clips" :active-filter-label="activeFilterLabel" :optimize-twitch-img="optimizeTwitchImg" :format-views="formatViews" :format-date="formatDate" :active-clip-id="activeClipId" @prev-vod="prevVod" @next-vod="nextVod" @open-filter="isFilterMenuOpen = true" @play-clip="playClip"></home-view>
@@ -68,11 +68,11 @@
 
         <filter-menu :is-open="isFilterMenuOpen" :current-filter="currentFilter" @close="isFilterMenuOpen = false" @apply="applyFilter"></filter-menu>
         <clip-modal :clip="selectedClip" :hostname="hostname" @close="selectedClip = null"></clip-modal>
-        <profile-modal :is-open="modals.profile" :current-user="currentUser" :login-email="loginEmail" :login-pass="loginPass" :api-config="apiConfig" :wipe-state="wipeState" :nuke-state="nukeState" :logout-state="logoutState" :formatted-version="formattedVersion" @close="modals.profile = false" @touch-start="handleModalTouchStart" @touch-move="handleModalTouchMove" @touch-end="handleModalTouchEnd" @update-email="e => loginEmail = e" @update-pass="e => loginPass = e" @login="handleLogin" @wipe="clearGeraldHistory" @logout="handleLogout" @nuke-cache="nukeCache"></profile-modal>
+        <profile-modal :is-open="modals.profile" :current-user="currentUser" :login-email="loginEmail" :login-pass="loginPass" :api-config="apiConfig" :sync-state="syncState" :wipe-state="wipeState" :nuke-state="nukeState" :logout-state="logoutState" :save-state="saveState" @close="modals.profile = false" @touch-start="handleModalTouchStart" @touch-move="handleModalTouchMove" @touch-end="handleModalTouchEnd" @update-email="e => loginEmail = e" @update-pass="e => loginPass = e" @login="handleLogin" @save-keys="saveApiKeys" @sync="runSync" @wipe="clearGeraldHistory" @logout="handleLogout" @nuke-cache="nukeCache"></profile-modal>
 
         <bottom-nav :current-tab="currentTab" @change-tab="switchTab"></bottom-nav>
     </div>
 
-    <script src="./app.js?v=8"></script>
+    <script src="./app.js?v=1"></script>
 </body>
 </html>
