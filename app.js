@@ -82,7 +82,6 @@ const AppHeader = {
     `
 };
 
-/* TELEGRAM PILL NAV HTML UPDATE */
 const BottomNav = {
     props: ['currentTab'],
     template: `
@@ -136,7 +135,7 @@ const FilterMenu = {
     `
 };
 
-/* ADDED: activeUsersCount display */
+/* ADDED: Explicit '|| 1' fallback for safety */
 const ProfileModal = {
     props: ['isOpen', 'currentUser', 'loginEmail', 'loginPass', 'apiConfig', 'wipeState', 'logoutState', 'nukeState', 'formattedVersion', 'activeUsersCount'],
     template: `
@@ -162,7 +161,7 @@ const ProfileModal = {
                         <div class="presence-indicators">
                             <div class="live-counter-pill">
                                 <span class="material-symbols-rounded" style="font-size: 13px; font-variation-settings: 'FILL' 1;">group</span>
-                                <span>{{ activeUsersCount }}</span>
+                                <span>{{ activeUsersCount || 1 }}</span>
                             </div>
                             <div class="status-pill">UP TO DATE</div>
                         </div>
@@ -279,7 +278,6 @@ const GeraldMinigames = {
     `
 };
 
-/* ADDED: Laser glowing wrapper container around input */
 const GeraldView = {
     components: { GeraldMinigames },
     props: ['currentTab', 'geraldMessages', 'isGeraldTyping', 'geraldInput', 'showEmotePicker', 'showMinigames', 'customEmotes', 'geminiStatus', 'sysStats'],
@@ -289,7 +287,7 @@ const GeraldView = {
     },
     template: `
         <div class="gerald-container" style="display: flex; flex-direction: column; height: 100%; width: 100%; background: var(--bg-color); padding-top: 0px;">
-            <div class="gerald-header" @click="$emit('close-pickers')" style="flex-shrink: 0; padding: 12px 16px 6px; background: var(--bg-color); z-index: 10;">
+            <div class="gerald-header" @click="$emit('close-pickers')" style="flex-shrink: 0; padding: max(env(safe-area-inset-top, 16px), 16px) 16px 6px; background: var(--bg-color); z-index: 10;">
                 <div class="os-top-bar" style="margin-top: 0px;">
                     <span class="os-title">GERALD_OS v2</span>
                 </div>
@@ -349,7 +347,7 @@ const GeraldView = {
 
 const TomatoView = {
     template: `
-        <div style="height: 100%; width: 100%; background: var(--bg-color); overflow-y: auto; padding: 20px 16px 140px; box-sizing: border-box;">
+        <div style="height: 100%; width: 100%; background: var(--bg-color); overflow-y: auto; padding: max(env(safe-area-inset-top, 24px), 24px) 16px 140px; box-sizing: border-box;">
             
             <div style="text-align: center; margin-bottom: 24px;">
                 <img src="https://raw.githubusercontent.com/meowoccino/MikoTok/main/a_2.png" style="width: 110px; height: 110px; border-radius: 50%; margin-bottom: 12px; object-fit: cover;" alt="Avatar">
@@ -487,7 +485,7 @@ const MoreView = {
     template: `
         <div class="more-container" style="position: relative; height: 100%; width: 100%; background: var(--bg-color); overflow: hidden;">
             
-            <div style="height: 100%; overflow-y: auto; padding: 0 16px 120px;" v-show="activeSubView === 'main'">
+            <div style="height: 100%; overflow-y: auto; padding: max(env(safe-area-inset-top, 20px), 20px) 16px 120px;" v-show="activeSubView === 'main'">
                 
                 <div v-if="streamState === 'future'" style="background: linear-gradient(135deg, rgba(145, 70, 255, 0.15), rgba(145, 70, 255, 0.05)); border: 1px solid rgba(145, 70, 255, 0.3); border-radius: 16px; padding: 20px; margin-bottom: 24px; margin-top: 8px; text-align: center; display: flex; flex-direction: column; align-items: center; justify-content: center;">
                     <div style="color: var(--primary); font-size: 12px; font-weight: 800; letter-spacing: 1.5px; text-transform: uppercase; margin-bottom: 8px; display: flex; align-items: center; gap: 6px;">
@@ -558,7 +556,7 @@ const MoreView = {
                 <a href="https://www.reddit.com/r/CodeMiko/" target="_blank" style="display: flex; align-items: center; width: 100%; box-sizing: border-box; padding: 0 16px; border-radius: 12px; min-height: 48px; background: var(--card-bg); text-decoration: none; margin-bottom: 8px;">
                     <svg viewBox="0 0 24 24" style="width: 22px; height: 22px; fill: #FF4500;">
                         <circle cx="12" cy="12" r="12" />
-                        <path fill="#ffffff" d="M16.7 10.6c-.6 0-1.1.3-1.4.7-.9-.6-2.1-1-3.5-1.1l.6-2.9 2 .4c0 .6.5 1.1 1.1 1.1.6 0 1.1-.5 1.1-1.1 0-.6-.5-1.1-1.1-1.1-.5 0-.9.3-1 .8l-2.2-.5c-.1 0-.2 0-.2.1l-.7 3.3c-1.4.1-2.6.4-3.5 1-.3-.4-.8-.7-1.4-.7-.9 0-1.6.7-1.6 1.6 0 .6.3 1.1.8 1.4-.1.2-.1.4-.1.6 0 2.4 2.8 4.4 6.3 4.4s6.3-2 6.3-4.4c0-.2 0-.4-.1-.6.5-.3.8-.8.8-1.4 0-.9-.7-1.6-1.6-1.6zm-7.2 4.2c-.5 0-.9-.4-.9-.9s.4-.9.9-.9.9.4.9.9-.4.9-.9.9zm5.3 2c-1 .6-2.5.6-2.8.6s-1.8 0-2.8-.6c-.2-.1-.2-.3-.1-.4.1-.2.3-.2.4-.1.8.4 2 .5 2.5.5s1.7-.1 2.5-.5c.2-.1.4-.1.4.1.2.1.2.3.1.4zm-.4-2c-.5 0-.9-.4-.9-.9s.4-.9.9-.9.9.4.9.9-.4.9-.9.9z"/>
+                        <path fill="#ffffff" d="M16.7 10.6c-.6 0-1.1.3-1.4.7-.9-.6-2.1-1-3.5-1.1l.6-2.9 2 .4c0 .6.5 1.1 1.1 1.1.6 0 1.1-.5 1.1-1.1 0-.6-.5-1.1-1.1-1.1-.5 0-.9.3-1 .8l-2.2-.5c-.1 0-.2 0-.2.1l-.7 3.3c-1.4.1-2.6.4-3.5 1-.3-.4-.8-.7-1.4-.7-.9 0-1.6.7-1.6 1.6 0 .6.3 1.1.8 1.4-.1.2-.1.4-.1.6 0 2.4 2.8 4.4 6.3 4.4s6.3-2 6.3-4.4c0-.2 0-.4-.1-.6.5-.3.8-.8.8-1.4 0-.9-.7-1.6-1.6-1.6zm-7.2 4.2c-.5 0-.9-.4-.9-.9s.4-.9.9-.9.9.4.9-.9-.4.9-.9.9zm5.3 2c-1 .6-2.5.6-2.8.6s-1.8 0-2.8-.6c-.2-.1-.2-.3-.1-.4.1-.2.3-.2.4-.1.8.4 2 .5 2.5.5s1.7-.1 2.5-.5c.2-.1.4-.1.4.1.2.1.2.3.1.4zm-.4-2c-.5 0-.9-.4-.9-.9s.4-.9.9-.9.9.4.9.9-.4.9-.9.9z"/>
                     </svg>
                     <span style="color: var(--text-main); font-size: 14px; font-weight: 600; margin-left: 12px;">Reddit</span>
                     <span class="material-symbols-rounded" style="color: var(--text-muted); margin-left: auto; font-size: 20px;">open_in_new</span>
@@ -748,7 +746,6 @@ createApp({
         const geminiStatus = ref('TESTING BRAIN...');
         const sysStats = ref({ cpu: 23, mem: 1.8, temp: 74 });
 
-        /* ADDED: Active users counter state */
         const activeUsersCount = ref(1);
 
         const activeClipId = ref(null);
@@ -1051,22 +1048,19 @@ createApp({
                 if (sessionData?.session?.user) currentUser.value = sessionData.session.user;
                 sbClient.auth.onAuthStateChange((event, session) => { currentUser.value = session?.user || null; });
                 
-                /* ADDED: Supabase Presence connection hook for the active user count */
-                const presenceChannel = sbClient.channel('miko-active-room', {
-                    config: {
-                        presence: {
-                            key: currentUser.value ? currentUser.value.id : 'anon-' + Math.random().toString(36).substring(2, 7)
-                        }
-                    }
-                });
+                const presenceChannel = sbClient.channel('miko-active-room');
 
                 presenceChannel.on('presence', { event: 'sync' }, () => {
-                    activeUsersCount.value = Object.keys(presenceChannel.presenceState()).length || 1;
+                    const state = presenceChannel.presenceState();
+                    activeUsersCount.value = Object.keys(state).length || 1;
                 });
 
                 presenceChannel.subscribe(async (status) => {
                     if (status === 'SUBSCRIBED') {
-                        await presenceChannel.track({ online_at: new Date().toISOString() });
+                        await presenceChannel.track({
+                            user_id: currentUser.value ? currentUser.value.id : 'anon-' + Math.random().toString(36).substring(2,7),
+                            online_at: new Date().toISOString()
+                        });
                     }
                 });
             });
