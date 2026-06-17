@@ -1,11 +1,16 @@
+// Injects global CSS to fix structural margins, clear gaps, and configure color schemes
 const styleReset = document.createElement('style');
 styleReset.innerHTML = `
     .app-wrapper { border-left: none !important; border-right: none !important; max-width: 100% !important; }
     html, body { overscroll-behavior-y: none; background-color: var(--bg-color) !important; margin: 0; padding: 0; height: 100%; width: 100%; }
     ::-webkit-scrollbar { width: 0px; background: transparent; }
+    
+    /* Native Slide Transition Classes */
     .nav-slide-enter-active, .nav-slide-leave-active { transition: transform 0.3s cubic-bezier(0.25, 0.8, 0.25, 1); will-change: transform; }
     .nav-slide-enter-from, .nav-slide-leave-to { transform: translateX(100%); }
     .sub-view-overlay { position: absolute; top:0; left:0; right:0; bottom:0; background: var(--bg-color); z-index: 50; overflow-y: auto; padding: 20px 16px; box-sizing: border-box; }
+    
+    /* Navbar override to delete the phantom line */
     .bottom-nav { border-top: none !important; box-shadow: none !important; margin-top: 0; }
 `;
 document.head.appendChild(styleReset);
@@ -21,6 +26,7 @@ const parseMarkdownText = (text, emotesMap) => {
     if (emotesMap) {
         const tokens = html.split(/(<[^>]+>|[\s]+)/); 
         const emoteKeys = Object.keys(emotesMap);
+        
         const lowerMap = {};
         emoteKeys.forEach(k => lowerMap[k.toLowerCase()] = k);
 
@@ -86,32 +92,26 @@ const BottomNav = {
     template: `
         <nav class="bottom-nav">
             <div class="nav-item" :class="{ active: currentTab === 'home' }" @click="$emit('change-tab', 'home')">
-                <div class="icon-wrapper"><span class="material-symbols-rounded nav-icon">home</span></div>
-                <span class="nav-label">Home</span>
+                <span class="material-symbols-rounded">home</span><span class="nav-label">Home</span>
             </div>
             <div class="nav-item" :class="{ active: currentTab === 'chat' }" @click="$emit('change-tab', 'chat')">
-                <div class="icon-wrapper"><span class="material-symbols-rounded nav-icon">chat</span></div>
-                <span class="nav-label">Chat</span>
+                <span class="material-symbols-rounded">chat</span><span class="nav-label">Chat</span>
             </div>
             <div class="nav-item" :class="{ 'active-gerald': currentTab === 'gerald' }" @click="$emit('change-tab', 'gerald')">
-                <div class="icon-wrapper"><span class="material-symbols-rounded nav-icon">graphic_eq</span></div>
-                <span class="nav-label">Gerald</span>
+                <span class="material-symbols-rounded">graphic_eq</span><span class="nav-label">Gerald</span>
             </div>
             <div class="nav-item" :class="{ active: currentTab === 'more' }" @click="$emit('change-tab', 'more')">
-                <div class="icon-wrapper"><span class="material-symbols-rounded nav-icon">menu</span></div>
-                <span class="nav-label">More</span>
+                <span class="material-symbols-rounded">menu</span><span class="nav-label">More</span>
             </div>
             <div class="nav-item" :class="{ active: currentTab === 'tomato' }" @click="$emit('change-tab', 'tomato')">
-                <div class="icon-wrapper">
-                    <svg class="nav-icon" viewBox="0 0 24 24" style="width:24px; height:24px; fill:none; stroke:currentColor; stroke-width:2; stroke-linecap:round; stroke-linejoin:round;">
-                        <ellipse cx="12" cy="15" rx="8.5" ry="7.5" />
-                        <path d="M12 7.5V3" />
-                        <path d="M8.5 4.5c1 1 3.5 1 3.5 3" />
-                        <path d="M15.5 4.5c-1 1-3.5 1-3.5 3" />
-                        <path d="M12 7.5c-2 0-4 .5-5 1.5" />
-                        <path d="M12 7.5c2 0 4 .5 5 1.5" />
-                    </svg>
-                </div>
+                <svg viewBox="0 0 24 24" style="width:24px; height:24px; fill:none; stroke:currentColor; stroke-width:2; stroke-linecap:round; stroke-linejoin:round;">
+                    <ellipse cx="12" cy="15" rx="8.5" ry="7.5" />
+                    <path d="M12 7.5V3" />
+                    <path d="M8.5 4.5c1 1 3.5 1 3.5 3" />
+                    <path d="M15.5 4.5c-1 1-3.5 1-3.5 3" />
+                    <path d="M12 7.5c-2 0-4 .5-5 1.5" />
+                    <path d="M12 7.5c2 0 4 .5 5 1.5" />
+                </svg>
                 <span class="nav-label">tomato_24</span>
             </div>
         </nav>
@@ -135,7 +135,7 @@ const FilterMenu = {
 };
 
 const ProfileModal = {
-    props: ['isOpen', 'currentUser', 'loginEmail', 'loginPass', 'apiConfig', 'wipeState', 'logoutState', 'nukeState', 'formattedVersion', 'activeUsersCount'],
+    props: ['isOpen', 'currentUser', 'loginEmail', 'loginPass', 'apiConfig', 'syncState', 'wipeState', 'logoutState', 'nukeState', 'saveState'],
     template: `
         <div class="modal-overlay" :class="{ open: isOpen }" @click.self="$emit('close')">
             <div class="modal-content" @touchstart="$emit('touch-start', $event)" @touchmove="$emit('touch-move', $event)" @touchend="$emit('touch-end', $event)">
@@ -150,18 +150,9 @@ const ProfileModal = {
                 
                 <div v-else>
                     <div class="infra-bar">
-                        <div class="dot"></div> 
-                        <span>SYSTEM: READY</span>
-                    </div>
-                    
-                    <div class="version-bar">
-                        <span class="version-text">APP BUILD v2.0.{{ formattedVersion }}</span>
-                        <div class="presence-indicators">
-                            <div class="live-counter-pill">
-                                <span class="material-symbols-rounded" style="font-size: 13px; font-variation-settings: 'FILL' 1;">group</span>
-                                <span>{{ activeUsersCount || 1 }}</span>
-                            </div>
-                            <div class="status-pill">UP TO DATE</div>
+                        <div class="status-node" style="display: flex; align-items: center; justify-content: center; gap: 8px; font-weight: 800; width: 100%;">
+                            <div class="pulse-glow" style="width: 8px; height: 8px; border-radius: 50%; background: var(--success);"></div> 
+                            SYSTEM: READY
                         </div>
                     </div>
                     
@@ -171,16 +162,22 @@ const ProfileModal = {
                     </div>
                     
                     <div class="action-menu" style="margin-top: 15px;">
-                        <button class="menu-btn nuke-row" :style="nukeState === 'SUCCESS' ? 'color: var(--success);' : ''" @click="$emit('nuke-cache')">
+                        <button class="menu-btn sync-row" :style="syncState === 'SUCCESS' ? 'color: var(--success);' : ''" @click="$emit('sync')">
                             <div class="btn-content">
-                                <div class="icon-wrap"><span class="material-symbols-rounded" :class="{'spin-anim': nukeState === 'NUKING...'}" style="font-size: 18px;">{{ nukeState === 'SUCCESS' ? 'check' : 'cached' }}</span></div>
-                                <span :style="nukeState === 'SUCCESS' ? 'color: var(--success);' : ''">{{ nukeState === 'Nuke App Cache' ? 'NUKE APP CACHE' : nukeState }}</span>
+                                <div class="icon-wrap"><span class="material-symbols-rounded" :class="{'spin-anim': syncState === 'REFRESHING...'}" style="font-size: 18px;">{{ syncState === 'SUCCESS' ? 'check' : 'sync' }}</span></div>
+                                <span>{{ syncState }}</span>
                             </div>
                         </button>
                         <button class="menu-btn wipe-row" :style="wipeState === 'SUCCESS' ? 'color: var(--success);' : ''" @click="$emit('wipe')">
                             <div class="btn-content">
                                 <div class="icon-wrap"><span class="material-symbols-rounded" :class="{'shake-anim': wipeState === 'WIPING...'}" style="font-size: 18px;">{{ wipeState === 'SUCCESS' ? 'check' : 'delete' }}</span></div>
                                 <span>{{ wipeState }}</span>
+                            </div>
+                        </button>
+                        <button class="menu-btn nuke-row" :style="nukeState === 'SUCCESS' ? 'color: var(--success);' : ''" @click="$emit('nuke-cache')">
+                            <div class="btn-content">
+                                <div class="icon-wrap"><span class="material-symbols-rounded" :class="{'spin-anim': nukeState === 'NUKING...'}" style="font-size: 18px;">{{ nukeState === 'SUCCESS' ? 'check' : 'cached' }}</span></div>
+                                <span>{{ nukeState }}</span>
                             </div>
                         </button>
                         <button class="menu-btn logout-row" @click="$emit('logout')">
@@ -220,7 +217,7 @@ const ChatView = {
         }
     },
     template: `
-        <div style="flex: 1; display: flex; flex-direction: column; background: var(--bg-color); position: relative; overflow: hidden; width: 100%; height: 100%; padding-top: max(env(safe-area-inset-top, 0px), 0px);">
+        <div style="flex: 1; display: flex; flex-direction: column; background: var(--bg-color); position: relative; overflow: hidden; width: 100%; height: 100%;">
             <div style="position: absolute; left: 0; top: 0; bottom: 0; width: 15px; z-index: 1000; background: transparent;"></div>
             <div style="position: absolute; right: 0; top: 0; bottom: 0; width: 15px; z-index: 1000; background: transparent;"></div>
 
@@ -241,8 +238,6 @@ const GeraldMinigames = {
     data() {
         return {
             gameDeck: [
-                { id: 'slots', label: '🎰 Scuff Slots', prompt: 'The user just spun your internal logic memory registers like a slot machine. If they won, brag about how rich your databases are. If they lost, deliver a dry, cold insult about their bad luck.' },
-                { id: 'overclock', label: '⚡ Overclock Core', prompt: 'CRITICAL WARNING: The user just forced your baseline processor clock speeds into dangerous overdrive parameters. Act hyper-accelerated, speak in short, frantic fragments, and warn them that your circuits are melting down!' },
                 { id: 'whiskey', label: '🥃 Give Whiskey', prompt: 'You were just given a glass of high-grade whiskey. Acknowledge your processors are lubricated, overclocked, and highly unstable.' },
                 { id: 'taco', label: '🌮 Taco Bell', prompt: 'You received a cheesy gordita crunch and a baja blast. Express absolute mechanical delight and claim your internal database structures are fully optimized.' },
                 { id: 'glitch', label: '🕶️ Glitch Persona', prompt: 'Glitch persona override activated. Act broken, hyper-cynical, and target the stream layout!' },
@@ -285,7 +280,7 @@ const GeraldView = {
     },
     template: `
         <div class="gerald-container" style="display: flex; flex-direction: column; height: 100%; width: 100%; background: var(--bg-color); padding-top: 0px;">
-            <div class="gerald-header" @click="$emit('close-pickers')" style="flex-shrink: 0; padding: max(env(safe-area-inset-top, 16px), 16px) 16px 6px; background: var(--bg-color); z-index: 10;">
+            <div class="gerald-header" @click="$emit('close-pickers')" style="flex-shrink: 0; padding: 12px 16px 6px; background: var(--bg-color); z-index: 10;">
                 <div class="os-top-bar" style="margin-top: 0px;">
                     <span class="os-title">GERALD_OS v2</span>
                 </div>
@@ -304,7 +299,7 @@ const GeraldView = {
                 </div>
             </div>
 
-            <div class="gerald-messages" id="gerald-msgs" @click="$emit('close-pickers')">
+            <div class="gerald-messages" id="gerald-msgs" @click="$emit('close-pickers')" style="flex: 1; overflow-y: auto; overscroll-behavior-y: contain; -webkit-overflow-scrolling: touch; display: flex; flex-direction: column; padding: 2px 16px;">
                 <template v-for="(m, i) in geraldMessages" :key="i">
                     <div v-if="i === 0 && m.role === 'gerald' && !m.content" class="chat-bubble gerald startup-anim">
                         <span>GERALD_CORE initialized.<br>Awaiting human input...</span>
@@ -329,12 +324,10 @@ const GeraldView = {
                 <gerald-minigames :show-minigames="showMinigames" @play-game="g => $emit('play-game', g)"></gerald-minigames>
 
                 <div class="gerald-input-area" style="padding: 0; display: flex; width: 100%; align-items: flex-end; gap: 8px;">
-                    <div class="gerald-input-container">
-                        <div class="gerald-input-wrapper">
-                            <button class="emote-toggle-btn" @click="$emit('toggle-emotes')"><span class="material-symbols-rounded" :style="{color: showEmotePicker ? 'var(--primary)' : 'inherit'}">mood</span></button>
-                            <button class="emote-toggle-btn" @click="$emit('toggle-minigames')"><span class="material-symbols-rounded" :style="{color: showMinigames ? 'var(--primary)' : 'inherit'}">sports_esports</span></button>
-                            <textarea class="gerald-input" rows="1" placeholder="Execute request..." :value="geraldInput" @input="$emit('update-input', $event.target.value)" @keydown="$emit('key-down', $event)" id="gerald-txt-input" @focus="$emit('close-pickers')"></textarea>
-                        </div>
+                    <div class="gerald-input-wrapper">
+                        <button class="emote-toggle-btn" @click="$emit('toggle-emotes')"><span class="material-symbols-rounded" :style="{color: showEmotePicker ? 'var(--primary)' : 'inherit'}">mood</span></button>
+                        <button class="emote-toggle-btn" @click="$emit('toggle-minigames')"><span class="material-symbols-rounded" :style="{color: showMinigames ? 'var(--primary)' : 'inherit'}">sports_esports</span></button>
+                        <textarea class="gerald-input" rows="1" placeholder="Execute request..." :value="geraldInput" @input="$emit('update-input', $event.target.value)" @keydown="$emit('key-down', $event)" id="gerald-txt-input" @focus="$emit('close-pickers')"></textarea>
                     </div>
                     <button class="gerald-send" @click="$emit('send')"><span class="material-symbols-rounded">send</span></button>
                 </div>
@@ -345,7 +338,7 @@ const GeraldView = {
 
 const TomatoView = {
     template: `
-        <div style="height: 100%; width: 100%; background: var(--bg-color); overflow-y: auto; padding: max(env(safe-area-inset-top, 24px), 24px) 16px 140px; box-sizing: border-box;">
+        <div style="height: 100%; width: 100%; background: var(--bg-color); overflow-y: auto; padding: 20px 16px 140px; box-sizing: border-box;">
             
             <div style="text-align: center; margin-bottom: 24px;">
                 <img src="https://raw.githubusercontent.com/meowoccino/MikoTok/main/a_2.png" style="width: 110px; height: 110px; border-radius: 50%; margin-bottom: 12px; object-fit: cover;" alt="Avatar">
@@ -483,7 +476,7 @@ const MoreView = {
     template: `
         <div class="more-container" style="position: relative; height: 100%; width: 100%; background: var(--bg-color); overflow: hidden;">
             
-            <div style="height: 100%; overflow-y: auto; padding: max(env(safe-area-inset-top, 20px), 20px) 16px 120px;" v-show="activeSubView === 'main'">
+            <div style="height: 100%; overflow-y: auto; padding: 0 16px 120px;" v-show="activeSubView === 'main'">
                 
                 <div v-if="streamState === 'future'" style="background: linear-gradient(135deg, rgba(145, 70, 255, 0.15), rgba(145, 70, 255, 0.05)); border: 1px solid rgba(145, 70, 255, 0.3); border-radius: 16px; padding: 20px; margin-bottom: 24px; margin-top: 8px; text-align: center; display: flex; flex-direction: column; align-items: center; justify-content: center;">
                     <div style="color: var(--primary); font-size: 12px; font-weight: 800; letter-spacing: 1.5px; text-transform: uppercase; margin-bottom: 8px; display: flex; align-items: center; gap: 6px;">
@@ -728,6 +721,7 @@ createApp({
         const loginError = ref(''); 
         
         const hostname = window.location.hostname || 'meowoccino.github.io';
+        const syncState = ref('Refresh Feed');
         const wipeState = ref('Wipe Gerald Memory');
         const logoutState = ref('Sign Out');
         const nukeState = ref('Nuke App Cache');
@@ -743,9 +737,6 @@ createApp({
         const isHeaderVisible = ref(true);
         const geminiStatus = ref('TESTING BRAIN...');
         const sysStats = ref({ cpu: 23, mem: 1.8, temp: 74 });
-
-        /* HEARTBEAT READY COUNTER */
-        const activeUsersCount = ref(1);
 
         const activeClipId = ref(null);
         const isLoadingMore = ref(false);
@@ -764,28 +755,6 @@ createApp({
         const initialTabIdx = tabOrder.indexOf(tabs.includes(window.location.hash.replace('#','')) ? window.location.hash.replace('#','') : 'home');
         
         const tabOffset = ref(initialTabIdx * -20);
-
-        let swipeStartX = 0;
-        const isSwiping = ref(false);
-        const swipeDeltaX = ref(0);
-        
-        const sliderTransform = computed(() => {
-            return `translate3d(calc(${tabOffset.value}% + ${swipeDeltaX.value}px), 0, 0)`;
-        });
-
-        const getAppVersion = () => {
-            const scripts = document.getElementsByTagName('script');
-            let vNum = "1";
-            for (let i = 0; i < scripts.length; i++) {
-                if (scripts[i].src && scripts[i].src.includes('app.js?v=')) {
-                    vNum = scripts[i].src.split('?v=')[1];
-                    break;
-                }
-            }
-            const parsed = parseInt(vNum) || 1;
-            return parsed < 10 ? `0.${parsed}` : `${parsed}.0`;
-        };
-        const formattedVersion = ref(getAppVersion());
 
         const updateThemeClass = () => {
             document.body.className = 'theme-' + appTheme.value;
@@ -812,37 +781,18 @@ createApp({
             
             window.history.pushState(null, '', `#${tab}`);
             if (tab === 'gerald') setTimeout(() => { const b = document.getElementById('gerald-msgs'); if (b) b.scrollTop = b.scrollHeight; }, 300);
-            
-            if (window.navigator && window.navigator.vibrate) window.navigator.vibrate(8);
         };
 
-        const handleSwipeStart = (e) => { 
-            if (document.activeElement && ['INPUT', 'TEXTAREA'].includes(document.activeElement.tagName)) return;
-            swipeStartX = e.touches[0].clientX; 
-            isSwiping.value = true;
-            swipeDeltaX.value = 0;
-        };
-        
-        const handleSwipeMove = (e) => {
-            if (!isSwiping.value) return;
-            const dx = e.touches[0].clientX - swipeStartX;
-            const idx = tabOrder.indexOf(currentTab.value);
-            if ((idx === 0 && dx > 0) || (idx === tabOrder.length - 1 && dx < 0)) {
-                swipeDeltaX.value = dx * 0.2; 
-            } else {
-                swipeDeltaX.value = dx;
-            }
-        };
-
+        let swipeStartX = 0;
+        const handleSwipeStart = (e) => { swipeStartX = e.touches[0].clientX; };
         const handleSwipeEnd = (e) => {
-            if (!isSwiping.value) return;
-            isSwiping.value = false;
-            const dx = swipeDeltaX.value;
-            swipeDeltaX.value = 0; 
-            if (Math.abs(dx) < 60) return; 
+            if (document.activeElement && ['INPUT', 'TEXTAREA'].includes(document.activeElement.tagName)) return;
+            
+            const dx = e.changedTouches[0].clientX - swipeStartX;
+            if (Math.abs(dx) < 50) return;
             const idx = tabOrder.indexOf(currentTab.value);
             if (dx < 0 && idx < tabOrder.length - 1) switchTab(tabOrder[idx + 1]);
-            else if (dx > 0 && idx > 0) switchTab(tabOrder[idx - 1]);
+            if (dx > 0 && idx > 0) switchTab(tabOrder[idx - 1]);
         };
 
         let modalDragStartY = 0;
@@ -972,6 +922,7 @@ createApp({
         };
 
         const handleLogout = async () => { logoutState.value = 'LOGGING OUT...'; await sbClient.auth.signOut(); currentUser.value = null; modals.value.profile = false; logoutState.value = 'Sign Out'; };
+        const runSync = async () => { syncState.value = 'REFRESHING...'; await loadData(false); syncState.value = 'SUCCESS'; setTimeout(() => syncState.value = 'Refresh Feed', 1500); };
         const clearGeraldHistory = async () => { wipeState.value = 'WIPING...'; await sbClient.from('gerald_history').delete().eq('user_id', currentUser.value.id); geraldMessages.value = [{ role: 'gerald', content: '' }]; wipeState.value = 'SUCCESS'; setTimeout(() => wipeState.value = 'Wipe Gerald Memory', 1500); };
         const nukeCache = () => { nukeState.value = 'NUKING...'; setTimeout(() => { localStorage.clear(); caches.keys().then(names => { for (let n of names) caches.delete(n); }); nukeState.value = 'SUCCESS'; setTimeout(() => window.location.reload(), 1000); }, 50); };
 
@@ -1046,27 +997,6 @@ createApp({
             sbClient.auth.getSession().then(({ data: sessionData }) => {
                 if (sessionData?.session?.user) currentUser.value = sessionData.session.user;
                 sbClient.auth.onAuthStateChange((event, session) => { currentUser.value = session?.user || null; });
-                
-                const presenceChannel = sbClient.channel('miko-active-room');
-
-                presenceChannel.on('presence', { event: 'sync' }, () => {
-                    const state = presenceChannel.presenceState();
-                    activeUsersCount.value = Object.keys(state).length || 1;
-                });
-
-                presenceChannel.subscribe(async (status) => {
-                    if (status === 'SUBSCRIBED') {
-                        await presenceChannel.track({
-                            user_id: currentUser.value ? currentUser.value.id : 'anon-' + Math.random().toString(36).substring(2,7),
-                            online_at: new Date().toISOString()
-                        });
-                        
-                        // Heartbeat lock-in fix
-                        setInterval(async () => {
-                             await presenceChannel.track({ online_at: new Date().toISOString() });
-                        }, 10000);
-                    }
-                });
             });
 
             Promise.all([loadEmotesFromSupabase(), loadData(), checkLive(), testGeminiBrain()]).then(() => {
@@ -1081,7 +1011,7 @@ createApp({
         });
 
         return {
-            hostname, splashVisible, splashOpacity, currentTab, tabOffset, appTheme, toggleTheme, clips, currentUser, loginEmail, loginPass, loginError, geraldInput, geraldMessages, isGeraldTyping, wipeState, logoutState, nukeState, isHeaderVisible, currentFilter, activeFilterLabel, isFilterMenuOpen, recentVods, currentVodIndex, customEmotes, showEmotePicker, showMinigames, activeClipId, switchTab, geminiStatus, sysStats, handleSwipeStart, handleSwipeMove, handleSwipeEnd, isSwiping, sliderTransform, handleModalTouchStart, handleModalTouchMove, handleModalTouchEnd, handleScroll, apiConfig, saveState, selectedClip, modals, allClipsCount, isLive, chatMessages, twitchChatToken, twitchAuthUrl, twitchUsername, showLoginPopup, formattedVersion, activeUsersCount,
+            hostname, splashVisible, splashOpacity, currentTab, tabOffset, appTheme, toggleTheme, clips, currentUser, loginEmail, loginPass, loginError, geraldInput, geraldMessages, isGeraldTyping, syncState, wipeState, logoutState, nukeState, isHeaderVisible, currentFilter, activeFilterLabel, isFilterMenuOpen, recentVods, currentVodIndex, customEmotes, showEmotePicker, showMinigames, activeClipId, switchTab, geminiStatus, sysStats, handleSwipeStart, handleSwipeEnd, handleModalTouchStart, handleModalTouchMove, handleModalTouchEnd, handleScroll, apiConfig, saveState, selectedClip, modals, allClipsCount, isLive, chatMessages, twitchChatToken, twitchAuthUrl, twitchUsername, showLoginPopup,
             logoSvg: (id) => `<svg viewBox="0 0 100 100"><defs><linearGradient id="grad-${id}" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stop-color="#9146FF"/><stop offset="100%" stop-color="#a970ff"/></linearGradient></defs><circle cx="50" cy="50" r="40" fill="url(#grad-${id})"/><path d="M 33 38 L 48 62 L 62 38 L 62 55 Q 62 65 69 64" fill="none" stroke="#ffffff" stroke-width="8" stroke-linecap="round" stroke-linejoin="round"/></svg>`,
             optimizeTwitchImg: (u) => u ? u.replace('%{width}', '480').replace('%{height}', '270') : '',
             formatViews: (v) => v ? v.toLocaleString() : '0',
@@ -1091,7 +1021,7 @@ createApp({
             prevVod: () => { if (currentVodIndex.value > (isLive.value ? -1 : 0)) currentVodIndex.value--; },
             nextVod: () => { if (currentVodIndex.value < recentVods.value.length - 1) currentVodIndex.value++; },
             playClip: (clip) => { selectedClip.value = clip; },
-            handleLogin, handleLogout, clearGeraldHistory, nukeCache, talkToGerald, triggerAiMinigame,
+            handleLogin, handleLogout, runSync, clearGeraldHistory, nukeCache, talkToGerald, triggerAiMinigame,
             closePickers: () => { showEmotePicker.value = false; showMinigames.value = false; },
             insertEmote: (name) => { geraldInput.value += (geraldInput.value && !geraldInput.value.endsWith(' ') ? ' ' : '') + name + ' '; showEmotePicker.value = false; },
             toggleEmotes: () => { showEmotePicker.value = !showEmotePicker.value; showMinigames.value = false; },
