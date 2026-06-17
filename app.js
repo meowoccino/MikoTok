@@ -21,7 +21,6 @@ const parseMarkdownText = (text, emotesMap) => {
     if (emotesMap) {
         const tokens = html.split(/(<[^>]+>|[\s]+)/); 
         const emoteKeys = Object.keys(emotesMap);
-        
         const lowerMap = {};
         emoteKeys.forEach(k => lowerMap[k.toLowerCase()] = k);
 
@@ -135,7 +134,6 @@ const FilterMenu = {
     `
 };
 
-/* ADDED: Explicit '|| 1' fallback for safety */
 const ProfileModal = {
     props: ['isOpen', 'currentUser', 'loginEmail', 'loginPass', 'apiConfig', 'wipeState', 'logoutState', 'nukeState', 'formattedVersion', 'activeUsersCount'],
     template: `
@@ -222,7 +220,7 @@ const ChatView = {
         }
     },
     template: `
-        <div style="flex: 1; display: flex; flex-direction: column; background: var(--bg-color); position: relative; overflow: hidden; width: 100%; height: 100%;">
+        <div style="flex: 1; display: flex; flex-direction: column; background: var(--bg-color); position: relative; overflow: hidden; width: 100%; height: 100%; padding-top: max(env(safe-area-inset-top, 0px), 0px);">
             <div style="position: absolute; left: 0; top: 0; bottom: 0; width: 15px; z-index: 1000; background: transparent;"></div>
             <div style="position: absolute; right: 0; top: 0; bottom: 0; width: 15px; z-index: 1000; background: transparent;"></div>
 
@@ -556,7 +554,7 @@ const MoreView = {
                 <a href="https://www.reddit.com/r/CodeMiko/" target="_blank" style="display: flex; align-items: center; width: 100%; box-sizing: border-box; padding: 0 16px; border-radius: 12px; min-height: 48px; background: var(--card-bg); text-decoration: none; margin-bottom: 8px;">
                     <svg viewBox="0 0 24 24" style="width: 22px; height: 22px; fill: #FF4500;">
                         <circle cx="12" cy="12" r="12" />
-                        <path fill="#ffffff" d="M16.7 10.6c-.6 0-1.1.3-1.4.7-.9-.6-2.1-1-3.5-1.1l.6-2.9 2 .4c0 .6.5 1.1 1.1 1.1.6 0 1.1-.5 1.1-1.1 0-.6-.5-1.1-1.1-1.1-.5 0-.9.3-1 .8l-2.2-.5c-.1 0-.2 0-.2.1l-.7 3.3c-1.4.1-2.6.4-3.5 1-.3-.4-.8-.7-1.4-.7-.9 0-1.6.7-1.6 1.6 0 .6.3 1.1.8 1.4-.1.2-.1.4-.1.6 0 2.4 2.8 4.4 6.3 4.4s6.3-2 6.3-4.4c0-.2 0-.4-.1-.6.5-.3.8-.8.8-1.4 0-.9-.7-1.6-1.6-1.6zm-7.2 4.2c-.5 0-.9-.4-.9-.9s.4-.9.9-.9.9.4.9-.9-.4.9-.9.9zm5.3 2c-1 .6-2.5.6-2.8.6s-1.8 0-2.8-.6c-.2-.1-.2-.3-.1-.4.1-.2.3-.2.4-.1.8.4 2 .5 2.5.5s1.7-.1 2.5-.5c.2-.1.4-.1.4.1.2.1.2.3.1.4zm-.4-2c-.5 0-.9-.4-.9-.9s.4-.9.9-.9.9.4.9.9-.4.9-.9.9z"/>
+                        <path fill="#ffffff" d="M16.7 10.6c-.6 0-1.1.3-1.4.7-.9-.6-2.1-1-3.5-1.1l.6-2.9 2 .4c0 .6.5 1.1 1.1 1.1.6 0 1.1-.5 1.1-1.1 0-.6-.5-1.1-1.1-1.1-.5 0-.9.3-1 .8l-2.2-.5c-.1 0-.2 0-.2.1l-.7 3.3c-1.4.1-2.6.4-3.5 1-.3-.4-.8-.7-1.4-.7-.9 0-1.6.7-1.6 1.6 0 .6.3 1.1.8 1.4-.1.2-.1.4-.1.6 0 2.4 2.8 4.4 6.3 4.4s6.3-2 6.3-4.4c0-.2 0-.4-.1-.6.5-.3.8-.8.8-1.4 0-.9-.7-1.6-1.6-1.6zm-7.2 4.2c-.5 0-.9-.4-.9-.9s.4-.9.9-.9.9.4.9.9-.4.9-.9.9zm5.3 2c-1 .6-2.5.6-2.8.6s-1.8 0-2.8-.6c-.2-.1-.2-.3-.1-.4.1-.2.3-.2.4-.1.8.4 2 .5 2.5.5s1.7-.1 2.5-.5c.2-.1.4-.1.4.1.2.1.2.3.1.4zm-.4-2c-.5 0-.9-.4-.9-.9s.4-.9.9-.9.9.4.9.9-.4.9-.9.9z"/>
                     </svg>
                     <span style="color: var(--text-main); font-size: 14px; font-weight: 600; margin-left: 12px;">Reddit</span>
                     <span class="material-symbols-rounded" style="color: var(--text-muted); margin-left: auto; font-size: 20px;">open_in_new</span>
@@ -746,6 +744,7 @@ createApp({
         const geminiStatus = ref('TESTING BRAIN...');
         const sysStats = ref({ cpu: 23, mem: 1.8, temp: 74 });
 
+        /* HEARTBEAT READY COUNTER */
         const activeUsersCount = ref(1);
 
         const activeClipId = ref(null);
@@ -1061,6 +1060,11 @@ createApp({
                             user_id: currentUser.value ? currentUser.value.id : 'anon-' + Math.random().toString(36).substring(2,7),
                             online_at: new Date().toISOString()
                         });
+                        
+                        // Heartbeat lock-in fix
+                        setInterval(async () => {
+                             await presenceChannel.track({ online_at: new Date().toISOString() });
+                        }, 10000);
                     }
                 });
             });
