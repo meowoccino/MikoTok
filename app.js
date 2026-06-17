@@ -18,7 +18,7 @@ document.head.appendChild(styleReset);
 const parseMarkdownText = (text, emotesMap) => {
  if (!text) return ''; 
  let html = text.replace(/&/g, '&').replace(/</g, '<').replace(/>/g, '>');
- html = html.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>').replace(/\*(.*?)\*/g, '<em>$1</em>');
+ html = html.replace(/\*\*(.*?)\*\"/g, '<strong>$1</strong>').replace(/\*(.*?)\*/g, '<em>$1</em>');
  
  const urlPattern = /(\b(https?|ftp|file):\/\/[-A-Z0-9+&@#\/%?=~_|!:,.;]*[-A-Z0-9+&@#\/%=~_|])/ig;
  html = html.replace(urlPattern, "<a href='$1' target='_blank'>$1</a>");
@@ -135,7 +135,7 @@ const FilterMenu = {
 };
 
 const ProfileModal = {
- props: ['isOpen', 'currentUser', 'loginEmail', 'loginPass', 'apiConfig', 'syncState', 'wipeState', 'logoutState', 'nukeState', 'saveState'],
+ props: ['isOpen', 'currentUser', 'loginEmail', 'loginPass', 'apiConfig', 'syncState', 'wipeState', 'logoutState', 'nukeState', 'formattedVersion', 'activeUsersCount'],
  template: `
  <div class="modal-overlay" :class="{ open: isOpen }" @click.self="$emit('close')">
  <div class="modal-content" @touchstart="$emit('touch-start', $event)" @touchmove="$emit('touch-move', $event)" @touchend="$emit('touch-end', $event)">
@@ -154,7 +154,18 @@ const ProfileModal = {
  <div class="pulse-glow" style="width: 8px; height: 8px; border-radius: 50%; background: var(--success);"></div> 
  SYSTEM: READY
  </div>
- </div>
+                     </div>
+
+                     <div class="version-bar" style="background: var(--bg-color); border: 1px solid var(--border-color); border-radius: 14px; padding: 12px 16px; margin-bottom: 16px; display: flex; justify-content: space-between; align-items: center;">
+                         <span class="version-text" style="font-size: 14px; font-weight: 800; color: var(--text-main);">APP BUILD v2.0.{{ formattedVersion }}</span>
+                         <div class="presence-indicators" style="display: flex; align-items: center; gap: 6px;">
+                             <div class="live-counter-pill" style="display: flex; align-items: center; gap: 4px; background: rgba(16, 185, 129, 0.1); color: var(--success); padding: 6px 10px; border-radius: 8px; font-size: 10px; font-weight: 800; letter-spacing: 0.5px; border: 1px solid rgba(16, 185, 129, 0.2);">
+                                 <span class="material-symbols-rounded" style="font-size: 13px; font-variation-settings: 'FILL' 1;">group</span>
+                                 <span>{{ activeUsersCount || 1 }}</span>
+                             </div>
+                             <div class="status-pill" style="background: rgba(145, 70, 255, 0.1); color: var(--primary); padding: 6px 10px; border-radius: 8px; font-size: 10px; font-weight: 800; letter-spacing: 0.5px; border: 1px solid rgba(145, 70, 255, 0.2);">UP TO DATE</div>
+                         </div>
+                     </div>
  
  <div class="stat-grid">
  <a href="https://supabase.com/dashboard/project/yhxcuayiwqpjvalyrcqv" target="_blank" class="external-link-btn" style="color:var(--success)"><span class="material-symbols-rounded">database</span>Supabase DB</a>
@@ -338,7 +349,7 @@ const GeraldView = {
 
 const TomatoView = {
  template: `
- <div style="height: 100%; width: 100%; background: var(--bg-color); overflow-y: auto; padding: 20px 16px 140px; box-sizing: border-box;">
+ <div style="height: 100%; width: 100%; background: var(--bg-color); overflow-y: auto; padding: max(env(safe-area-inset-top, 24px), 24px) 16px 100px; box-sizing: border-box;">
  
  <div style="text-align: center; margin-bottom: 24px;">
  <img src="https://raw.githubusercontent.com/meowoccino/MikoTok/main/a_2.png" style="width: 110px; height: 110px; border-radius: 50%; margin-bottom: 12px; object-fit: cover;" alt="Avatar">
@@ -355,7 +366,7 @@ const TomatoView = {
  PayPal
  </a>
  <a href="https://throne.com/tomato_24" target="_blank" style="background: var(--card-bg); border: 1px solid var(--border-color); border-radius: 12px; padding: 12px 4px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 8px; text-decoration: none; color: var(--text-main); font-weight: 700; font-size: 13px;">
- <svg viewBox="0 0 24 24" style="width: 28px; height: 28px; fill: #ef4444;"><path d="M20 6h-2.18c.11-.31.18-.65.18-1 0-1.66-.84-3-2-3-1.22 0-2.42 1.55-3 2.52-.58-.97-1.78-2.52-3-2.52-1.16 0-2 1.34-2 3 0 .35.07.69.18 1H4c-1.11 0-1.99.89-1.99 2L2 19c0 1.11.89 2 2 2h16c1.11 0 2-.89 2-2V8c0-1.11-.89-2-2-2zm-5-3c.55 0 1 .45 1 1s-.45 1-1 1-1-.45-1-1 .45-1 1-1zm-6 0c.55 0 1 .45 1 1s-.45 1-1 1-1-.45-1-1 .45-1 1-1zm11 16H4V8h16v11z"/></svg>
+ <svg viewBox="0 0 24 24" style="width: 22px; height: 22px; fill: #ef4444;"><path d="M20 6h-2.18c.11-.31.18-.65.18-1 0-1.66-.84-3-2-3-1.22 0-2.42 1.55-3 2.52-.58-.97-1.78-2.52-3-2.52-1.16 0-2 1.34-2 3 0 .35.07.69.18 1H4c-1.11 0-1.99.89-1.99 2L2 19c0 1.11.89 2 2 2h16c1.11 0 2-.89 2-2V8c0-1.11-.89-2-2-2zm-5-3c.55 0 1 .45 1 1s-.45 1-1 1-1-.45-1-1 .45-1 1-1zm-6 0c.55 0 1 .45 1 1s-.45 1-1 1-1-.45-1-1 .45-1 1-1zm11 16H4V8h16v11z"/></svg>
  Throne
  </a>
  <a href="https://revolut.me/tomato24" target="_blank" style="background: var(--card-bg); border: 1px solid var(--border-color); border-radius: 12px; padding: 12px 4px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 8px; text-decoration: none; color: var(--text-main); font-weight: 700; font-size: 13px;">
@@ -474,7 +485,7 @@ const MoreView = {
  return { activeSubView, streamState, countdownText, channelStats, currentFunnyMessage };
  },
  template: `
- <div class="more-container" style="position: relative; height: 100%; width: 100%; background: var(--bg-color); overflow: hidden;">
+ <div class="more-container" style="position: relative; height: 100%; width: 100%; background: var(--bg-color); overflow: hidden; padding-top: max(env(safe-area-inset-top, 24px), 24px); box-sizing: border-box;">
  
  <div style="height: 100%; overflow-y: auto; padding: 0 16px 120px;" v-show="activeSubView === 'main'">
  
@@ -738,6 +749,8 @@ createApp({
  const geminiStatus = ref('TESTING BRAIN...');
  const sysStats = ref({ cpu: 23, mem: 1.8, temp: 74 });
 
+ const activeUsersCount = ref(1);
+
  const activeClipId = ref(null);
  const isLoadingMore = ref(false);
  const allClipsLoaded = ref(false);
@@ -987,6 +1000,20 @@ createApp({
  });
  };
 
+ const getAppVersion = () => {
+     const scripts = document.getElementsByTagName('script');
+     let vNum = "1";
+     for (let i = 0; i < scripts.length; i++) {
+         if (scripts[i].src && scripts[i].src.includes('app.js?v=')) {
+             vNum = scripts[i].src.split('?v=')[1];
+             break;
+         }
+     }
+     const parsed = parseInt(vNum) || 1;
+     return parsed < 10 ? `0.${parsed}` : `${parsed}.0`;
+ };
+ const formattedVersion = ref(getAppVersion());
+
  onMounted(() => {
  document.body.style.overflow = 'hidden';
  document.body.style.height = '100vh';
@@ -997,6 +1024,23 @@ createApp({
  sbClient.auth.getSession().then(({ data: sessionData }) => {
  if (sessionData?.session?.user) currentUser.value = sessionData.session.user;
  sbClient.auth.onAuthStateChange((event, session) => { currentUser.value = session?.user || null; });
+
+ const presenceChannel = sbClient.channel('miko-active-room');
+ presenceChannel.on('presence', { event: 'sync' }, () => {
+     const state = presenceChannel.presenceState();
+     activeUsersCount.value = Object.keys(state).length || 1;
+ });
+ presenceChannel.subscribe(async (status) => {
+     if (status === 'SUBSCRIBED') {
+         await presenceChannel.track({
+             user_id: currentUser.value ? currentUser.value.id : 'anon-' + Math.random().toString(36).substring(2,7),
+             online_at: new Date().toISOString()
+         });
+         setInterval(async () => {
+             await presenceChannel.track({ online_at: new Date().toISOString() });
+         }, 10000);
+     }
+ });
  });
 
  Promise.all([loadEmotesFromSupabase(), loadData(), checkLive(), testGeminiBrain()]).then(() => {
@@ -1011,7 +1055,7 @@ createApp({
  });
 
  return {
- hostname, splashVisible, splashOpacity, currentTab, tabOffset, appTheme, toggleTheme, clips, currentUser, loginEmail, loginPass, loginError, geraldInput, geraldMessages, isGeraldTyping, syncState, wipeState, logoutState, nukeState, isHeaderVisible, currentFilter, activeFilterLabel, isFilterMenuOpen, recentVods, currentVodIndex, customEmotes, showEmotePicker, showMinigames, activeClipId, switchTab, geminiStatus, sysStats, handleSwipeStart, handleSwipeEnd, handleModalTouchStart, handleModalTouchMove, handleModalTouchEnd, handleScroll, apiConfig, saveState, selectedClip, modals, allClipsCount, isLive, chatMessages, twitchChatToken, twitchAuthUrl, twitchUsername, showLoginPopup,
+ hostname, splashVisible, splashOpacity, currentTab, tabOffset, appTheme, toggleTheme, clips, currentUser, loginEmail, loginPass, loginError, geraldInput, geraldMessages, isGeraldTyping, syncState, wipeState, logoutState, nukeState, isHeaderVisible, currentFilter, activeFilterLabel, isFilterMenuOpen, recentVods, currentVodIndex, customEmotes, showEmotePicker, showMinigames, activeClipId, switchTab, geminiStatus, sysStats, handleSwipeStart, handleSwipeEnd, handleModalTouchStart, handleModalTouchMove, handleModalTouchEnd, handleScroll, apiConfig, saveState, selectedClip, modals, allClipsCount, isLive, chatMessages, twitchChatToken, twitchAuthUrl, twitchUsername, showLoginPopup, formattedVersion, activeUsersCount,
  logoSvg: (id) => `<svg viewBox="0 0 100 100"><defs><linearGradient id="grad-${id}" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stop-color="#9146FF"/><stop offset="100%" stop-color="#a970ff"/></linearGradient></defs><circle cx="50" cy="50" r="40" fill="url(#grad-${id})"/><path d="M 33 38 L 48 62 L 62 38 L 62 55 Q 62 65 69 64" fill="none" stroke="#ffffff" stroke-width="8" stroke-linecap="round" stroke-linejoin="round"/></svg>`,
  optimizeTwitchImg: (u) => u ? u.replace('%{width}', '480').replace('%{height}', '270') : '',
  formatViews: (v) => v ? v.toLocaleString() : '0',
