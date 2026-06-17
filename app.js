@@ -18,7 +18,7 @@ document.head.appendChild(styleReset);
 const parseMarkdownText = (text, emotesMap) => {
  if (!text) return ''; 
  let html = text.replace(/&/g, '&').replace(/</g, '<').replace(/>/g, '>');
- html = html.replace(/\*\*(.*?)\*\"/g, '<strong>$1</strong>').replace(/\*(.*?)\*/g, '<em>$1</em>');
+ html = html.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>').replace(/\*(.*?)\*/g, '<em>$1</em>');
  
  const urlPattern = /(\b(https?|ftp|file):\/\/[-A-Z0-9+&@#\/%?=~_|!:,.;]*[-A-Z0-9+&@#\/%=~_|])/ig;
  html = html.replace(urlPattern, "<a href='$1' target='_blank'>$1</a>");
@@ -92,19 +92,24 @@ const BottomNav = {
  template: `
  <nav class="bottom-nav">
  <div class="nav-item" :class="{ active: currentTab === 'home' }" @click="$emit('change-tab', 'home')">
- <span class="material-symbols-rounded">home</span><span class="nav-label">Home</span>
+ <div class="icon-wrapper"><span class="material-symbols-rounded nav-icon">home</span></div>
+ <span class="nav-label">Home</span>
  </div>
  <div class="nav-item" :class="{ active: currentTab === 'chat' }" @click="$emit('change-tab', 'chat')">
- <span class="material-symbols-rounded">chat</span><span class="nav-label">Chat</span>
+ <div class="icon-wrapper"><span class="material-symbols-rounded nav-icon">chat</span></div>
+ <span class="nav-label">Chat</span>
  </div>
  <div class="nav-item" :class="{ 'active-gerald': currentTab === 'gerald' }" @click="$emit('change-tab', 'gerald')">
- <span class="material-symbols-rounded">graphic_eq</span><span class="nav-label">Gerald</span>
+ <div class="icon-wrapper"><span class="material-symbols-rounded nav-icon">graphic_eq</span></div>
+ <span class="nav-label">Gerald</span>
  </div>
  <div class="nav-item" :class="{ active: currentTab === 'more' }" @click="$emit('change-tab', 'more')">
- <span class="material-symbols-rounded">menu</span><span class="nav-label">More</span>
+ <div class="icon-wrapper"><span class="material-symbols-rounded nav-icon">menu</span></div>
+ <span class="nav-label">More</span>
  </div>
  <div class="nav-item" :class="{ active: currentTab === 'tomato' }" @click="$emit('change-tab', 'tomato')">
- <svg viewBox="0 0 24 24" style="width:24px; height:24px; fill:none; stroke:currentColor; stroke-width:2; stroke-linecap:round; stroke-linejoin:round;">
+ <div class="icon-wrapper">
+ <svg class="nav-icon" viewBox="0 0 24 24" style="fill:none; stroke:currentColor; stroke-width:2; stroke-linecap:round; stroke-linejoin:round;">
  <ellipse cx="12" cy="15" rx="8.5" ry="7.5" />
  <path d="M12 7.5V3" />
  <path d="M8.5 4.5c1 1 3.5 1 3.5 3" />
@@ -112,6 +117,7 @@ const BottomNav = {
  <path d="M12 7.5c-2 0-4 .5-5 1.5" />
  <path d="M12 7.5c2 0 4 .5 5 1.5" />
  </svg>
+ </div>
  <span class="nav-label">tomato_24</span>
  </div>
  </nav>
@@ -135,7 +141,7 @@ const FilterMenu = {
 };
 
 const ProfileModal = {
- props: ['isOpen', 'currentUser', 'loginEmail', 'loginPass', 'apiConfig', 'syncState', 'wipeState', 'logoutState', 'nukeState', 'formattedVersion', 'activeUsersCount'],
+ props: ['isOpen', 'currentUser', 'loginEmail', 'loginPass', 'apiConfig', 'wipeState', 'logoutState', 'nukeState', 'formattedVersion', 'activeUsersCount'],
  template: `
  <div class="modal-overlay" :class="{ open: isOpen }" @click.self="$emit('close')">
  <div class="modal-content" @touchstart="$emit('touch-start', $event)" @touchmove="$emit('touch-move', $event)" @touchend="$emit('touch-end', $event)">
@@ -151,21 +157,21 @@ const ProfileModal = {
  <div v-else>
  <div class="infra-bar">
  <div class="status-node" style="display: flex; align-items: center; justify-content: center; gap: 8px; font-weight: 800; width: 100%;">
- <div class="pulse-glow" style="width: 8px; height: 8px; border-radius: 50%; background: var(--success);"></div> 
+ <div style="width: 8px; height: 8px; border-radius: 50%; background: var(--success); animation: pulse-green-glow 2.5s infinite;"></div> 
  SYSTEM: READY
  </div>
-                     </div>
+ </div>
 
-                     <div class="version-bar" style="background: var(--bg-color); border: 1px solid var(--border-color); border-radius: 14px; padding: 12px 16px; margin-bottom: 16px; display: flex; justify-content: space-between; align-items: center;">
-                         <span class="version-text" style="font-size: 14px; font-weight: 800; color: var(--text-main);">APP BUILD v2.0.{{ formattedVersion }}</span>
-                         <div class="presence-indicators" style="display: flex; align-items: center; gap: 6px;">
-                             <div class="live-counter-pill" style="display: flex; align-items: center; gap: 4px; background: rgba(16, 185, 129, 0.1); color: var(--success); padding: 6px 10px; border-radius: 8px; font-size: 10px; font-weight: 800; letter-spacing: 0.5px; border: 1px solid rgba(16, 185, 129, 0.2);">
-                                 <span class="material-symbols-rounded" style="font-size: 13px; font-variation-settings: 'FILL' 1;">group</span>
-                                 <span>{{ activeUsersCount || 1 }}</span>
-                             </div>
-                             <div class="status-pill" style="background: rgba(145, 70, 255, 0.1); color: var(--primary); padding: 6px 10px; border-radius: 8px; font-size: 10px; font-weight: 800; letter-spacing: 0.5px; border: 1px solid rgba(145, 70, 255, 0.2);">UP TO DATE</div>
-                         </div>
-                     </div>
+ <div class="version-bar" style="background: var(--bg-color); border: 1px solid var(--border-color); border-radius: 14px; padding: 12px 16px; margin-bottom: 16px; display: flex; justify-content: space-between; align-items: center;">
+ <span class="version-text" style="font-size: 14px; font-weight: 800; color: var(--text-main);">APP BUILD v2.0.{{ formattedVersion }}</span>
+ <div class="presence-indicators" style="display: flex; align-items: center; gap: 6px;">
+ <div class="live-counter-pill" style="display: flex; align-items: center; gap: 4px; background: rgba(16, 185, 129, 0.1); color: var(--success); padding: 6px 10px; border-radius: 8px; font-size: 10px; font-weight: 800; letter-spacing: 0.5px; border: 1px solid rgba(16, 185, 129, 0.2);">
+ <span class="material-symbols-rounded" style="font-size: 13px; font-variation-settings: 'FILL' 1;">group</span>
+ <span>{{ activeUsersCount || 1 }}</span>
+ </div>
+ <div class="status-pill" style="background: rgba(145, 70, 255, 0.1); color: var(--primary); padding: 6px 10px; border-radius: 8px; font-size: 10px; font-weight: 800; letter-spacing: 0.5px; border: 1px solid rgba(145, 70, 255, 0.2);">UP TO DATE</div>
+ </div>
+ </div>
  
  <div class="stat-grid">
  <a href="https://supabase.com/dashboard/project/yhxcuayiwqpjvalyrcqv" target="_blank" class="external-link-btn" style="color:var(--success)"><span class="material-symbols-rounded">database</span>Supabase DB</a>
@@ -173,22 +179,16 @@ const ProfileModal = {
  </div>
  
  <div class="action-menu" style="margin-top: 15px;">
- <button class="menu-btn sync-row" :style="syncState === 'SUCCESS' ? 'color: var(--success);' : ''" @click="$emit('sync')">
+ <button class="menu-btn sync-row" :style="nukeState === 'SUCCESS' ? 'color: var(--success);' : ''" @click="$emit('nuke-cache')">
  <div class="btn-content">
- <div class="icon-wrap"><span class="material-symbols-rounded" :class="{'spin-anim': syncState === 'REFRESHING...'}" style="font-size: 18px;">{{ syncState === 'SUCCESS' ? 'check' : 'sync' }}</span></div>
- <span>{{ syncState }}</span>
+ <div class="icon-wrap"><span class="material-symbols-rounded" :class="{'spin-anim': nukeState === 'NUKING...'}" style="font-size: 18px;">{{ nukeState === 'SUCCESS' ? 'check' : 'cached' }}</span></div>
+ <span>{{ nukeState === 'Nuke App Cache' ? 'NUKE APP CACHE' : nukeState }}</span>
  </div>
  </button>
  <button class="menu-btn wipe-row" :style="wipeState === 'SUCCESS' ? 'color: var(--success);' : ''" @click="$emit('wipe')">
  <div class="btn-content">
  <div class="icon-wrap"><span class="material-symbols-rounded" :class="{'shake-anim': wipeState === 'WIPING...'}" style="font-size: 18px;">{{ wipeState === 'SUCCESS' ? 'check' : 'delete' }}</span></div>
  <span>{{ wipeState }}</span>
- </div>
- </button>
- <button class="menu-btn nuke-row" :style="nukeState === 'SUCCESS' ? 'color: var(--success);' : ''" @click="$emit('nuke-cache')">
- <div class="btn-content">
- <div class="icon-wrap"><span class="material-symbols-rounded" :class="{'spin-anim': nukeState === 'NUKING...'}" style="font-size: 18px;">{{ nukeState === 'SUCCESS' ? 'check' : 'cached' }}</span></div>
- <span>{{ nukeState }}</span>
  </div>
  </button>
  <button class="menu-btn logout-row" @click="$emit('logout')">
@@ -335,10 +335,12 @@ const GeraldView = {
  <gerald-minigames :show-minigames="showMinigames" @play-game="g => $emit('play-game', g)"></gerald-minigames>
 
  <div class="gerald-input-area" style="padding: 0; display: flex; width: 100%; align-items: flex-end; gap: 8px;">
+ <div class="gerald-input-container">
  <div class="gerald-input-wrapper">
  <button class="emote-toggle-btn" @click="$emit('toggle-emotes')"><span class="material-symbols-rounded" :style="{color: showEmotePicker ? 'var(--primary)' : 'inherit'}">mood</span></button>
  <button class="emote-toggle-btn" @click="$emit('toggle-minigames')"><span class="material-symbols-rounded" :style="{color: showMinigames ? 'var(--primary)' : 'inherit'}">sports_esports</span></button>
  <textarea class="gerald-input" rows="1" placeholder="Execute request..." :value="geraldInput" @input="$emit('update-input', $event.target.value)" @keydown="$emit('key-down', $event)" id="gerald-txt-input" @focus="$emit('close-pickers')"></textarea>
+ </div>
  </div>
  <button class="gerald-send" @click="$emit('send')"><span class="material-symbols-rounded">send</span></button>
  </div>
@@ -732,7 +734,6 @@ createApp({
  const loginError = ref(''); 
  
  const hostname = window.location.hostname || 'meowoccino.github.io';
- const syncState = ref('Refresh Feed');
  const wipeState = ref('Wipe Gerald Memory');
  const logoutState = ref('Sign Out');
  const nukeState = ref('Nuke App Cache');
@@ -935,7 +936,6 @@ createApp({
  };
 
  const handleLogout = async () => { logoutState.value = 'LOGGING OUT...'; await sbClient.auth.signOut(); currentUser.value = null; modals.value.profile = false; logoutState.value = 'Sign Out'; };
- const runSync = async () => { syncState.value = 'REFRESHING...'; await loadData(false); syncState.value = 'SUCCESS'; setTimeout(() => syncState.value = 'Refresh Feed', 1500); };
  const clearGeraldHistory = async () => { wipeState.value = 'WIPING...'; await sbClient.from('gerald_history').delete().eq('user_id', currentUser.value.id); geraldMessages.value = [{ role: 'gerald', content: '' }]; wipeState.value = 'SUCCESS'; setTimeout(() => wipeState.value = 'Wipe Gerald Memory', 1500); };
  const nukeCache = () => { nukeState.value = 'NUKING...'; setTimeout(() => { localStorage.clear(); caches.keys().then(names => { for (let n of names) caches.delete(n); }); nukeState.value = 'SUCCESS'; setTimeout(() => window.location.reload(), 1000); }, 50); };
 
@@ -1009,8 +1009,7 @@ createApp({
              break;
          }
      }
-     const parsed = parseInt(vNum) || 1;
-     return parsed < 10 ? `0.${parsed}` : `${parsed}.0`;
+     return vNum;
  };
  const formattedVersion = ref(getAppVersion());
 
@@ -1055,7 +1054,7 @@ createApp({
  });
 
  return {
- hostname, splashVisible, splashOpacity, currentTab, tabOffset, appTheme, toggleTheme, clips, currentUser, loginEmail, loginPass, loginError, geraldInput, geraldMessages, isGeraldTyping, syncState, wipeState, logoutState, nukeState, isHeaderVisible, currentFilter, activeFilterLabel, isFilterMenuOpen, recentVods, currentVodIndex, customEmotes, showEmotePicker, showMinigames, activeClipId, switchTab, geminiStatus, sysStats, handleSwipeStart, handleSwipeEnd, handleModalTouchStart, handleModalTouchMove, handleModalTouchEnd, handleScroll, apiConfig, saveState, selectedClip, modals, allClipsCount, isLive, chatMessages, twitchChatToken, twitchAuthUrl, twitchUsername, showLoginPopup, formattedVersion, activeUsersCount,
+ hostname, splashVisible, splashOpacity, currentTab, tabOffset, appTheme, toggleTheme, clips, currentUser, loginEmail, loginPass, loginError, geraldInput, geraldMessages, isGeraldTyping, wipeState, logoutState, nukeState, isHeaderVisible, currentFilter, activeFilterLabel, isFilterMenuOpen, recentVods, currentVodIndex, customEmotes, showEmotePicker, showMinigames, activeClipId, switchTab, geminiStatus, sysStats, handleSwipeStart, handleSwipeEnd, handleModalTouchStart, handleModalTouchMove, handleModalTouchEnd, handleScroll, apiConfig, saveState, selectedClip, modals, allClipsCount, isLive, chatMessages, twitchChatToken, twitchAuthUrl, twitchUsername, showLoginPopup, formattedVersion, activeUsersCount,
  logoSvg: (id) => `<svg viewBox="0 0 100 100"><defs><linearGradient id="grad-${id}" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stop-color="#9146FF"/><stop offset="100%" stop-color="#a970ff"/></linearGradient></defs><circle cx="50" cy="50" r="40" fill="url(#grad-${id})"/><path d="M 33 38 L 48 62 L 62 38 L 62 55 Q 62 65 69 64" fill="none" stroke="#ffffff" stroke-width="8" stroke-linecap="round" stroke-linejoin="round"/></svg>`,
  optimizeTwitchImg: (u) => u ? u.replace('%{width}', '480').replace('%{height}', '270') : '',
  formatViews: (v) => v ? v.toLocaleString() : '0',
@@ -1065,7 +1064,7 @@ createApp({
  prevVod: () => { if (currentVodIndex.value > (isLive.value ? -1 : 0)) currentVodIndex.value--; },
  nextVod: () => { if (currentVodIndex.value < recentVods.value.length - 1) currentVodIndex.value++; },
  playClip: (clip) => { selectedClip.value = clip; },
- handleLogin, handleLogout, runSync, clearGeraldHistory, nukeCache, talkToGerald, triggerAiMinigame,
+ handleLogin, handleLogout, clearGeraldHistory, nukeCache, talkToGerald, triggerAiMinigame,
  closePickers: () => { showEmotePicker.value = false; showMinigames.value = false; },
  insertEmote: (name) => { geraldInput.value += (geraldInput.value && !geraldInput.value.endsWith(' ') ? ' ' : '') + name + ' '; showEmotePicker.value = false; },
  toggleEmotes: () => { showEmotePicker.value = !showEmotePicker.value; showMinigames.value = false; },
