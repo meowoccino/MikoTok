@@ -1,16 +1,11 @@
-// Injects global CSS to fix structural margins, clear gaps, and configure color schemes
 const styleReset = document.createElement('style');
 styleReset.innerHTML = `
     .app-wrapper { border-left: none !important; border-right: none !important; max-width: 100% !important; }
     html, body { overscroll-behavior-y: none; background-color: var(--bg-color) !important; margin: 0; padding: 0; height: 100%; width: 100%; }
     ::-webkit-scrollbar { width: 0px; background: transparent; }
-    
-    /* Native Slide Transition Classes */
     .nav-slide-enter-active, .nav-slide-leave-active { transition: transform 0.3s cubic-bezier(0.25, 0.8, 0.25, 1); will-change: transform; }
     .nav-slide-enter-from, .nav-slide-leave-to { transform: translateX(100%); }
     .sub-view-overlay { position: absolute; top:0; left:0; right:0; bottom:0; background: var(--bg-color); z-index: 50; overflow-y: auto; padding: 20px 16px; box-sizing: border-box; }
-    
-    /* Navbar override to delete the phantom line */
     .bottom-nav { border-top: none !important; box-shadow: none !important; margin-top: 0; }
 `;
 document.head.appendChild(styleReset);
@@ -87,31 +82,38 @@ const AppHeader = {
     `
 };
 
+/* TELEGRAM PILL NAV HTML UPDATE */
 const BottomNav = {
     props: ['currentTab'],
     template: `
         <nav class="bottom-nav">
             <div class="nav-item" :class="{ active: currentTab === 'home' }" @click="$emit('change-tab', 'home')">
-                <span class="material-symbols-rounded">home</span><span class="nav-label">Home</span>
+                <div class="icon-wrapper"><span class="material-symbols-rounded nav-icon">home</span></div>
+                <span class="nav-label">Home</span>
             </div>
             <div class="nav-item" :class="{ active: currentTab === 'chat' }" @click="$emit('change-tab', 'chat')">
-                <span class="material-symbols-rounded">chat</span><span class="nav-label">Chat</span>
+                <div class="icon-wrapper"><span class="material-symbols-rounded nav-icon">chat</span></div>
+                <span class="nav-label">Chat</span>
             </div>
             <div class="nav-item" :class="{ 'active-gerald': currentTab === 'gerald' }" @click="$emit('change-tab', 'gerald')">
-                <span class="material-symbols-rounded">graphic_eq</span><span class="nav-label">Gerald</span>
+                <div class="icon-wrapper"><span class="material-symbols-rounded nav-icon">graphic_eq</span></div>
+                <span class="nav-label">Gerald</span>
             </div>
             <div class="nav-item" :class="{ active: currentTab === 'more' }" @click="$emit('change-tab', 'more')">
-                <span class="material-symbols-rounded">menu</span><span class="nav-label">More</span>
+                <div class="icon-wrapper"><span class="material-symbols-rounded nav-icon">menu</span></div>
+                <span class="nav-label">More</span>
             </div>
             <div class="nav-item" :class="{ active: currentTab === 'tomato' }" @click="$emit('change-tab', 'tomato')">
-                <svg viewBox="0 0 24 24" style="width:24px; height:24px; fill:none; stroke:currentColor; stroke-width:2; stroke-linecap:round; stroke-linejoin:round;">
-                    <ellipse cx="12" cy="15" rx="8.5" ry="7.5" />
-                    <path d="M12 7.5V3" />
-                    <path d="M8.5 4.5c1 1 3.5 1 3.5 3" />
-                    <path d="M15.5 4.5c-1 1-3.5 1-3.5 3" />
-                    <path d="M12 7.5c-2 0-4 .5-5 1.5" />
-                    <path d="M12 7.5c2 0 4 .5 5 1.5" />
-                </svg>
+                <div class="icon-wrapper">
+                    <svg class="nav-icon" viewBox="0 0 24 24" style="width:24px; height:24px; fill:none; stroke:currentColor; stroke-width:2; stroke-linecap:round; stroke-linejoin:round;">
+                        <ellipse cx="12" cy="15" rx="8.5" ry="7.5" />
+                        <path d="M12 7.5V3" />
+                        <path d="M8.5 4.5c1 1 3.5 1 3.5 3" />
+                        <path d="M15.5 4.5c-1 1-3.5 1-3.5 3" />
+                        <path d="M12 7.5c-2 0-4 .5-5 1.5" />
+                        <path d="M12 7.5c2 0 4 .5 5 1.5" />
+                    </svg>
+                </div>
                 <span class="nav-label">tomato_24</span>
             </div>
         </nav>
@@ -134,8 +136,9 @@ const FilterMenu = {
     `
 };
 
+/* ADDED: activeUsersCount display */
 const ProfileModal = {
-    props: ['isOpen', 'currentUser', 'loginEmail', 'loginPass', 'apiConfig', 'wipeState', 'logoutState', 'nukeState', 'formattedVersion'],
+    props: ['isOpen', 'currentUser', 'loginEmail', 'loginPass', 'apiConfig', 'wipeState', 'logoutState', 'nukeState', 'formattedVersion', 'activeUsersCount'],
     template: `
         <div class="modal-overlay" :class="{ open: isOpen }" @click.self="$emit('close')">
             <div class="modal-content" @touchstart="$emit('touch-start', $event)" @touchmove="$emit('touch-move', $event)" @touchend="$emit('touch-end', $event)">
@@ -156,7 +159,13 @@ const ProfileModal = {
                     
                     <div class="version-bar">
                         <span class="version-text">APP BUILD v2.0.{{ formattedVersion }}</span>
-                        <div class="status-pill">UP TO DATE</div>
+                        <div class="presence-indicators">
+                            <div class="live-counter-pill">
+                                <span class="material-symbols-rounded" style="font-size: 13px; font-variation-settings: 'FILL' 1;">group</span>
+                                <span>{{ activeUsersCount }}</span>
+                            </div>
+                            <div class="status-pill">UP TO DATE</div>
+                        </div>
                     </div>
                     
                     <div class="stat-grid">
@@ -270,6 +279,7 @@ const GeraldMinigames = {
     `
 };
 
+/* ADDED: Laser glowing wrapper container around input */
 const GeraldView = {
     components: { GeraldMinigames },
     props: ['currentTab', 'geraldMessages', 'isGeraldTyping', 'geraldInput', 'showEmotePicker', 'showMinigames', 'customEmotes', 'geminiStatus', 'sysStats'],
@@ -298,7 +308,7 @@ const GeraldView = {
                 </div>
             </div>
 
-            <div class="gerald-messages" id="gerald-msgs" @click="$emit('close-pickers')" style="flex: 1; overflow-y: auto; overscroll-behavior-y: contain; -webkit-overflow-scrolling: touch; display: flex; flex-direction: column; padding: 2px 16px;">
+            <div class="gerald-messages" id="gerald-msgs" @click="$emit('close-pickers')">
                 <template v-for="(m, i) in geraldMessages" :key="i">
                     <div v-if="i === 0 && m.role === 'gerald' && !m.content" class="chat-bubble gerald startup-anim">
                         <span>GERALD_CORE initialized.<br>Awaiting human input...</span>
@@ -323,10 +333,12 @@ const GeraldView = {
                 <gerald-minigames :show-minigames="showMinigames" @play-game="g => $emit('play-game', g)"></gerald-minigames>
 
                 <div class="gerald-input-area" style="padding: 0; display: flex; width: 100%; align-items: flex-end; gap: 8px;">
-                    <div class="gerald-input-wrapper">
-                        <button class="emote-toggle-btn" @click="$emit('toggle-emotes')"><span class="material-symbols-rounded" :style="{color: showEmotePicker ? 'var(--primary)' : 'inherit'}">mood</span></button>
-                        <button class="emote-toggle-btn" @click="$emit('toggle-minigames')"><span class="material-symbols-rounded" :style="{color: showMinigames ? 'var(--primary)' : 'inherit'}">sports_esports</span></button>
-                        <textarea class="gerald-input" rows="1" placeholder="Execute request..." :value="geraldInput" @input="$emit('update-input', $event.target.value)" @keydown="$emit('key-down', $event)" id="gerald-txt-input" @focus="$emit('close-pickers')"></textarea>
+                    <div class="gerald-input-container">
+                        <div class="gerald-input-wrapper">
+                            <button class="emote-toggle-btn" @click="$emit('toggle-emotes')"><span class="material-symbols-rounded" :style="{color: showEmotePicker ? 'var(--primary)' : 'inherit'}">mood</span></button>
+                            <button class="emote-toggle-btn" @click="$emit('toggle-minigames')"><span class="material-symbols-rounded" :style="{color: showMinigames ? 'var(--primary)' : 'inherit'}">sports_esports</span></button>
+                            <textarea class="gerald-input" rows="1" placeholder="Execute request..." :value="geraldInput" @input="$emit('update-input', $event.target.value)" @keydown="$emit('key-down', $event)" id="gerald-txt-input" @focus="$emit('close-pickers')"></textarea>
+                        </div>
                     </div>
                     <button class="gerald-send" @click="$emit('send')"><span class="material-symbols-rounded">send</span></button>
                 </div>
@@ -736,6 +748,9 @@ createApp({
         const geminiStatus = ref('TESTING BRAIN...');
         const sysStats = ref({ cpu: 23, mem: 1.8, temp: 74 });
 
+        /* ADDED: Active users counter state */
+        const activeUsersCount = ref(1);
+
         const activeClipId = ref(null);
         const isLoadingMore = ref(false);
         const allClipsLoaded = ref(false);
@@ -754,10 +769,7 @@ createApp({
         
         const tabOffset = ref(initialTabIdx * -20);
 
-        // Tracker for 1:1 Swipe Physics + Directional Locking
         let swipeStartX = 0;
-        let swipeStartY = 0;
-        let isVerticalScroll = false;
         const isSwiping = ref(false);
         const swipeDeltaX = ref(0);
         
@@ -765,7 +777,6 @@ createApp({
             return `translate3d(calc(${tabOffset.value}% + ${swipeDeltaX.value}px), 0, 0)`;
         });
 
-        // Fetch version from index.html script tag
         const getAppVersion = () => {
             const scripts = document.getElementsByTagName('script');
             let vNum = "1";
@@ -805,34 +816,20 @@ createApp({
             
             window.history.pushState(null, '', `#${tab}`);
             if (tab === 'gerald') setTimeout(() => { const b = document.getElementById('gerald-msgs'); if (b) b.scrollTop = b.scrollHeight; }, 300);
+            
+            if (window.navigator && window.navigator.vibrate) window.navigator.vibrate(8);
         };
 
         const handleSwipeStart = (e) => { 
             if (document.activeElement && ['INPUT', 'TEXTAREA'].includes(document.activeElement.tagName)) return;
-            if (e.target.closest('.chat-emote-tray')) return;
-
             swipeStartX = e.touches[0].clientX; 
-            swipeStartY = e.touches[0].clientY; 
             isSwiping.value = true;
             swipeDeltaX.value = 0;
-            isVerticalScroll = false;
         };
         
         const handleSwipeMove = (e) => {
             if (!isSwiping.value) return;
-            
             const dx = e.touches[0].clientX - swipeStartX;
-            const dy = e.touches[0].clientY - swipeStartY;
-            
-            if (!isVerticalScroll && Math.abs(dy) > Math.abs(dx) && Math.abs(dy) > 5) {
-                isVerticalScroll = true;
-                isSwiping.value = false;
-                swipeDeltaX.value = 0;
-                return;
-            }
-
-            if (isVerticalScroll) return;
-            
             const idx = tabOrder.indexOf(currentTab.value);
             if ((idx === 0 && dx > 0) || (idx === tabOrder.length - 1 && dx < 0)) {
                 swipeDeltaX.value = dx * 0.2; 
@@ -844,13 +841,9 @@ createApp({
         const handleSwipeEnd = (e) => {
             if (!isSwiping.value) return;
             isSwiping.value = false;
-            
             const dx = swipeDeltaX.value;
             swipeDeltaX.value = 0; 
-            isVerticalScroll = false;
-            
             if (Math.abs(dx) < 60) return; 
-            
             const idx = tabOrder.indexOf(currentTab.value);
             if (dx < 0 && idx < tabOrder.length - 1) switchTab(tabOrder[idx + 1]);
             else if (dx > 0 && idx > 0) switchTab(tabOrder[idx - 1]);
@@ -1057,6 +1050,25 @@ createApp({
             sbClient.auth.getSession().then(({ data: sessionData }) => {
                 if (sessionData?.session?.user) currentUser.value = sessionData.session.user;
                 sbClient.auth.onAuthStateChange((event, session) => { currentUser.value = session?.user || null; });
+                
+                /* ADDED: Supabase Presence connection hook for the active user count */
+                const presenceChannel = sbClient.channel('miko-active-room', {
+                    config: {
+                        presence: {
+                            key: currentUser.value ? currentUser.value.id : 'anon-' + Math.random().toString(36).substring(2, 7)
+                        }
+                    }
+                });
+
+                presenceChannel.on('presence', { event: 'sync' }, () => {
+                    activeUsersCount.value = Object.keys(presenceChannel.presenceState()).length || 1;
+                });
+
+                presenceChannel.subscribe(async (status) => {
+                    if (status === 'SUBSCRIBED') {
+                        await presenceChannel.track({ online_at: new Date().toISOString() });
+                    }
+                });
             });
 
             Promise.all([loadEmotesFromSupabase(), loadData(), checkLive(), testGeminiBrain()]).then(() => {
@@ -1071,7 +1083,7 @@ createApp({
         });
 
         return {
-            hostname, splashVisible, splashOpacity, currentTab, tabOffset, appTheme, toggleTheme, clips, currentUser, loginEmail, loginPass, loginError, geraldInput, geraldMessages, isGeraldTyping, wipeState, logoutState, nukeState, isHeaderVisible, currentFilter, activeFilterLabel, isFilterMenuOpen, recentVods, currentVodIndex, customEmotes, showEmotePicker, showMinigames, activeClipId, switchTab, geminiStatus, sysStats, handleSwipeStart, handleSwipeMove, handleSwipeEnd, isSwiping, sliderTransform, handleModalTouchStart, handleModalTouchMove, handleModalTouchEnd, handleScroll, apiConfig, saveState, selectedClip, modals, allClipsCount, isLive, chatMessages, twitchChatToken, twitchAuthUrl, twitchUsername, showLoginPopup, formattedVersion,
+            hostname, splashVisible, splashOpacity, currentTab, tabOffset, appTheme, toggleTheme, clips, currentUser, loginEmail, loginPass, loginError, geraldInput, geraldMessages, isGeraldTyping, wipeState, logoutState, nukeState, isHeaderVisible, currentFilter, activeFilterLabel, isFilterMenuOpen, recentVods, currentVodIndex, customEmotes, showEmotePicker, showMinigames, activeClipId, switchTab, geminiStatus, sysStats, handleSwipeStart, handleSwipeMove, handleSwipeEnd, isSwiping, sliderTransform, handleModalTouchStart, handleModalTouchMove, handleModalTouchEnd, handleScroll, apiConfig, saveState, selectedClip, modals, allClipsCount, isLive, chatMessages, twitchChatToken, twitchAuthUrl, twitchUsername, showLoginPopup, formattedVersion, activeUsersCount,
             logoSvg: (id) => `<svg viewBox="0 0 100 100"><defs><linearGradient id="grad-${id}" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stop-color="#9146FF"/><stop offset="100%" stop-color="#a970ff"/></linearGradient></defs><circle cx="50" cy="50" r="40" fill="url(#grad-${id})"/><path d="M 33 38 L 48 62 L 62 38 L 62 55 Q 62 65 69 64" fill="none" stroke="#ffffff" stroke-width="8" stroke-linecap="round" stroke-linejoin="round"/></svg>`,
             optimizeTwitchImg: (u) => u ? u.replace('%{width}', '480').replace('%{height}', '270') : '',
             formatViews: (v) => v ? v.toLocaleString() : '0',
