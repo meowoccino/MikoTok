@@ -457,7 +457,7 @@ const MoreView = {
  total_views: data.total_views || '215M',
  peak_viewers: data.peak_viewers || '25,017',
  account_created: data.account_created || 'Mar 17, 2020',
- week_hours: hoursStr
+ week_hours: hoursStr,
  week_category: data.week_category || 'TBD',
  week_days: daysStr
  };
@@ -1030,4 +1030,3 @@ createApp({
  };
  }
 }).mount('#app-container');
-
