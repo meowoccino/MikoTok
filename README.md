@@ -91,5 +91,3 @@ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLI
 ---
 
 > *"Maintained by tomato_24. Gerald OS is operational. Please ensure the Technician doesn't kick the primary ethernet array."*
-
-can you update it so it's up a date? with all features etc. don't forgot formating for GitHub
