@@ -16,7 +16,7 @@
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="https://unpkg.com/vue@3/dist/vue.global.prod.js"></script>
     
-    <link rel="stylesheet" href="./styles.css?v=86">
+    <link rel="stylesheet" href="./styles.css?v=87">
     
     <style>
         [v-cloak] > *:not(#splash-screen) { display: none !important; }
@@ -30,7 +30,7 @@
         .shake-anim { animation: shake-anim 0.4s ease-in-out infinite !important; display: inline-block; }
         .pulse-glow { animation: pulse-glow 2.5s infinite !important; }
 
-        .safe-top-padding { padding-top: max(env(safe-area-inset-top, 24px), 24px); }
+        .safe-top-padding { padding-top: max(env(safe-area-inset-top, 12px), 12px); }
     </style>
 </head>
 <body>
@@ -52,7 +52,7 @@
                 </div>
 
                 <div class="tab-view">
-                    <gerald-view :current-tab="currentTab" :gerald-messages="geraldMessages" :is-gerald-typing="isGeraldTyping" :gerald-input="geraldInput" :show-emote-picker="showEmotePicker" :show-minigames="showMinigames" :custom-emotes="customEmotes" :gemini-status="geminiStatus" :sys-stats="sysStats" @close-pickers="closePickers" @insert-emote="insertEmote" @play-game="triggerAiMinigame" @toggle-emotes="toggleEmotes" @toggle-minigames="toggleMinigames" @update-input="e => geraldInput = e" @key-down="handleGeraldEnter" @send="talkToGerald"></gerald-view>
+                    <gerald-view :current-tab="currentTab" :gerald-messages="geraldMessages" :is-gerald-typing="isGeraldTyping" :gerald-input="geraldInput" :show-emote-picker="showEmotePicker" :show-minigames="showMinigames" :custom-emotes="customEmotes" :gemini-status="geminiStatus" :sys-stats="sysStats" :emote-search="emoteSearch" @update-emote-search="e => emoteSearch = e" @close-pickers="closePickers" @insert-emote="insertEmote" @play-game="triggerAiMinigame" @toggle-emotes="toggleEmotes" @toggle-minigames="toggleMinigames" @update-input="e => geraldInput = e" @key-down="handleGeraldEnter" @send="talkToGerald"></gerald-view>
                 </div>
 
                 <div class="tab-view" style="display: flex; flex-direction: column;">
@@ -66,19 +66,22 @@
         <clip-modal :clip="selectedClip" :hostname="hostname" @close="selectedClip = null"></clip-modal>
         <profile-modal :is-open="modals.profile" :current-user="currentUser" :login-email="loginEmail" :login-pass="loginPass" :api-config="apiConfig" :wipe-state="wipeState" :nuke-state="nukeState" :logout-state="logoutState" :formatted-version="formattedVersion" :active-users-count="activeUsersCount" @close="modals.profile = false" @touch-start="handleModalTouchStart('profile', $event)" @touch-move="handleModalTouchMove" @touch-end="handleModalTouchEnd('profile', $event)" @update-email="e => loginEmail = e" @update-pass="e => loginPass = e" @login="handleLogin" @wipe="clearGeraldHistory" @logout="handleLogout" @nuke-cache="nukeCache"></profile-modal>
 
-        <!-- Swipe-down Sheet for CodeMiko -->
+        <!-- Swipe-down Sheet for CodeMiko (Variant 4 Editorial Layout) -->
         <div class="modal-overlay" :class="{ open: modals.miko }" @click.self="modals.miko = false">
             <div class="modal-content" @touchstart="handleModalTouchStart('miko', $event)" @touchend="handleModalTouchEnd('miko', $event)">
                 <div class="drag-handle"></div>
-                <div style="text-align: center; margin-bottom: 20px;">
-                    <img src="1000018850.png?v=2" style="width: 90px; height: 90px; border-radius: 50%; margin-bottom: 12px; object-fit: cover;" alt="CodeMiko">
-                    <h2 style="margin:0; color: var(--text-main); font-size: 20px;">CodeMiko</h2>
-                    <div style="color:var(--text-muted); font-size:13px; margin-top:4px;">Youna Kang • VTuber & Dev</div>
+                <div style="text-align: center; margin-bottom: 18px;">
+                    <img src="1000018850.png?v=2" style="width: 86px; height: 86px; border-radius: 50%; margin-bottom: 10px; object-fit: cover; border: 2px solid var(--border-color);" alt="CodeMiko">
+                    <h2 style="margin:0; color: var(--text-main); font-size: 20px; font-weight: 800;">CodeMiko</h2>
+                    <div style="color:var(--text-muted); font-size:13px; margin-top:2px;">Youna Kang • VTuber & Dev</div>
                 </div>
-                <div style="color: var(--text-main); font-size: 13.5px; line-height: 1.6; background: var(--bg-color); padding: 16px; border-radius: 14px; border: 1px solid var(--border-color); margin-bottom: 16px;">
-                    <div style="text-align: center; margin-bottom: 10px;"><strong style="color:var(--text-main); font-size: 14px;">The Glitch in the System</strong></div>
-                    CodeMiko is a groundbreaking interactive VTuber project created and operated by "The Technician" (Youna Kang). Using a state-of-the-art Xsens full-body motion capture suit and Unreal Engine 5, Miko pushes the absolute boundaries of digital broadcasting.<br><br>
-                    What makes the stream unique is its interactivity. Chatters can directly trigger interactions, minigames, and catastrophic visual glitches on Miko's avatar in real-time.
+                <div class="bio-editorial-card">
+                    <div class="bio-body-text">
+                        Created and operated by Youna Kang, CodeMiko is just a peek into The Technician's real world. Away from the screens, Youna's routine revolves around her home, surrounded by her beloved dog Archie and her cats, who provide plenty of chaos and laughs every single day. She is a dedicated, hard-working artist who remains refreshingly genuine with her audience, openly discussing the realities of creator burnout, the fatigue of long projects, and the humor found in everyday life. Whether she's sharing stories about her pets getting into trouble, geeking out over her latest food cravings, or just laughing at life's little absurdities, Youna's natural, down-to-earth personality is the true heart of everything she builds.
+                    </div>
+                    <div class="editorial-quote-wrap">
+                        <span class="editorial-quote-text">Just because you can, doesn't mean you should.</span>
+                    </div>
                 </div>
             </div>
         </div>
@@ -88,12 +91,12 @@
             <div class="modal-content" @touchstart="handleModalTouchStart('tomato', $event)" @touchend="handleModalTouchEnd('tomato', $event)">
                 <div class="drag-handle"></div>
                 <div style="text-align: center; margin-bottom: 20px;">
-                    <img src="a_2.png" style="width: 90px; height: 90px; border-radius: 50%; margin-bottom: 12px; object-fit: cover;" alt="tomato_24">
-                    <h2 style="margin:0; color: var(--text-main); font-size: 20px;">tomato_24</h2>
-                    <div style="color:var(--text-muted); font-size:13px; margin-top:4px;">App Developer & Animal Rescuer</div>
+                    <img src="a_2.png" style="width: 86px; height: 86px; border-radius: 50%; margin-bottom: 10px; object-fit: cover; border: 2px solid var(--border-color);" alt="tomato_24">
+                    <h2 style="margin:0; color: var(--text-main); font-size: 20px; font-weight: 800;">tomato_24</h2>
+                    <div style="color:var(--text-muted); font-size:13px; margin-top:2px;">App Developer & Animal Rescuer</div>
                 </div>
 
-                <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; margin-bottom: 20px;">
+                <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; margin-bottom: 18px;">
                     <a href="https://www.paypal.me/meowoccino" target="_blank" class="support-action-btn">
                         <svg viewBox="0 0 24 24" style="width: 24px; height: 24px;">
                             <path fill="#003087" d="M7.076 21.337H2.47a.641.641 0 0 1-.633-.74L4.944.901C5.026.382 5.474 0 5.998 0h7.46c2.57 0 4.578.543 5.69 1.81 1.01 1.15 1.304 2.42 1.012 4.287-.023.143-.047.288-.077.437-.983 5.05-4.349 6.797-8.647 6.797h-2.19c-.524 0-.968.382-1.05.9l-1.12 7.106z"/>
@@ -111,7 +114,7 @@
                     </a>
                 </div>
 
-                <div style="color: var(--text-main); font-size: 13.5px; line-height: 1.6; background: var(--bg-color); padding: 16px; border-radius: 14px; margin-bottom: 16px; border: 1px solid var(--border-color);">
+                <div style="color: var(--text-main); font-size: 13.5px; line-height: 1.6; background: var(--bg-color); padding: 16px; border-radius: 16px; margin-bottom: 16px; border: 1px solid var(--border-color);">
                     <div style="text-align: center; margin-bottom: 10px;"><strong style="color:var(--text-main); font-size: 14px;">Code, AI & Animal Fostering</strong></div>
                     Hi there! I'm the solo developer behind MikoTok. If you hang around the CodeMiko Discord, you probably also know me as the person constantly dropping funny AI-generated images and videos in the chat!<br><br>
                     If you are enjoying the app and want to support my work, I would be incredibly grateful. Any contributions go directly toward covering the expensive API token costs required to keep Gerald's AI brain running smoothly, funding future app updates, and—most importantly—supporting my animal rescue efforts.<br><br>
@@ -123,6 +126,6 @@
         <bottom-nav :current-tab="currentTab" @change-tab="switchTab"></bottom-nav>
     </div>
 
-    <script src="./app.js?v=15"></script>
+    <script src="./app.js?v=16"></script>
 </body>
 </html>
