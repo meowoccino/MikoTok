@@ -135,6 +135,7 @@ const FilterMenu = {
  <button class="sheet-option" :class="{ active: currentFilter === 'month' }" @click="$emit('apply', 'month', 'Monthly')">Monthly</button>
  <button class="sheet-option" :class="{ active: currentFilter === '6months' }" @click="$emit('apply', '6months', '6 Months')">6 Months</button>
  <button class="sheet-option" :class="{ active: currentFilter === 'alltime' }" @click="$emit('apply', 'alltime', 'All Time')">All Time</button>
+ <button class="sheet-option" :class="{ active: currentFilter === 'oldest' }" @click="$emit('apply', 'oldest', 'Oldest')">Oldest</button>
  </div>
  </div>
  `
@@ -880,6 +881,8 @@ createApp({
  
  if (currentFilter.value === 'latest') {
  query = query.order('created_at', { ascending: false });
+ } else if (currentFilter.value === 'oldest') {
+ query = query.order('created_at', { ascending: true });
  } else if (currentFilter.value === 'weekly') {
  const fallbackWeekly = new Date(Date.now() - 9 * 24 * 3600 * 1000).toISOString();
  query = query.gte('created_at', fallbackWeekly).order('view_count', { ascending: false });
@@ -1049,7 +1052,12 @@ createApp({
  setInterval(() => { sysStats.value.cpu = Math.floor(15 + Math.random() * 25); sysStats.value.temp = Math.floor(71 + Math.random() * 8); }, 4000);
  document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'visible') checkLive(); });
  sbClient.channel('public:clips').on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'clips' }, payload => {
- if (payload.new) { allClips.value.unshift(payload.new); if (currentFilter.value === 'latest') clips.value = allClips.value; }
+ if (payload.new) { 
+   allClips.value.unshift(payload.new); 
+   if (currentFilter.value === 'latest') {
+     clips.value = allClips.value; 
+   }
+ }
  }).subscribe();
  });
 
