@@ -9,6 +9,7 @@ export default {
                 <button class="sheet-option" :class="{ active: currentFilter === 'month' }" @click="$emit('apply', 'month', 'Monthly')">Monthly</button>
                 <button class="sheet-option" :class="{ active: currentFilter === '6months' }" @click="$emit('apply', '6months', '6 Months')">6 Months</button>
                 <button class="sheet-option" :class="{ active: currentFilter === 'alltime' }" @click="$emit('apply', 'alltime', 'All Time')">All Time</button>
+                <button class="sheet-option" :class="{ active: currentFilter === 'oldest' }" @click="$emit('apply', 'oldest', 'Oldest')">Oldest</button>
             </div>
         </div>
     `
