@@ -950,6 +950,7 @@ createApp({
        clips.value = allClips.value; 
      }
      if (totalClipsCount.value !== null) totalClipsCount.value++;
+     fetchClipsAddedRange(selectedRange.value);
    }
  }).subscribe();
  });
