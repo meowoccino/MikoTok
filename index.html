@@ -16,7 +16,7 @@
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="https://unpkg.com/vue@3/dist/vue.global.prod.js"></script>
     
-    <link rel="stylesheet" href="./styles.css?v=87">
+    <link rel="stylesheet" href="./styles.css?v=88">
     
     <style>
         [v-cloak] > *:not(#splash-screen) { display: none !important; }
@@ -44,7 +44,27 @@
             <div class="tab-slider" :style="{ transform: 'translate3d(' + tabOffset + '%, 0, 0)' }">
                 
                 <div class="tab-view scroll-area home-scroll" id="home-scroll" @scroll="handleScroll">
-                    <home-view :current-tab="currentTab" :current-vod-index="currentVodIndex" :recent-vods="recentVods" :is-live="isLive" :hostname="hostname" :clips="clips" :active-filter-label="activeFilterLabel" :optimize-twitch-img="optimizeTwitchImg" :format-views="formatViews" :format-date="formatDate" :active-clip-id="activeClipId" @prev-vod="prevVod" @next-vod="nextVod" @open-filter="isFilterMenuOpen = true" @play-clip="playClip"></home-view>
+                    <home-view 
+                      :current-tab="currentTab" 
+                      :current-vod-index="currentVodIndex" 
+                      :recent-vods="recentVods" 
+                      :is-live="isLive" 
+                      :hostname="hostname" 
+                      :clips="clips" 
+                      :active-filter-label="activeFilterLabel" 
+                      :optimize-twitch-img="optimizeTwitchImg" 
+                      :format-views="formatViews" 
+                      :format-date="formatDate" 
+                      :active-clip-id="activeClipId" 
+                      :search-query="searchQuery"
+                      :is-search-open="isSearchOpen"
+                      @prev-vod="prevVod" 
+                      @next-vod="nextVod" 
+                      @open-filter="isFilterMenuOpen = true" 
+                      @play-clip="playClip"
+                      @update-search="e => searchQuery = e"
+                      @toggle-search="v => isSearchOpen = v"
+                    ></home-view>
                 </div>
 
                 <div class="tab-view">
@@ -66,7 +86,7 @@
         <clip-modal :clip="selectedClip" :hostname="hostname" @close="selectedClip = null"></clip-modal>
         <profile-modal :is-open="modals.profile" :current-user="currentUser" :login-email="loginEmail" :login-pass="loginPass" :api-config="apiConfig" :wipe-state="wipeState" :nuke-state="nukeState" :logout-state="logoutState" :formatted-version="formattedVersion" :active-users-count="activeUsersCount" @close="modals.profile = false" @touch-start="handleModalTouchStart('profile', $event)" @touch-move="handleModalTouchMove" @touch-end="handleModalTouchEnd('profile', $event)" @update-email="e => loginEmail = e" @update-pass="e => loginPass = e" @login="handleLogin" @wipe="clearGeraldHistory" @logout="handleLogout" @nuke-cache="nukeCache"></profile-modal>
 
-        <!-- Swipe-down Sheet for CodeMiko (Variant 4 Editorial Layout) -->
+        <!-- Swipe-down Sheet for CodeMiko -->
         <div class="modal-overlay" :class="{ open: modals.miko }" @click.self="modals.miko = false">
             <div class="modal-content" @touchstart="handleModalTouchStart('miko', $event)" @touchend="handleModalTouchEnd('miko', $event)">
                 <div class="drag-handle"></div>
@@ -114,11 +134,15 @@
                     </a>
                 </div>
 
-                <div style="color: var(--text-main); font-size: 13.5px; line-height: 1.6; background: var(--bg-color); padding: 16px; border-radius: 16px; margin-bottom: 16px; border: 1px solid var(--border-color);">
-                    <div style="text-align: center; margin-bottom: 10px;"><strong style="color:var(--text-main); font-size: 14px;">Code, AI & Animal Fostering</strong></div>
-                    Hi there! I'm the solo developer behind MikoTok. If you hang around the CodeMiko Discord, you probably also know me as the person constantly dropping funny AI-generated images and videos in the chat!<br><br>
-                    If you are enjoying the app and want to support my work, I would be incredibly grateful. Any contributions go directly toward covering the expensive API token costs required to keep Gerald's AI brain running smoothly, funding future app updates, and—most importantly—supporting my animal rescue efforts.<br><br>
-                    I currently care for a small army of felines (4 indoor, 3 outdoor) plus various neighborhood strays, so every bit helps keep the app servers online and the food bowls fully stocked 🐾
+                <div class="bio-editorial-card">
+                    <div class="bio-body-text">
+                        Hi there! I'm the solo developer behind MikoTok. If you hang around the CodeMiko Discord, you probably also know me as the person constantly dropping funny AI-generated images and videos in the chat!<br><br>
+                        If you are enjoying the app and want to support my work, I would be incredibly grateful. Any contributions go directly toward covering the expensive API token costs required to keep Gerald's AI brain running smoothly, funding future app updates, and—most importantly—supporting my animal rescue efforts.<br><br>
+                        I currently care for a small army of felines (4 indoor, 3 outdoor) plus various neighborhood strays, so every bit helps keep the app servers online and the food bowls fully stocked 🐾
+                    </div>
+                    <div class="editorial-quote-wrap">
+                        <span class="editorial-quote-text">Small acts of kindness multiply when shared.</span>
+                    </div>
                 </div>
             </div>
         </div>
@@ -126,6 +150,6 @@
         <bottom-nav :current-tab="currentTab" @change-tab="switchTab"></bottom-nav>
     </div>
 
-    <script src="./app.js?v=16"></script>
+    <script src="./app.js?v=17"></script>
 </body>
 </html>
