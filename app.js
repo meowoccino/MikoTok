@@ -106,7 +106,7 @@ const FilterMenu = {
  props: ['isOpen', 'currentFilter'],
  template: `
  <div class="sheet-overlay" :class="{ open: isOpen }" @click.self="$emit('close')">
- <div class="bottom-sheet" @click.stop>
+ <div class="bottom-sheet" @touchstart="$emit('sheet-touch-start', $event)" @touchend="$emit('sheet-touch-end', $event)" @click.stop>
  <div class="drag-handle"></div>
  <button class="sheet-option" :class="{ active: currentFilter === 'latest' }" @click="$emit('apply', 'latest', 'Latest')">Latest</button>
  <button class="sheet-option" :class="{ active: currentFilter === 'weekly' }" @click="$emit('apply', 'weekly', 'Weekly')">Weekly</button>
@@ -120,7 +120,10 @@ const FilterMenu = {
 };
 
 const ProfileModal = {
- props: ['isOpen', 'currentUser', 'loginEmail', 'loginPass', 'apiConfig', 'wipeState', 'logoutState', 'nukeState', 'formattedVersion', 'activeUsersCount'],
+ props: [
+   'isOpen', 'currentUser', 'loginEmail', 'loginPass', 'wipeState', 'logoutState', 
+   'nukeState', 'fetchState', 'totalClipsCount', 'activeUsersCount', 'clipsAddedCount', 'selectedRange'
+ ],
  template: `
  <div class="modal-overlay" :class="{ open: isOpen }" @click.self="$emit('close')">
  <div class="modal-content" @touchstart="$emit('touch-start', $event)" @touchend="$emit('touch-end', $event)">
@@ -134,48 +137,88 @@ const ProfileModal = {
  </div>
  
  <div v-else>
- <div class="infra-bar">
- <div class="status-node" style="display: flex; align-items: center; justify-content: center; gap: 8px; font-weight: 800; width: 100%;">
- <div style="width: 8px; height: 8px; border-radius: 50%; background: var(--success); animation: pulse-green-glow 2.5s infinite;"></div> 
- SYSTEM: READY
- </div>
+ <!-- Row 1: Metrics -->
+ <div class="stat-grid-2col">
+   <div class="stat-subcol">
+     <span class="stat-title">Total Clips</span>
+     <span class="stat-val-bold">{{ totalClipsCount !== null ? totalClipsCount.toLocaleString() : '---' }}</span>
+   </div>
+   <div class="stat-subcol">
+     <span class="stat-title">Active Users</span>
+     <div style="display: flex; align-items: center; gap: 6px;">
+       <div style="width: 8px; height: 8px; border-radius: 50%; background: var(--success); animation: pulse-green-glow 2.5s infinite;"></div>
+       <span class="stat-val-bold" style="color: var(--success);">{{ activeUsersCount || 1 }}</span>
+     </div>
+   </div>
  </div>
 
- <div class="version-bar" style="background: var(--bg-color); border: 1px solid var(--border-color); border-radius: 14px; padding: 12px 16px; margin-bottom: 16px; display: flex; justify-content: space-between; align-items: center;">
- <span class="version-text" style="font-size: 14px; font-weight: 800; color: var(--text-main);">APP BUILD v2.0.{{ formattedVersion }}</span>
- <div class="presence-indicators" style="display: flex; align-items: center; gap: 6px;">
- <div class="live-counter-pill" style="display: flex; align-items: center; gap: 4px; background: rgba(16, 185, 129, 0.1); color: var(--success); padding: 6px 10px; border-radius: 8px; font-size: 10px; font-weight: 800; letter-spacing: 0.5px; border: 1px solid rgba(16, 185, 129, 0.2);">
- <span class="material-symbols-rounded" style="font-size: 13px; font-variation-settings: 'FILL' 1;">group</span>
- <span>{{ activeUsersCount || 1 }}</span>
- </div>
- <div class="status-pill" style="background: rgba(145, 70, 255, 0.1); color: var(--primary); padding: 6px 10px; border-radius: 8px; font-size: 10px; font-weight: 800; letter-spacing: 0.5px; border: 1px solid rgba(145, 70, 255, 0.2);">UP TO DATE</div>
- </div>
+ <!-- Row 2: Clips Added Card -->
+ <div class="clips-added-card">
+   <span class="stat-title">Clips Added</span>
+   <span class="stat-val-bold" style="font-size: 24px; margin: 4px 0 2px;">{{ clipsAddedCount !== null ? clipsAddedCount.toLocaleString() : '---' }}</span>
+   
+   <div class="timeframe-pill-container">
+     <button v-for="r in ['7D', '1M', '3M', '6M', '1Y']" :key="r" class="timeframe-pill-btn" :class="{ active: selectedRange === r }" @click="$emit('select-range', r)">
+       {{ r }}
+     </button>
+   </div>
  </div>
  
+ <!-- Row 3: Supabase DB & GitHub Repo -->
  <div class="stat-grid">
- <a href="https://supabase.com/dashboard/project/yhxcuayiwqpjvalyrcqv" target="_blank" class="external-link-btn" style="color:var(--success)"><span class="material-symbols-rounded">database</span>Supabase DB</a>
- <a href="https://github.com/meowoccino/MikoTok" target="_blank" class="external-link-btn"><span class="material-symbols-rounded">code</span>GitHub Repo</a>
+   <a href="https://supabase.com/dashboard/project/yhxcuayiwqpjvalyrcqv" target="_blank" class="external-link-btn" style="color:var(--success)"><span class="material-symbols-rounded">database</span>Supabase DB</a>
+   <a href="https://github.com/meowoccino/MikoTok" target="_blank" class="external-link-btn"><span class="material-symbols-rounded">code</span>GitHub Repo</a>
  </div>
  
- <div class="action-menu" style="margin-top: 15px;">
- <button class="menu-btn sync-row" :style="nukeState === 'SUCCESS' ? 'color: var(--success);' : ''" @click="$emit('nuke-cache')">
- <div class="btn-content">
- <div class="icon-wrap"><span class="material-symbols-rounded" :class="{'spin-anim': nukeState === 'NUKING...'}" style="font-size: 18px;">{{ nukeState === 'SUCCESS' ? 'check' : 'cached' }}</span></div>
- <span>{{ nukeState === 'Nuke App Cache' ? 'NUKE APP CACHE' : nukeState }}</span>
- </div>
- </button>
- <button class="menu-btn wipe-row" :style="wipeState === 'SUCCESS' ? 'color: var(--success);' : ''" @click="$emit('wipe')">
- <div class="btn-content">
- <div class="icon-wrap"><span class="material-symbols-rounded" :class="{'shake-anim': wipeState === 'WIPING...'}" style="font-size: 18px;">{{ wipeState === 'SUCCESS' ? 'check' : 'delete' }}</span></div>
- <span>{{ wipeState }}</span>
- </div>
- </button>
- <button class="menu-btn logout-row" @click="$emit('logout')">
- <div class="btn-content">
- <div class="icon-wrap"><span class="material-symbols-rounded" :class="{'spin-anim': logoutState === 'LOGGING OUT...'}" style="font-size: 18px;">{{ logoutState === 'LOGGING OUT...' ? 'hourglass_empty' : 'logout' }}</span></div>
- <span>{{ logoutState }}</span>
- </div>
- </button>
+ <!-- Row 4: Unified Actions Deck -->
+ <div class="action-menu">
+   <!-- Fetch New Clips -->
+   <button class="menu-btn fetch-row" @click="$emit('fetch-clips')" :disabled="fetchState === 'FETCHING...'">
+     <div class="btn-content">
+       <div class="icon-wrap">
+         <span class="material-symbols-rounded" :class="{'spin-anim': fetchState === 'FETCHING...'}">
+           {{ fetchState === 'SUCCESS' ? 'check' : 'cloud_download' }}
+         </span>
+       </div>
+       <span>{{ fetchState === 'Fetch New Clips' ? 'FETCH NEW CLIPS' : fetchState }}</span>
+     </div>
+   </button>
+
+   <!-- Nuke App Cache -->
+   <button class="menu-btn nuke-row" @click="$emit('nuke-cache')">
+     <div class="btn-content">
+       <div class="icon-wrap">
+         <span class="material-symbols-rounded" :class="{'shake-anim': nukeState === 'NUKING...'}" style="font-size: 18px;">
+           {{ nukeState === 'SUCCESS' ? 'check' : 'cached' }}
+         </span>
+       </div>
+       <span>{{ nukeState === 'Nuke App Cache' ? 'NUKE APP CACHE' : nukeState }}</span>
+     </div>
+   </button>
+
+   <!-- Wipe Gerald Memory -->
+   <button class="menu-btn wipe-row" :style="wipeState === 'SUCCESS' ? 'color: var(--success);' : ''" @click="$emit('wipe')">
+     <div class="btn-content">
+       <div class="icon-wrap">
+         <span class="material-symbols-rounded" :class="{'shake-anim': wipeState === 'WIPING...'}" style="font-size: 18px;">
+           {{ wipeState === 'SUCCESS' ? 'check' : 'delete' }}
+         </span>
+       </div>
+       <span>{{ wipeState }}</span>
+     </div>
+   </button>
+
+   <!-- Sign Out -->
+   <button class="menu-btn logout-row" @click="$emit('logout')">
+     <div class="btn-content">
+       <div class="icon-wrap">
+         <span class="material-symbols-rounded" :class="{'spin-anim': logoutState === 'LOGGING OUT...'}" style="font-size: 18px;">
+           {{ logoutState === 'LOGGING OUT...' ? 'hourglass_empty' : 'logout' }}
+         </span>
+       </div>
+       <span>{{ logoutState }}</span>
+     </div>
+   </button>
  </div>
  </div>
  </div>
@@ -339,7 +382,6 @@ const MoreView = {
  template: `
  <div class="more-container">
  <div style="height: 100%; overflow-y: auto; padding: 0 16px 110px;">
- 
  <div style="font-size: 11.5px; font-weight: 800; letter-spacing: 1.2px; text-transform: uppercase; color: var(--text-muted); margin: 6px 0 10px 4px;">Explore</div>
  <button @click="$emit('open-miko')" style="display: flex; align-items: center; width: 100%; padding: 0 16px; border-radius: 14px; min-height: 50px; background: var(--card-bg); border: 1px solid var(--border-color); cursor: pointer; margin-bottom: 8px;">
  <span class="material-symbols-rounded" style="color: #0085ff; width:24px; display:flex; justify-content:center;">info</span>
@@ -441,23 +483,7 @@ const MoreView = {
 };
 
 const HomeView = {
- props: ['currentTab', 'currentVodIndex', 'recentVods', 'isLive', 'hostname', 'clips', 'activeFilterLabel', 'optimizeTwitchImg', 'formatViews', 'formatDate', 'activeClipId', 'searchQuery', 'isSearchOpen'],
- methods: {
-   expandSearch() {
-     if (!this.isSearchOpen) {
-       this.$emit('toggle-search', true);
-       this.$nextTick(() => {
-         const inp = this.$refs.searchInput;
-         if (inp) inp.focus();
-       });
-     }
-   },
-   handleSearchBlur() {
-     if (!this.searchQuery || this.searchQuery.trim() === '') {
-       this.$emit('toggle-search', false);
-     }
-   }
- },
+ props: ['currentTab', 'currentVodIndex', 'recentVods', 'isLive', 'hostname', 'clips', 'activeFilterLabel', 'optimizeTwitchImg', 'formatViews', 'formatDate', 'activeClipId'],
  template: `
  <div style="padding-bottom: 20px;" id="home-scroll-element">
  <div class="hero-section">
@@ -483,20 +509,6 @@ const HomeView = {
  <button class="filter-btn-tiny" @click="$emit('open-filter')">
  <span class="material-symbols-rounded" style="font-size:16px;">sort</span><span>{{ activeFilterLabel }}</span>
  </button>
-
- <!-- Expandable Search Micro-Lens (Collapses only on outside tap / blur) -->
- <div class="search-lens-pill" :class="{ 'expanded': isSearchOpen }" @click="expandSearch">
- <span class="material-symbols-rounded search-icon-sym">search</span>
- <input 
-   ref="searchInput"
-   type="text" 
-   class="search-lens-input" 
-   placeholder="Search clips..." 
-   :value="searchQuery" 
-   @input="$emit('update-search', $event.target.value)" 
-   @blur="handleSearchBlur"
- >
- </div>
  </div>
 
  <div class="clip-list-item" v-for="clip in clips" :key="clip.id" @click="$emit('play-clip', clip)">
@@ -514,7 +526,7 @@ const HomeView = {
  </div>
 
  <div v-if="clips.length === 0" style="text-align: center; padding: 40px 0; color: var(--text-muted); font-size: 13px;">
- No clips found matching your search.
+ No clips available.
  </div>
  </div>
  </div>
@@ -548,7 +560,12 @@ createApp({
  const wipeState = ref('Wipe Gerald Memory');
  const logoutState = ref('Sign Out');
  const nukeState = ref('Nuke App Cache');
+ const fetchState = ref('Fetch New Clips');
  
+ const totalClipsCount = ref(null);
+ const clipsAddedCount = ref(null);
+ const selectedRange = ref('7D');
+
  const chatMessages = ref([]);
  const twitchChatToken = ref(null);
  const twitchAuthUrl = ref('');
@@ -568,15 +585,6 @@ createApp({
  
  const customEmotes = ref({});
  const emoteSearch = ref('');
-
- const searchQuery = ref('');
- const isSearchOpen = ref(false);
-
- const displayedClips = computed(() => {
-   const q = searchQuery.value.trim().toLowerCase();
-   if (!q) return clips.value;
-   return clips.value.filter(c => (c.title || '').toLowerCase().includes(q));
- });
 
  const geraldInput = ref(''), geraldMessages = ref([{ role: 'gerald', content: '' }]);
  const isGeraldTyping = ref(false), showEmotePicker = ref(false), showMinigames = ref(false);
@@ -635,11 +643,54 @@ createApp({
  const handleModalTouchEnd = (type, e) => {
  const dy = e.changedTouches[0].clientY - modalDragStartY;
  if (dy > 70) {
-   if (modals.value[type] !== undefined) modals.value[type] = false;
+   if (type === 'filter') {
+     isFilterMenuOpen.value = false;
+   } else if (modals.value[type] !== undefined) {
+     modals.value[type] = false;
+   }
  }
  };
 
  const toggleTheme = () => { appTheme.value = appTheme.value === 'light' ? 'dark' : 'light'; localStorage.setItem('miko_theme', appTheme.value); updateThemeClass(); };
+
+ const fetchTotalClipsCount = async () => {
+   try {
+     const { count, error } = await sbClient.from('clips').select('*', { count: 'exact', head: true });
+     if (!error && count !== null) totalClipsCount.value = count;
+   } catch (e) {}
+ };
+
+ const fetchClipsAddedRange = async (range) => {
+   selectedRange.value = range;
+   const intervals = { '7D': 7, '1M': 30, '3M': 90, '6M': 180, '1Y': 365 };
+   const days = intervals[range] || 7;
+   const threshold = new Date(Date.now() - days * 24 * 3600 * 1000).toISOString();
+
+   try {
+     const { count, error } = await sbClient
+       .from('clips')
+       .select('*', { count: 'exact', head: true })
+       .gte('created_at', threshold);
+
+     if (!error && count !== null) {
+       clipsAddedCount.value = count;
+     }
+   } catch (e) {}
+ };
+
+ const triggerFetchClips = async () => {
+   if (fetchState.value === 'FETCHING...') return;
+   fetchState.value = 'FETCHING...';
+
+   try {
+     await sbClient.functions.invoke('fetch-twitch-clips');
+     await Promise.all([fetchTotalClipsCount(), fetchClipsAddedRange(selectedRange.value)]);
+     fetchState.value = 'SUCCESS';
+     setTimeout(() => { fetchState.value = 'Fetch New Clips'; }, 1500);
+   } catch (err) {
+     fetchState.value = 'Fetch New Clips';
+   }
+ };
 
  const loadEmotesFromSupabase = async () => {
  try {
@@ -755,13 +806,29 @@ createApp({
  try {
  const { data, error } = await sbClient.auth.signInWithPassword({ email: loginEmail.value, password: loginPass.value });
  if (error) { loginError.value = error.message; return; }
- if (data?.user) { currentUser.value = data.user; modals.value.profile = false; loginEmail.value = ''; loginPass.value = ''; }
+ if (data?.user) { 
+   currentUser.value = data.user; 
+   modals.value.profile = false; 
+   loginEmail.value = ''; 
+   loginPass.value = '';
+   fetchTotalClipsCount();
+   fetchClipsAddedRange(selectedRange.value);
+ }
  } catch { loginError.value = "System login failure."; }
  };
 
  const handleLogout = async () => { logoutState.value = 'LOGGING OUT...'; await sbClient.auth.signOut(); currentUser.value = null; modals.value.profile = false; logoutState.value = 'Sign Out'; };
  const clearGeraldHistory = async () => { wipeState.value = 'WIPING...'; await sbClient.from('gerald_history').delete().eq('user_id', currentUser.value.id); geraldMessages.value = [{ role: 'gerald', content: '' }]; wipeState.value = 'SUCCESS'; setTimeout(() => wipeState.value = 'Wipe Gerald Memory', 1500); };
- const nukeCache = () => { nukeState.value = 'NUKING...'; setTimeout(() => { localStorage.clear(); caches.keys().then(names => { for (let n of names) caches.delete(n); }); nukeState.value = 'SUCCESS'; setTimeout(() => window.location.reload(), 1000); }, 50); };
+ 
+ const nukeCache = () => { 
+   nukeState.value = 'NUKING...'; 
+   setTimeout(() => { 
+     localStorage.clear(); 
+     caches.keys().then(names => { for (let n of names) caches.delete(n); }); 
+     nukeState.value = 'SUCCESS'; 
+     setTimeout(() => window.location.reload(), 600); 
+   }, 300); 
+ };
 
  const talkToGerald = async () => {
  const inputEl = document.getElementById('gerald-txt-input');
@@ -824,19 +891,6 @@ createApp({
  });
  };
 
- const getAppVersion = () => {
-     const scripts = document.getElementsByTagName('script');
-     let vNum = "1";
-     for (let i = 0; i < scripts.length; i++) {
-         if (scripts[i].src && scripts[i].src.includes('app.js?v=')) {
-             vNum = scripts[i].src.split('?v=')[1];
-             break;
-         }
-     }
-     return vNum;
- };
- const formattedVersion = ref(getAppVersion());
-
  onMounted(() => {
  document.body.style.overflow = 'hidden';
  document.body.style.height = '100vh';
@@ -845,28 +899,37 @@ createApp({
  updateThemeClass();
 
  sbClient.auth.getSession().then(({ data: sessionData }) => {
- if (sessionData?.session?.user) currentUser.value = sessionData.session.user;
- sbClient.auth.onAuthStateChange((event, session) => { currentUser.value = session?.user || null; });
-
- const presenceChannel = sbClient.channel('miko-active-room');
- presenceChannel.on('presence', { event: 'sync' }, () => {
-     const state = presenceChannel.presenceState();
-     activeUsersCount.value = Object.keys(state).length || 1;
- });
- presenceChannel.subscribe(async (status) => {
-     if (status === 'SUBSCRIBED') {
-         await presenceChannel.track({
-             user_id: currentUser.value ? currentUser.value.id : 'anon-' + Math.random().toString(36).substring(2,7),
-             online_at: new Date().toISOString()
-         });
-         setInterval(async () => {
-             await presenceChannel.track({ online_at: new Date().toISOString() });
-         }, 10000);
+   if (sessionData?.session?.user) {
+     currentUser.value = sessionData.session.user;
+     fetchTotalClipsCount();
+     fetchClipsAddedRange('7D');
+   }
+   sbClient.auth.onAuthStateChange((event, session) => { 
+     currentUser.value = session?.user || null; 
+     if (currentUser.value) {
+       fetchTotalClipsCount();
+       fetchClipsAddedRange('7D');
      }
- });
+   });
+
+   const presenceChannel = sbClient.channel('miko-active-room');
+   presenceChannel.on('presence', { event: 'sync' }, () => {
+       const state = presenceChannel.presenceState();
+       activeUsersCount.value = Object.keys(state).length || 1;
+   });
+   presenceChannel.subscribe(async (status) => {
+       if (status === 'SUBSCRIBED') {
+           await presenceChannel.track({
+               user_id: currentUser.value ? currentUser.value.id : 'anon-' + Math.random().toString(36).substring(2,7),
+               online_at: new Date().toISOString()
+           });
+           setInterval(async () => {
+               await presenceChannel.track({ online_at: new Date().toISOString() });
+           }, 10000);
+       }
+   });
  });
 
- // Reduced from 2000ms down to 1000ms (Reduced by 1s)
  const minSplashTime = new Promise(resolve => setTimeout(resolve, 1000));
  Promise.all([loadData(), minSplashTime]).finally(() => {
    splashOpacity.value = 0; 
@@ -881,17 +944,18 @@ createApp({
  document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'visible') checkLive(); });
  
  sbClient.channel('public:clips').on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'clips' }, payload => {
- if (payload.new) { 
-   allClips.value.unshift(payload.new); 
-   if (currentFilter.value === 'latest') {
-     clips.value = allClips.value; 
+   if (payload.new) { 
+     allClips.value.unshift(payload.new); 
+     if (currentFilter.value === 'latest') {
+       clips.value = allClips.value; 
+     }
+     if (totalClipsCount.value !== null) totalClipsCount.value++;
    }
- }
  }).subscribe();
  });
 
  return {
- hostname, splashVisible, splashOpacity, currentTab, tabOffset, appTheme, toggleTheme, clips: displayedClips, currentUser, loginEmail, loginPass, loginError, geraldInput, geraldMessages, isGeraldTyping, wipeState, logoutState, nukeState, isHeaderVisible, currentFilter, activeFilterLabel, isFilterMenuOpen, recentVods, currentVodIndex, customEmotes, emoteSearch, showEmotePicker, showMinigames, activeClipId, switchTab, geminiStatus, sysStats, handleSwipeStart, handleSwipeEnd, handleModalTouchStart, handleModalTouchMove, handleModalTouchEnd, handleScroll, apiConfig, selectedClip, modals, allClipsCount, isLive, chatMessages, twitchChatToken, twitchAuthUrl, twitchUsername, showLoginPopup, formattedVersion, activeUsersCount, searchQuery, isSearchOpen,
+ hostname, splashVisible, splashOpacity, currentTab, tabOffset, appTheme, toggleTheme, clips, currentUser, loginEmail, loginPass, loginError, geraldInput, geraldMessages, isGeraldTyping, wipeState, logoutState, nukeState, fetchState, totalClipsCount, clipsAddedCount, selectedRange, isHeaderVisible, currentFilter, activeFilterLabel, isFilterMenuOpen, recentVods, currentVodIndex, customEmotes, emoteSearch, showEmotePicker, showMinigames, activeClipId, switchTab, geminiStatus, sysStats, handleSwipeStart, handleSwipeEnd, handleModalTouchStart, handleModalTouchMove, handleModalTouchEnd, handleScroll, apiConfig, selectedClip, modals, allClipsCount, isLive, chatMessages, twitchChatToken, twitchAuthUrl, twitchUsername, showLoginPopup, activeUsersCount,
  logoSvg: (id) => `<svg viewBox="0 0 100 100"><defs><linearGradient id="grad-${id}" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stop-color="#9146FF"/><stop offset="100%" stop-color="#a970ff"/></linearGradient></defs><circle cx="50" cy="50" r="40" fill="url(#grad-${id})"/><path d="M 33 38 L 48 62 L 62 38 L 62 55 Q 62 65 69 64" fill="none" stroke="#ffffff" stroke-width="8" stroke-linecap="round" stroke-linejoin="round"/></svg>`,
  optimizeTwitchImg: (u) => u ? u.replace('%{width}', '480').replace('%{height}', '270') : '',
  formatViews: (v) => v ? v.toLocaleString() : '0',
@@ -902,6 +966,7 @@ createApp({
  nextVod: () => { if (currentVodIndex.value < recentVods.value.length - 1) currentVodIndex.value++; },
  playClip: (clip) => { selectedClip.value = clip; },
  handleLogin, handleLogout, clearGeraldHistory, nukeCache, talkToGerald, triggerAiMinigame,
+ triggerFetchClips, selectRange: fetchClipsAddedRange,
  closePickers: () => { showEmotePicker.value = false; showMinigames.value = false; },
  insertEmote: (name) => { geraldInput.value += (geraldInput.value && !geraldInput.value.endsWith(' ') ? ' ' : '') + name + ' '; showEmotePicker.value = false; },
  toggleEmotes: () => { showEmotePicker.value = !showEmotePicker.value; showMinigames.value = false; },
