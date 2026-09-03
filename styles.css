@@ -14,7 +14,7 @@
     --text-main: #000000;
     --text-muted: #6b7280;
     --border-color: #e5e7eb;
-    --nav-bg: rgba(255, 255, 255, 0.88);
+    --nav-bg: rgba(255, 255, 255, 0.92);
     --modal-bg: #ffffff;
 }
 
@@ -24,7 +24,7 @@
     --text-main: #ffffff;
     --text-muted: #9ca3af;
     --border-color: #272732;
-    --nav-bg: rgba(22, 22, 28, 0.88);
+    --nav-bg: rgba(22, 22, 28, 0.92);
     --modal-bg: #16161c;
 }
 
@@ -106,7 +106,8 @@ body, html {
 }
 .tab-view { flex: 0 0 25%; width: 25%; height: 100%; position: relative; display: flex; flex-direction: column; overflow: hidden; }
 
-.scroll-area { flex: 1; width: 100%; overflow-y: auto; padding: 15px 20px 90px; }
+/* Adjusted bottom scroll clearance for fixed floating pill */
+.scroll-area { flex: 1; width: 100%; overflow-y: auto; padding: 15px 20px 110px; }
 .scroll-area::-webkit-scrollbar { display: none; }
 .home-scroll { padding-top: 15px; }
 
@@ -128,8 +129,66 @@ body, html {
 .carousel-btn { background: var(--card-bg); border: 1px solid var(--border-color); width: 32px; height: 32px; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: var(--text-main); }
 .carousel-btn.hidden-arrow { opacity: 0; pointer-events: none; }
 
-.clips-header { display: flex; justify-content: flex-start; margin-bottom: 15px; }
-.filter-btn-tiny { background: var(--card-bg); border: 1px solid var(--border-color); color: var(--text-main); padding: 8px 12px; border-radius: 8px; font-size: 12px; font-weight: 700; display: flex; align-items: center; gap: 6px; cursor: pointer; }
+/* Clips Header & Expandable Micro Lens Search */
+.clips-header { 
+    display: flex; 
+    justify-content: space-between; 
+    align-items: center; 
+    margin-bottom: 15px; 
+    height: 34px;
+}
+.filter-btn-tiny { 
+    background: var(--card-bg); 
+    border: 1px solid var(--border-color); 
+    color: var(--text-main); 
+    padding: 8px 12px; 
+    border-radius: 10px; 
+    font-size: 12px; 
+    font-weight: 700; 
+    display: flex; 
+    align-items: center; 
+    gap: 6px; 
+    cursor: pointer; 
+}
+
+.search-lens-pill {
+    display: flex;
+    align-items: center;
+    background: var(--card-bg);
+    border: 1px solid var(--border-color);
+    border-radius: 20px;
+    height: 34px;
+    width: 34px;
+    padding: 0 7px;
+    transition: width 0.25s cubic-bezier(0.4, 0, 0.2, 1), border-color 0.2s;
+    overflow: hidden;
+    cursor: pointer;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.02);
+}
+.search-lens-pill.expanded {
+    width: 180px;
+    cursor: default;
+    border-color: var(--primary);
+}
+.search-icon-sym {
+    font-size: 18px;
+    color: var(--text-muted);
+    flex-shrink: 0;
+}
+.search-lens-input {
+    display: none;
+    border: none;
+    outline: none;
+    background: transparent;
+    font-size: 12px;
+    color: var(--text-main);
+    margin-left: 6px;
+    width: 100%;
+    padding: 0;
+}
+.search-lens-pill.expanded .search-lens-input {
+    display: block;
+}
 
 .clip-list-item { display: flex; gap: 15px; align-items: center; margin-bottom: 20px; width: 100%; cursor: pointer; }
 .clip-thumb-wrapper { position: relative; width: 140px; height: 79px; min-width: 140px; border-radius: 8px; overflow: hidden; background: #000; }
@@ -194,7 +253,6 @@ body, html {
 .chat-bubble.gerald { background: rgba(145, 70, 255, 0.12); border-color: rgba(145, 70, 255, 0.3); align-self: flex-start; }
 .chat-bubble.user { align-self: flex-end; background: var(--border-color); border-color: transparent; }
 
-/* Fixed Gerald Thinking Dots Spacing */
 .dots-thinking-row { 
     display: flex; gap: 6px; padding: 4px 16px; 
     margin-bottom: 12px; justify-content: flex-start; 
@@ -206,7 +264,14 @@ body, html {
 
 @keyframes blink-dot { 0%, 100% { opacity: 0.2; transform: scale(0.8); } 50% { opacity: 1; transform: scale(1); } }
 
-.gerald-action-area { position: relative; flex-shrink: 0; padding: 8px 12px; background: var(--bg-color); z-index: 100; }
+/* Chat input bottom clearance padding */
+.gerald-action-area { 
+    position: relative; 
+    flex-shrink: 0; 
+    padding: 8px 12px calc(80px + env(safe-area-inset-bottom, 0px)); 
+    background: var(--bg-color); 
+    z-index: 100; 
+}
 .gerald-input-container { position: relative; flex: 1; border-radius: 20px; padding: 1.5px; background: var(--border-color); overflow: hidden; transition: background 0.25s, box-shadow 0.25s; min-height: 44px; display: flex; }
 .gerald-input-container::before { content: ''; position: absolute; top: -50%; left: -50%; width: 200%; height: 200%; background: conic-gradient(from 0deg, transparent, var(--primary-light), var(--primary), transparent 60%); opacity: 0; transition: opacity 0.3s ease; }
 .gerald-input-container:focus-within { background: transparent; box-shadow: 0 0 16px rgba(145, 70, 255, 0.12); }
@@ -231,7 +296,7 @@ body, html {
 .modal-overlay.open .modal-content { transform: translate3d(0, 0, 0); }
 .drag-handle { width: 38px; height: 4.5px; background: var(--border-color); border-radius: 10px; margin: 0 auto 16px; }
 
-/* Bio Editorial Card (Variant 4) */
+/* Bio Editorial Card */
 .bio-editorial-card {
     background: var(--bg-color); border: 1px solid var(--border-color);
     border-radius: 16px; padding: 16px 18px; margin-bottom: 16px;
@@ -281,11 +346,15 @@ body, html {
 }
 
 /* =========================================================
-   STYLE #12 DUAL-PILL FLOATING CAPSULE NAVBAR
+   STYLE #12 DUAL-PILL FLOATING CAPSULE NAVBAR (DIRECT FIXED)
    ========================================================= */
 .bottom-nav { 
-    margin: 0 16px calc(10px + env(safe-area-inset-bottom, 4px));
+    position: fixed;
+    bottom: calc(10px + env(safe-area-inset-bottom, 4px));
+    left: 50%;
+    transform: translateX(-50%);
     width: calc(100% - 32px);
+    max-width: 508px;
     background: var(--nav-bg); 
     backdrop-filter: blur(16px);
     -webkit-backdrop-filter: blur(16px);
@@ -296,12 +365,11 @@ body, html {
     align-items: center;
     padding: 6px 8px;
     z-index: 5000; 
-    flex-shrink: 0; 
-    box-shadow: 0 10px 28px rgba(0, 0, 0, 0.08), 0 1px 3px rgba(0,0,0,0.02);
+    box-shadow: 0 10px 28px rgba(0, 0, 0, 0.08), 0 0 16px rgba(145, 70, 255, 0.12);
     min-height: 58px;
 }
 .theme-dark .bottom-nav { 
-    box-shadow: 0 10px 28px rgba(0, 0, 0, 0.4); 
+    box-shadow: 0 10px 28px rgba(0, 0, 0, 0.4), 0 0 16px rgba(145, 70, 255, 0.18); 
     border-color: rgba(255,255,255,0.08);
 }
 
