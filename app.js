@@ -38,13 +38,10 @@ const parseMarkdownText = (text, emotesMap) => {
  return html;
 };
 
-// Grammar enforcement preserving Twitch emotes without injecting periods
 const enforceGrammar = (text) => {
  if (!text) return '';
  let cleaned = text.trim();
- // Capitalize the first letter of sentences
  cleaned = cleaned.replace(/(^\w|[.!?]\s+\w)/g, c => c.toUpperCase());
- // Remove trailing dots immediately attached to emotes
  cleaned = cleaned.replace(/(:[a-zA-Z0-9_+-]+:)\s*\./g, '$1');
  return cleaned;
 };
@@ -143,7 +140,6 @@ const ProfileModal = {
  </div>
  
  <div v-else>
- <!-- Row 1: Metrics -->
  <div class="stat-grid-2col">
    <div class="stat-subcol">
      <span class="stat-title">Total Clips</span>
@@ -158,7 +154,6 @@ const ProfileModal = {
    </div>
  </div>
 
- <!-- Row 2: Clips Added Card -->
  <div class="clips-added-card">
    <span class="stat-title">Clips Added</span>
    <span class="stat-val-bold" style="font-size: 24px; margin: 4px 0 2px;">{{ clipsAddedCount !== null ? clipsAddedCount.toLocaleString() : '---' }}</span>
@@ -170,13 +165,11 @@ const ProfileModal = {
    </div>
  </div>
  
- <!-- Row 3: Supabase DB & GitHub Repo -->
  <div class="stat-grid">
    <a href="https://supabase.com/dashboard/project/yhxcuayiwqpjvalyrcqv" target="_blank" class="external-link-btn" style="color:var(--success)"><span class="material-symbols-rounded">database</span>Supabase DB</a>
    <a href="https://github.com/meowoccino/MikoTok" target="_blank" class="external-link-btn"><span class="material-symbols-rounded">code</span>GitHub Repo</a>
  </div>
  
- <!-- Row 4: Unified Actions Deck -->
  <div class="action-menu">
    <button class="menu-btn fetch-row" @click="$emit('fetch-clips')" :disabled="fetchState === 'FETCHING...'">
      <div class="btn-content">
@@ -242,7 +235,6 @@ const ClipModal = {
  `
 };
 
-// Chat view with bottom clearance to avoid floating navbar overlap
 const ChatView = {
  props: ['currentTab', 'chatMessages', 'isLoggedIn', 'twitchAuthUrl', 'customEmotes', 'twitchUsername'],
  computed: {
@@ -387,14 +379,11 @@ const MoreView = {
  <div style="height: 100%; overflow-y: auto; padding: 0 16px 110px;">
  <div style="font-size: 11.5px; font-weight: 800; letter-spacing: 1.2px; text-transform: uppercase; color: var(--text-muted); margin: 6px 0 10px 4px;">Explore</div>
  
- <!-- CodeMiko Broadcaster Studio Mic Icon -->
  <button @click="$emit('open-miko')" style="display: flex; align-items: center; width: 100%; padding: 0 16px; border-radius: 14px; min-height: 50px; background: var(--card-bg); border: 1px solid var(--border-color); cursor: pointer; margin-bottom: 8px;">
- <div style="width: 28px; height: 28px; border-radius: 8px; background: rgba(145, 70, 255, 0.12); display: flex; align-items: center; justify-content: center;">
-   <svg viewBox="0 0 24 24" style="width: 17px; height: 17px; fill: var(--primary);">
-     <path d="M12 14c1.66 0 3-1.34 3-3V5c0-1.66-1.34-3-3-3S9 3.34 9 5v6c0 1.66 1.34 3 3 3z"/>
-     <path d="M17 11c0 2.76-2.24 5-5 5s-5-2.24-5-5H5c0 3.53 2.61 6.43 6 6.92V21h2v-3.08c3.39-.49 6-3.39 6-6.92h-2z"/>
-   </svg>
- </div>
+ <svg viewBox="0 0 24 24" style="width: 22px; height: 22px; fill: var(--primary); display: flex; align-items: center; justify-content: center;">
+   <path d="M12 14c1.66 0 3-1.34 3-3V5c0-1.66-1.34-3-3-3S9 3.34 9 5v6c0 1.66 1.34 3 3 3z"/>
+   <path d="M17 11c0 2.76-2.24 5-5 5s-5-2.24-5-5H5c0 3.53 2.61 6.43 6 6.92V21h2v-3.08c3.39-.49 6-3.39 6-6.92h-2z"/>
+ </svg>
  <span style="color: var(--text-main); font-size: 14px; font-weight: 600; margin-left: 12px;">CodeMiko</span>
  <span class="material-symbols-rounded" style="color: var(--text-muted); margin-left: auto; font-size: 20px;">chevron_right</span>
  </button>
