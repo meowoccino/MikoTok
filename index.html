@@ -16,7 +16,7 @@
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="https://unpkg.com/vue@3/dist/vue.global.prod.js"></script>
     
-    <link rel="stylesheet" href="./styles.css?v=88">
+    <link rel="stylesheet" href="./styles.css?v=89">
     
     <style>
         [v-cloak] > *:not(#splash-screen) { display: none !important; }
@@ -56,14 +56,10 @@
                       :format-views="formatViews" 
                       :format-date="formatDate" 
                       :active-clip-id="activeClipId" 
-                      :search-query="searchQuery"
-                      :is-search-open="isSearchOpen"
                       @prev-vod="prevVod" 
                       @next-vod="nextVod" 
                       @open-filter="isFilterMenuOpen = true" 
                       @play-clip="playClip"
-                      @update-search="e => searchQuery = e"
-                      @toggle-search="v => isSearchOpen = v"
                     ></home-view>
                 </div>
 
@@ -82,9 +78,43 @@
             </div>
         </div>
 
-        <filter-menu :is-open="isFilterMenuOpen" :current-filter="currentFilter" @close="isFilterMenuOpen = false" @apply="applyFilter"></filter-menu>
+        <filter-menu 
+          :is-open="isFilterMenuOpen" 
+          :current-filter="currentFilter" 
+          @close="isFilterMenuOpen = false" 
+          @apply="applyFilter"
+          @sheet-touch-start="handleModalTouchStart('filter', $event)"
+          @sheet-touch-end="handleModalTouchEnd('filter', $event)"
+        ></filter-menu>
+
         <clip-modal :clip="selectedClip" :hostname="hostname" @close="selectedClip = null"></clip-modal>
-        <profile-modal :is-open="modals.profile" :current-user="currentUser" :login-email="loginEmail" :login-pass="loginPass" :api-config="apiConfig" :wipe-state="wipeState" :nuke-state="nukeState" :logout-state="logoutState" :formatted-version="formattedVersion" :active-users-count="activeUsersCount" @close="modals.profile = false" @touch-start="handleModalTouchStart('profile', $event)" @touch-move="handleModalTouchMove" @touch-end="handleModalTouchEnd('profile', $event)" @update-email="e => loginEmail = e" @update-pass="e => loginPass = e" @login="handleLogin" @wipe="clearGeraldHistory" @logout="handleLogout" @nuke-cache="nukeCache"></profile-modal>
+
+        <profile-modal 
+          :is-open="modals.profile" 
+          :current-user="currentUser" 
+          :login-email="loginEmail" 
+          :login-pass="loginPass" 
+          :wipe-state="wipeState" 
+          :nuke-state="nukeState" 
+          :logout-state="logoutState" 
+          :fetch-state="fetchState"
+          :total-clips-count="totalClipsCount"
+          :active-users-count="activeUsersCount"
+          :clips-added-count="clipsAddedCount"
+          :selected-range="selectedRange"
+          @close="modals.profile = false" 
+          @touch-start="handleModalTouchStart('profile', $event)" 
+          @touch-move="handleModalTouchMove" 
+          @touch-end="handleModalTouchEnd('profile', $event)" 
+          @update-email="e => loginEmail = e" 
+          @update-pass="e => loginPass = e" 
+          @login="handleLogin" 
+          @wipe="clearGeraldHistory" 
+          @logout="handleLogout" 
+          @nuke-cache="nukeCache"
+          @fetch-clips="triggerFetchClips"
+          @select-range="selectRange"
+        ></profile-modal>
 
         <!-- Swipe-down Sheet for CodeMiko -->
         <div class="modal-overlay" :class="{ open: modals.miko }" @click.self="modals.miko = false">
@@ -150,6 +180,6 @@
         <bottom-nav :current-tab="currentTab" @change-tab="switchTab"></bottom-nav>
     </div>
 
-    <script src="./app.js?v=17"></script>
+    <script src="./app.js?v=18"></script>
 </body>
 </html>
