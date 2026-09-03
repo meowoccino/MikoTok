@@ -831,64 +831,118 @@ createApp({
  };
 
  const talkToGerald = async () => {
- const inputEl = document.getElementById('gerald-txt-input');
- if (inputEl && inputEl.value !== geraldInput.value) { geraldInput.value = inputEl.value; }
- if (!geraldInput.value.trim() || isGeraldTyping.value) return;
+   const inputEl = document.getElementById('gerald-txt-input');
+   if (inputEl && inputEl.value !== geraldInput.value) { geraldInput.value = inputEl.value; }
+   if (!geraldInput.value.trim() || isGeraldTyping.value) return;
 
- const userMsg = geraldInput.value;
- geraldMessages.value.push({ role: 'user', content: userMsg });
+   const userMsg = geraldInput.value.trim();
+   geraldMessages.value.push({ role: 'user', content: userMsg });
 
- if (currentUser.value) sbClient.from('gerald_history').insert({ user_id: currentUser.value.id, role: 'user', content: userMsg }).then();
+   if (currentUser.value) {
+     sbClient.from('gerald_history').insert({ user_id: currentUser.value.id, role: 'user', content: userMsg }).then();
+   }
 
- geraldInput.value = '';
- if (inputEl) { inputEl.value = ''; inputEl.style.height = 'auto'; }
+   geraldInput.value = '';
+   if (inputEl) { inputEl.value = ''; inputEl.style.height = 'auto'; }
 
- isGeraldTyping.value = true; 
- showEmotePicker.value = false;
- showMinigames.value = false;
- 
- await nextTick();
- const b = document.getElementById('gerald-msgs');
- if (b) b.scrollTop = b.scrollHeight;
+   isGeraldTyping.value = true; 
+   showEmotePicker.value = false;
+   showMinigames.value = false;
+   
+   await nextTick();
+   const b = document.getElementById('gerald-msgs');
+   if (b) b.scrollTop = b.scrollHeight;
 
- const geminiHistory = geraldMessages.value.slice(-12).map(m => ({ role: m.role === 'gerald' ? 'model' : 'user', parts: [{ text: m.content }] }));
+   const cleanHistory = geraldMessages.value
+     .slice(-8)
+     .filter(m => m.content && !m.content.includes('SYSTEM FAILURE') && !m.content.includes('MALFUNCTION'))
+     .map(m => ({ 
+       role: m.role === 'gerald' ? 'assistant' : 'user', 
+       content: m.content,
+       parts: [{ text: m.content }]
+     }));
 
- try {
- const { data, error } = await sbClient.functions.invoke('gerald-chat', { body: { history: geminiHistory, system_directive: getGeraldSystemDirective(customEmotes.value) } });
- if (!error && data?.reply) {
- let formattedReply = enforceGrammar(data.reply.trim());
- geraldMessages.value.push({ role: 'gerald', content: formattedReply });
- if (currentUser.value) sbClient.from('gerald_history').insert({ user_id: currentUser.value.id, role: 'gerald', content: formattedReply }).then();
- } else throw error;
- } catch { geraldMessages.value.push({ role: 'gerald', content: 'SYSTEM FAILURE: Core sync interrupted.' }); }
- finally { isGeraldTyping.value = false; nextTick(() => { if(b) b.scrollTop = b.scrollHeight; }); }
+   try {
+     const { data, error } = await sbClient.functions.invoke('gerald-chat', { 
+       body: { 
+         history: cleanHistory,
+         messages: cleanHistory,
+         prompt: userMsg,
+         system_directive: getGeraldSystemDirective(customEmotes.value) 
+       } 
+     });
+     
+     const replyText = typeof data === 'string' ? data : (data?.reply || data?.text || data?.message || data?.generations?.[0]?.text);
+
+     if (!error && replyText) {
+       let formattedReply = enforceGrammar(replyText.trim());
+       geraldMessages.value.push({ role: 'gerald', content: formattedReply });
+       if (currentUser.value) {
+         sbClient.from('gerald_history').insert({ user_id: currentUser.value.id, role: 'gerald', content: formattedReply }).then();
+       }
+     } else {
+       throw new Error(error ? error.message : "Empty reply");
+     }
+   } catch (err) {
+     console.error('Gerald chat error:', err);
+     geraldMessages.value.push({ role: 'gerald', content: 'SYSTEM FAILURE: Core sync interrupted.' });
+   } finally { 
+     isGeraldTyping.value = false; 
+     nextTick(() => { if (b) b.scrollTop = b.scrollHeight; }); 
+   }
  };
 
  const triggerAiMinigame = (gameObj) => {
- geraldInput.value = "";
- showEmotePicker.value = false;
- showMinigames.value = false;
- 
- const logMsg = `**[EVENT: ${gameObj.label} Protocol Activated]**`;
- geraldMessages.value.push({ role: 'user', content: logMsg });
- 
- if (currentUser.value) sbClient.from('gerald_history').insert({ user_id: currentUser.value.id, role: 'user', content: logMsg }).then();
- 
- isGeraldTyping.value = true;
- nextTick(() => { const b = document.getElementById('gerald-msgs'); if(b) b.scrollTop = b.scrollHeight; });
+   if (isGeraldTyping.value) return;
+   
+   geraldInput.value = "";
+   showEmotePicker.value = false;
+   showMinigames.value = false;
+   
+   const logMsg = `**[EVENT: ${gameObj.label} Protocol Activated]**`;
+   geraldMessages.value.push({ role: 'user', content: logMsg });
+   
+   if (currentUser.value) {
+     sbClient.from('gerald_history').insert({ user_id: currentUser.value.id, role: 'user', content: logMsg }).then();
+   }
+   
+   isGeraldTyping.value = true;
+   nextTick(() => { const b = document.getElementById('gerald-msgs'); if(b) b.scrollTop = b.scrollHeight; });
 
- const contextHistory = geraldMessages.value.slice(-10).map(m => ({ role: m.role === 'gerald' ? 'model' : 'user', parts: [{ text: m.content }] }));
+   const cleanContext = geraldMessages.value
+     .slice(-6)
+     .filter(m => m.content && !m.content.includes('SYSTEM FAILURE') && !m.content.includes('MALFUNCTION'))
+     .map(m => ({ 
+       role: m.role === 'gerald' ? 'assistant' : 'user', 
+       content: m.content,
+       parts: [{ text: m.content }]
+     }));
 
- sbClient.functions.invoke('gerald-chat', { body: { history: contextHistory, system_directive: getGeraldSystemDirective(customEmotes.value, gameObj.prompt) } }).then(({ data, error }) => {
- if (!error && data?.reply) {
- let formattedReply = enforceGrammar(data.reply.trim());
- geraldMessages.value.push({ role: 'gerald', content: formattedReply });
- if (currentUser.value) sbClient.from('gerald_history').insert({ user_id: currentUser.value.id, role: 'gerald', content: formattedReply }).then();
- } else geraldMessages.value.push({ role: 'gerald', content: 'MALFUNCTION: Internal hardware override processing failure.' });
- }).catch(() => { geraldMessages.value.push({ role: 'gerald', content: 'MALFUNCTION: Core logic offline.' }); }).finally(() => {
- isGeraldTyping.value = false;
- nextTick(() => { const b = document.getElementById('gerald-msgs'); if(b) b.scrollTop = b.scrollHeight; });
- });
+   sbClient.functions.invoke('gerald-chat', { 
+     body: { 
+       history: cleanContext,
+       messages: cleanContext,
+       prompt: gameObj.prompt,
+       system_directive: getGeraldSystemDirective(customEmotes.value, gameObj.prompt) 
+     } 
+   }).then(({ data, error }) => {
+     const replyText = typeof data === 'string' ? data : (data?.reply || data?.text || data?.message || data?.generations?.[0]?.text);
+
+     if (!error && replyText) {
+       let formattedReply = enforceGrammar(replyText.trim());
+       geraldMessages.value.push({ role: 'gerald', content: formattedReply });
+       if (currentUser.value) {
+         sbClient.from('gerald_history').insert({ user_id: currentUser.value.id, role: 'gerald', content: formattedReply }).then();
+       }
+     } else {
+       geraldMessages.value.push({ role: 'gerald', content: 'MALFUNCTION: Internal hardware override processing failure.' });
+     }
+   }).catch(() => {
+     geraldMessages.value.push({ role: 'gerald', content: 'MALFUNCTION: Core logic offline.' });
+   }).finally(() => {
+     isGeraldTyping.value = false;
+     nextTick(() => { const b = document.getElementById('gerald-msgs'); if(b) b.scrollTop = b.scrollHeight; });
+   });
  };
 
  onMounted(() => {
