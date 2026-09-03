@@ -309,7 +309,6 @@ const GeraldView = {
  </div>
  
  <div class="gerald-action-area">
- <!-- Real-Time Emote Search Tray -->
  <div class="chat-emote-tray" v-show="showEmotePicker">
  <div class="emote-search-header">
  <input type="text" class="emote-search-input" placeholder="Search emotes..." :value="emoteSearch" @input="$emit('update-emote-search', $event.target.value)" @click.stop>
@@ -339,7 +338,7 @@ const GeraldView = {
 const MoreView = {
  template: `
  <div class="more-container">
- <div style="height: 100%; overflow-y: auto; padding: 0 16px 90px;">
+ <div style="height: 100%; overflow-y: auto; padding: 0 16px 110px;">
  
  <div style="font-size: 11.5px; font-weight: 800; letter-spacing: 1.2px; text-transform: uppercase; color: var(--text-muted); margin: 6px 0 10px 4px;">Explore</div>
  <button @click="$emit('open-miko')" style="display: flex; align-items: center; width: 100%; padding: 0 16px; border-radius: 14px; min-height: 50px; background: var(--card-bg); border: 1px solid var(--border-color); cursor: pointer; margin-bottom: 8px;">
@@ -442,7 +441,23 @@ const MoreView = {
 };
 
 const HomeView = {
- props: ['currentTab', 'currentVodIndex', 'recentVods', 'isLive', 'hostname', 'clips', 'activeFilterLabel', 'optimizeTwitchImg', 'formatViews', 'formatDate', 'activeClipId'],
+ props: ['currentTab', 'currentVodIndex', 'recentVods', 'isLive', 'hostname', 'clips', 'activeFilterLabel', 'optimizeTwitchImg', 'formatViews', 'formatDate', 'activeClipId', 'searchQuery', 'isSearchOpen'],
+ methods: {
+   expandSearch() {
+     if (!this.isSearchOpen) {
+       this.$emit('toggle-search', true);
+       this.$nextTick(() => {
+         const inp = this.$refs.searchInput;
+         if (inp) inp.focus();
+       });
+     }
+   },
+   handleSearchBlur() {
+     if (!this.searchQuery || this.searchQuery.trim() === '') {
+       this.$emit('toggle-search', false);
+     }
+   }
+ },
  template: `
  <div style="padding-bottom: 20px;" id="home-scroll-element">
  <div class="hero-section">
@@ -468,7 +483,22 @@ const HomeView = {
  <button class="filter-btn-tiny" @click="$emit('open-filter')">
  <span class="material-symbols-rounded" style="font-size:16px;">sort</span><span>{{ activeFilterLabel }}</span>
  </button>
+
+ <!-- Expandable Search Micro-Lens (Collapses only on outside tap / blur) -->
+ <div class="search-lens-pill" :class="{ 'expanded': isSearchOpen }" @click="expandSearch">
+ <span class="material-symbols-rounded search-icon-sym">search</span>
+ <input 
+   ref="searchInput"
+   type="text" 
+   class="search-lens-input" 
+   placeholder="Search clips..." 
+   :value="searchQuery" 
+   @input="$emit('update-search', $event.target.value)" 
+   @blur="handleSearchBlur"
+ >
  </div>
+ </div>
+
  <div class="clip-list-item" v-for="clip in clips" :key="clip.id" @click="$emit('play-clip', clip)">
  <div class="clip-thumb-wrapper">
  <img v-if="activeClipId !== clip.id" :src="clip.thumbnail_url ? optimizeTwitchImg(clip.thumbnail_url) : ''" loading="lazy">
@@ -481,6 +511,10 @@ const HomeView = {
  <span>{{ formatViews(clip.view_count) }} views</span>
  </div>
  </div>
+ </div>
+
+ <div v-if="clips.length === 0" style="text-align: center; padding: 40px 0; color: var(--text-muted); font-size: 13px;">
+ No clips found matching your search.
  </div>
  </div>
  </div>
@@ -534,6 +568,15 @@ createApp({
  
  const customEmotes = ref({});
  const emoteSearch = ref('');
+
+ const searchQuery = ref('');
+ const isSearchOpen = ref(false);
+
+ const displayedClips = computed(() => {
+   const q = searchQuery.value.trim().toLowerCase();
+   if (!q) return clips.value;
+   return clips.value.filter(c => (c.title || '').toLowerCase().includes(q));
+ });
 
  const geraldInput = ref(''), geraldMessages = ref([{ role: 'gerald', content: '' }]);
  const isGeraldTyping = ref(false), showEmotePicker = ref(false), showMinigames = ref(false);
@@ -823,14 +866,13 @@ createApp({
  });
  });
 
- // Guaranteed 2-Second Floor for Splash Screen
- const minSplashTime = new Promise(resolve => setTimeout(resolve, 2000));
+ // Reduced from 2000ms down to 1000ms (Reduced by 1s)
+ const minSplashTime = new Promise(resolve => setTimeout(resolve, 1000));
  Promise.all([loadData(), minSplashTime]).finally(() => {
    splashOpacity.value = 0; 
    setTimeout(() => { splashVisible.value = false; }, 300);
  });
 
- // Secondary checks run in background
  loadEmotesFromSupabase();
  checkLive();
  testGeminiBrain();
@@ -849,11 +891,10 @@ createApp({
  });
 
  return {
- hostname, splashVisible, splashOpacity, currentTab, tabOffset, appTheme, toggleTheme, clips, currentUser, loginEmail, loginPass, loginError, geraldInput, geraldMessages, isGeraldTyping, wipeState, logoutState, nukeState, isHeaderVisible, currentFilter, activeFilterLabel, isFilterMenuOpen, recentVods, currentVodIndex, customEmotes, emoteSearch, showEmotePicker, showMinigames, activeClipId, switchTab, geminiStatus, sysStats, handleSwipeStart, handleSwipeEnd, handleModalTouchStart, handleModalTouchMove, handleModalTouchEnd, handleScroll, apiConfig, selectedClip, modals, allClipsCount, isLive, chatMessages, twitchChatToken, twitchAuthUrl, twitchUsername, showLoginPopup, formattedVersion, activeUsersCount,
+ hostname, splashVisible, splashOpacity, currentTab, tabOffset, appTheme, toggleTheme, clips: displayedClips, currentUser, loginEmail, loginPass, loginError, geraldInput, geraldMessages, isGeraldTyping, wipeState, logoutState, nukeState, isHeaderVisible, currentFilter, activeFilterLabel, isFilterMenuOpen, recentVods, currentVodIndex, customEmotes, emoteSearch, showEmotePicker, showMinigames, activeClipId, switchTab, geminiStatus, sysStats, handleSwipeStart, handleSwipeEnd, handleModalTouchStart, handleModalTouchMove, handleModalTouchEnd, handleScroll, apiConfig, selectedClip, modals, allClipsCount, isLive, chatMessages, twitchChatToken, twitchAuthUrl, twitchUsername, showLoginPopup, formattedVersion, activeUsersCount, searchQuery, isSearchOpen,
  logoSvg: (id) => `<svg viewBox="0 0 100 100"><defs><linearGradient id="grad-${id}" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stop-color="#9146FF"/><stop offset="100%" stop-color="#a970ff"/></linearGradient></defs><circle cx="50" cy="50" r="40" fill="url(#grad-${id})"/><path d="M 33 38 L 48 62 L 62 38 L 62 55 Q 62 65 69 64" fill="none" stroke="#ffffff" stroke-width="8" stroke-linecap="round" stroke-linejoin="round"/></svg>`,
  optimizeTwitchImg: (u) => u ? u.replace('%{width}', '480').replace('%{height}', '270') : '',
  formatViews: (v) => v ? v.toLocaleString() : '0',
- // Includes 4-Digit Year Formatting
  formatDate: (d) => new Date(d).toLocaleDateString([], { month: 'short', day: 'numeric', year: 'numeric' }),
  closeFilterMenu: () => { isFilterMenuOpen.value = false; },
  applyFilter: (key, label) => { currentFilter.value = key; activeFilterLabel.value = label; isFilterMenuOpen.value = false; allClipsLoaded.value = false; allClips.value = []; loadData(false); },
