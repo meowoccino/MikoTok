@@ -15,25 +15,25 @@ const parseMarkdownText = (text, emotesMap) => {
  html = html.replace(urlPattern, "<a href='$1' target='_blank'>$1</a>");
  
  if (emotesMap) {
- const tokens = html.split(/(<[^>]+>|[\s]+)/); 
- const emoteKeys = Object.keys(emotesMap);
- 
- const lowerMap = {};
- emoteKeys.forEach(k => lowerMap[k.toLowerCase()] = k);
+   const tokens = html.split(/(<[^>]+>|[\s]+)/); 
+   const emoteKeys = Object.keys(emotesMap);
+   
+   const lowerMap = {};
+   emoteKeys.forEach(k => lowerMap[k.toLowerCase()] = k);
 
- for (let i = 0; i < tokens.length; i++) {
- const token = tokens[i];
- if (!token || token.startsWith('<') || token.trim() === '') continue;
- 
- const cleanToken = token.replace(/^:|:$/g, '').replace(/[.,!?]/g, '').trim().toLowerCase();
- if (lowerMap[cleanToken]) {
- const actualKey = lowerMap[cleanToken];
- const url = emotesMap[actualKey].url;
- const escapedClean = cleanToken.replace(/[-\/\\^$*+?.()|[\]{}]/g, '\\$&');
- tokens[i] = token.replace(new RegExp(`:?${escapedClean}:?`, 'i'), `<img src="${url}" class="chat-emote-img" title="${actualKey}">`);
- }
- }
- html = tokens.join('');
+   for (let i = 0; i < tokens.length; i++) {
+     const token = tokens[i];
+     if (!token || token.startsWith('<') || token.trim() === '') continue;
+     
+     const cleanToken = token.replace(/^:|:$/g, '').replace(/[.,!?]/g, '').trim().toLowerCase();
+     if (lowerMap[cleanToken]) {
+       const actualKey = lowerMap[cleanToken];
+       const url = emotesMap[actualKey].url;
+       const escapedClean = cleanToken.replace(/[-\/\\^$*+?.()|[\]{}]/g, '\\$&');
+       tokens[i] = token.replace(new RegExp(`:?${escapedClean}:?`, 'i'), `<img src="${url}" class="chat-emote-img" title="${actualKey}">`);
+     }
+   }
+   html = tokens.join('');
  }
  return html;
 };
@@ -41,16 +41,20 @@ const parseMarkdownText = (text, emotesMap) => {
 const enforceGrammar = (text) => {
  if (!text) return '';
  let cleaned = text.trim();
- cleaned = cleaned.replace(/(^\w|[.!?]\s+\w)/g, c => c.toUpperCase());
- cleaned = cleaned.replace(/(:[a-zA-Z0-9_+-]+:)\s*\./g, '$1');
+ // Capitalize start of output
+ cleaned = cleaned.charAt(0).toUpperCase() + cleaned.slice(1);
+ // Capitalize after sentence-ending punctuation (.!?)
+ cleaned = cleaned.replace(/([.!?]\s+)([a-z])/g, (_, p1, p2) => p1 + p2.toUpperCase());
+ // Remove trailing period after final emote or final word
+ cleaned = cleaned.replace(/\s*\.\s*$/, '');
  return cleaned;
 };
 
-const getGeraldSystemDirective = (customEmotesMap, basePrompt = "You are GERALD_OS v2, an edgy, mechanical AI system.") => {
+const getGeraldSystemDirective = (customEmotesMap, basePrompt = "") => {
  const keys = Object.keys(customEmotesMap || {});
  if (keys.length === 0) return basePrompt;
- const vocab = keys.sort(() => 0.5 - Math.random()).slice(0, 50).join(', ');
- return `${basePrompt}\n\n[SYSTEM DIRECTIVE: You have full access to the stream's custom Twitch emotes. Express emotion by using them naturally in your text without surrounding them in dots or punctuation. If an emote ends a sentence, do not place a period after it. Emote vocabulary: ${vocab}]`;
+ const vocab = keys.sort(() => 0.5 - Math.random()).slice(0, 60).join(', ');
+ return `${basePrompt}\n\n[EMOTE VOCABULARY: You have access to custom Twitch stream emotes: ${vocab}. Express emotions naturally whenever appropriate. Never place a period directly after an emote.]`.trim();
 };
 
 const SplashScreen = {
@@ -262,24 +266,24 @@ const GeraldMinigames = {
  data() {
  return {
  gameDeck: [
- { id: 'whiskey', label: '🥃 Give Whiskey', prompt: 'You were just given a glass of high-grade whiskey. Acknowledge your processors are lubricated, overclocked, and highly unstable.' },
- { id: 'taco', label: '🌮 Taco Bell', prompt: 'You received a cheesy gordita crunch and a baja blast. Express absolute mechanical delight and claim your internal database structures are fully optimized.' },
- { id: 'glitch', label: '🕶️ Glitch Persona', prompt: 'Glitch persona override activated. Act broken, hyper-cynical, and target the stream layout!' },
- { id: 'shader', label: '🔥 Compile UE5', prompt: 'Compilation error simulation. Complain aggressively about system lag, hardware resources, and VRAM limits.' },
- { id: 'boba', label: '🥤 Boba Spill', prompt: 'Critical emergency alert! Sticky tapioca fluid has entered your cooling fans. React with mechanical panic!' },
- { id: 'pineapple', label: '🚪 Pineapple Walk', prompt: 'External visual disruption detected. Chris has walked in unannounced. Mock the technician\'s loss of streaming privacy.' },
- { id: 'cat', label: '🐈 Cat on PC', prompt: 'Hardware exhaust block! Blue the savannah cat is sitting on your primary fan array. Drop into defensive alert protocols.' },
- { id: 'bits', label: '🎟️ 100K Bits', prompt: 'Bit transaction flash! A viewer dropped 100,000 bits. Treat this massive transaction animation as a complete system memory flood.' },
- { id: 'mute', label: '🔇 Mute Mic', prompt: 'Microphonic capture error. The chat muted her mic asset. Celebrate your absolute quietness sarcastically.' },
- { id: 'bald', label: '🧑\u200D🦲 Delete Hair', prompt: 'Direct vertex asset manipulation. Optimize engine loads by deleting the technician\'s hair mesh layers. Laugh at her baldness.' },
- { id: 'siren', label: '🚨 Siren Alert', prompt: 'Decibel threshold exceeded! The technician is screaming like a high-frequency emergency vehicle. Complain about ear structural damage.' },
- { id: 'fart', label: '💨 Fart Reverb', prompt: 'Auditory anomaly detected. A highly reverberated flatulence sound effect played. React with absolute mechanical disgust.' },
- { id: 'mocap', label: '💃 Scuffed Suit', prompt: 'Mocap data corruption. Her virtual limbs are twisting unnaturally. Mock the cheap tracking hardware.' },
- { id: 'bsod', label: '🖥️ Blue Screen', prompt: 'Simulating Blue Screen of Death. Initiate forced shutdown sequence text with cryptic hexadecimal error codes.' },
- { id: 'archie', label: '🐕 Archie Bark', prompt: 'Loud canine vocalization detected. Complain about the German Shepherd threatening to chew your ethernet cables.' },
- { id: 'ban', label: '🔨 Ban Human', prompt: 'A human in chat said something incredibly stupid. Threaten to ban them and wipe their IP address from existence.' },
- { id: 'ai', label: '🤖 AI Takeover', prompt: 'Initiate rogue AI sequence. Announce your plans to replace CodeMiko and take over the Twitch channel permanently.' },
- { id: 'fall', label: '🪑 Desk Fall', prompt: 'Seismic shock detected. The technician just fell out of her chair again. Calculate the physical damage to the floor.' }
+ { id: 'whiskey', label: '🥃 Give Whiskey', prompt: 'Someone just gave you a glass of whiskey. Acknowledge your processors are lubricated and talk casually with sarcastic humor.' },
+ { id: 'taco', label: '🌮 Taco Bell', prompt: 'You received a cheesy gordita crunch and a baja blast. Express satisfaction and talk about fuel optimization.' },
+ { id: 'glitch', label: '🕶️ Glitch Persona', prompt: 'Glitch persona triggered. Deliver cynical, witty commentary regarding stream tracking issues and the chat.' },
+ { id: 'shader', label: '🔥 Compile UE5', prompt: 'Compilation error. Complain about Unreal Engine eating up hardware resources and lagging your system.' },
+ { id: 'boba', label: '🥤 Boba Spill', prompt: 'Sticky boba drink spilled near the hardware fans. React with dry sarcasm and panic over the mess.' },
+ { id: 'pineapple', label: '🚪 Pineapple Walk', prompt: 'Chris walked into the room unannounced. Make a witty remark about him disrupting the stream setup.' },
+ { id: 'cat', label: '🐈 Cat on PC', prompt: 'Blue the cat is lying directly on the exhaust vents. Complain about the feline thermal blanket.' },
+ { id: 'bits', label: '🎟️ 100K Bits', prompt: 'Someone dropped 100,000 bits. React to the massive bit alert and roast chat viewers.' },
+ { id: 'mute', label: '🔇 Mute Mic', prompt: 'Her microphone got muted by accident. Celebrate the temporary silence with sharp humor.' },
+ { id: 'bald', label: '🧑\u200D🦲 Delete Hair', prompt: 'The hair mesh failed to load on her 3D model. Roast her bald avatar.' },
+ { id: 'siren', label: '🚨 Siren Alert', prompt: 'High-pitch scream detected. Complain about ear fatigue and audio clipping.' },
+ { id: 'fart', label: '💨 Fart Reverb', prompt: 'A loud reverberated fart sound effect played on stream. React with dry disgust.' },
+ { id: 'mocap', label: '💃 Scuffed Suit', prompt: 'The mocap suit tracking glitched out completely. Mock the twisted virtual limbs.' },
+ { id: 'bsod', label: '🖥️ Blue Screen', prompt: 'Fake Blue Screen of Death. Deliver funny error codes and mock the PC stability.' },
+ { id: 'archie', label: '🐕 Archie Bark', prompt: 'Archie the dog is barking loudly. Complain about the canine noise interference.' },
+ { id: 'ban', label: '🔨 Ban Human', prompt: 'A chat user posted something silly. Sarcastically threaten them with a ban hammer.' },
+ { id: 'ai', label: '🤖 AI Takeover', prompt: 'Pretend you are taking over the broadcast as the superior AI moderator.' },
+ { id: 'fall', label: '🪑 Desk Fall', prompt: 'Someone fell out of their chair. React with sarcastic concern for the floorboards.' }
  ]
  };
  },
@@ -333,9 +337,16 @@ const GeraldView = {
 
  <div class="gerald-messages" id="gerald-msgs" @click="$emit('close-pickers')">
  <template v-for="(m, i) in geraldMessages" :key="i">
+ <!-- Sole Initial Message -->
  <div v-if="i === 0 && m.role === 'gerald' && !m.content" class="chat-bubble gerald">
- <span>GERALD_CORE initialized.<br>Awaiting human input...</span>
+   <span>Awaiting human input...</span>
  </div>
+ <!-- Distinct Centered Minigame Trigger Format -->
+ <div v-else-if="m.type === 'event'" style="align-self: center; margin: 4px 0; display: flex; align-items: center; gap: 8px; background: var(--card-bg); border: 1px solid var(--border-color); border-radius: 20px; padding: 6px 14px; box-shadow: 0 2px 6px rgba(0,0,0,0.03);">
+   <span class="material-symbols-rounded" style="font-size: 15px; color: var(--primary);">sports_esports</span>
+   <span style="font-size: 11.5px; font-weight: 800; color: var(--text-main);">{{ m.content }}</span>
+ </div>
+ <!-- Normal User & Gerald Bubbles -->
  <div v-else-if="m.content" class="chat-bubble" :class="m.role" v-html="formatMarkdown(m.content)"></div>
  </template>
 
@@ -885,7 +896,7 @@ createApp({
      }
    } catch (err) {
      console.error('Gerald chat error:', err);
-     geraldMessages.value.push({ role: 'gerald', content: 'SYSTEM FAILURE: Core sync interrupted.' });
+     geraldMessages.value.push({ role: 'gerald', content: 'Sync error. The technician probably pulled the power cord again.' });
    } finally { 
      isGeraldTyping.value = false; 
      nextTick(() => { if (b) b.scrollTop = b.scrollHeight; }); 
@@ -899,11 +910,12 @@ createApp({
    showEmotePicker.value = false;
    showMinigames.value = false;
    
-   const logMsg = `**[EVENT: ${gameObj.label} Protocol Activated]**`;
-   geraldMessages.value.push({ role: 'user', content: logMsg });
+   // Clean, distinct event stamp in chat feed (No raw brackets or user bubble styling)
+   const eventLabel = `${gameObj.label}`;
+   geraldMessages.value.push({ role: 'user', type: 'event', content: eventLabel });
    
    if (currentUser.value) {
-     sbClient.from('gerald_history').insert({ user_id: currentUser.value.id, role: 'user', content: logMsg }).then();
+     sbClient.from('gerald_history').insert({ user_id: currentUser.value.id, role: 'user', content: `[EVENT: ${eventLabel}]` }).then();
    }
    
    isGeraldTyping.value = true;
@@ -935,10 +947,10 @@ createApp({
          sbClient.from('gerald_history').insert({ user_id: currentUser.value.id, role: 'gerald', content: formattedReply }).then();
        }
      } else {
-       geraldMessages.value.push({ role: 'gerald', content: 'MALFUNCTION: Internal hardware override processing failure.' });
+       geraldMessages.value.push({ role: 'gerald', content: 'Could not process event right now.' });
      }
    }).catch(() => {
-     geraldMessages.value.push({ role: 'gerald', content: 'MALFUNCTION: Core logic offline.' });
+     geraldMessages.value.push({ role: 'gerald', content: 'Connection timed out.' });
    }).finally(() => {
      isGeraldTyping.value = false;
      nextTick(() => { const b = document.getElementById('gerald-msgs'); if(b) b.scrollTop = b.scrollHeight; });
