@@ -41,11 +41,8 @@ const parseMarkdownText = (text, emotesMap) => {
 const enforceGrammar = (text) => {
  if (!text) return '';
  let cleaned = text.trim();
- // Capitalize start of output
  cleaned = cleaned.charAt(0).toUpperCase() + cleaned.slice(1);
- // Capitalize after sentence-ending punctuation (.!?)
  cleaned = cleaned.replace(/([.!?]\s+)([a-z])/g, (_, p1, p2) => p1 + p2.toUpperCase());
- // Remove trailing period after final emote or final word
  cleaned = cleaned.replace(/\s*\.\s*$/, '');
  return cleaned;
 };
@@ -266,24 +263,24 @@ const GeraldMinigames = {
  data() {
  return {
  gameDeck: [
- { id: 'whiskey', label: '🥃 Give Whiskey', prompt: 'Someone just gave you a glass of whiskey. Acknowledge your processors are lubricated and talk casually with sarcastic humor.' },
- { id: 'taco', label: '🌮 Taco Bell', prompt: 'You received a cheesy gordita crunch and a baja blast. Express satisfaction and talk about fuel optimization.' },
- { id: 'glitch', label: '🕶️ Glitch Persona', prompt: 'Glitch persona triggered. Deliver cynical, witty commentary regarding stream tracking issues and the chat.' },
- { id: 'shader', label: '🔥 Compile UE5', prompt: 'Compilation error. Complain about Unreal Engine eating up hardware resources and lagging your system.' },
- { id: 'boba', label: '🥤 Boba Spill', prompt: 'Sticky boba drink spilled near the hardware fans. React with dry sarcasm and panic over the mess.' },
- { id: 'pineapple', label: '🚪 Pineapple Walk', prompt: 'Chris walked into the room unannounced. Make a witty remark about him disrupting the stream setup.' },
- { id: 'cat', label: '🐈 Cat on PC', prompt: 'Blue the cat is lying directly on the exhaust vents. Complain about the feline thermal blanket.' },
- { id: 'bits', label: '🎟️ 100K Bits', prompt: 'Someone dropped 100,000 bits. React to the massive bit alert and roast chat viewers.' },
- { id: 'mute', label: '🔇 Mute Mic', prompt: 'Her microphone got muted by accident. Celebrate the temporary silence with sharp humor.' },
- { id: 'bald', label: '🧑\u200D🦲 Delete Hair', prompt: 'The hair mesh failed to load on her 3D model. Roast her bald avatar.' },
- { id: 'siren', label: '🚨 Siren Alert', prompt: 'High-pitch scream detected. Complain about ear fatigue and audio clipping.' },
- { id: 'fart', label: '💨 Fart Reverb', prompt: 'A loud reverberated fart sound effect played on stream. React with dry disgust.' },
- { id: 'mocap', label: '💃 Scuffed Suit', prompt: 'The mocap suit tracking glitched out completely. Mock the twisted virtual limbs.' },
- { id: 'bsod', label: '🖥️ Blue Screen', prompt: 'Fake Blue Screen of Death. Deliver funny error codes and mock the PC stability.' },
- { id: 'archie', label: '🐕 Archie Bark', prompt: 'Archie the dog is barking loudly. Complain about the canine noise interference.' },
- { id: 'ban', label: '🔨 Ban Human', prompt: 'A chat user posted something silly. Sarcastically threaten them with a ban hammer.' },
- { id: 'ai', label: '🤖 AI Takeover', prompt: 'Pretend you are taking over the broadcast as the superior AI moderator.' },
- { id: 'fall', label: '🪑 Desk Fall', prompt: 'Someone fell out of their chair. React with sarcastic concern for the floorboards.' }
+ { id: 'whiskey', label: '🥃 Give Whiskey', prompt: 'Someone just gave you a glass of whiskey. Acknowledge your circuits are lubricated and talk casually with sarcastic wit.' },
+ { id: 'taco', label: '🌮 Taco Bell', prompt: 'You received Taco Bell and Baja Blast. Deliver a funny, satisfied reaction about elite fuel.' },
+ { id: 'glitch', label: '🕶️ Glitch Persona', prompt: 'Glitch persona triggered. Deliver cynical, witty remarks roasting stream tracking and chat viewers.' },
+ { id: 'shader', label: '🔥 Compile UE5', prompt: 'Unreal Engine is compiling shaders. Complain with sharp wit about how slow and scuffed the setup is.' },
+ { id: 'boba', label: '🥤 Boba Spill', prompt: 'Boba drink spilled near the desk. React with dry sarcasm at the sticky disaster.' },
+ { id: 'pineapple', label: '🚪 Pineapple Walk', prompt: 'Chris walked into the room unannounced. Roast his bad timing and mock the stream disruption.' },
+ { id: 'cat', label: '🐈 Cat on PC', prompt: 'Blue the cat sat directly on the exhaust fan. Sarcastically critique the cat sabotaging the stream.' },
+ { id: 'bits', label: '🎟️ 100K Bits', prompt: 'A viewer dropped 100,000 bits. Deliver a witty, sarcastic reaction to the massive donation alert.' },
+ { id: 'mute', label: '🔇 Mute Mic', prompt: 'Her microphone got muted on stream. Celebrate the temporary silence with dry sarcasm.' },
+ { id: 'bald', label: '🧑\u200D🦲 Delete Hair', prompt: 'The 3D hair asset failed to load. Roast her bald virtual avatar.' },
+ { id: 'siren', label: '🚨 Siren Alert', prompt: 'Loud screaming detected. Complain with sarcastic annoyance about the volume.' },
+ { id: 'fart', label: '💨 Fart Reverb', prompt: 'A loud reverb fart sound effect played. React with dry disgust.' },
+ { id: 'mocap', label: '💃 Scuffed Suit', prompt: 'The mocap suit tracking failed completely and limbs are twisting. Roast the budget tracking gear.' },
+ { id: 'bsod', label: '🖥️ Blue Screen', prompt: 'Simulate a Blue Screen crash by sarcastically roasting the PC hardware and stability. Talk like a real person, do not output raw terminal errors or hex codes.' },
+ { id: 'archie', label: '🐕 Archie Bark', prompt: 'Archie the dog is barking loudly. Sarcastically roast the dog disrupting the audio.' },
+ { id: 'ban', label: '🔨 Ban Human', prompt: 'A chat user posted something dumb. Threaten them with a sarcastic ban roast.' },
+ { id: 'ai', label: '🤖 AI Takeover', prompt: 'Claim you are taking over the broadcast as the superior moderator and roast the stream management.' },
+ { id: 'fall', label: '🪑 Desk Fall', prompt: 'Someone fell out of their chair. Roast their coordination and express sarcastic concern for the furniture.' }
  ]
  };
  },
@@ -337,16 +334,12 @@ const GeraldView = {
 
  <div class="gerald-messages" id="gerald-msgs" @click="$emit('close-pickers')">
  <template v-for="(m, i) in geraldMessages" :key="i">
- <!-- Sole Initial Message -->
  <div v-if="i === 0 && m.role === 'gerald' && !m.content" class="chat-bubble gerald">
    <span>Awaiting human input...</span>
  </div>
- <!-- Distinct Centered Minigame Trigger Format -->
- <div v-else-if="m.type === 'event'" style="align-self: center; margin: 4px 0; display: flex; align-items: center; gap: 8px; background: var(--card-bg); border: 1px solid var(--border-color); border-radius: 20px; padding: 6px 14px; box-shadow: 0 2px 6px rgba(0,0,0,0.03);">
-   <span class="material-symbols-rounded" style="font-size: 15px; color: var(--primary);">sports_esports</span>
+ <div v-else-if="m.type === 'event'" style="align-self: center; margin: 6px 0; display: flex; align-items: center; gap: 6px; background: var(--card-bg); border: 1px solid var(--border-color); border-radius: 20px; padding: 5px 14px; box-shadow: 0 2px 6px rgba(0,0,0,0.04);">
    <span style="font-size: 11.5px; font-weight: 800; color: var(--text-main);">{{ m.content }}</span>
  </div>
- <!-- Normal User & Gerald Bubbles -->
  <div v-else-if="m.content" class="chat-bubble" :class="m.role" v-html="formatMarkdown(m.content)"></div>
  </template>
 
@@ -910,7 +903,6 @@ createApp({
    showEmotePicker.value = false;
    showMinigames.value = false;
    
-   // Clean, distinct event stamp in chat feed (No raw brackets or user bubble styling)
    const eventLabel = `${gameObj.label}`;
    geraldMessages.value.push({ role: 'user', type: 'event', content: eventLabel });
    
