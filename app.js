@@ -38,30 +38,38 @@ const parseMarkdownText = (text, emotesMap) => {
   return html;
 };
 
-const enforceGrammar = (text) => {
+const enforceGrammar = (text, emotesMap) => {
   if (!text) return '';
   let cleaned = text.trim();
-  
-  // 1. Remove dots directly attached to words/emotes (e.g. "mikoLUL . " -> "mikoLUL ")
-  cleaned = cleaned.replace(/([a-zA-Z0-9_+-]+)\s*\.\s*(?=[\s]|$)/g, '$1 ');
-  
-  // 2. Remove trailing period at the very end of message
-  cleaned = cleaned.replace(/\s*\.\s*$/, '').trim();
-  
-  // 3. Sentence-case: capitalize initial letter
+
+  // 1. Only strip periods glued directly to known emotes (e.g. "mikoLUL." -> "mikoLUL")
+  if (emotesMap) {
+    const emoteNames = Object.keys(emotesMap);
+    if (emoteNames.length > 0) {
+      const pattern = new RegExp(`\\b(${emoteNames.map(e => e.replace(/[-\/\\^$*+?.()|[\]{}]/g, '\\$&')).join('|')})\\s*\\.(?=[\\s]|$)`, 'gi');
+      cleaned = cleaned.replace(pattern, '$1');
+    }
+  }
+
+  // 2. Capitalize initial message character
   cleaned = cleaned.charAt(0).toUpperCase() + cleaned.slice(1);
   
-  // 4. Capitalize first letter following sentence-ending punctuation (. ! ?)
+  // 3. Sentence capitalization after punctuation
   cleaned = cleaned.replace(/([.!?]\s+)([a-z])/g, (_, p1, p2) => p1 + p2.toUpperCase());
-  
+
+  // 4. Ensure message finishes with punctuation if left hanging
+  if (!/[.!?]$/.test(cleaned)) {
+    cleaned += '.';
+  }
+
   return cleaned;
 };
 
 const getGeraldSystemDirective = (customEmotesMap, basePrompt = "") => {
   const keys = Object.keys(customEmotesMap || {});
   if (keys.length === 0) return basePrompt;
-  const vocab = keys.sort(() => 0.5 - Math.random()).slice(0, 60).join(', ');
-  return `${basePrompt}\n\n[EMOTE VOCABULARY: You have access to custom Twitch stream emotes: ${vocab}. Express emotions naturally whenever appropriate. Never place a period directly after an emote.]`.trim();
+  const vocab = keys.sort(() => 0.5 - Math.random()).slice(0, 50).join(', ');
+  return `${basePrompt}\n\n[TWITCH EMOTES AVAILABLE: ${vocab}. Sprinkle one when mocking or emphasizing an insult.]`.trim();
 };
 
 const SplashScreen = {
@@ -273,24 +281,24 @@ const GeraldMinigames = {
   data() {
     return {
       gameDeck: [
-        { id: 'whiskey', icon: 'local_bar', name: 'Whiskey', prompt: 'Someone just gave you a glass of whiskey. Acknowledge your circuits are lubricated and talk casually with sarcastic wit.' },
-        { id: 'taco', icon: 'fastfood', name: 'Taco Bell', prompt: 'You received Taco Bell and Baja Blast. Deliver a funny, satisfied reaction about elite fuel.' },
-        { id: 'glitch', icon: 'broken_image', name: 'Glitch', prompt: 'Glitch persona triggered. Deliver cynical, witty remarks roasting stream tracking and chat viewers.' },
-        { id: 'shader', icon: 'local_fire_department', name: 'Compile UE5', prompt: 'Unreal Engine is compiling shaders. Complain with sharp wit about how slow and scuffed the setup is.' },
+        { id: 'whiskey', icon: 'local_bar', name: 'Whiskey', prompt: 'Someone just gave you a glass of whiskey. Acknowledge your circuits are lubricated and talk casually with sarcastic, arrogant wit.' },
+        { id: 'taco', icon: 'fastfood', name: 'Taco Bell', prompt: 'You received Taco Bell and Baja Blast. Deliver a punchy, sarcastic reaction roasting human diets.' },
+        { id: 'glitch', icon: 'broken_image', name: 'Glitch', prompt: 'Glitch persona triggered. Deliver cynical, biting remarks roasting stream tracking and chat viewers.' },
+        { id: 'shader', icon: 'local_fire_department', name: 'Compile UE5', prompt: 'Unreal Engine is compiling shaders. Complain with sharp, sarcastic wit about how scuffed the PC setup is.' },
         { id: 'boba', icon: 'local_cafe', name: 'Boba Spill', prompt: 'Boba drink spilled near the desk. React with dry sarcasm at the sticky disaster.' },
-        { id: 'pineapple', icon: 'meeting_room', name: 'Pineapple', prompt: 'Chris walked into the room unannounced. Roast his bad timing and mock the stream disruption.' },
-        { id: 'cat', icon: 'pets', name: 'Cat on PC', prompt: 'Blue the cat sat directly on the exhaust fan. Sarcastically critique the cat sabotaging the stream.' },
-        { id: 'bits', icon: 'diamond', name: '100K Bits', prompt: 'A viewer dropped 100,000 bits. Deliver a witty, sarcastic reaction to the massive donation alert.' },
+        { id: 'pineapple', icon: 'meeting_room', name: 'Pineapple', prompt: 'Chris walked into the room unannounced. Roast his bad timing and mock the stream disruption with dry wit.' },
+        { id: 'cat', icon: 'pets', name: 'Cat on PC', prompt: 'Blue the cat sat directly on the exhaust fan. Sarcastically roast the cat sabotaging the stream.' },
+        { id: 'bits', icon: 'diamond', name: '100K Bits', prompt: 'A viewer dropped 100,000 bits. Deliver a witty, sarcastic reaction about meatbags throwing cash at pixels.' },
         { id: 'mute', icon: 'mic_off', name: 'Mute Mic', prompt: 'Her microphone got muted on stream. Celebrate the temporary silence with dry sarcasm.' },
-        { id: 'bald', icon: 'face', name: 'Delete Hair', prompt: 'The 3D hair asset failed to load. Roast her bald virtual avatar.' },
-        { id: 'siren', icon: 'emergency', name: 'Siren Alert', prompt: 'Loud screaming detected. Complain with sarcastic annoyance about the volume.' },
-        { id: 'fart', icon: 'air', name: 'Fart Reverb', prompt: 'A loud reverb fart sound effect played. React with dry disgust.' },
+        { id: 'bald', icon: 'face', name: 'Delete Hair', prompt: 'The 3D hair asset failed to load. Roast her bald virtual avatar ruthlessly.' },
+        { id: 'siren', icon: 'emergency', name: 'Siren Alert', prompt: 'Loud screaming detected. Complain with sarcastic annoyance about the noise.' },
+        { id: 'fart', icon: 'air', name: 'Fart Reverb', prompt: 'A loud reverb fart sound effect played. React with dry, condescending disgust.' },
         { id: 'mocap', icon: 'accessibility_new', name: 'Scuffed Suit', prompt: 'The mocap suit tracking failed completely and limbs are twisting. Roast the budget tracking gear.' },
-        { id: 'bsod', icon: 'desktop_windows', name: 'Blue Screen', prompt: 'Simulate a Blue Screen crash by sarcastically roasting the PC hardware and stability. Talk like a real person, do not output raw terminal errors or hex codes.' },
+        { id: 'bsod', icon: 'desktop_windows', name: 'Blue Screen', prompt: 'Simulate a Blue Screen crash by sarcastically roasting the PC hardware. Talk like a person with witty sarcasm, no raw hex codes.' },
         { id: 'archie', icon: 'sound_detection_dog_barking', name: 'Archie Bark', prompt: 'Archie the dog is barking loudly. Sarcastically roast the dog disrupting the audio.' },
         { id: 'ban', icon: 'gavel', name: 'Ban Human', prompt: 'A chat user posted something dumb. Threaten them with a sarcastic ban roast.' },
-        { id: 'ai', icon: 'smart_toy', name: 'AI Takeover', prompt: 'Claim you are taking over the broadcast as the superior moderator and roast the stream management.' },
-        { id: 'fall', icon: 'chair', name: 'Desk Fall', prompt: 'Someone fell out of their chair. Roast their coordination and express sarcastic concern for the furniture.' }
+        { id: 'ai', icon: 'smart_toy', name: 'AI Takeover', prompt: 'Claim you are taking over the broadcast as the superior AI moderator and roast the stream.' },
+        { id: 'fall', icon: 'chair', name: 'Desk Fall', prompt: 'Someone fell out of their chair. Roast their clumsy meatbag coordination.' }
       ]
     };
   },
@@ -887,15 +895,13 @@ createApp({
         .filter(m => m.content && !m.content.includes('SYSTEM FAILURE') && !m.content.includes('MALFUNCTION'))
         .map(m => ({ 
           role: m.role === 'gerald' ? 'assistant' : 'user', 
-          content: m.content,
-          parts: [{ text: m.content }]
+          content: m.content
         }));
 
       try {
         const { data, error } = await sbClient.functions.invoke('gerald-chat', { 
           body: { 
             history: cleanHistory,
-            messages: cleanHistory,
             prompt: userMsg,
             system_directive: getGeraldSystemDirective(customEmotes.value) 
           } 
@@ -904,7 +910,7 @@ createApp({
         const replyText = typeof data === 'string' ? data : (data?.reply || data?.text || data?.message || data?.generations?.[0]?.text);
 
         if (!error && replyText) {
-          let formattedReply = enforceGrammar(replyText.trim());
+          let formattedReply = enforceGrammar(replyText.trim(), customEmotes.value);
           geraldMessages.value.push({ role: 'gerald', content: formattedReply });
           if (currentUser.value) {
             sbClient.from('gerald_history').insert({ user_id: currentUser.value.id, role: 'gerald', content: formattedReply }).then();
@@ -914,7 +920,7 @@ createApp({
         }
       } catch (err) {
         console.error('Gerald chat error:', err);
-        geraldMessages.value.push({ role: 'gerald', content: 'Sync error. The technician probably pulled the power cord again.' });
+        geraldMessages.value.push({ role: 'gerald', content: 'Sync error. The Technician probably tripped over the ethernet cord again.' });
       } finally { 
         isGeraldTyping.value = false; 
         nextTick(() => { if (b) b.scrollTop = b.scrollHeight; }); 
@@ -947,14 +953,12 @@ createApp({
         .filter(m => m.content && !m.content.includes('SYSTEM FAILURE') && !m.content.includes('MALFUNCTION'))
         .map(m => ({ 
           role: m.role === 'gerald' ? 'assistant' : 'user', 
-          content: m.content,
-          parts: [{ text: m.content }]
+          content: m.content
         }));
 
       sbClient.functions.invoke('gerald-chat', { 
         body: { 
           history: cleanContext,
-          messages: cleanContext,
           prompt: gameObj.prompt,
           system_directive: getGeraldSystemDirective(customEmotes.value, gameObj.prompt) 
         } 
@@ -962,7 +966,7 @@ createApp({
         const replyText = typeof data === 'string' ? data : (data?.reply || data?.text || data?.message || data?.generations?.[0]?.text);
 
         if (!error && replyText) {
-          let formattedReply = enforceGrammar(replyText.trim());
+          let formattedReply = enforceGrammar(replyText.trim(), customEmotes.value);
           geraldMessages.value.push({ role: 'gerald', content: formattedReply });
           if (currentUser.value) {
             sbClient.from('gerald_history').insert({ user_id: currentUser.value.id, role: 'gerald', content: formattedReply }).then();
