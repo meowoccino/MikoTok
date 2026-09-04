@@ -38,7 +38,7 @@
         
         <splash-screen :splash-visible="splashVisible" :splash-opacity="splashOpacity" :logo-svg="logoSvg"></splash-screen>
 
-        <app-header :is-header-visible="isHeaderVisible" :current-tab="currentTab" :logo-svg="logoSvg" :app-theme="appTheme" @open-profile="modals.profile = true" @toggle-theme="toggleTheme"></app-header>
+        <app-header :is-header-visible="isHeaderVisible" :current-tab="currentTab" :logo-svg="logoSvg" :app-theme="appTheme" @open-profile="openProfile" @toggle-theme="toggleTheme"></app-header>
 
         <div class="view-port" @touchstart="handleSwipeStart" @touchend="handleSwipeEnd">
             <div class="tab-slider" :style="{ transform: 'translate3d(' + tabOffset + '%, 0, 0)' }">
@@ -180,6 +180,6 @@
         <bottom-nav :current-tab="currentTab" @change-tab="switchTab"></bottom-nav>
     </div>
 
-    <script src="./app.js?v=1"></script>
+    <script src="./app.js?v=2"></script>
 </body>
 </html>
