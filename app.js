@@ -383,8 +383,11 @@ const GeraldView = {
 
     <div class="gerald-messages" id="gerald-msgs" @click="$emit('close-pickers')">
       <template v-for="(m, i) in geraldMessages" :key="i">
-        <div v-if="i === 0 && m.role === 'gerald' && !m.content" class="chat-bubble gerald awaiting">
-          <span>{{ m.placeholder }}</span>
+        <!-- Adaptive Dynamic Greeting Divider (Auto-dismisses on message/event) -->
+        <div v-if="i === 0 && m.role === 'gerald' && !m.content && geraldMessages.length === 1" class="adaptive-divider">
+          <span class="ad-line"></span>
+          <span class="ad-text">{{ m.placeholder }}</span>
+          <span class="ad-line"></span>
         </div>
         
         <!-- Stream Action Protocol Divider (Pure text, no icon) -->
@@ -895,6 +898,12 @@ createApp({
       if (!geraldInput.value.trim() || isGeraldTyping.value) return;
 
       const userMsg = geraldInput.value.trim();
+
+      // Flush dynamic adaptive greeting divider on first interaction
+      if (geraldMessages.value.length === 1 && !geraldMessages.value[0].content) {
+        geraldMessages.value = [];
+      }
+
       geraldMessages.value.push({ role: 'user', content: userMsg });
 
       if (currentUser.value) {
@@ -956,6 +965,11 @@ createApp({
       showEmotePicker.value = false;
       showMinigames.value = false;
       
+      // Flush dynamic adaptive greeting divider on minigame trigger
+      if (geraldMessages.value.length === 1 && !geraldMessages.value[0].content) {
+        geraldMessages.value = [];
+      }
+
       // Event name pushed cleanly without an icon
       geraldMessages.value.push({ 
         role: 'user', 
