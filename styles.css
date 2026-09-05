@@ -6,6 +6,11 @@
     --success: #10b981;
     --gerald: #9146FF;
     --pill-active: rgba(145, 70, 255, 0.12);
+
+    /* Equalizer default calm lavender */
+    --bar-color: #a78bfa;
+    --bar-opacity: 0.7;
+    --glow-color: rgba(167, 139, 250, 0.16);
 }
 
 .theme-light {
@@ -16,6 +21,8 @@
     --border-color: #e5e7eb;
     --nav-bg: rgba(255, 255, 255, 0.92);
     --modal-bg: #ffffff;
+    --accent-purple-border: #ddd6fe;
+    --header-card-bg: #f0edf9;
 }
 
 .theme-dark {
@@ -26,6 +33,8 @@
     --border-color: #272732;
     --nav-bg: rgba(22, 22, 28, 0.92);
     --modal-bg: #16161c;
+    --accent-purple-border: #2e2640;
+    --header-card-bg: #191624;
 }
 
 * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; font-family: 'Inter', sans-serif; }
@@ -186,21 +195,120 @@ body, html {
 .emote-picker-grid { display: flex; flex-wrap: wrap; gap: 6px; overflow-y: auto; max-height: 180px; }
 .emote-picker-img { width: 32px; height: 32px; object-fit: contain; cursor: pointer; }
 
-.os-title { font-family: monospace; font-size: 11px; font-weight: 700; color: var(--text-muted); letter-spacing: 2px; }
+/* ==============================================================
+   GERALD TOP BAR REDESIGN: CENTER APEX
+============================================================== */
+.gerald-container {
+    display: flex; 
+    flex-direction: column; 
+    height: 100%; 
+    width: 100%; 
+    background: var(--bg-color);
+}
 
-.gerald-sys-card-compressed { display: flex; align-items: center; gap: 12px; background: rgba(145, 70, 255, 0.06); border: none !important; border-radius: 14px; padding: 8px 12px; margin-top: 4px; }
-.gerald-avatar-sm { width: 32px; height: 32px; border-radius: 50%; object-fit: cover; border: 1px solid var(--primary); }
-.sys-metrics-row { flex: 1; display: flex; gap: 12px; }
-.mini-metric { display: flex; flex-direction: column; }
-.mini-metric .lbl { font-size: 8px; font-weight: 700; color: var(--text-muted); }
-.mini-metric .val { font-size: 12px; height: 100%; display: flex; align-items: center; font-weight: 800; font-family: monospace; }
-.ai-status-node-tiny { display: flex; align-items: center; gap: 4px; background: var(--card-bg); padding: 4px 8px; border-radius: 8px; border: 1px solid var(--border-color); }
-.pulse-node { width: 6px; height: 6px; border-radius: 50%; }
+.gerald-header {
+    flex-shrink: 0;
+    padding: 12px 14px 6px;
+    background: var(--bg-color);
+    z-index: 10;
+}
 
+.center-apex-card {
+    background: var(--header-card-bg);
+    border: 1px solid var(--accent-purple-border);
+    border-radius: 28px;
+    padding: 16px 12px 14px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.apex-stage {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    margin-bottom: 12px;
+}
+
+.avatar-gerald-apex {
+    width: 96px;
+    height: 96px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 3.5px solid #ffffff;
+    box-shadow: 0 6px 18px var(--glow-color);
+    flex-shrink: 0;
+}
+
+.apex-wing {
+    flex: 1;
+    height: 44px;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+}
+
+.apex-wing.left { justify-content: flex-start; }
+.apex-wing.right { justify-content: flex-end; }
+
+.apex-bar {
+    flex: 1;
+    max-width: 6px;
+    background: var(--bar-color);
+    opacity: var(--bar-opacity);
+    border-radius: 4px;
+    animation: barHopCalm 1.6s ease-in-out infinite alternate;
+}
+
+.apex-wing.left .apex-bar:nth-child(1) { height: 22%; animation-delay: 0.1s; }
+.apex-wing.left .apex-bar:nth-child(2) { height: 42%; animation-delay: 0.3s; }
+.apex-wing.left .apex-bar:nth-child(3) { height: 32%; animation-delay: 0.15s; }
+.apex-wing.left .apex-bar:nth-child(4) { height: 60%; animation-delay: 0.4s; }
+.apex-wing.left .apex-bar:nth-child(5) { height: 80%; animation-delay: 0.2s; }
+.apex-wing.left .apex-bar:nth-child(6) { height: 48%; animation-delay: 0.35s; }
+.apex-wing.left .apex-bar:nth-child(7) { height: 95%; animation-delay: 0.25s; }
+.apex-wing.left .apex-bar:nth-child(8) { height: 55%; animation-delay: 0.45s; }
+
+.apex-wing.right .apex-bar:nth-child(1) { height: 55%; animation-delay: 0.45s; }
+.apex-wing.right .apex-bar:nth-child(2) { height: 95%; animation-delay: 0.25s; }
+.apex-wing.right .apex-bar:nth-child(3) { height: 48%; animation-delay: 0.35s; }
+.apex-wing.right .apex-bar:nth-child(4) { height: 80%; animation-delay: 0.2s; }
+.apex-wing.right .apex-bar:nth-child(5) { height: 60%; animation-delay: 0.4s; }
+.apex-wing.right .apex-bar:nth-child(6) { height: 32%; animation-delay: 0.15s; }
+.apex-wing.right .apex-bar:nth-child(7) { height: 42%; animation-delay: 0.3s; }
+.apex-wing.right .apex-bar:nth-child(8) { height: 22%; animation-delay: 0.1s; }
+
+@keyframes barHopCalm {
+    0% { transform: scaleY(0.35); opacity: calc(var(--bar-opacity) * 0.6); }
+    100% { transform: scaleY(1); opacity: var(--bar-opacity); }
+}
+
+.api-chip-apex {
+    display: inline-flex;
+    align-items: center;
+    gap: 5.5px;
+    background: #ffffff;
+    border: 1px solid var(--border-color);
+    padding: 4px 10px;
+    border-radius: 14px;
+    font-size: 10px;
+    font-weight: 700;
+    color: #374151;
+    font-family: monospace;
+    letter-spacing: 0.4px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.03);
+    white-space: nowrap;
+}
+
+.pulse-node { width: 6.5px; height: 6.5px; border-radius: 50%; }
 .pulse-green { background: var(--success); animation: pulse-green-glow 2.5s infinite; }
 .pulse-red { background: var(--danger); animation: pulse-red-glow 2.5s infinite; }
-.pulse-lbl { font-size: 9px; font-family: monospace; font-weight: 700; }
 
+/* ==============================================================
+   CONVERSATION STREAM
+============================================================== */
 .gerald-messages { flex: 1; overflow-y: auto; padding: 4px 16px; display: flex; flex-direction: column; gap: 12px; }
 
 .chat-bubble a { color: #c084fc; text-decoration: underline; font-weight: bold; word-break: break-all; }
@@ -359,10 +467,6 @@ body, html {
 .menu-btn:last-child { border-bottom: none; }
 .btn-content { display: flex; align-items: center; gap: 12px; }
 .icon-wrap { width: 30px; height: 30px; border-radius: 8px; display: flex; align-items: center; justify-content: center; }
-
-/* Ingest / Fetch: Twitch Purple */
-.fetch-row { color: var(--primary); }
-.fetch-row .icon-wrap { background: rgba(145, 70, 255, 0.12); color: var(--primary); }
 
 /* Nuke: Neutral Slate / Zinc */
 .nuke-row { color: var(--text-main); }
