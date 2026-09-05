@@ -383,7 +383,7 @@ const GeraldView = {
 
     <div class="gerald-messages" id="gerald-msgs" @click="$emit('close-pickers')">
       <template v-for="(m, i) in geraldMessages" :key="i">
-        <!-- Adaptive Dynamic Greeting Divider (Auto-dismisses on message/event) -->
+        <!-- Style 2 Adaptive Greeting Divider (Dismisses cleanly on user message/event) -->
         <div v-if="i === 0 && m.role === 'gerald' && !m.content && geraldMessages.length === 1" class="adaptive-divider">
           <span class="ad-line"></span>
           <span class="ad-text">{{ m.placeholder }}</span>
@@ -899,7 +899,7 @@ createApp({
 
       const userMsg = geraldInput.value.trim();
 
-      // Flush dynamic adaptive greeting divider on first interaction
+      // Flush dynamic adaptive greeting divider on first user interaction
       if (geraldMessages.value.length === 1 && !geraldMessages.value[0].content) {
         geraldMessages.value = [];
       }
