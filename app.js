@@ -337,7 +337,7 @@ const GeraldView = {
             <span class="apex-bar"></span>
           </div>
 
-          <img src="gerald.png" class="avatar-gerald-apex" onerror="this.src='https://static-cdn.jtvnw.net/emoticons/v2/emotesv2_f91523c9b1394f72bc9da6929944c6ee/default/light/3.0'" alt="Gerald">
+          <img src="gerald.png" class="avatar-gerald-apex" onerror="this.src='https://static-cdn.jtvnw.net/jtv_user_pictures/4c3c3a9d-1941-477c-a496-a8a25c1fe527-profile_image-300x300.png'" alt="Gerald">
 
           <div class="apex-wing right">
             <span class="apex-bar"></span>
@@ -363,10 +363,17 @@ const GeraldView = {
         <div v-if="i === 0 && m.role === 'gerald' && !m.content" class="chat-bubble gerald">
           <span>Awaiting human input...</span>
         </div>
-        <div v-else-if="m.type === 'event'" style="align-self: center; margin: 6px 0; display: flex; align-items: center; gap: 6px; background: var(--card-bg); border: 1px solid var(--border-color); border-radius: 20px; padding: 5px 14px; box-shadow: 0 2px 6px rgba(0,0,0,0.04);">
-          <span class="material-symbols-rounded" style="font-size: 16px; color: var(--primary);">{{ m.icon || 'sports_esports' }}</span>
-          <span style="font-size: 11.5px; font-weight: 800; color: var(--text-main);">{{ m.content }} Triggered</span>
+        
+        <!-- Stream Action Protocol Divider (Deprecating "Triggered") -->
+        <div v-else-if="m.type === 'event'" class="event-stream-divider">
+          <span class="event-divider-line"></span>
+          <div class="event-divider-badge">
+            <span class="material-symbols-rounded event-icon-badge">{{ m.icon || 'bolt' }}</span>
+            <span>EXEC // {{ m.content ? m.content.toUpperCase() : 'PROTOCOL' }}</span>
+          </div>
+          <span class="event-divider-line"></span>
         </div>
+        
         <div v-else-if="m.content" class="chat-bubble" :class="m.role" v-html="formatMarkdown(m.content)"></div>
       </template>
 
