@@ -144,7 +144,7 @@ const FilterMenu = {
 const ProfileModal = {
   props: [
     'isOpen', 'currentUser', 'loginEmail', 'loginPass', 'wipeState', 'logoutState', 
-    'nukeState', 'fetchState', 'totalClipsCount', 'activeUsersCount', 'clipsAddedCount', 'selectedRange'
+    'nukeState', 'totalClipsCount', 'activeUsersCount', 'clipsAddedCount', 'selectedRange'
   ],
   template: `
   <div class="modal-overlay" :class="{ open: isOpen }" @click.self="$emit('close')">
@@ -190,17 +190,6 @@ const ProfileModal = {
         </div>
         
         <div class="action-menu">
-          <button class="menu-btn fetch-row" @click="$emit('fetch-clips')" :disabled="fetchState === 'FETCHING...'">
-            <div class="btn-content">
-              <div class="icon-wrap">
-                <span class="material-symbols-rounded" :class="{'spin-anim': fetchState === 'FETCHING...'}">
-                  {{ fetchState === 'SUCCESS' ? 'check' : 'cloud_download' }}
-                </span>
-              </div>
-              <span>{{ fetchState === 'Fetch New Clips' ? 'FETCH NEW CLIPS' : fetchState }}</span>
-            </div>
-          </button>
-
           <button class="menu-btn nuke-row" @click="$emit('nuke-cache')">
             <div class="btn-content">
               <div class="icon-wrap">
@@ -316,7 +305,7 @@ const GeraldMinigames = {
 
 const GeraldView = {
   components: { GeraldMinigames },
-  props: ['currentTab', 'geraldMessages', 'isGeraldTyping', 'geraldInput', 'showEmotePicker', 'showMinigames', 'customEmotes', 'geminiStatus', 'sysStats', 'emoteSearch'],
+  props: ['currentTab', 'geraldMessages', 'isGeraldTyping', 'geraldInput', 'showEmotePicker', 'showMinigames', 'customEmotes', 'geminiStatus', 'emoteSearch'],
   computed: {
     filteredEmotes() {
       const q = (this.emoteSearch || '').trim().toLowerCase();
@@ -333,19 +322,38 @@ const GeraldView = {
     insertEmote(name) { this.$emit('insert-emote', name); }
   },
   template: `
-  <div class="gerald-container" style="display: flex; flex-direction: column; height: 100%; width: 100%; background: var(--bg-color);">
-    <div class="gerald-header" @click="$emit('close-pickers')" style="flex-shrink: 0; padding: 12px 16px 6px; background: var(--bg-color); z-index: 10;">
-      <div class="os-top-bar"><span class="os-title">GERALD_OS v2</span></div>
-      <div class="gerald-sys-card-compressed">
-        <img src="gerald.png" class="gerald-avatar-sm" onerror="this.src='https://static-cdn.jtvnw.net/emoticons/v2/emotesv2_f91523c9b1394f72bc9da6929944c6ee/default/light/3.0'">
-        <div class="sys-metrics-row">
-          <div class="mini-metric"><span class="lbl">CPU</span><span class="val">{{ sysStats.cpu }}%</span></div>
-          <div class="mini-metric"><span class="lbl">MEM</span><span class="val">{{ sysStats.mem }}GB</span></div>
-          <div class="mini-metric"><span class="lbl">TEMP</span><span class="val" :style="{color: sysStats.temp > 82 ? 'var(--danger)' : 'inherit'}">{{ sysStats.temp }}°C</span></div>
+  <div class="gerald-container">
+    <div class="gerald-header" @click="$emit('close-pickers')">
+      <div class="center-apex-card">
+        <div class="apex-stage">
+          <div class="apex-wing left">
+            <span class="apex-bar"></span>
+            <span class="apex-bar"></span>
+            <span class="apex-bar"></span>
+            <span class="apex-bar"></span>
+            <span class="apex-bar"></span>
+            <span class="apex-bar"></span>
+            <span class="apex-bar"></span>
+            <span class="apex-bar"></span>
+          </div>
+
+          <img src="gerald.png" class="avatar-gerald-apex" onerror="this.src='https://static-cdn.jtvnw.net/emoticons/v2/emotesv2_f91523c9b1394f72bc9da6929944c6ee/default/light/3.0'" alt="Gerald">
+
+          <div class="apex-wing right">
+            <span class="apex-bar"></span>
+            <span class="apex-bar"></span>
+            <span class="apex-bar"></span>
+            <span class="apex-bar"></span>
+            <span class="apex-bar"></span>
+            <span class="apex-bar"></span>
+            <span class="apex-bar"></span>
+            <span class="apex-bar"></span>
+          </div>
         </div>
-        <div class="ai-status-node-tiny">
+
+        <div class="api-chip-apex">
           <div class="pulse-node" :class="geminiStatus === 'API_CONNECTED' ? 'pulse-green' : 'pulse-red'"></div>
-          <span class="pulse-lbl" style="color:var(--text-main);">{{ geminiStatus }}</span>
+          <span>{{ geminiStatus }}</span>
         </div>
       </div>
     </div>
@@ -583,7 +591,6 @@ createApp({
     const wipeState = ref('Wipe Gerald Memory');
     const logoutState = ref('Sign Out');
     const nukeState = ref('Nuke App Cache');
-    const fetchState = ref('Fetch New Clips');
     
     const totalClipsCount = ref(null);
     const clipsAddedCount = ref(null);
@@ -598,7 +605,6 @@ createApp({
     
     const isHeaderVisible = ref(true);
     const geminiStatus = ref('TESTING BRAIN...');
-    const sysStats = ref({ cpu: 23, mem: 1.8, temp: 74 });
 
     const activeUsersCount = ref(1);
 
@@ -705,28 +711,6 @@ createApp({
       modals.value.profile = true;
       fetchTotalClipsCount();
       fetchClipsAddedRange(selectedRange.value);
-    };
-
-    const triggerFetchClips = async () => {
-      if (fetchState.value === 'FETCHING...') return;
-      fetchState.value = 'FETCHING...';
-
-      try {
-        const { data, error } = await sbClient.functions.invoke('fetch-twitch-clips');
-        if (error) throw error;
-
-        await Promise.all([
-          fetchTotalClipsCount(),
-          fetchClipsAddedRange(selectedRange.value),
-          loadData(false)
-        ]);
-
-        fetchState.value = 'SUCCESS';
-        setTimeout(() => { fetchState.value = 'Fetch New Clips'; }, 1500);
-      } catch (err) {
-        console.error('Fetch clips failed:', err);
-        fetchState.value = 'Fetch New Clips';
-      }
     };
 
     const loadEmotesFromSupabase = async () => {
@@ -1031,7 +1015,6 @@ createApp({
       checkLive();
       testGeminiBrain();
 
-      setInterval(() => { sysStats.value.cpu = Math.floor(15 + Math.random() * 25); sysStats.value.temp = Math.floor(71 + Math.random() * 8); }, 4000);
       document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'visible') checkLive(); });
       
       sbClient.channel('public:clips').on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'clips' }, payload => {
@@ -1047,7 +1030,7 @@ createApp({
     });
 
     return {
-      hostname, splashVisible, splashOpacity, currentTab, tabOffset, appTheme, toggleTheme, clips, currentUser, loginEmail, loginPass, loginError, geraldInput, geraldMessages, isGeraldTyping, wipeState, logoutState, nukeState, fetchState, totalClipsCount, clipsAddedCount, selectedRange, isHeaderVisible, currentFilter, activeFilterLabel, isFilterMenuOpen, recentVods, currentVodIndex, customEmotes, emoteSearch, showEmotePicker, showMinigames, activeClipId, switchTab, geminiStatus, sysStats, handleSwipeStart, handleSwipeEnd, handleModalTouchStart, handleModalTouchMove, handleModalTouchEnd, handleScroll, apiConfig, selectedClip, modals, allClipsCount, isLive, chatMessages, twitchChatToken, twitchAuthUrl, twitchUsername, showLoginPopup, activeUsersCount, openProfile,
+      hostname, splashVisible, splashOpacity, currentTab, tabOffset, appTheme, toggleTheme, clips, currentUser, loginEmail, loginPass, loginError, geraldInput, geraldMessages, isGeraldTyping, wipeState, logoutState, nukeState, totalClipsCount, clipsAddedCount, selectedRange, isHeaderVisible, currentFilter, activeFilterLabel, isFilterMenuOpen, recentVods, currentVodIndex, customEmotes, emoteSearch, showEmotePicker, showMinigames, activeClipId, switchTab, geminiStatus, handleSwipeStart, handleSwipeEnd, handleModalTouchStart, handleModalTouchMove, handleModalTouchEnd, handleScroll, apiConfig, selectedClip, modals, allClipsCount, isLive, chatMessages, twitchChatToken, twitchAuthUrl, twitchUsername, showLoginPopup, activeUsersCount, openProfile,
       logoSvg: (id) => `<svg viewBox="0 0 100 100"><defs><linearGradient id="grad-${id}" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stop-color="#9146FF"/><stop offset="100%" stop-color="#a970ff"/></linearGradient></defs><circle cx="50" cy="50" r="40" fill="url(#grad-${id})"/><path d="M 33 38 L 48 62 L 62 38 L 62 55 Q 62 65 69 64" fill="none" stroke="#ffffff" stroke-width="8" stroke-linecap="round" stroke-linejoin="round"/></svg>`,
       optimizeTwitchImg: (u) => u ? u.replace('%{width}', '480').replace('%{height}', '270') : '',
       formatViews: (v) => v ? v.toLocaleString() : '0',
@@ -1058,7 +1041,7 @@ createApp({
       nextVod: () => { if (currentVodIndex.value < recentVods.value.length - 1) currentVodIndex.value++; },
       playClip: (clip) => { selectedClip.value = clip; },
       handleLogin, handleLogout, clearGeraldHistory, nukeCache, talkToGerald, triggerAiMinigame,
-      triggerFetchClips, selectRange: fetchClipsAddedRange,
+      selectRange: fetchClipsAddedRange,
       closePickers: () => { showEmotePicker.value = false; showMinigames.value = false; },
       insertEmote: (name) => { geraldInput.value += (geraldInput.value && !geraldInput.value.endsWith(' ') ? ' ' : '') + name + ' '; showEmotePicker.value = false; },
       toggleEmotes: () => { showEmotePicker.value = !showEmotePicker.value; showMinigames.value = false; },
