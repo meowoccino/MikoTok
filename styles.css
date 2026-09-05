@@ -232,7 +232,7 @@ body, html {
     margin-bottom: 12px;
 }
 
-/* 120px Avatar with Deep Ambient Downward Shadow (No Purple Halo) */
+/* 120px Avatar with Deep Ambient Downward Shadow (Option 7 - No Purple Halo) */
 .avatar-gerald-apex {
     width: 120px;
     height: 120px;
@@ -343,31 +343,32 @@ body, html {
 }
 
 /* ==============================================================
-   CONVERSATION STREAM & STYLE 2 ADAPTIVE DIVIDER
+   CONVERSATION STREAM & STYLE 2 ADAPTIVE DIVIDER (FORCED VISIBLE)
 ============================================================== */
 .gerald-messages { flex: 1; overflow-y: auto; padding: 4px 16px; display: flex; flex-direction: column; gap: 12px; }
 
-/* Dynamic Adaptive Greeting Divider (Style 2: Editorial Italic + Visible Lines) */
+/* Adaptive Divider: Guaranteed visible block-level flanking lines */
 .adaptive-divider {
     width: 100%;
     display: flex;
     align-items: center;
     justify-content: center;
     gap: 12px;
-    margin: 8px 0 14px;
-    padding: 0 4px;
+    margin: 10px 0 16px;
+    padding: 0 12px;
 }
 
 .ad-line {
-    flex: 1;
-    min-width: 24px;
+    display: block;
+    flex: 1 1 0%;
     height: 1px;
-    background: linear-gradient(90deg, transparent, #b4a3e8, transparent);
+    background: linear-gradient(90deg, rgba(167, 139, 250, 0.05), #a78bfa, rgba(167, 139, 250, 0.05));
+    opacity: 0.85;
 }
 
 .ad-text {
-    flex: 0 1 auto;
-    max-width: 82%;
+    flex: 0 0 auto;
+    max-width: 78%;
     text-align: center;
     font-family: 'Inter', sans-serif;
     font-style: italic;
