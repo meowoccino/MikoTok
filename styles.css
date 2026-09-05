@@ -232,7 +232,7 @@ body, html {
     margin-bottom: 12px;
 }
 
-/* Big 120px Avatar with Blended Ambient Rim (No White Line) */
+/* 120px Avatar with Blended Ambient Rim (No White Line) */
 .avatar-gerald-apex {
     width: 120px;
     height: 120px;
@@ -308,7 +308,7 @@ body, html {
 .pulse-red { background: var(--danger); animation: pulse-red-glow 2.5s infinite; }
 
 /* ==============================================================
-   REDESIGNED EVENT BADGE (REPLACED "TRIGGERED")
+   REDESIGNED EVENT BADGE (CLEAN TEXT DIVIDER, NO ICONS)
 ============================================================== */
 .event-stream-divider {
     width: 100%;
@@ -322,28 +322,24 @@ body, html {
 .event-divider-line {
     flex: 1;
     height: 1px;
-    background: linear-gradient(90deg, transparent, var(--border-color), transparent);
+    background: linear-gradient(90deg, transparent, #c4b5fd, transparent);
 }
 
 .event-divider-badge {
     display: inline-flex;
     align-items: center;
-    gap: 6px;
-    background: var(--card-bg);
+    justify-content: center;
+    background: var(--header-card-bg);
     border: 1px solid var(--accent-purple-border);
-    border-radius: 8px;
-    padding: 4px 10px;
+    border-radius: 6px;
+    padding: 3px 12px;
     font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, monospace;
-    font-size: 10px;
+    font-size: 10.5px;
     font-weight: 800;
     letter-spacing: 0.8px;
-    color: var(--primary);
-    box-shadow: 0 2px 6px rgba(0,0,0,0.03);
-}
-
-.event-icon-badge {
-    font-size: 14px !important;
-    color: var(--primary);
+    color: var(--accent-purple);
+    box-shadow: 0 2px 6px rgba(0,0,0,0.02);
+    white-space: nowrap;
 }
 
 /* ==============================================================
@@ -357,6 +353,15 @@ body, html {
 .chat-bubble { max-width: 85%; padding: 10px 16px; font-size: 13.5px; line-height: 1.45; background: var(--card-bg); border: 1px solid var(--border-color); border-radius: 18px; color: var(--text-main); word-wrap: break-word; }
 .chat-bubble.gerald { background: rgba(145, 70, 255, 0.12); border-color: rgba(145, 70, 255, 0.3); align-self: flex-start; }
 .chat-bubble.user { align-self: flex-end; background: var(--border-color); border-color: transparent; }
+
+/* Standby Initial Greeting Bubble */
+.chat-bubble.awaiting {
+    background: rgba(121, 82, 245, 0.07);
+    border: 1px dashed var(--accent-purple-border);
+    color: var(--text-muted);
+    font-style: italic;
+    font-size: 13.5px;
+}
 
 .dots-thinking-row { 
     display: flex; gap: 6px; padding: 4px 16px; 
