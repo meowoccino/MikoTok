@@ -196,7 +196,7 @@ body, html {
 .emote-picker-img { width: 32px; height: 32px; object-fit: contain; cursor: pointer; }
 
 /* ==============================================================
-   GERALD TOP BAR: CENTER APEX (120px AVATAR, NO WHITE BORDER)
+   GERALD TOP BAR: CENTER APEX (OPTION 7 - DEEP AMBIENT DOWNWARD SHADOW)
 ============================================================== */
 .gerald-container {
     display: flex; 
@@ -232,14 +232,14 @@ body, html {
     margin-bottom: 12px;
 }
 
-/* 120px Avatar with Blended Ambient Rim (No White Line) */
+/* 120px Avatar with Deep Ambient Grounding (Zero Ring Border) */
 .avatar-gerald-apex {
     width: 120px;
     height: 120px;
     border-radius: 50%;
     object-fit: cover;
     border: none;
-    box-shadow: 0 0 0 1px rgba(121, 82, 245, 0.22), 0 8px 26px var(--glow-color);
+    box-shadow: 0 10px 24px -2px rgba(15, 23, 42, 0.2);
     flex-shrink: 0;
 }
 
@@ -343,9 +343,38 @@ body, html {
 }
 
 /* ==============================================================
-   CONVERSATION STREAM
+   CONVERSATION STREAM & ADAPTIVE DIVIDERS
 ============================================================== */
 .gerald-messages { flex: 1; overflow-y: auto; padding: 4px 16px; display: flex; flex-direction: column; gap: 12px; }
+
+/* Dynamic Adaptive Greeting Divider */
+.adaptive-divider {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    margin: 6px 0 10px;
+}
+
+.ad-line {
+    flex: 1;
+    min-width: 18px;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, var(--border-color), transparent);
+}
+
+.ad-text {
+    flex: 0 1 auto;
+    max-width: 82%;
+    text-align: center;
+    font-size: 11.5px;
+    font-weight: 600;
+    line-height: 1.4;
+    letter-spacing: 0.3px;
+    color: var(--text-muted);
+    word-break: break-word;
+}
 
 .chat-bubble a { color: #c084fc; text-decoration: underline; font-weight: bold; word-break: break-all; }
 .theme-light .chat-bubble a { color: var(--primary); }
@@ -353,15 +382,6 @@ body, html {
 .chat-bubble { max-width: 85%; padding: 10px 16px; font-size: 13.5px; line-height: 1.45; background: var(--card-bg); border: 1px solid var(--border-color); border-radius: 18px; color: var(--text-main); word-wrap: break-word; }
 .chat-bubble.gerald { background: rgba(145, 70, 255, 0.12); border-color: rgba(145, 70, 255, 0.3); align-self: flex-start; }
 .chat-bubble.user { align-self: flex-end; background: var(--border-color); border-color: transparent; }
-
-/* Standby Initial Greeting Bubble */
-.chat-bubble.awaiting {
-    background: rgba(121, 82, 245, 0.07);
-    border: 1px dashed var(--accent-purple-border);
-    color: var(--text-muted);
-    font-style: italic;
-    font-size: 13.5px;
-}
 
 .dots-thinking-row { 
     display: flex; gap: 6px; padding: 4px 16px; 
