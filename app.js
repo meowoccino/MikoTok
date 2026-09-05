@@ -383,7 +383,7 @@ const GeraldView = {
 
     <div class="gerald-messages" id="gerald-msgs" @click="$emit('close-pickers')">
       <template v-for="(m, i) in geraldMessages" :key="i">
-        <!-- Style 2 Adaptive Greeting Divider (Dismisses cleanly on user message/event) -->
+        <!-- Standby Adaptive Divider (Style 2: Editorial Italic with Forced Visible Lines) -->
         <div v-if="i === 0 && m.role === 'gerald' && !m.content && geraldMessages.length === 1" class="adaptive-divider">
           <span class="ad-line"></span>
           <span class="ad-text">{{ m.placeholder }}</span>
