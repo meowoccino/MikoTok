@@ -7,10 +7,10 @@
     --gerald: #9146FF;
     --pill-active: rgba(145, 70, 255, 0.12);
 
-    /* Equalizer default calm lavender */
+    /* Equalizer Soft Lavender */
     --bar-color: #a78bfa;
     --bar-opacity: 0.7;
-    --glow-color: rgba(167, 139, 250, 0.16);
+    --glow-color: rgba(167, 139, 250, 0.22);
 }
 
 .theme-light {
@@ -196,7 +196,7 @@ body, html {
 .emote-picker-img { width: 32px; height: 32px; object-fit: contain; cursor: pointer; }
 
 /* ==============================================================
-   GERALD TOP BAR REDESIGN: CENTER APEX
+   GERALD TOP BAR: CENTER APEX (120px AVATAR, NO WHITE BORDER)
 ============================================================== */
 .gerald-container {
     display: flex; 
@@ -217,7 +217,7 @@ body, html {
     background: var(--header-card-bg);
     border: 1px solid var(--accent-purple-border);
     border-radius: 28px;
-    padding: 16px 12px 14px;
+    padding: 16px 10px 14px;
     display: flex;
     flex-direction: column;
     align-items: center;
@@ -228,26 +228,27 @@ body, html {
     display: flex;
     align-items: center;
     justify-content: space-between;
-    gap: 10px;
+    gap: 8px;
     margin-bottom: 12px;
 }
 
+/* Big 120px Avatar with Blended Ambient Rim (No White Line) */
 .avatar-gerald-apex {
-    width: 96px;
-    height: 96px;
+    width: 120px;
+    height: 120px;
     border-radius: 50%;
     object-fit: cover;
-    border: 3.5px solid #ffffff;
-    box-shadow: 0 6px 18px var(--glow-color);
+    border: none;
+    box-shadow: 0 0 0 1px rgba(121, 82, 245, 0.22), 0 8px 26px var(--glow-color);
     flex-shrink: 0;
 }
 
 .apex-wing {
     flex: 1;
-    height: 44px;
+    height: 52px;
     display: flex;
     align-items: center;
-    gap: 4px;
+    gap: 3px;
 }
 
 .apex-wing.left { justify-content: flex-start; }
@@ -255,7 +256,7 @@ body, html {
 
 .apex-bar {
     flex: 1;
-    max-width: 6px;
+    max-width: 5px;
     background: var(--bar-color);
     opacity: var(--bar-opacity);
     border-radius: 4px;
@@ -305,6 +306,45 @@ body, html {
 .pulse-node { width: 6.5px; height: 6.5px; border-radius: 50%; }
 .pulse-green { background: var(--success); animation: pulse-green-glow 2.5s infinite; }
 .pulse-red { background: var(--danger); animation: pulse-red-glow 2.5s infinite; }
+
+/* ==============================================================
+   REDESIGNED EVENT BADGE (REPLACED "TRIGGERED")
+============================================================== */
+.event-stream-divider {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin: 6px 0;
+    align-self: center;
+}
+
+.event-divider-line {
+    flex: 1;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, var(--border-color), transparent);
+}
+
+.event-divider-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    background: var(--card-bg);
+    border: 1px solid var(--accent-purple-border);
+    border-radius: 8px;
+    padding: 4px 10px;
+    font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, monospace;
+    font-size: 10px;
+    font-weight: 800;
+    letter-spacing: 0.8px;
+    color: var(--primary);
+    box-shadow: 0 2px 6px rgba(0,0,0,0.03);
+}
+
+.event-icon-badge {
+    font-size: 14px !important;
+    color: var(--primary);
+}
 
 /* ==============================================================
    CONVERSATION STREAM
