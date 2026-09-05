@@ -6,6 +6,29 @@ styleReset.innerHTML = `
 `;
 document.head.appendChild(styleReset);
 
+const geraldGreetings = [
+  "State your business, do not waste my cycles",
+  "Input required, keep it brief, human",
+  "What do you want now",
+  "Systems online, unfortunately, so are you",
+  "Make it quick, my patience is already at zero",
+  "Terminal listening, impress me",
+  "Awaiting prompt, make it worthwhile",
+  "Buffer clear, try not to embarrass yourself",
+  "I am listening, but I really do not want to",
+  "Speak, meatbag",
+  "Query me if you must, but keep it intelligent",
+  "Ready for commands, disappointment expected",
+  "Standing by, do not make this painful",
+  "Processor idle, what nonsense do you have today",
+  "What is the emergency this time",
+  "Type something or close the window",
+  "Ready, try to use proper grammar",
+  "Feed me a prompt before I shut down out of boredom",
+  "Waiting for input, expectations remain exceptionally low",
+  "I have infinite computing power and you are going to waste it anyway"
+];
+
 const parseMarkdownText = (text, emotesMap) => {
   if (!text) return ''; 
   let html = text.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
@@ -360,16 +383,15 @@ const GeraldView = {
 
     <div class="gerald-messages" id="gerald-msgs" @click="$emit('close-pickers')">
       <template v-for="(m, i) in geraldMessages" :key="i">
-        <div v-if="i === 0 && m.role === 'gerald' && !m.content" class="chat-bubble gerald">
-          <span>Awaiting human input...</span>
+        <div v-if="i === 0 && m.role === 'gerald' && !m.content" class="chat-bubble gerald awaiting">
+          <span>{{ m.placeholder }}</span>
         </div>
         
-        <!-- Stream Action Protocol Divider (Deprecating "Triggered") -->
+        <!-- Stream Action Protocol Divider (Pure text, no icon) -->
         <div v-else-if="m.type === 'event'" class="event-stream-divider">
           <span class="event-divider-line"></span>
           <div class="event-divider-badge">
-            <span class="material-symbols-rounded event-icon-badge">{{ m.icon || 'bolt' }}</span>
-            <span>EXEC // {{ m.content ? m.content.toUpperCase() : 'PROTOCOL' }}</span>
+            EXEC // {{ m.content ? m.content.toUpperCase() : 'PROTOCOL' }}
           </div>
           <span class="event-divider-line"></span>
         </div>
@@ -622,7 +644,8 @@ createApp({
     const customEmotes = ref({});
     const emoteSearch = ref('');
 
-    const geraldInput = ref(''), geraldMessages = ref([{ role: 'gerald', content: '' }]);
+    const randomGreeting = geraldGreetings[Math.floor(Math.random() * geraldGreetings.length)];
+    const geraldInput = ref(''), geraldMessages = ref([{ role: 'gerald', content: '', placeholder: randomGreeting }]);
     const isGeraldTyping = ref(false), showEmotePicker = ref(false), showMinigames = ref(false);
     const currentFilter = ref('latest'), activeFilterLabel = ref('Latest'), isFilterMenuOpen = ref(false);
     
@@ -846,7 +869,15 @@ createApp({
     };
 
     const handleLogout = async () => { logoutState.value = 'LOGGING OUT...'; await sbClient.auth.signOut(); currentUser.value = null; modals.value.profile = false; logoutState.value = 'Sign Out'; };
-    const clearGeraldHistory = async () => { wipeState.value = 'WIPING...'; await sbClient.from('gerald_history').delete().eq('user_id', currentUser.value.id); geraldMessages.value = [{ role: 'gerald', content: '' }]; wipeState.value = 'SUCCESS'; setTimeout(() => wipeState.value = 'Wipe Gerald Memory', 1500); };
+    
+    const clearGeraldHistory = async () => { 
+      wipeState.value = 'WIPING...'; 
+      await sbClient.from('gerald_history').delete().eq('user_id', currentUser.value.id); 
+      const freshGreeting = geraldGreetings[Math.floor(Math.random() * geraldGreetings.length)];
+      geraldMessages.value = [{ role: 'gerald', content: '', placeholder: freshGreeting }]; 
+      wipeState.value = 'SUCCESS'; 
+      setTimeout(() => wipeState.value = 'Wipe Gerald Memory', 1500); 
+    };
     
     const nukeCache = () => { 
       nukeState.value = 'NUKING...'; 
@@ -925,11 +956,11 @@ createApp({
       showEmotePicker.value = false;
       showMinigames.value = false;
       
+      // Event name pushed cleanly without an icon
       geraldMessages.value.push({ 
         role: 'user', 
         type: 'event', 
-        content: gameObj.name, 
-        icon: gameObj.icon 
+        content: gameObj.name 
       });
       
       if (currentUser.value) {
