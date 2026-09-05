@@ -343,27 +343,36 @@ body, html {
 }
 
 /* ==============================================================
-   CONVERSATION STREAM & STYLE 2 ADAPTIVE DIVIDER (FORCED VISIBLE)
+   CONVERSATION STREAM & STYLE 2 ADAPTIVE DIVIDER (FORCED PSEUDO-LINES)
 ============================================================== */
 .gerald-messages { flex: 1; overflow-y: auto; padding: 4px 16px; display: flex; flex-direction: column; gap: 12px; }
 
-/* Adaptive Divider: Guaranteed visible block-level flanking lines */
+/* Adaptive Divider: Guaranteed visible pseudo-element flanking lines */
 .adaptive-divider {
-    width: 100%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 12px;
-    margin: 10px 0 16px;
-    padding: 0 12px;
+    width: 100% !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    gap: 14px;
+    margin: 12px 0 16px;
+    padding: 0 8px;
+    box-sizing: border-box;
 }
 
-.ad-line {
-    display: block;
+.adaptive-divider::before,
+.adaptive-divider::after {
+    content: "";
     flex: 1 1 0%;
+    min-width: 25px;
     height: 1px;
-    background: linear-gradient(90deg, rgba(167, 139, 250, 0.05), #a78bfa, rgba(167, 139, 250, 0.05));
+    background: linear-gradient(90deg, transparent, var(--bar-color), transparent);
     opacity: 0.85;
+}
+
+.theme-dark .adaptive-divider::before,
+.theme-dark .adaptive-divider::after {
+    background: linear-gradient(90deg, transparent, #c084fc, transparent);
+    opacity: 0.9;
 }
 
 .ad-text {
