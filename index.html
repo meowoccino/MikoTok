@@ -16,7 +16,7 @@
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="https://unpkg.com/vue@3/dist/vue.global.prod.js"></script>
     
-    <link rel="stylesheet" href="./styles.css?v=89">
+    <link rel="stylesheet" href="./styles.css?v=90">
     
     <style>
         [v-cloak] > *:not(#splash-screen) { display: none !important; }
@@ -68,7 +68,7 @@
                 </div>
 
                 <div class="tab-view">
-                    <gerald-view :current-tab="currentTab" :gerald-messages="geraldMessages" :is-gerald-typing="isGeraldTyping" :gerald-input="geraldInput" :show-emote-picker="showEmotePicker" :show-minigames="showMinigames" :custom-emotes="customEmotes" :gemini-status="geminiStatus" :sys-stats="sysStats" :emote-search="emoteSearch" @update-emote-search="e => emoteSearch = e" @close-pickers="closePickers" @insert-emote="insertEmote" @play-game="triggerAiMinigame" @toggle-emotes="toggleEmotes" @toggle-minigames="toggleMinigames" @update-input="e => geraldInput = e" @key-down="handleGeraldEnter" @send="talkToGerald"></gerald-view>
+                    <gerald-view :current-tab="currentTab" :gerald-messages="geraldMessages" :is-gerald-typing="isGeraldTyping" :gerald-input="geraldInput" :show-emote-picker="showEmotePicker" :show-minigames="showMinigames" :custom-emotes="customEmotes" :gemini-status="geminiStatus" :emote-search="emoteSearch" @update-emote-search="e => emoteSearch = e" @close-pickers="closePickers" @insert-emote="insertEmote" @play-game="triggerAiMinigame" @toggle-emotes="toggleEmotes" @toggle-minigames="toggleMinigames" @update-input="e => geraldInput = e" @key-down="handleGeraldEnter" @send="talkToGerald"></gerald-view>
                 </div>
 
                 <div class="tab-view" style="display: flex; flex-direction: column;">
@@ -97,7 +97,6 @@
           :wipe-state="wipeState" 
           :nuke-state="nukeState" 
           :logout-state="logoutState" 
-          :fetch-state="fetchState"
           :total-clips-count="totalClipsCount"
           :active-users-count="activeUsersCount"
           :clips-added-count="clipsAddedCount"
@@ -112,7 +111,6 @@
           @wipe="clearGeraldHistory" 
           @logout="handleLogout" 
           @nuke-cache="nukeCache"
-          @fetch-clips="triggerFetchClips"
           @select-range="selectRange"
         ></profile-modal>
 
@@ -180,6 +178,6 @@
         <bottom-nav :current-tab="currentTab" @change-tab="switchTab"></bottom-nav>
     </div>
 
-    <script src="./app.js?v=2"></script>
+    <script src="./app.js?v=3"></script>
 </body>
 </html>
