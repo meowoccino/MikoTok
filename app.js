@@ -39,21 +39,22 @@ const parseMarkdownText = (text, emotesMap) => {
   
   if (emotesMap) {
     const tokens = html.split(/(<[^>]+>|[\s]+)/); 
-    const emoteKeys = Object.keys(emotesMap);
-    
     const lowerMap = {};
-    emoteKeys.forEach(k => lowerMap[k.toLowerCase()] = k);
+    Object.keys(emotesMap).forEach(k => lowerMap[k.toLowerCase()] = k);
 
     for (let i = 0; i < tokens.length; i++) {
       const token = tokens[i];
       if (!token || token.startsWith('<') || token.trim() === '') continue;
       
-      const cleanToken = token.replace(/^:|:$/g, '').replace(/[.,!?]/g, '').trim().toLowerCase();
+      const cleanToken = token.replace(/^[:\s]+|[:\s,.]+$|[.,!?]/g, '').trim().toLowerCase();
       if (lowerMap[cleanToken]) {
         const actualKey = lowerMap[cleanToken];
         const url = emotesMap[actualKey].url;
         const escapedClean = cleanToken.replace(/[-\/\\^$*+?.()|[\]{}]/g, '\\$&');
-        tokens[i] = token.replace(new RegExp(`:?${escapedClean}:?`, 'i'), `<img src="${url}" class="chat-emote-img" title="${actualKey}">`);
+        tokens[i] = token.replace(
+          new RegExp(`:?${escapedClean}:?`, 'i'), 
+          `<img src="${url}" class="chat-emote-img" style="vertical-align: middle; margin: 0 4px; display: inline-block;" title="${actualKey}">`
+        );
       }
     }
     html = tokens.join('');
@@ -65,22 +66,38 @@ const enforceGrammar = (text, emotesMap) => {
   if (!text) return '';
   let cleaned = text.trim();
 
-  // 1. Strip periods attached to emote ends
-  if (emotesMap) {
-    const emoteNames = Object.keys(emotesMap);
-    if (emoteNames.length > 0) {
-      const pattern = new RegExp(`\\b(${emoteNames.map(e => e.replace(/[-\/\\^$*+?.()|[\]{}]/g, '\\$&')).join('|')})\\s*\\.(?=[\\s]|$)`, 'gi');
-      cleaned = cleaned.replace(pattern, '$1');
+  const emoteNames = emotesMap ? Object.keys(emotesMap) : [];
+
+  if (emoteNames.length > 0) {
+    const escapedNames = emoteNames.map(e => e.replace(/[-\/\\^$*+?.()|[\]{}]/g, '\\$&')).join('|');
+
+    // 1. Strip periods, commas, or colons attached anywhere to an emote (middle or end)
+    const gluedPattern = new RegExp(`[:]?\\b(${escapedNames})\\b[:.,!?]*`, 'gi');
+    cleaned = cleaned.replace(gluedPattern, ' $1 ');
+
+    // 2. Strip any period or punctuation directly following an emote anywhere
+    const afterEmotePattern = new RegExp(`\\b(${escapedNames})\\b\\s*[.,;!?]+`, 'gi');
+    cleaned = cleaned.replace(afterEmotePattern, '$1');
+
+    cleaned = cleaned.replace(/\s+/g, ' ').trim();
+  }
+
+  // 3. Capitalize the first character
+  cleaned = cleaned.charAt(0).toUpperCase() + cleaned.slice(1);
+  
+  // 4. Capitalize after sentence-ending punctuation
+  cleaned = cleaned.replace(/([.!?]\s+)([a-z])/g, (_, p1, p2) => p1 + p2.toUpperCase());
+
+  // 5. If the entire text ends with a known emote, NEVER append punctuation
+  if (emoteNames.length > 0) {
+    const escapedNames = emoteNames.map(e => e.replace(/[-\/\\^$*+?.()|[\]{}]/g, '\\$&')).join('|');
+    const endsWithEmoteRegex = new RegExp(`\\b(${escapedNames})\\b$`, 'i');
+    if (endsWithEmoteRegex.test(cleaned)) {
+      return cleaned;
     }
   }
 
-  // 2. Capitalize initial message character
-  cleaned = cleaned.charAt(0).toUpperCase() + cleaned.slice(1);
-  
-  // 3. Sentence capitalization after punctuation
-  cleaned = cleaned.replace(/([.!?]\s+)([a-z])/g, (_, p1, p2) => p1 + p2.toUpperCase());
-
-  // 4. Ensure message finishes with punctuation
+  // 6. Only add a period if it doesn't already end in valid punctuation
   if (!/[.!?]$/.test(cleaned)) {
     cleaned += '.';
   }
@@ -88,7 +105,6 @@ const enforceGrammar = (text, emotesMap) => {
   return cleaned;
 };
 
-// Contextual dynamic emote matcher (replaces 50-token dump with targeted 5-6 emotes)
 const getGeraldSystemDirective = (customEmotesMap, text = "") => {
   const keys = Object.keys(customEmotesMap || {});
   if (keys.length === 0) return "";
@@ -117,7 +133,7 @@ const getGeraldSystemDirective = (customEmotesMap, text = "") => {
   ).slice(0, 6);
 
   const candidates = matched.length > 0 ? matched : keys.slice(0, 5);
-  return `[Contextual Emotes Available: ${candidates.join(', ')}. Pick 1 that naturally fits your roast if appropriate.]`;
+  return `[Contextual Emotes Available: ${candidates.join(', ')}. Put 1 emote at the very end as a reaction.]`;
 };
 
 const SplashScreen = {
@@ -790,7 +806,6 @@ createApp({
 
     const testGeminiBrain = async () => {
       try {
-        const res = await fetch('https://aihorde.net/api/v2/status/heartbeat');
         geminiStatus.value = 'API_CONNECTED';
       } catch { geminiStatus.value = 'API_DISCONNECTED'; }
     };
@@ -941,10 +956,9 @@ createApp({
       const b = document.getElementById('gerald-msgs');
       if (b) b.scrollTop = b.scrollHeight;
 
-      // Restrict history slice to last 2 messages to prevent token bloat
       const cleanHistory = geraldMessages.value
-        .slice(-2)
-        .filter(m => m.content && !m.content.includes('SYSTEM FAILURE') && !m.content.includes('MALFUNCTION'))
+        .slice(-4)
+        .filter(m => m.content && !m.content.includes('The Technician\'s uplink') && !m.content.includes('[ERROR]'))
         .map(m => ({ 
           role: m.role === 'gerald' ? 'assistant' : 'user', 
           content: m.content
@@ -959,7 +973,7 @@ createApp({
           } 
         });
         
-        const replyText = typeof data === 'string' ? data : (data?.reply || data?.text || data?.message || data?.generations?.[0]?.text);
+        const replyText = typeof data === 'string' ? data : (data?.reply || data?.text || data?.message);
 
         if (!error && replyText) {
           let formattedReply = enforceGrammar(replyText.trim(), customEmotes.value);
@@ -1003,10 +1017,9 @@ createApp({
       isGeraldTyping.value = true;
       nextTick(() => { const b = document.getElementById('gerald-msgs'); if(b) b.scrollTop = b.scrollHeight; });
 
-      // Restrict history slice to last 2 messages
       const cleanContext = geraldMessages.value
-        .slice(-2)
-        .filter(m => m.content && !m.content.includes('SYSTEM FAILURE') && !m.content.includes('MALFUNCTION'))
+        .slice(-4)
+        .filter(m => m.content && !m.content.includes('The Technician\'s uplink') && !m.content.includes('[ERROR]'))
         .map(m => ({ 
           role: m.role === 'gerald' ? 'assistant' : 'user', 
           content: m.content
@@ -1019,7 +1032,7 @@ createApp({
           system_directive: getGeraldSystemDirective(customEmotes.value, gameObj.prompt)
         } 
       }).then(({ data, error }) => {
-        const replyText = typeof data === 'string' ? data : (data?.reply || data?.text || data?.message || data?.generations?.[0]?.text);
+        const replyText = typeof data === 'string' ? data : (data?.reply || data?.text || data?.message);
 
         if (!error && replyText) {
           let formattedReply = enforceGrammar(replyText.trim(), customEmotes.value);
