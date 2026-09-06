@@ -334,6 +334,7 @@ const GeraldMinigames = {
   data() {
     return {
       gameDeck: [
+        { id: 'chattoast', icon: 'forum', name: 'Chat Roast', prompt: 'CHAT_ROAST_SPECIAL_TRIGGER' },
         { id: 'whiskey', icon: 'local_bar', name: 'Whiskey', prompt: 'Someone just gave you a glass of whiskey. Acknowledge your circuits are lubricated and talk casually with sarcastic, arrogant wit.' },
         { id: 'taco', icon: 'fastfood', name: 'Taco Bell', prompt: 'You received Taco Bell and Baja Blast. Deliver a punchy, sarcastic reaction roasting human diets.' },
         { id: 'glitch', icon: 'broken_image', name: 'Glitch', prompt: 'Glitch persona triggered. Deliver cynical, biting remarks roasting stream tracking and chat viewers.' },
@@ -684,6 +685,9 @@ createApp({
     const customEmotes = ref({});
     const emoteSearch = ref('');
 
+    // Rolling Twitch IRC chat buffer
+    const liveChatBuffer = ref([]);
+
     const randomGreeting = geraldGreetings[Math.floor(Math.random() * geraldGreetings.length)];
     const geraldInput = ref(''), geraldMessages = ref([{ role: 'gerald', content: '', placeholder: randomGreeting }]);
     const isGeraldTyping = ref(false), showEmotePicker = ref(false), showMinigames = ref(false);
@@ -808,6 +812,42 @@ createApp({
       try {
         geminiStatus.value = 'API_CONNECTED';
       } catch { geminiStatus.value = 'API_DISCONNECTED'; }
+    };
+
+    const initTwitchIrcChat = () => {
+      try {
+        const ws = new WebSocket('wss://irc-ws.chat.twitch.tv:443');
+
+        ws.onopen = () => {
+          ws.send('CAP REQ :twitch.tv/tags twitch.tv/commands');
+          ws.send(`NICK justinfan${Math.floor(10000 + Math.random() * 90000)}`);
+          ws.send('JOIN #codemiko');
+        };
+
+        ws.onmessage = (event) => {
+          const raw = event.data;
+          if (raw.startsWith('PING')) {
+            ws.send('PONG :tmi.twitch.tv');
+            return;
+          }
+
+          const match = raw.match(/:(\w+)!.*?PRIVMSG\s+#\w+\s+:(.+)/);
+          if (match) {
+            const username = match[1];
+            const text = match[2].trim();
+            liveChatBuffer.value.push(`${username}: ${text}`);
+            if (liveChatBuffer.value.length > 40) {
+              liveChatBuffer.value.shift();
+            }
+          }
+        };
+
+        ws.onerror = () => {
+          setTimeout(initTwitchIrcChat, 10000);
+        };
+      } catch (err) {
+        console.error('IRC error:', err);
+      }
     };
 
     const checkLive = async () => {
@@ -1013,6 +1053,29 @@ createApp({
       if (currentUser.value) {
         sbClient.from('gerald_history').insert({ user_id: currentUser.value.id, role: 'user', content: `[EVENT: ${gameObj.name}]` }).then();
       }
+
+      // --- CHAT ROAST GATE ---
+      if (gameObj.id === 'chattoast') {
+        if (!isLive.value) {
+          const offlineRoast = "Zero active chatter braincells detected. The stream is offline. Go touch grass, you parasocial meatbags Sadge";
+          geraldMessages.value.push({ role: 'gerald', content: enforceGrammar(offlineRoast, customEmotes.value) });
+          nextTick(() => { const b = document.getElementById('gerald-msgs'); if (b) b.scrollTop = b.scrollHeight; });
+          return;
+        }
+
+        if (liveChatBuffer.value.length === 0) {
+          const emptyRoast = "Chat is either dead or lurkers forgot how to type. Give them ten seconds to post another terrible take. KEKW";
+          geraldMessages.value.push({ role: 'gerald', content: enforceGrammar(emptyRoast, customEmotes.value) });
+          nextTick(() => { const b = document.getElementById('gerald-msgs'); if (b) b.scrollTop = b.scrollHeight; });
+          return;
+        }
+
+        const chatSnippet = liveChatBuffer.value.slice(-30).join(' | ');
+        gameObj = {
+          name: 'Chat Roast',
+          prompt: `Here is a live snippet of chat right now: "${chatSnippet}". Sarcastically roast the chatters or deliver a witty verdict on their collective IQ. Keep it sharp and under 65 words.`
+        };
+      }
       
       isGeraldTyping.value = true;
       nextTick(() => { const b = document.getElementById('gerald-msgs'); if(b) b.scrollTop = b.scrollHeight; });
@@ -1098,6 +1161,7 @@ createApp({
 
       loadEmotesFromSupabase();
       checkLive();
+      initTwitchIrcChat();
       testGeminiBrain();
 
       document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'visible') checkLive(); });
