@@ -65,7 +65,7 @@ const enforceGrammar = (text, emotesMap) => {
   if (!text) return '';
   let cleaned = text.trim();
 
-  // 1. Only strip periods glued directly to known emotes (e.g. "mikoLUL." -> "mikoLUL")
+  // 1. Strip periods attached to emote ends
   if (emotesMap) {
     const emoteNames = Object.keys(emotesMap);
     if (emoteNames.length > 0) {
@@ -80,7 +80,7 @@ const enforceGrammar = (text, emotesMap) => {
   // 3. Sentence capitalization after punctuation
   cleaned = cleaned.replace(/([.!?]\s+)([a-z])/g, (_, p1, p2) => p1 + p2.toUpperCase());
 
-  // 4. Ensure message finishes with punctuation if left hanging
+  // 4. Ensure message finishes with punctuation
   if (!/[.!?]$/.test(cleaned)) {
     cleaned += '.';
   }
@@ -88,11 +88,36 @@ const enforceGrammar = (text, emotesMap) => {
   return cleaned;
 };
 
-const getGeraldSystemDirective = (customEmotesMap, basePrompt = "") => {
+// Contextual dynamic emote matcher (replaces 50-token dump with targeted 5-6 emotes)
+const getGeraldSystemDirective = (customEmotesMap, text = "") => {
   const keys = Object.keys(customEmotesMap || {});
-  if (keys.length === 0) return basePrompt;
-  const vocab = keys.sort(() => 0.5 - Math.random()).slice(0, 50).join(', ');
-  return `${basePrompt}\n\n[TWITCH EMOTES AVAILABLE: ${vocab}. Sprinkle one when mocking or emphasizing an insult.]`.trim();
+  if (keys.length === 0) return "";
+
+  const lower = (text || "").toLowerCase();
+
+  const buckets = {
+    tech: ['copium', 'monkas', 'fire', 'despair', 'aware', 'notlikethis', 'pepew'],
+    mock: ['kekw', 'lul', 'omegalul', 'clueless', '5head', 'pepelaugh', 'gigachad'],
+    sad: ['sadge', 'pepehands', 'biblethump', 'crying', 'feelsbadman'],
+    hype: ['pog', 'pogchamp', 'pogu', 'ayaya', 'ez', 'clap']
+  };
+
+  let chosenBucket = buckets.mock;
+
+  if (/(crash|pc|ue5|shader|lag|bug|gpu|cable|blue|cat|rig|glitch)/i.test(lower)) {
+    chosenBucket = buckets.tech;
+  } else if (/(dog|archie|bark|audio|sad|rip|dead|broke|why|help)/i.test(lower)) {
+    chosenBucket = buckets.sad;
+  } else if (/(win|sub|bits|money|hype|nice|good|great)/i.test(lower)) {
+    chosenBucket = buckets.hype;
+  }
+
+  const matched = keys.filter(name => 
+    chosenBucket.some(b => name.toLowerCase().includes(b))
+  ).slice(0, 6);
+
+  const candidates = matched.length > 0 ? matched : keys.slice(0, 5);
+  return `[Contextual Emotes Available: ${candidates.join(', ')}. Pick 1 that naturally fits your roast if appropriate.]`;
 };
 
 const SplashScreen = {
@@ -383,12 +408,10 @@ const GeraldView = {
 
     <div class="gerald-messages" id="gerald-msgs" @click="$emit('close-pickers')">
       <template v-for="(m, i) in geraldMessages" :key="i">
-        <!-- Standby Adaptive Divider (Lines drawn via ::before and ::after pseudo-elements) -->
         <div v-if="i === 0 && m.role === 'gerald' && !m.content && geraldMessages.length === 1" class="adaptive-divider">
           <span class="ad-text">{{ m.placeholder }}</span>
         </div>
         
-        <!-- Stream Action Protocol Divider (Pure text, no icon) -->
         <div v-else-if="m.type === 'event'" class="event-stream-divider">
           <span class="event-divider-line"></span>
           <div class="event-divider-badge">
@@ -897,7 +920,6 @@ createApp({
 
       const userMsg = geraldInput.value.trim();
 
-      // Flush dynamic adaptive greeting divider on first interaction
       if (geraldMessages.value.length === 1 && !geraldMessages.value[0].content) {
         geraldMessages.value = [];
       }
@@ -919,8 +941,9 @@ createApp({
       const b = document.getElementById('gerald-msgs');
       if (b) b.scrollTop = b.scrollHeight;
 
+      // Restrict history slice to last 2 messages to prevent token bloat
       const cleanHistory = geraldMessages.value
-        .slice(-8)
+        .slice(-2)
         .filter(m => m.content && !m.content.includes('SYSTEM FAILURE') && !m.content.includes('MALFUNCTION'))
         .map(m => ({ 
           role: m.role === 'gerald' ? 'assistant' : 'user', 
@@ -932,7 +955,7 @@ createApp({
           body: { 
             history: cleanHistory,
             prompt: userMsg,
-            system_directive: getGeraldSystemDirective(customEmotes.value) 
+            system_directive: getGeraldSystemDirective(customEmotes.value, userMsg)
           } 
         });
         
@@ -963,12 +986,10 @@ createApp({
       showEmotePicker.value = false;
       showMinigames.value = false;
       
-      // Flush dynamic adaptive greeting divider on minigame trigger
       if (geraldMessages.value.length === 1 && !geraldMessages.value[0].content) {
         geraldMessages.value = [];
       }
 
-      // Event name pushed cleanly without an icon
       geraldMessages.value.push({ 
         role: 'user', 
         type: 'event', 
@@ -982,8 +1003,9 @@ createApp({
       isGeraldTyping.value = true;
       nextTick(() => { const b = document.getElementById('gerald-msgs'); if(b) b.scrollTop = b.scrollHeight; });
 
+      // Restrict history slice to last 2 messages
       const cleanContext = geraldMessages.value
-        .slice(-6)
+        .slice(-2)
         .filter(m => m.content && !m.content.includes('SYSTEM FAILURE') && !m.content.includes('MALFUNCTION'))
         .map(m => ({ 
           role: m.role === 'gerald' ? 'assistant' : 'user', 
@@ -994,7 +1016,7 @@ createApp({
         body: { 
           history: cleanContext,
           prompt: gameObj.prompt,
-          system_directive: getGeraldSystemDirective(customEmotes.value, gameObj.prompt) 
+          system_directive: getGeraldSystemDirective(customEmotes.value, gameObj.prompt)
         } 
       }).then(({ data, error }) => {
         const replyText = typeof data === 'string' ? data : (data?.reply || data?.text || data?.message || data?.generations?.[0]?.text);
