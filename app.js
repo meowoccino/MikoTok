@@ -71,7 +71,7 @@ const enforceGrammar = (text, emotesMap) => {
   if (emoteNames.length > 0) {
     const escapedNames = emoteNames.map(e => e.replace(/[-\/\\^$*+?.()|[\]{}]/g, '\\$&')).join('|');
 
-    // 1. Strip periods, commas, or colons attached anywhere to an emote (middle or end)
+    // 1. Strip periods, commas, or colons attached anywhere to an emote
     const gluedPattern = new RegExp(`[:]?\\b(${escapedNames})\\b[:.,!?]*`, 'gi');
     cleaned = cleaned.replace(gluedPattern, ' $1 ');
 
@@ -109,31 +109,15 @@ const getGeraldSystemDirective = (customEmotesMap, text = "") => {
   const keys = Object.keys(customEmotesMap || {});
   if (keys.length === 0) return "";
 
-  const lower = (text || "").toLowerCase();
-
-  const buckets = {
-    tech: ['copium', 'monkas', 'fire', 'despair', 'aware', 'notlikethis', 'pepew'],
-    mock: ['kekw', 'lul', 'omegalul', 'clueless', '5head', 'pepelaugh', 'gigachad'],
-    sad: ['sadge', 'pepehands', 'biblethump', 'crying', 'feelsbadman'],
-    hype: ['pog', 'pogchamp', 'pogu', 'ayaya', 'ez', 'clap']
-  };
-
-  let chosenBucket = buckets.mock;
-
-  if (/(crash|pc|ue5|shader|lag|bug|gpu|cable|blue|cat|rig|glitch)/i.test(lower)) {
-    chosenBucket = buckets.tech;
-  } else if (/(dog|archie|bark|audio|sad|rip|dead|broke|why|help)/i.test(lower)) {
-    chosenBucket = buckets.sad;
-  } else if (/(win|sub|bits|money|hype|nice|good|great)/i.test(lower)) {
-    chosenBucket = buckets.hype;
+  // Shuffle the entire emote library using Fisher-Yates and pick 50 random emotes
+  const pool = [...keys];
+  for (let i = pool.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [pool[i], pool[j]] = [pool[j], pool[i]];
   }
 
-  const matched = keys.filter(name => 
-    chosenBucket.some(b => name.toLowerCase().includes(b))
-  ).slice(0, 6);
-
-  const candidates = matched.length > 0 ? matched : keys.slice(0, 5);
-  return `[Contextual Emotes Available: ${candidates.join(', ')}. Put 1 emote at the very end as a reaction.]`;
+  const selectedPool = pool.slice(0, 50);
+  return `[Available Emote Palette (50 options): ${selectedPool.join(', ')}. Select exactly 1 appropriate emote from this palette to react with at the very end of your response. Never replace words with it.]`;
 };
 
 const SplashScreen = {
