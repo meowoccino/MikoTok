@@ -1155,7 +1155,6 @@ createApp({
       applyFilter: (key, label) => { currentFilter.value = key; activeFilterLabel.value = label; isFilterMenuOpen.value = false; allClipsLoaded.value = false; allClips.value = []; loadData(false); },
       prevVod: () => { if (currentVodIndex.value > (isLive.value ? -1 : 0)) currentVodIndex.value--; },
       nextVod: () => { if (currentVodIndex.value < recentVods.value.length - 1) currentVodIndex.value++; },
-      // Style 2 In-Place Swap Toggle: Tapping same clip closes it, tapping another switches active clip
       playClip: (clip) => { 
         activeClipId.value = activeClipId.value === clip.id ? null : clip.id; 
       },
