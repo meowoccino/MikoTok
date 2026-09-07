@@ -16,7 +16,7 @@
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="https://unpkg.com/vue@3/dist/vue.global.prod.js"></script>
     
-    <link rel="stylesheet" href="./styles.css?v=101">
+    <link rel="stylesheet" href="./styles.css?v=102">
     
     <style>
         [v-cloak] > *:not(#splash-screen) { display: none !important; }
@@ -40,7 +40,7 @@
 
         <app-header :is-header-visible="isHeaderVisible" :current-tab="currentTab" :logo-svg="logoSvg" :app-theme="appTheme" @open-profile="openProfile" @toggle-theme="toggleTheme"></app-header>
 
-        <div class="view-port" @touchstart="handleSwipeStart" @touchend="handleSwipeEnd">
+        <div class="view-port">
             <div class="tab-slider" :style="{ transform: 'translate3d(' + tabOffset + '%, 0, 0)' }">
                 
                 <div class="tab-view scroll-area home-scroll" id="home-scroll" @scroll="handleScroll">
