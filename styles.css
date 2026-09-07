@@ -114,11 +114,11 @@ body, html {
 }
 .tab-view { flex: 0 0 25%; width: 25%; height: 100%; position: relative; display: flex; flex-direction: column; overflow: hidden; }
 
-.scroll-area { flex: 1; width: 100%; overflow-y: auto; padding: 15px 20px 110px; }
+.scroll-area { flex: 1; width: 100%; overflow-y: auto; padding: 15px 16px 110px; }
 .scroll-area::-webkit-scrollbar { display: none; }
 .home-scroll { padding-top: 15px; }
 
-.hero-section { background: transparent; margin-bottom: 25px; width: 100%; }
+.hero-section { background: transparent; margin-bottom: 20px; width: 100%; }
 .premium-badge { display: inline-flex; align-items: center; gap: 8px; background: rgba(0,0,0,0.7); backdrop-filter: blur(10px); padding: 6px 14px; border-radius: 30px; color: #fff; font-size: 10px; font-weight: 900; }
 .premium-badge .dot { width: 6px; height: 6px; border-radius: 50%; }
 
@@ -130,7 +130,7 @@ body, html {
 @keyframes pulse-green-glow { 0%, 100% { box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.7); } 50% { box-shadow: 0 0 0 4px rgba(16, 185, 129, 0); } }
 
 .video-wrapper-outer { width: 100%; }
-.video-container { position: relative; width: 100%; height: 0; padding-bottom: 56.25%; background: #000; border-radius: 12px; overflow: hidden; }
+.video-container { position: relative; width: 100%; height: 0; padding-bottom: 56.25%; background: #000; border-radius: 14px; overflow: hidden; }
 .video-container iframe { position: absolute; top: 0; left: 0; width: 100%; height: 100%; border: none; }
 .carousel-controls { display: flex; gap: 10px; }
 .carousel-btn { background: var(--card-bg); border: 1px solid var(--border-color); width: 32px; height: 32px; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: var(--text-main); }
@@ -140,7 +140,7 @@ body, html {
     display: flex; 
     justify-content: flex-start; 
     align-items: center; 
-    margin-bottom: 15px; 
+    margin-bottom: 14px; 
     height: 34px;
 }
 .filter-btn-tiny { 
@@ -157,19 +157,68 @@ body, html {
     cursor: pointer; 
 }
 
-.clip-list-item { display: flex; gap: 15px; align-items: center; margin-bottom: 20px; width: 100%; cursor: pointer; }
-.clip-thumb-wrapper { position: relative; width: 140px; height: 79px; min-width: 140px; border-radius: 8px; overflow: hidden; background: #000; }
-.clip-thumb-wrapper img { width: 100%; height: 100%; object-fit: cover; }
-.miko-metadata { flex: 1; display: flex; flex-direction: column; min-width: 0; }
-.author-name { font-weight: 700; font-size: 14px; line-height: 1.3; margin-bottom: 4px; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
-.clip-stats { font-size: 11px; color: var(--text-muted); display: flex; justify-content: space-between; }
-
-.clip-modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.7); backdrop-filter: blur(10px); z-index: 3000; display: flex; justify-content: center; align-items: center; opacity: 0; pointer-events: none; transition: opacity 0.3s; will-change: opacity; }
-.clip-modal-overlay.open { opacity: 1; pointer-events: auto; }
-.clip-modal-content { position: relative; width: 100%; max-width: 460px; background: #000; border-radius: 16px; overflow: hidden; }
-.clip-frame-container { position: relative; width: 100%; padding-bottom: 56.25%; }
-.clip-frame-container iframe { position: absolute; inset: 0; width: 100%; height: 100%; border: none; }
-.clip-close-x { position: absolute; top: 12px; right: 12px; background: rgba(0,0,0,0.5); border: none; color: #fff; border-radius: 50%; width: 30px; height: 30px; z-index: 10; cursor: pointer; }
+/* --- FULL-WIDTH FEED CARDS (STYLE 2 IN-PLACE SWAP) --- */
+.clips-list-container {
+    width: 100%;
+}
+.clip-list-item { 
+    display: flex; 
+    flex-direction: column; 
+    background: var(--card-bg);
+    border: 1px solid var(--border-color);
+    border-radius: 16px;
+    overflow: hidden;
+    margin-bottom: 16px; 
+    width: 100%; 
+    cursor: pointer; 
+}
+.clip-thumb-wrapper { 
+    position: relative; 
+    width: 100%; 
+    height: 0;
+    padding-bottom: 56.25%; /* Exact 16:9 matching hero player */
+    background: #000; 
+}
+.clip-thumb-wrapper img { 
+    position: absolute;
+    inset: 0;
+    width: 100%; 
+    height: 100%; 
+    object-fit: cover; 
+    display: block;
+}
+.clip-thumb-wrapper iframe { 
+    position: absolute;
+    inset: 0;
+    width: 100%; 
+    height: 100%; 
+    border: none;
+    z-index: 5;
+}
+.miko-metadata { 
+    padding: 11px 14px 13px;
+    display: flex; 
+    flex-direction: column; 
+    min-width: 0; 
+}
+.author-name { 
+    font-weight: 800; 
+    font-size: 14px; 
+    line-height: 1.35; 
+    margin-bottom: 4px; 
+    color: var(--text-main);
+    display: -webkit-box; 
+    -webkit-line-clamp: 2; 
+    -webkit-box-orient: vertical; 
+    overflow: hidden; 
+}
+.clip-stats { 
+    font-size: 11.5px; 
+    color: var(--text-muted); 
+    font-weight: 600;
+    display: flex; 
+    justify-content: space-between; 
+}
 
 .chat-public-auth-banner { display: flex; justify-content: space-between; align-items: center; background: var(--card-bg); border-bottom: 1px solid var(--border-color); padding: 10px 16px; font-size: 12px; z-index: 10; }
 .public-disconnect-btn { background: rgba(239,68,68,0.1); border: 1px solid rgba(239,68,68,0.2); color: var(--danger); padding: 5px 12px; border-radius: 12px; font-weight: 700; }
@@ -196,7 +245,7 @@ body, html {
 .emote-picker-img { width: 32px; height: 32px; object-fit: contain; cursor: pointer; }
 
 /* ==============================================================
-   GERALD TOP BAR: CENTER APEX (OPTION 7 - DEEP AMBIENT DOWNWARD SHADOW)
+   GERALD TOP BAR: CENTER APEX
 ============================================================== */
 .gerald-container {
     display: flex; 
@@ -232,7 +281,6 @@ body, html {
     margin-bottom: 12px;
 }
 
-/* 120px Avatar with Deep Ambient Downward Shadow (Option 7 - No Purple Halo) */
 .avatar-gerald-apex {
     width: 120px;
     height: 120px;
@@ -308,7 +356,7 @@ body, html {
 .pulse-red { background: var(--danger); animation: pulse-red-glow 2.5s infinite; }
 
 /* ==============================================================
-   EVENT BADGE (CLEAN TEXT DIVIDER)
+   EVENT BADGE
 ============================================================== */
 .event-stream-divider {
     width: 100%;
@@ -343,11 +391,10 @@ body, html {
 }
 
 /* ==============================================================
-   CONVERSATION STREAM & STYLE 2 ADAPTIVE DIVIDER (FORCED PSEUDO-LINES)
+   CONVERSATION STREAM
 ============================================================== */
 .gerald-messages { flex: 1; overflow-y: auto; padding: 4px 16px; display: flex; flex-direction: column; gap: 12px; }
 
-/* Adaptive Divider: Guaranteed visible pseudo-element flanking lines */
 .adaptive-divider {
     width: 100% !important;
     display: flex !important;
@@ -460,7 +507,6 @@ body, html {
 .input-box { width: 100%; background: var(--bg-color); border: 1px solid var(--border-color); border-radius: 12px; padding: 15px; color: var(--text-main); margin-bottom: 15px; outline: none; }
 .sync-btn { width: 100%; background: var(--primary); border: none; color: white; padding: 15px; border-radius: 12px; font-weight: 800; cursor: pointer; }
 
-/* Admin Panel Grid & Card Styles */
 .stat-grid-2col {
     display: grid;
     grid-template-columns: 1fr 1fr;
@@ -495,7 +541,6 @@ body, html {
     line-height: 1.1;
 }
 
-/* Clips Added Card */
 .clips-added-card {
     background: var(--bg-color);
     border: 1px solid var(--border-color);
@@ -539,14 +584,12 @@ body, html {
 .stat-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 12px; }
 .external-link-btn { background: var(--bg-color); border: 1px solid var(--border-color); padding: 15px; border-radius: 14px; display: flex; flex-direction: column; align-items: center; gap: 8px; color: var(--text-main); text-decoration: none; font-weight: 800; font-size: 11px; }
 
-/* Unified Action Menu */
 .action-menu { background: var(--bg-color); border: 1px solid var(--border-color); border-radius: 16px; overflow: hidden; }
 .menu-btn { width: 100%; padding: 14px 16px; display: flex; justify-content: space-between; background: transparent; border: none; border-bottom: 1px solid var(--border-color); font-size: 11px; font-weight: 800; text-transform: uppercase; color: var(--text-main); cursor: pointer; transition: background 0.15s; }
 .menu-btn:last-child { border-bottom: none; }
 .btn-content { display: flex; align-items: center; gap: 12px; }
 .icon-wrap { width: 30px; height: 30px; border-radius: 8px; display: flex; align-items: center; justify-content: center; }
 
-/* Nuke: Neutral Slate / Zinc */
 .nuke-row { color: var(--text-main); }
 .theme-light .nuke-row .icon-wrap { background: rgba(0, 0, 0, 0.08); color: #1e293b; }
 .theme-dark .nuke-row .icon-wrap { background: rgba(255, 255, 255, 0.12); color: #e2e8f0; }
