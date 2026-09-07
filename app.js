@@ -71,24 +71,18 @@ const enforceGrammar = (text, emotesMap) => {
   if (emoteNames.length > 0) {
     const escapedNames = emoteNames.map(e => e.replace(/[-\/\\^$*+?.()|[\]{}]/g, '\\$&')).join('|');
 
-    // 1. Strip periods, commas, or colons attached anywhere to an emote
     const gluedPattern = new RegExp(`[:]?\\b(${escapedNames})\\b[:.,!?]*`, 'gi');
     cleaned = cleaned.replace(gluedPattern, ' $1 ');
 
-    // 2. Strip any period or punctuation directly following an emote anywhere
     const afterEmotePattern = new RegExp(`\\b(${escapedNames})\\b\\s*[.,;!?]+`, 'gi');
     cleaned = cleaned.replace(afterEmotePattern, '$1');
 
     cleaned = cleaned.replace(/\s+/g, ' ').trim();
   }
 
-  // 3. Capitalize the first character
   cleaned = cleaned.charAt(0).toUpperCase() + cleaned.slice(1);
-  
-  // 4. Capitalize after sentence-ending punctuation
   cleaned = cleaned.replace(/([.!?]\s+)([a-z])/g, (_, p1, p2) => p1 + p2.toUpperCase());
 
-  // 5. If the entire text ends with a known emote, NEVER append punctuation
   if (emoteNames.length > 0) {
     const escapedNames = emoteNames.map(e => e.replace(/[-\/\\^$*+?.()|[\]{}]/g, '\\$&')).join('|');
     const endsWithEmoteRegex = new RegExp(`\\b(${escapedNames})\\b$`, 'i');
@@ -97,7 +91,6 @@ const enforceGrammar = (text, emotesMap) => {
     }
   }
 
-  // 6. Only add a period if it doesn't already end in valid punctuation
   if (!/[.!?]$/.test(cleaned)) {
     cleaned += '.';
   }
@@ -669,6 +662,8 @@ createApp({
     
     const tabOffset = ref(initialTabIdx * -25);
 
+    let lastScrollTop = 0;
+
     const updateThemeClass = () => {
       document.body.className = 'theme-' + appTheme.value;
       
@@ -896,8 +891,6 @@ createApp({
         if (currentTab.value === 'home') loadData(true); 
       }
     };
-    
-    let lastScrollTop = 0;
 
     const handleLogin = async () => {
       if (!loginEmail.value || !loginPass.value) { loginError.value = "Missing credentials."; return; }
