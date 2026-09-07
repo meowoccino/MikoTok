@@ -875,8 +875,8 @@ createApp({
       }
       lastScrollTop = st <= 0 ? 0 : st;
 
-      // Tight threshold of 260px avoids aggressive premature database requests during momentum
-      if (e.target.scrollHeight - e.target.scrollTop - e.target.clientHeight < 260) { 
+      // Tight buffer: loads without sudden layout jumps while scrolling
+      if (e.target.scrollHeight - e.target.scrollTop - e.target.clientHeight < 200) { 
         if (currentTab.value === 'home' && !isLoadingMore.value) loadData(true); 
       }
     };
