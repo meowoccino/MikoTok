@@ -574,7 +574,7 @@ const HomeView = {
         </button>
       </div>
 
-      <!-- Full-Width In-Place Swap Cards (Style 2) -->
+      <!-- In-Place Swap Feed Cards -->
       <div class="clip-list-item" v-for="clip in clips" :key="clip.id" @click="$emit('play-clip', clip)">
         <div class="clip-thumb-wrapper">
           <img v-if="activeClipId !== clip.id" :src="clip.thumbnail_url ? optimizeTwitchImg(clip.thumbnail_url) : ''" loading="lazy">
@@ -689,18 +689,6 @@ createApp({
       
       window.history.pushState(null, '', `#${tab}`);
       if (tab === 'gerald') setTimeout(() => { const b = document.getElementById('gerald-msgs'); if (b) b.scrollTop = b.scrollHeight; }, 300);
-    };
-
-    let swipeStartX = 0;
-    const handleSwipeStart = (e) => { swipeStartX = e.touches[0].clientX; };
-    const handleSwipeEnd = (e) => {
-      if (document.activeElement && ['INPUT', 'TEXTAREA'].includes(document.activeElement.tagName)) return;
-      
-      const dx = e.changedTouches[0].clientX - swipeStartX;
-      if (Math.abs(dx) < 50) return;
-      const idx = tabOrder.indexOf(currentTab.value);
-      if (dx < 0 && idx < tabOrder.length - 1) switchTab(tabOrder[idx + 1]);
-      if (dx > 0 && idx > 0) switchTab(tabOrder[idx - 1]);
     };
 
     let modalDragStartY = 0;
@@ -887,8 +875,9 @@ createApp({
       }
       lastScrollTop = st <= 0 ? 0 : st;
 
-      if (e.target.scrollHeight - e.target.scrollTop - e.target.clientHeight < 600) { 
-        if (currentTab.value === 'home') loadData(true); 
+      // Tight threshold of 260px avoids aggressive premature database requests during momentum
+      if (e.target.scrollHeight - e.target.scrollTop - e.target.clientHeight < 260) { 
+        if (currentTab.value === 'home' && !isLoadingMore.value) loadData(true); 
       }
     };
 
@@ -1139,7 +1128,7 @@ createApp({
     });
 
     return {
-      hostname, splashVisible, splashOpacity, currentTab, tabOffset, appTheme, toggleTheme, clips, currentUser, loginEmail, loginPass, loginError, geraldInput, geraldMessages, isGeraldTyping, wipeState, logoutState, nukeState, totalClipsCount, clipsAddedCount, selectedRange, isHeaderVisible, currentFilter, activeFilterLabel, isFilterMenuOpen, recentVods, currentVodIndex, customEmotes, emoteSearch, showEmotePicker, showMinigames, activeClipId, switchTab, geminiStatus, handleSwipeStart, handleSwipeEnd, handleModalTouchStart, handleModalTouchMove, handleModalTouchEnd, handleScroll, apiConfig, allClipsCount, isLive, chatMessages, twitchChatToken, twitchAuthUrl, twitchUsername, showLoginPopup, activeUsersCount, openProfile, modals,
+      hostname, splashVisible, splashOpacity, currentTab, tabOffset, appTheme, toggleTheme, clips, currentUser, loginEmail, loginPass, loginError, geraldInput, geraldMessages, isGeraldTyping, wipeState, logoutState, nukeState, totalClipsCount, clipsAddedCount, selectedRange, isHeaderVisible, currentFilter, activeFilterLabel, isFilterMenuOpen, recentVods, currentVodIndex, customEmotes, emoteSearch, showEmotePicker, showMinigames, activeClipId, switchTab, geminiStatus, handleModalTouchStart, handleModalTouchMove, handleModalTouchEnd, handleScroll, apiConfig, allClipsCount, isLive, chatMessages, twitchChatToken, twitchAuthUrl, twitchUsername, showLoginPopup, activeUsersCount, openProfile, modals,
       logoSvg: (id) => `<svg viewBox="0 0 100 100"><defs><linearGradient id="grad-${id}" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stop-color="#9146FF"/><stop offset="100%" stop-color="#a970ff"/></linearGradient></defs><circle cx="50" cy="50" r="40" fill="url(#grad-${id})"/><path d="M 33 38 L 48 62 L 62 38 L 62 55 Q 62 65 69 64" fill="none" stroke="#ffffff" stroke-width="8" stroke-linecap="round" stroke-linejoin="round"/></svg>`,
       optimizeTwitchImg: (u) => u ? u.replace('%{width}', '480').replace('%{height}', '270') : '',
       formatViews: (v) => v ? v.toLocaleString() : '0',
