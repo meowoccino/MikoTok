@@ -109,7 +109,6 @@ const getGeraldSystemDirective = (customEmotesMap, text = "") => {
   const keys = Object.keys(customEmotesMap || {});
   if (keys.length === 0) return "";
 
-  // Shuffle the entire emote library using Fisher-Yates and pick 50 random emotes
   const pool = [...keys];
   for (let i = pool.length - 1; i > 0; i--) {
     const j = Math.floor(Math.random() * (i + 1));
@@ -271,20 +270,6 @@ const ProfileModal = {
             </div>
           </button>
         </div>
-      </div>
-    </div>
-  </div>
-  `
-};
-
-const ClipModal = {
-  props: ['clip', 'hostname'],
-  template: `
-  <div class="clip-modal-overlay" :class="{ open: !!clip }" @click.self="$emit('close')">
-    <div class="clip-modal-content" v-if="clip">
-      <button class="clip-close-x" @click="$emit('close')"><span class="material-symbols-rounded">close</span></button>
-      <div class="clip-frame-container">
-        <iframe :src="'https://clips.twitch.tv/embed?clip=' + clip.id + '&parent=' + hostname + '&autoplay=true&muted=false'" allow="autoplay; fullscreen" allowfullscreen style="width:100%; height:100%; border:none;"></iframe>
       </div>
     </div>
   </div>
@@ -596,10 +581,11 @@ const HomeView = {
         </button>
       </div>
 
+      <!-- Full-Width In-Place Swap Cards (Style 2) -->
       <div class="clip-list-item" v-for="clip in clips" :key="clip.id" @click="$emit('play-clip', clip)">
         <div class="clip-thumb-wrapper">
           <img v-if="activeClipId !== clip.id" :src="clip.thumbnail_url ? optimizeTwitchImg(clip.thumbnail_url) : ''" loading="lazy">
-          <iframe v-else :src="'https://clips.twitch.tv/embed?clip=' + clip.id + '&parent=' + hostname + '&autoplay=true&muted=false'" allow="autoplay; fullscreen" allowfullscreen style="position:absolute; inset:0; z-index:5; width:100%; height:100%; border:none;"></iframe>
+          <iframe v-else :src="'https://clips.twitch.tv/embed?clip=' + clip.id + '&parent=' + hostname + '&autoplay=true&muted=false'" allow="autoplay; fullscreen" allowfullscreen></iframe>
         </div>
         <div class="miko-metadata">
           <div class="author-name">{{ clip.title }}</div>
@@ -622,7 +608,7 @@ const { createApp, ref, onMounted, nextTick, computed } = Vue;
 const sbClient = supabase.createClient('https://yhxcuayiwqpjvalyrcqv.supabase.co', 'sb_publishable_VyFcNARHblJg10qlC_O7Dg_coouXK92');
 
 createApp({
-  components: { SplashScreen, AppHeader, BottomNav, FilterMenu, ProfileModal, ClipModal, ChatView, GeraldMinigames, GeraldView, MoreView, HomeView },
+  components: { SplashScreen, AppHeader, BottomNav, FilterMenu, ProfileModal, ChatView, GeraldMinigames, GeraldView, MoreView, HomeView },
   setup() {
     const tabs = ['home', 'chat', 'gerald', 'more'];
     const initialHash = window.location.hash.replace('#', '');
@@ -669,7 +655,6 @@ createApp({
     const customEmotes = ref({});
     const emoteSearch = ref('');
 
-    // Rolling Twitch IRC chat buffer
     const liveChatBuffer = ref([]);
 
     const randomGreeting = geraldGreetings[Math.floor(Math.random() * geraldGreetings.length)];
@@ -678,7 +663,6 @@ createApp({
     const currentFilter = ref('latest'), activeFilterLabel = ref('Latest'), isFilterMenuOpen = ref(false);
     
     const recentVods = ref([]), currentVodIndex = ref(0);
-    const selectedClip = ref(null);
 
     const tabOrder = ['home', 'chat', 'gerald', 'more'];
     const initialTabIdx = tabOrder.indexOf(tabs.includes(window.location.hash.replace('#','')) ? window.location.hash.replace('#','') : 'home');
@@ -1038,7 +1022,6 @@ createApp({
         sbClient.from('gerald_history').insert({ user_id: currentUser.value.id, role: 'user', content: `[EVENT: ${gameObj.name}]` }).then();
       }
 
-      // --- CHAT ROAST GATE ---
       if (gameObj.id === 'chattoast') {
         if (!isLive.value) {
           const offlineRoast = "Zero active chatter braincells detected. The stream is offline. Go touch grass, you parasocial meatbags Sadge";
@@ -1163,7 +1146,7 @@ createApp({
     });
 
     return {
-      hostname, splashVisible, splashOpacity, currentTab, tabOffset, appTheme, toggleTheme, clips, currentUser, loginEmail, loginPass, loginError, geraldInput, geraldMessages, isGeraldTyping, wipeState, logoutState, nukeState, totalClipsCount, clipsAddedCount, selectedRange, isHeaderVisible, currentFilter, activeFilterLabel, isFilterMenuOpen, recentVods, currentVodIndex, customEmotes, emoteSearch, showEmotePicker, showMinigames, activeClipId, switchTab, geminiStatus, handleSwipeStart, handleSwipeEnd, handleModalTouchStart, handleModalTouchMove, handleModalTouchEnd, handleScroll, apiConfig, selectedClip, modals, allClipsCount, isLive, chatMessages, twitchChatToken, twitchAuthUrl, twitchUsername, showLoginPopup, activeUsersCount, openProfile,
+      hostname, splashVisible, splashOpacity, currentTab, tabOffset, appTheme, toggleTheme, clips, currentUser, loginEmail, loginPass, loginError, geraldInput, geraldMessages, isGeraldTyping, wipeState, logoutState, nukeState, totalClipsCount, clipsAddedCount, selectedRange, isHeaderVisible, currentFilter, activeFilterLabel, isFilterMenuOpen, recentVods, currentVodIndex, customEmotes, emoteSearch, showEmotePicker, showMinigames, activeClipId, switchTab, geminiStatus, handleSwipeStart, handleSwipeEnd, handleModalTouchStart, handleModalTouchMove, handleModalTouchEnd, handleScroll, apiConfig, allClipsCount, isLive, chatMessages, twitchChatToken, twitchAuthUrl, twitchUsername, showLoginPopup, activeUsersCount, openProfile,
       logoSvg: (id) => `<svg viewBox="0 0 100 100"><defs><linearGradient id="grad-${id}" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stop-color="#9146FF"/><stop offset="100%" stop-color="#a970ff"/></linearGradient></defs><circle cx="50" cy="50" r="40" fill="url(#grad-${id})"/><path d="M 33 38 L 48 62 L 62 38 L 62 55 Q 62 65 69 64" fill="none" stroke="#ffffff" stroke-width="8" stroke-linecap="round" stroke-linejoin="round"/></svg>`,
       optimizeTwitchImg: (u) => u ? u.replace('%{width}', '480').replace('%{height}', '270') : '',
       formatViews: (v) => v ? v.toLocaleString() : '0',
@@ -1172,7 +1155,10 @@ createApp({
       applyFilter: (key, label) => { currentFilter.value = key; activeFilterLabel.value = label; isFilterMenuOpen.value = false; allClipsLoaded.value = false; allClips.value = []; loadData(false); },
       prevVod: () => { if (currentVodIndex.value > (isLive.value ? -1 : 0)) currentVodIndex.value--; },
       nextVod: () => { if (currentVodIndex.value < recentVods.value.length - 1) currentVodIndex.value++; },
-      playClip: (clip) => { selectedClip.value = clip; },
+      // Style 2 In-Place Swap Toggle: Tapping same clip closes it, tapping another switches active clip
+      playClip: (clip) => { 
+        activeClipId.value = activeClipId.value === clip.id ? null : clip.id; 
+      },
       handleLogin, handleLogout, clearGeraldHistory, nukeCache, talkToGerald, triggerAiMinigame,
       selectRange: fetchClipsAddedRange,
       closePickers: () => { showEmotePicker.value = false; showMinigames.value = false; },
