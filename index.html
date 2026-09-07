@@ -16,7 +16,7 @@
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="https://unpkg.com/vue@3/dist/vue.global.prod.js"></script>
     
-    <link rel="stylesheet" href="./styles.css?v=95">
+    <link rel="stylesheet" href="./styles.css?v=96">
     
     <style>
         [v-cloak] > *:not(#splash-screen) { display: none !important; }
@@ -86,8 +86,6 @@
           @sheet-touch-start="handleModalTouchStart('filter', $event)"
           @sheet-touch-end="handleModalTouchEnd('filter', $event)"
         ></filter-menu>
-
-        <clip-modal :clip="selectedClip" :hostname="hostname" @close="selectedClip = null"></clip-modal>
 
         <profile-modal 
           :is-open="modals.profile" 
@@ -178,6 +176,6 @@
         <bottom-nav :current-tab="currentTab" @change-tab="switchTab"></bottom-nav>
     </div>
 
-    <script src="./app.js?v=98"></script>
+    <script src="./app.js?v=1"></script>
 </body>
 </html>
